@@ -1,0 +1,209 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
+import { toast } from 'react-toastify';
+import { jwtDecode } from 'jwt-decode';
+
+import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/context/I18nContext';
+import apiService from '@/services/api';
+import { isPlatformRole } from '@/constants/roles';
+import { analytics, failureReason } from '@/services/analytics';
+import { trackSignupComplete } from '@/utils/events';
+
+import type { ApiError, JwtPayload, LoginResponseData } from '@/types';
+
+/**
+ * "Continue with Google", for both the login and the register screens.
+ *
+ * The browser never learns anything about the account from Google directly:
+ * it collects an access token and hands it to our backend, which asks Google
+ * whose token it is and answers with the ordinary session token. Signing in
+ * and signing up are the same call — the backend creates the account if it
+ * has not seen this Google identity before.
+ *
+ * Google Identity Services is loaded from a script tag rather than an npm
+ * package, which is how Google ships it; there is no bundle to add.
+ */
+
+const GSI_SRC = 'https://accounts.google.com/gsi/client';
+const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
+
+/** Only the sliver of the GIS surface this hook touches. */
+interface TokenResponse {
+  access_token?: string;
+  error?: string;
+}
+
+interface TokenClient {
+  requestAccessToken: () => void;
+}
+
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        oauth2?: {
+          initTokenClient: (config: {
+            client_id: string;
+            scope: string;
+            callback: (response: TokenResponse) => void;
+            error_callback?: (error: { type?: string }) => void;
+          }) => TokenClient;
+        };
+      };
+    };
+  }
+}
+
+export interface GoogleAuth {
+  /** Opens Google's popup. Must be called from a click — popups need a gesture. */
+  signIn: () => void;
+  /** True while the popup is open or the backend call is in flight. */
+  loading: boolean;
+  /** False when NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set. */
+  configured: boolean;
+}
+
+export function useGoogleAuth(): GoogleAuth {
+  const { login } = useAuth();
+  const router = useRouter();
+  const { t } = useTranslation();
+
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const client = useRef<TokenClient | null>(null);
+
+  // Load the script up front, so the click that opens the popup is a direct
+  // user gesture. Loading on demand would put an await between the two and
+  // browsers would block the popup.
+  useEffect(() => {
+    if (!CLIENT_ID || typeof window === 'undefined') return undefined;
+
+    if (window.google?.accounts?.oauth2) {
+      setReady(true);
+      return undefined;
+    }
+
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${GSI_SRC}"]`);
+    const script = existing ?? document.createElement('script');
+    const onLoad = (): void => setReady(true);
+
+    script.addEventListener('load', onLoad);
+
+    if (!existing) {
+      script.src = GSI_SRC;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    return () => script.removeEventListener('load', onLoad);
+  }, []);
+
+  /** Trade the Google token for one of ours, then sign in. */
+  const exchange = useCallback(
+    async (accessToken: string): Promise<void> => {
+      try {
+        setLoading(true);
+
+        const response = await apiService.post<LoginResponseData>('/auth/social/login', {
+          token: accessToken,
+          type: 'google',
+        });
+
+        const sessionToken = response?.data?.token;
+
+        if (!response?.success || !sessionToken) {
+          analytics.auth.loginFailed('google', failureReason(response?.message));
+          toast.error(response?.message || t('auth.googleFailed'));
+          return;
+        }
+
+        // Same belt-and-braces check the password login does: an operator
+        // credential must never open a session in the player app.
+        let role: string | undefined;
+        try {
+          role = jwtDecode<JwtPayload>(sessionToken).role;
+        } catch {
+          analytics.auth.loginFailed('google', 'malformed_token');
+          toast.error('Received a malformed token');
+          return;
+        }
+
+        if (!isPlatformRole(role)) {
+          analytics.auth.loginFailed('google', 'operator_account');
+          toast.error('This app is for player accounts. Operators sign in on the admin console.');
+          return;
+        }
+
+        // POST /auth/social/login both creates and signs in, so this flag is the
+        // only thing separating a new player from a returning one. Without it
+        // a social signup never reaches the funnel at all.
+        if (response?.data?.is_new_account === true) {
+          trackSignupComplete('google');
+        }
+
+        login(sessionToken);
+        // Signing in and signing up are the same call here, so this reports a
+        // login either way; a first-time Google account shows up as a new user
+        // in GA4 regardless.
+        analytics.auth.loginCompleted('google');
+        router.push('/');
+        toast.success(t('login.success'));
+      } catch (err) {
+        const apiErr = err as ApiError;
+        analytics.auth.loginFailed('google', failureReason(apiErr));
+        toast.error(apiErr?.message || t('auth.googleFailed'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [login, router, t]
+  );
+
+  const signIn = useCallback((): void => {
+    if (!CLIENT_ID) {
+      toast.info(t('auth.googleNotConfigured'));
+      return;
+    }
+
+    const oauth2 = window.google?.accounts?.oauth2;
+    if (!ready || !oauth2) {
+      toast.info(t('auth.googleUnavailable'));
+      return;
+    }
+
+    // Rebuilt per click: a token client holds the callback, and reusing a
+    // stale one would resolve into a previous render's closure.
+    client.current = oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: 'openid email profile',
+      callback: (response) => {
+        if (!response.access_token) {
+          // A closed popup reports "access_denied" — not worth a red toast, but
+          // worth counting: it is the most common way a Google signup is lost.
+          analytics.auth.loginFailed('google', response.error ?? 'popup_dismissed');
+
+          if (response.error && response.error !== 'access_denied') {
+            toast.error(t('auth.googleFailed'));
+          }
+          return;
+        }
+        void exchange(response.access_token);
+      },
+      error_callback: (error) => {
+        analytics.auth.loginFailed('google', error?.type ?? 'popup_error');
+
+        if (error?.type !== 'popup_closed') {
+          toast.error(t('auth.googleFailed'));
+        }
+      },
+    });
+
+    client.current.requestAccessToken();
+  }, [ready, exchange, t]);
+
+  return { signIn, loading, configured: Boolean(CLIENT_ID) };
+}
+
+export default useGoogleAuth;

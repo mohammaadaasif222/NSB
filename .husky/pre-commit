@@ -1,0 +1,4 @@
+. "$(dirname -- "$0")/common.sh"
+husky_enabled || exit 0
+
+run_bin lint-staged

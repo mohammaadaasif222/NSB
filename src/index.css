@@ -1,0 +1,972 @@
+/* Tailwind v4. Replaces the @tailwindcss/browser CDN script that the old
+   Vite index.html loaded — Next.js compiles this through PostCSS instead. */
+@import 'tailwindcss';
+
+body {
+  margin: 0;
+  padding: 0;
+  /* Poppins is the design's typeface; the stack degrades to the platform UI
+     font if the webfont is blocked or still in flight. */
+  font-family:
+    'Poppins',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Arial,
+    sans-serif;
+  background: var(--bg, #0f172a);
+  color: var(--text, #ffffff);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#__next {
+  min-height: 100vh;
+}
+
+/* ==================================================================== */
+/* Pointer affordance on controls.                                       */
+/*                                                                       */
+/* Tailwind v4's preflight sets no cursor on <button>, so buttons fall   */
+/* back to the UA default — an arrow, which reads as "not clickable".    */
+/* Everything that responds to a click gets the hand here, once, rather  */
+/* than a cursor-pointer class repeated on ~60 elements.                 */
+/*                                                                       */
+/* It lives in @layer base, so an explicit cursor-* utility on an        */
+/* element still wins (the Pager's disabled arrows use cursor-default,   */
+/* and disabled:cursor-not-allowed keeps working untouched).             */
+/* ==================================================================== */
+@layer base {
+  button:not(:disabled),
+  select:not(:disabled),
+  summary,
+  /* A label wrapping a checkbox or radio is the real click target — the
+     input itself is often sr-only and visually replaced by a styled span. */
+  label:has(input[type='checkbox'], input[type='radio']),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  input[type='range']:not(:disabled),
+  input[type='color']:not(:disabled),
+  input[type='file']:not(:disabled),
+  input[type='submit']:not(:disabled),
+  input[type='reset']:not(:disabled),
+  input[type='button']:not(:disabled),
+  ::file-selector-button,
+  /* Anything presenting itself as a widget to assistive tech is, by
+     definition, something you click. */
+  [role='button']:not([aria-disabled='true']),
+  [role='option']:not([aria-disabled='true']),
+  [role='switch']:not([aria-disabled='true']),
+  [role='checkbox']:not([aria-disabled='true']),
+  [role='radio']:not([aria-disabled='true']),
+  [role='tab']:not([aria-disabled='true']),
+  [role='menuitem']:not([aria-disabled='true']),
+  [role='menuitemradio']:not([aria-disabled='true']),
+  [role='menuitemcheckbox']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  /* The complement: a dead control should not pretend otherwise. */
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
+}
+
+/* ================================================================== */
+/* Per-user themes.                                                    */
+/*                                                                     */
+/* The app is built with hardcoded Tailwind "dark" utility classes.    */
+/* Instead of a root-level color filter (which produced muddy, wrong   */
+/* colors), each theme defines a real semantic palette via CSS custom  */
+/* properties, and the dominant utility classes are remapped to those  */
+/* variables. Every var() carries the native dark value as a fallback, */
+/* so the `dark` theme — and the pre-hydration state before            */
+/* ThemeContext sets data-theme — render exactly as before.            */
+/* ================================================================== */
+
+/* --- Palettes ----------------------------------------------------- */
+html[data-theme='midnight'] {
+  --bg: #020617;
+  --bg-deep: #000000;
+  --surface: #0b1120;
+  --surface-2: #131c31;
+  --surface-3: #1e2a44;
+  --navy: #0b1120;
+  --border: #1e293b;
+  --border-2: #243049;
+  --border-3: #2f3d5c;
+  --text: #f1f5f9;
+  --text-1: #e2e8f0;
+  --text-2: #cbd5e1;
+  --text-muted: #8a99b5;
+  --text-faint: #64748b;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-2: #3b82f6;
+  --accent-text: #60a5fa;
+  --accent-text-2: #93c5fd;
+}
+
+html[data-theme='thin'] {
+  --bg: #1e2533;
+  --bg-deep: #161c27;
+  --surface: #283041;
+  --surface-2: #353f52;
+  --surface-3: #434e63;
+  --navy: #283041;
+  --border: #3a4456;
+  --border-2: #495467;
+  --border-3: #5a6578;
+  --text: #f5f7fa;
+  --text-1: #e6eaf0;
+  --text-2: #ccd3de;
+  --text-muted: #9aa5b5;
+  --text-faint: #76808f;
+  --accent: #4f7bd6;
+  --accent-hover: #4169c0;
+  --accent-2: #6690de;
+  --accent-text: #8fb0e8;
+  --accent-text-2: #b0c7ef;
+}
+
+html[data-theme='light'] {
+  --bg: #e2e8f0;
+  --bg-deep: #cbd5e1;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --navy: #ffffff;
+  --border: #cbd5e1;
+  --border-2: #b6c2d2;
+  --border-3: #a3b1c4;
+  --text: #0f172a;
+  --text-1: #1e293b;
+  --text-2: #334155;
+  --text-muted: #5b6b82;
+  --text-faint: #7a899e;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-2: #3b82f6;
+  --accent-text: #2563eb;
+  --accent-text-2: #1d4ed8;
+}
+
+html[data-theme='white'] {
+  --bg: #ffffff;
+  --bg-deep: #f1f5f9;
+  --surface: #ffffff;
+  --surface-2: #f4f6f9;
+  --surface-3: #e9edf3;
+  --navy: #ffffff;
+  --border: #e2e8f0;
+  --border-2: #d3dbe6;
+  --border-3: #c2ccda;
+  --text: #0b1220;
+  --text-1: #1e293b;
+  --text-2: #3b4860;
+  --text-muted: #64748b;
+  --text-faint: #8593a8;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-2: #3b82f6;
+  --accent-text: #2563eb;
+  --accent-text-2: #1d4ed8;
+}
+
+html[data-theme='slate'] {
+  --bg: #3f4856;
+  --bg-deep: #333b47;
+  --surface: #4b5563;
+  --surface-2: #5b6675;
+  --surface-3: #6b7686;
+  --navy: #4b5563;
+  --border: #59626f;
+  --border-2: #6a7380;
+  --border-3: #7c8593;
+  --text: #f8fafc;
+  --text-1: #eef1f5;
+  --text-2: #d8dde4;
+  --text-muted: #aab2bf;
+  --text-faint: #8d96a3;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-2: #60a5fa;
+  --accent-text: #bfd3f5;
+  --accent-text-2: #dbe7fa;
+}
+
+html[data-theme='ocean'] {
+  --bg: #082f49;
+  --bg-deep: #04212f;
+  --surface: #0c3b58;
+  --surface-2: #114a6e;
+  --surface-3: #185f86;
+  --navy: #0c3b58;
+  --border: #15506f;
+  --border-2: #1d6589;
+  --border-3: #2a7aa0;
+  --text: #ecfeff;
+  --text-1: #cffafe;
+  --text-2: #a5e9f0;
+  --text-muted: #67b8c6;
+  --text-faint: #4d97a5;
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+  --accent-2: #38bdf8;
+  --accent-text: #7dd3fc;
+  --accent-text-2: #bae6fd;
+}
+
+html[data-theme='forest'] {
+  --bg: #052e1b;
+  --bg-deep: #032015;
+  --surface: #073d25;
+  --surface-2: #0a4f30;
+  --surface-3: #0f653f;
+  --navy: #073d25;
+  --border: #14542d;
+  --border-2: #1a6b3a;
+  --border-3: #228148;
+  --text: #f0fdf4;
+  --text-1: #dcfce7;
+  --text-2: #bbf7d0;
+  --text-muted: #6fae85;
+  --text-faint: #548a68;
+  --accent: #16a34a;
+  --accent-hover: #15803d;
+  --accent-2: #22c55e;
+  --accent-text: #4ade80;
+  --accent-text-2: #86efac;
+}
+
+html[data-theme='contrast'] {
+  --bg: #000000;
+  --bg-deep: #000000;
+  --surface: #000000;
+  --surface-2: #0a0a0a;
+  --surface-3: #141414;
+  --navy: #000000;
+  --border: #ffffff;
+  --border-2: #ffffff;
+  --border-3: #ffffff;
+  --text: #ffffff;
+  --text-1: #ffffff;
+  --text-2: #ffffff;
+  --text-muted: #ffffff;
+  --text-faint: #f0f0f0;
+  --accent: #ffd400;
+  --accent-hover: #ffe24d;
+  --accent-2: #ffdb1a;
+  --accent-text: #ffd400;
+  --accent-text-2: #ffe24d;
+}
+
+/* --- Utility-class remap ------------------------------------------ */
+/* Scoped away from `dark` so the default theme is byte-for-byte       */
+/* unchanged. Fallbacks equal the native Tailwind dark color.          */
+html:not([data-theme='dark']) .bg-slate-900 {
+  background-color: var(--bg, #0f172a);
+}
+html:not([data-theme='dark']) .bg-slate-950 {
+  background-color: var(--bg-deep, #020617);
+}
+html:not([data-theme='dark']) .bg-slate-800 {
+  background-color: var(--surface, #1e293b);
+}
+html:not([data-theme='dark']) .bg-slate-700 {
+  background-color: var(--surface-2, #334155);
+}
+html:not([data-theme='dark']) .bg-slate-600 {
+  background-color: var(--surface-3, #475569);
+}
+html:not([data-theme='dark']) .hover\:bg-slate-800:hover {
+  background-color: var(--surface, #1e293b);
+}
+html:not([data-theme='dark']) .hover\:bg-slate-700:hover {
+  background-color: var(--surface-2, #334155);
+}
+html:not([data-theme='dark']) .hover\:bg-slate-600:hover {
+  background-color: var(--surface-3, #475569);
+}
+
+html:not([data-theme='dark']) .border-slate-800 {
+  border-color: var(--border, #1e293b);
+}
+html:not([data-theme='dark']) .border-slate-700 {
+  border-color: var(--border, #334155);
+}
+html:not([data-theme='dark']) .border-slate-600 {
+  border-color: var(--border-2, #475569);
+}
+html:not([data-theme='dark']) .border-slate-500 {
+  border-color: var(--border-3, #64748b);
+}
+html:not([data-theme='dark']) .hover\:border-slate-500:hover {
+  border-color: var(--border-3, #64748b);
+}
+html:not([data-theme='dark']) .hover\:border-slate-600:hover {
+  border-color: var(--border-2, #475569);
+}
+
+html:not([data-theme='dark']) .text-white,
+html:not([data-theme='dark']) .text-slate-100 {
+  color: var(--text, #ffffff);
+}
+html:not([data-theme='dark']) .text-slate-200 {
+  color: var(--text-1, #e2e8f0);
+}
+html:not([data-theme='dark']) .text-slate-300 {
+  color: var(--text-2, #cbd5e1);
+}
+html:not([data-theme='dark']) .text-slate-400 {
+  color: var(--text-muted, #94a3b8);
+}
+html:not([data-theme='dark']) .text-slate-500 {
+  color: var(--text-faint, #64748b);
+}
+html:not([data-theme='dark']) .text-slate-600 {
+  color: var(--text-faint, #475569);
+}
+
+html:not([data-theme='dark']) .bg-blue-600 {
+  background-color: var(--accent, #2563eb);
+}
+html:not([data-theme='dark']) .bg-blue-700 {
+  background-color: var(--accent-hover, #1d4ed8);
+}
+html:not([data-theme='dark']) .bg-blue-500 {
+  background-color: var(--accent-2, #3b82f6);
+}
+html:not([data-theme='dark']) .hover\:bg-blue-700:hover {
+  background-color: var(--accent-hover, #1d4ed8);
+}
+html:not([data-theme='dark']) .hover\:bg-blue-600:hover {
+  background-color: var(--accent, #2563eb);
+}
+html:not([data-theme='dark']) .hover\:bg-blue-500:hover {
+  background-color: var(--accent-2, #3b82f6);
+}
+html:not([data-theme='dark']) .text-blue-400,
+html:not([data-theme='dark']) .text-blue-500,
+html:not([data-theme='dark']) .text-blue-600 {
+  color: var(--accent-text, #60a5fa);
+}
+html:not([data-theme='dark']) .text-blue-300 {
+  color: var(--accent-text-2, #93c5fd);
+}
+html:not([data-theme='dark']) .border-blue-500 {
+  border-color: var(--accent-2, #3b82f6);
+}
+html:not([data-theme='dark']) .border-blue-600 {
+  border-color: var(--accent, #2563eb);
+}
+
+/* Thin Scrollbar */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 14px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* hide scrollbar */
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* ROLLUCK loading overlay                                                 */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Letters pulse in sequence; each one gets its delay inline from the
+ * component. Kept in CSS rather than driven from JS so the animation stays
+ * smooth while the main thread is busy with the incoming page.
+ */
+@keyframes rolluck-letter-pulse {
+  0%,
+  70%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.06);
+  }
+}
+
+.rolluck-loader-letter {
+  animation: rolluck-letter-pulse 1.2s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+/* The progress sliver sweeps across its track — indeterminate, because a real
+   percentage isn't knowable for a server round-trip. */
+@keyframes rolluck-bar-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.rolluck-loader-bar {
+  animation: rolluck-bar-sweep 1.1s ease-in-out infinite;
+}
+
+/* Motion is decorative here; the overlay alone communicates "loading". */
+@media (prefers-reduced-motion: reduce) {
+  .rolluck-loader-letter,
+  .rolluck-loader-bar {
+    animation: none;
+  }
+  .rolluck-loader-letter {
+    opacity: 0.7;
+  }
+}
+
+/* ==================================================================== */
+/* Glassmorphic auth surface (login / register / reset password)         */
+/*                                                                       */
+/* Declared with @utility rather than as plain classes so they land in   */
+/* Tailwind's utilities layer, sort against the generated utilities and  */
+/* accept variants (hover:, sm:, …) like any other class.                */
+/*                                                                       */
+/* These pages sit outside the themed shell — a visitor has no account   */
+/* yet, so there is no per-user palette to honour. They render on a      */
+/* fixed dark stage with frosted panels, which is why the colors here    */
+/* are literal rather than var()-driven: the utility remap above keys    */
+/* off .bg-slate-* / .text-slate-*, and nothing below uses those.        */
+/* ==================================================================== */
+
+@utility auth-stage {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(1100px 700px at 12% 8%, rgba(59, 130, 246, 0.16), transparent 62%),
+    radial-gradient(900px 700px at 88% 92%, rgba(147, 51, 234, 0.14), transparent 60%),
+    linear-gradient(160deg, #141821 0%, #0d1017 45%, #06080c 100%);
+}
+
+/* The orbs overhang the viewport on every side, so the clipping lives on this
+   layer rather than on the stage itself — clipping the stage would cut off a
+   tall card (register, on a short window) with no way to scroll to it. */
+@utility auth-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+
+  /* Faint grid, heavily masked, so the blur has something with structure to
+     chew on at the card edges. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 65% at 50% 45%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 80% 65% at 50% 45%, #000 20%, transparent 75%);
+    pointer-events: none;
+  }
+}
+
+/* Out-of-focus colour blobs drifting behind the card. They are what the card's
+   backdrop-filter actually has to blur — with nothing behind it, frosted glass
+   reads as flat grey. */
+@utility auth-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.5;
+}
+
+@utility auth-orb-1 {
+  width: 32rem;
+  height: 32rem;
+  top: -8rem;
+  left: -6rem;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.55), transparent 70%);
+  animation: auth-orb-drift 18s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility auth-orb-2 {
+  width: 28rem;
+  height: 28rem;
+  bottom: -7rem;
+  right: -5rem;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.45), transparent 70%);
+  animation: auth-orb-drift 22s ease-in-out infinite reverse;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility auth-orb-3 {
+  width: 22rem;
+  height: 22rem;
+  top: 45%;
+  left: 55%;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.3), transparent 70%);
+  animation: auth-orb-drift 26s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes auth-orb-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4rem, 3rem, 0) scale(1.12);
+  }
+}
+
+/* --- The frosted card ---------------------------------------------- */
+@utility glass-card {
+  position: relative;
+  border-radius: 28px;
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.11) 0%,
+    rgba(255, 255, 255, 0.05) 55%,
+    rgba(255, 255, 255, 0.025) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  backdrop-filter: blur(30px) saturate(170%);
+  box-shadow:
+    0 32px 90px -24px rgba(0, 0, 0, 0.8),
+    0 2px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+
+  /* Specular sheen along the top edge — the detail that sells "glass". */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 45%;
+    border-radius: 28px 28px 60% 60%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent);
+    pointer-events: none;
+  }
+
+  /* backdrop-filter is near-universal now, but where it is missing the panel
+     would read as a barely-there translucent rectangle. Fall back to solid. */
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(28, 31, 39, 0.96);
+  }
+}
+
+/* --- Inputs --------------------------------------------------------- */
+@utility glass-field {
+  /* No width here on purpose: most fields are w-full, but the OTP boxes are
+     fixed-width, and a utility that dictates width cannot serve both. */
+  color: #fff;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  outline: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.42);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.09);
+  }
+
+  &:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.07);
+  }
+
+  /* Chrome paints its own near-white background on remembered fields, which
+     punches a solid block through the glass. A long inset shadow is the only
+     reliable override. */
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: #fff;
+    -webkit-box-shadow: 0 0 0 1000px rgba(38, 42, 52, 0.95) inset;
+    caret-color: #fff;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* --- Primary action -------------------------------------------------- */
+@utility glass-btn {
+  position: relative;
+  width: 100%;
+  color: #fff;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(32, 34, 40, 0.96), rgba(10, 11, 14, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 14px 32px -14px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.3);
+    transform: translateY(-1px);
+    box-shadow:
+      0 18px 38px -14px rgba(0, 0, 0, 0.95),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* --- Pills / icon buttons -------------------------------------------- */
+@utility glass-pill {
+  color: #e7ebf3;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.17);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+@utility glass-icon-btn {
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+}
+
+/* Floating menus (the language list) share the card's frosting but need a
+   darker base so options stay readable over whatever sits behind them. */
+@utility glass-menu {
+  border-radius: 16px;
+  background: rgba(20, 23, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.85);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(20, 23, 30, 0.98);
+  }
+}
+
+/* --- Wordmark --------------------------------------------------------- */
+@utility auth-wordmark {
+  background: linear-gradient(180deg, #ffffff 25%, rgba(255, 255, 255, 0.72) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 0.02em;
+}
+
+/* --- Card entrance ---------------------------------------------------- */
+@utility auth-card-in {
+  animation: auth-card-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes auth-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==================================================================== */
+/* ROLLUCK app shell — transparent glassmorphism                         */
+/*                                                                       */
+/* The lobby redesign paints on a fixed near-black stage with frosted    */
+/* panels floating over it. Like the auth surface above, these utilities */
+/* carry literal colours rather than var()-driven ones: the per-user     */
+/* theme remap keys off .bg-slate-* / .text-slate-*, and nothing here    */
+/* uses those, so a theme cannot half-apply and muddy the frosting.      */
+/*                                                                       */
+/* Declared with @utility so they sort with the generated utilities and  */
+/* accept variants (hover:, lg:, …) like any other class.                */
+/* ==================================================================== */
+
+:root {
+  /* Stage */
+  --rl-stage: #07080b;
+  --rl-stage-2: #0b0d12;
+
+  /* Frosted surfaces, lightest to heaviest */
+  --rl-glass: rgba(255, 255, 255, 0.045);
+  --rl-glass-2: rgba(255, 255, 255, 0.07);
+  --rl-glass-3: rgba(255, 255, 255, 0.1);
+  --rl-line: rgba(255, 255, 255, 0.07);
+  --rl-line-2: rgba(255, 255, 255, 0.12);
+
+  /* Ink */
+  --rl-text: #ffffff;
+  --rl-text-2: rgba(255, 255, 255, 0.72);
+  --rl-text-3: rgba(255, 255, 255, 0.5);
+  --rl-text-4: rgba(255, 255, 255, 0.34);
+
+  /* The one accent: the Register / Place bet yellow. */
+  --rl-gold: #fcd535;
+  --rl-gold-hi: #ffdd52;
+  --rl-green: #35d07f;
+  --rl-red: #ef4462;
+}
+
+/* --- The stage ------------------------------------------------------- */
+/* Two soft pools of light over near-black, sitting behind the hero at the
+   top of the page.
+   Deliberately not `background-attachment: fixed`: that repaints the whole
+   backdrop on every scroll frame, and iOS Safari renders it at the wrong
+   size anyway. Anchored to the page instead, which is where the design
+   wants the light. */
+@utility rl-stage {
+  position: relative;
+  background-color: var(--rl-stage);
+  background-image:
+    radial-gradient(1200px 600px at 18% -6%, rgba(88, 101, 142, 0.16), transparent 60%),
+    radial-gradient(900px 520px at 88% 4%, rgba(60, 74, 112, 0.12), transparent 62%);
+  background-repeat: no-repeat;
+}
+
+/* --- Panels ---------------------------------------------------------- */
+/* The workhorse: every card, rail and tray in the shell is one of these. */
+@utility rl-glass {
+  background: var(--rl-glass);
+  border: 1px solid var(--rl-line);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(24, 26, 33, 0.92);
+  }
+}
+
+/* Dark frosting for chrome that floats over artwork — the bar, the rail and
+   the hero's own controls. A white-tinted panel over a bright image reads as
+   milky film; these have to darken what is behind them, not lighten it. */
+@utility rl-glass-dark {
+  background: rgba(11, 12, 16, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(13, 14, 18, 0.95);
+  }
+}
+
+/* A panel that also reacts to the pointer — tiles, nav rows, chips. */
+@utility rl-glass-hover {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+
+  &:hover {
+    background: var(--rl-glass-2);
+    border-color: var(--rl-line-2);
+  }
+}
+
+/* The lifted state: a selected tab, the active nav row, a focused chip. */
+@utility rl-glass-active {
+  background: var(--rl-glass-3);
+  border: 1px solid var(--rl-line-2);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Floating menus need a darker base than a panel: their options sit over
+   whatever the page happens to be showing underneath. */
+@utility rl-menu {
+  background: rgba(14, 16, 21, 0.86);
+  border: 1px solid var(--rl-line-2);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  backdrop-filter: blur(26px) saturate(160%);
+  box-shadow: 0 26px 60px -20px rgba(0, 0, 0, 0.9);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(14, 16, 21, 0.98);
+  }
+}
+
+/* --- Controls -------------------------------------------------------- */
+@utility rl-btn-gold {
+  color: #111216;
+  background: var(--rl-gold);
+  border: 1px solid transparent;
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--rl-gold-hi);
+    box-shadow: 0 10px 28px -12px rgba(252, 213, 53, 0.7);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+/* The quiet sibling of the gold button — Login, Join Telegram, ½ / 2×. */
+@utility rl-btn-ghost {
+  color: var(--rl-text);
+  background: var(--rl-glass-2);
+  border: 1px solid var(--rl-line-2);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--rl-glass-3);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@utility rl-field {
+  color: var(--rl-text);
+  background: var(--rl-glass);
+  border: 1px solid var(--rl-line-2);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  outline: none;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+
+  &::placeholder {
+    color: var(--rl-text-4);
+  }
+
+  &:focus-within,
+  &:focus {
+    background: var(--rl-glass-2);
+    border-color: rgba(255, 255, 255, 0.24);
+  }
+
+  /* Chrome's autofill wash punches a solid block through the glass. */
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: #fff;
+    -webkit-box-shadow: 0 0 0 1000px rgba(30, 33, 41, 0.96) inset;
+    caret-color: #fff;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+/* --- Scrollers -------------------------------------------------------- */
+/* Shelves scroll horizontally and are paged by the arrow buttons in their
+   heading, so the native bar is hidden and the last tile is faded out
+   rather than sliced. */
+@utility rl-shelf {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}

@@ -1,0 +1,6 @@
+. "$(dirname -- "$0")/common.sh"
+husky_enabled || exit 0
+
+# run_bin, not `npm run type-check` — see common.sh. npm's bash shebang is
+# what produced the WSL execvpe(/bin/bash) failure when pushing from a GUI.
+run_bin tsc --noEmit

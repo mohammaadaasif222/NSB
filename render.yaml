@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────────────────────────
+# Render Blueprint — ROLLUCK player app (Next.js, server-rendered)
+# Docs: https://render.com/docs/blueprint-spec
+#
+# FIRST-TIME SETUP:
+#   1. Push this repo to GitHub/GitLab.
+#   2. Render dashboard → New + → Blueprint → pick this repo.
+#   3. Set the env vars marked `sync: false` below: the backend URL and the
+#      shared password secret.
+#   4. Deploy.
+#
+# WHY a Node web service (not a static site):
+#   • The lobby, category and game pages use getServerSideProps, so a Node
+#     process has to run `next start`. A static export would drop them.
+#
+# ENV VARS:
+#   • NEXT_PUBLIC_* values are inlined into the browser bundle when
+#     `next build` runs, so they must be set BEFORE the build. Changing one
+#     later needs a redeploy.
+#   • Never put a real secret in a NEXT_PUBLIC_ var: the bundle ships to the
+#     browser. NEXT_PUBLIC_PASSWORD_SECRET is only a shared obfuscation key.
+# ─────────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    runtime: node
+    name: rolluck-frontend
+    branch: main
+    autoDeploy: true
+
+    buildCommand: npm ci && npm run build
+    # Render injects PORT; bind to it rather than the dev port in package.json.
+    startCommand: npx next start -p $PORT
+
+    healthCheckPath: /
+
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+
+      # Backend API base URL, e.g. https://rolluck-backend.onrender.com/api
+      - key: NEXT_PUBLIC_API_BASE_URL
+        sync: false
+
+      # Shared password-obfuscation secret; must match the backend's value.
+      - key: NEXT_PUBLIC_PASSWORD_SECRET
+        sync: false
+
+      # Optional: a private/internal URL the server can use for its own
+      # catalogue fetches. Leave unset to use the public URL above.
+      - key: API_BASE_URL_INTERNAL
+        sync: false
+
+      - key: HUSKY_ENABLED
+        value: "false"
