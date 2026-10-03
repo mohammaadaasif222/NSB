@@ -32,7 +32,7 @@ const FALLBACK_FIAT_SYMBOL: Record<string, string> = {
  * context's displayCurrencies) with a small hard-coded fallback for
  * common codes when the runtime value is missing.
  */
-const formatFiat = (
+export const formatFiat = (
   amount: string,
   code: DisplayFiat,
   symbolMap: Record<string, string>
@@ -72,11 +72,11 @@ interface CurrencyRowProps {
  * rate is cached for this currency we fall back to just the crypto
  * amount rather than showing a misleading zero.
  */
-const CurrencyRow: FC<CurrencyRowProps> = ({
+export const CurrencyRow: FC<CurrencyRowProps> = ({
   balance,
   selected,
-  displayCurrency,
-  fiatSymbolMap,
+  displayCurrency: _displayCurrency,
+  fiatSymbolMap: _fiatSymbolMap,
   onSelect,
 }) => {
   const { formatCurrencyDisplay } = useCurrencyConversion();
@@ -182,6 +182,7 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
    * `formatFiat` reads from this so a fiat added on the admin console
    * shows the right symbol without a redeploy.
    */
+  // @ts-expect-error -- kept for CurrencyRow, which is not rendered yet
   const fiatSymbolMap = useMemo(() => {
     const map: Record<string, string> = {};
     for (const row of displayCurrencies) map[row.code] = row.symbol;

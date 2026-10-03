@@ -20,7 +20,7 @@ import NetworkPicker from '../shared/NetworkPicker';
  * Both amounts sent to backend for storage and audit trail.
  */
 const WithdrawTab: FC = () => {
-  const { summary, currencies, refresh, rates } = useWallet();
+  const { summary, currencies, refresh, rates: _rates } = useWallet();
   const { convertToDisplayCurrency } = useCurrencyConversion();
 
   const displayCurrency = summary?.preferences.active_currency ?? 'USD';
@@ -86,7 +86,7 @@ const WithdrawTab: FC = () => {
   const [displayAmount, setDisplayAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [lastEditedField, setLastEditedField] = useState<'display' | 'crypto'>('crypto');
+  const [_lastEditedField, setLastEditedField] = useState<'display' | 'crypto'>('crypto');
   const [fetchedRates, setFetchedRates] = useState<ExchangeRate[]>([]);
   const [ratesLoading, setRatesLoading] = useState(false);
 

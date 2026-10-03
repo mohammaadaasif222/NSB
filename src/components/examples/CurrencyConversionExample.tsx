@@ -56,7 +56,7 @@ export function ConversionWithMetadata() {
  * Example 3: Display transaction history
  */
 export function TransactionHistoryExample() {
-  const { convertMultiple, formatCurrencyDisplay } = useCurrencyConversion();
+  const { convertMultiple } = useCurrencyConversion();
 
   // Mock transaction data from backend (all in USD)
   const transactions = [
@@ -83,7 +83,9 @@ export function TransactionHistoryExample() {
         {transactions.map((tx, idx) => (
           <tr key={tx.id}>
             <td>{tx.type}</td>
-            <td>{formatCurrencyDisplay(tx.amountUSD)}</td>
+            <td>
+              {converted[idx].displayAmount} {converted[idx].currency}
+            </td>
             <td>{tx.date}</td>
           </tr>
         ))}
