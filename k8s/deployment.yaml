@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rolluck-frontend
+  namespace: rolluck-staging
+  labels:
+    app: rolluck-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rolluck-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: rolluck-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: registry.digitalocean.com/staging-rolluck/frontend:staging-CHANGE_ME
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5173
+              protocol: TCP
