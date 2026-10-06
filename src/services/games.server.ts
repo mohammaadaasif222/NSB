@@ -159,7 +159,7 @@ export async function fetchShelfList(
   limit: number
 ): Promise<CategoryPageResult> {
   const query = new URLSearchParams({
-    ...list,
+    ...Object.fromEntries(Object.entries(list).map(([key, value]) => [key, String(value)])),
     page: String(page),
     limit: String(limit),
   });

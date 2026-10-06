@@ -6,20 +6,15 @@ import { useTranslation } from '@/context/I18nContext';
 import { getLobbyProps, type LobbyProps } from '@/services/lobby.server';
 
 /**
- * The casino lobby: the home page without the sportsbook teasers, which live
- * on /sports. Same hero, same shelves, same server data — only the route and
- * the pager links built against it differ.
+ * The casino lobby: the catalogue page — banner, search and chips over every
+ * casino shelf. Same server data as the home page; the layout is Lobby's
+ * `casino` variant.
  */
 const Casino: FC<LobbyProps> = (props) => {
   const { t } = useTranslation();
 
   return (
-    <Lobby
-      {...props}
-      title={`${t('nav.casino')} — ROLLUCK`}
-      basePath="/casino"
-      withSports={false}
-    />
+    <Lobby {...props} title={`${t('nav.casino')} — ROLLUCK`} basePath="/casino" variant="casino" />
   );
 };
 

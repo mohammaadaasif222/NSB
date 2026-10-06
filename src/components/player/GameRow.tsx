@@ -160,8 +160,10 @@ const GameRow: FC<Props> = ({
       <ShelfHeading
         title={title}
         href={categoryHref(shelfKey)}
+        // The arrows are part of every shelf heading in the design; on a
+        // shelf with one page both simply stay disabled.
         controls={
-          paged && totalPages > 1 ? (
+          paged ? (
             <div className="flex items-center gap-[calc(var(--u)*8)] lg:gap-[calc(var(--u)*14)]">
               {arrow('prev')}
               {arrow('next')}

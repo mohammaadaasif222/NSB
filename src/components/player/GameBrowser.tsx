@@ -1,41 +1,20 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { useTranslation } from '@/context/I18nContext';
-import { fetchCatalogue, gameMatches, providersOf } from '@/services/catalogue';
-import { LOBBY_SHELF_KEYS, shelfFor } from '@/constants/games';
+import { fetchCatalogue, providersOf } from '@/services/catalogue';
+import { LOBBY_SHELF_KEYS, listMatches, shelfFor } from '@/constants/games';
 import GameRow from '@/components/player/GameRow';
 import GameTile from '@/components/player/GameTile';
 import {
+  BROWSE_DEFAULTS,
+  BrowseToolbar,
   CategoryChips,
-  Dropdown,
-  Option,
-  SearchField,
+  browseGames,
+  type BrowseState,
   type ChipKey,
 } from '@/components/player/BrowseControls';
-import sortIcon from '@/assets/lobby/player/tool-sort.svg';
-import filterIcon from '@/assets/lobby/player/tool-filter.svg';
-import providerIcon from '@/assets/lobby/player/tool-provider.svg';
 import type { Game, GameShelf, GameShelfKey } from '@/types';
 import type { TranslationKey } from '@/i18n/locales';
-
-/* ==================================================================== */
-/* Controls                                                              */
-/* ==================================================================== */
-
-type SortKey = 'az' | 'za' | 'rtp' | 'new';
-type FilterKey = 'all' | 'new';
-
-const SORTS: { key: SortKey; labelKey: TranslationKey }[] = [
-  { key: 'az', labelKey: 'browse.sortAZ' },
-  { key: 'za', labelKey: 'browse.sortZA' },
-  { key: 'rtp', labelKey: 'browse.sortRtp' },
-  { key: 'new', labelKey: 'browse.sortNewest' },
-];
-
-const FILTERS: { key: FilterKey; labelKey: TranslationKey }[] = [
-  { key: 'all', labelKey: 'browse.filterAll' },
-  { key: 'new', labelKey: 'browse.filterNew' },
-];
 
 /* ==================================================================== */
 /* The browser                                                           */
@@ -61,28 +40,25 @@ interface Props {
    * on /casino — so it turns them off.
    */
   controls?: boolean;
+  /** Show the chips on a phone too. The casino page draws them; the lobby keeps them desktop-only. */
+  chipsOnPhone?: boolean;
   /** Which shelves to show when idle, in order. */
   shelfKeys?: readonly GameShelfKey[];
   /** A heading to use instead of a shelf's default one. */
   titles?: Partial<Record<GameShelfKey, TranslationKey>>;
-  /** A row to place between the shelves — the signed-in lobby's sports row. */
-  between?: { after: GameShelfKey; node: ReactNode };
+  /**
+   * Rows placed among the shelves — the signed-in lobby's sports row, the
+   * casino page's providers and tournaments — each after the shelf named.
+   */
+  inserts?: readonly ShelfInsert[];
 }
 
-const sortGames = (games: Game[], key: SortKey): Game[] => {
-  const out = [...games];
-  switch (key) {
-    case 'az':
-      return out.sort((a, b) => a.title.localeCompare(b.title));
-    case 'za':
-      return out.sort((a, b) => b.title.localeCompare(a.title));
-    case 'rtp':
-      // Games without a published RTP sort last.
-      return out.sort((a, b) => (b.rtp ?? -1) - (a.rtp ?? -1));
-    case 'new':
-      return out.sort((a, b) => Number(b.is_new) - Number(a.is_new));
-  }
-};
+export interface ShelfInsert {
+  /** Stable React key. */
+  id: string;
+  after: GameShelfKey;
+  node: ReactNode;
+}
 
 /**
  * The lobby's catalogue section: search, sort, filter, provider and category
@@ -103,7 +79,8 @@ const GameBrowser: FC<Props> = ({
   controls = true,
   shelfKeys = LOBBY_SHELF_KEYS,
   titles = {},
-  between,
+  chipsOnPhone = false,
+  inserts = [],
 }) => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -114,9 +91,7 @@ const GameBrowser: FC<Props> = ({
   const [failed, setFailed] = useState(false);
   const [wanted, setWanted] = useState(false);
 
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortKey>('az');
-  const [filter, setFilter] = useState<FilterKey>('all');
+  const [browse, setBrowse] = useState<Omit<BrowseState, 'provider'>>(BROWSE_DEFAULTS);
   const [provider, setProvider] = useState<string>('');
   const [category, setCategory] = useState<ChipKey>('lobby');
 
@@ -160,9 +135,13 @@ const GameBrowser: FC<Props> = ({
     });
   };
 
-  const trimmed = search.trim().toLowerCase();
+  const trimmed = browse.search.trim();
   const browsing =
-    trimmed !== '' || filter !== 'all' || provider !== '' || category !== 'lobby' || sort !== 'az';
+    trimmed !== '' ||
+    browse.filter !== BROWSE_DEFAULTS.filter ||
+    browse.sort !== BROWSE_DEFAULTS.sort ||
+    provider !== '' ||
+    category !== 'lobby';
 
   // Pull the catalogue the first time it is actually needed, not on mount.
   //
@@ -209,48 +188,34 @@ const GameBrowser: FC<Props> = ({
     return stocked.length > 0 ? stocked : listed;
   }, [shelves, shelfKeys]);
 
-  // `between` follows its shelf, or — if that shelf was left out — the
+  // Each insert follows its shelf, or — if that shelf was left out — the
   // nearest shown shelf before it, so the row keeps its place in the order.
-  const betweenAfter = useMemo(() => {
-    if (!between) return undefined;
-    const limit = shelfKeys.indexOf(between.after);
-    const before = lobbyShelves.filter((s) => shelfKeys.indexOf(s.key) <= limit);
-    return before[before.length - 1]?.key;
-  }, [between, shelfKeys, lobbyShelves]);
+  // Keyed by that shelf; `lead` holds any with no shown shelf before them.
+  const placed = useMemo(() => {
+    const byShelf = new Map<GameShelfKey | 'lead', ShelfInsert[]>();
+    for (const insert of inserts) {
+      const limit = shelfKeys.indexOf(insert.after);
+      const before = lobbyShelves.filter((s) => shelfKeys.indexOf(s.key) <= limit);
+      const anchor = before[before.length - 1]?.key ?? 'lead';
+      byShelf.set(anchor, [...(byShelf.get(anchor) ?? []), insert]);
+    }
+    return byShelf;
+  }, [inserts, shelfKeys, lobbyShelves]);
+
+  const insertsAt = (anchor: GameShelfKey | 'lead'): ReactNode =>
+    placed.get(anchor)?.map((insert) => <Fragment key={insert.id}>{insert.node}</Fragment>);
 
   const results = useMemo(() => {
-    let out = games;
-
-    if (category !== 'lobby') {
-      const { list } = shelfFor(category);
-      out = out.filter(
-        (g) =>
-          (!('category' in list) || g.category === list.category) &&
-          (!('type' in list) || g.type === list.type)
-      );
-    }
-    if (trimmed) {
-      out = out.filter((g) => gameMatches(g, trimmed));
-    }
-    if (filter === 'new') {
-      out = out.filter((g) => g.is_new);
-    }
-    if (provider) {
-      out = out.filter((g) => g.provider === provider);
-    }
-    return sortGames(out, sort);
-  }, [games, category, trimmed, filter, provider, sort]);
+    const inCategory =
+      category === 'lobby' ? games : games.filter((g) => listMatches(g, shelfFor(category).list));
+    return browseGames(inCategory, { ...browse, provider });
+  }, [games, category, browse, provider]);
 
   const clear = (): void => {
-    setSearch('');
-    setSort('az');
-    setFilter('all');
+    setBrowse(BROWSE_DEFAULTS);
     chooseProvider('');
     setCategory('lobby');
   };
-
-  const sortLabel = t(SORTS.find((s) => s.key === sort)?.labelKey ?? 'browse.sort');
-  const filterLabel = t(FILTERS.find((f) => f.key === filter)?.labelKey ?? 'browse.filter');
 
   return (
     <section
@@ -258,87 +223,23 @@ const GameBrowser: FC<Props> = ({
       ref={sectionRef}
       className="scroll-mt-20 space-y-[30px] lg:space-y-[calc(var(--u)*26)]"
     >
-      {/* --- Toolbar ---------------------------------------------------
-          The design's search field with the three dropdowns beside it on
-          desktop, and under it, three across, on a phone. */}
+      {/* --- Toolbar --------------------------------------------------- */}
       {controls && (
-        <div className="flex flex-col gap-[14px] lg:flex-row lg:gap-[calc(var(--u)*20)]">
-          <SearchField
-            value={search}
-            onChange={setSearch}
-            placeholder={t('search.placeholder')}
-            label={t('search.title')}
-          />
-
-          <div className="grid grid-cols-[1fr_1fr_1.53fr] gap-[7px] lg:flex lg:gap-[calc(var(--u)*10)]">
-            <Dropdown icon={sortIcon} label={sortLabel}>
-              {(close) =>
-                SORTS.map((s) => (
-                  <Option
-                    key={s.key}
-                    selected={sort === s.key}
-                    onSelect={() => {
-                      setSort(s.key);
-                      close();
-                    }}
-                  >
-                    {t(s.labelKey)}
-                  </Option>
-                ))
-              }
-            </Dropdown>
-
-            <Dropdown icon={filterIcon} label={filterLabel}>
-              {(close) =>
-                FILTERS.map((f) => (
-                  <Option
-                    key={f.key}
-                    selected={filter === f.key}
-                    onSelect={() => {
-                      setFilter(f.key);
-                      close();
-                    }}
-                  >
-                    {t(f.labelKey)}
-                  </Option>
-                ))
-              }
-            </Dropdown>
-
-            <Dropdown icon={providerIcon} label={provider || t('browse.provider')}>
-              {(close) => (
-                <>
-                  <Option
-                    selected={provider === ''}
-                    onSelect={() => {
-                      chooseProvider('');
-                      close();
-                    }}
-                  >
-                    {t('browse.allProviders')}
-                  </Option>
-                  {providers.map((name) => (
-                    <Option
-                      key={name}
-                      selected={provider === name}
-                      onSelect={() => {
-                        chooseProvider(name);
-                        close();
-                      }}
-                    >
-                      {name}
-                    </Option>
-                  ))}
-                </>
-              )}
-            </Dropdown>
-          </div>
-        </div>
+        <BrowseToolbar
+          state={{ ...browse, provider }}
+          onChange={({ provider: next, ...rest }) => {
+            if (next !== undefined) {
+              chooseProvider(next);
+            }
+            setBrowse((current) => ({ ...current, ...rest }));
+          }}
+          providers={providers}
+        />
       )}
 
-      {/* --- Category chips: desktop only, as the designs have it -------- */}
+      {/* --- Category chips: desktop only on the lobby, everywhere on casino */}
       {controls && (
-        <div className="hidden lg:block">
+        <div className={chipsOnPhone ? '' : 'hidden lg:block'}>
           <CategoryChips active={category} onChange={setCategory} />
         </div>
       )}
@@ -346,7 +247,7 @@ const GameBrowser: FC<Props> = ({
       {/* --- Body ------------------------------------------------------- */}
       {!browsing ? (
         <div className="space-y-10 lg:space-y-[calc(var(--u)*80)]">
-          {between && betweenAfter === undefined && between.node}
+          {insertsAt('lead')}
           {lobbyShelves.map((shelf) => (
             <Fragment key={shelf.key}>
               <GameRow
@@ -358,7 +259,7 @@ const GameBrowser: FC<Props> = ({
                 query={query}
                 basePath={basePath}
               />
-              {betweenAfter === shelf.key && between?.node}
+              {insertsAt(shelf.key)}
             </Fragment>
           ))}
         </div>
@@ -396,7 +297,7 @@ const GameBrowser: FC<Props> = ({
 
           {!loading && !failed && results.length === 0 && (
             <p className="rl-glass rounded-2xl px-4 py-10 text-center text-xs text-white/40">
-              {trimmed ? t('search.empty', { query: search }) : t('games.empty')}
+              {trimmed ? t('search.empty', { query: browse.search }) : t('games.empty')}
             </p>
           )}
 

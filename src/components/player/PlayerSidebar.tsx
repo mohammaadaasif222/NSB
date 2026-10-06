@@ -3,11 +3,8 @@ import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useRouter } from 'next/router';
 import logo from '@/assets/logo.png';
-import casinoGlyph from '@/assets/lobby/rail/section-casino.svg';
-import sportsGlyph from '@/assets/lobby/rail/section-sports.svg';
 import casinoArt from '@/assets/lobby/player/panel-casino.webp';
 import sportsArt from '@/assets/lobby/player/panel-sports.webp';
-import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
 import recentIcon from '@/assets/lobby/rail/nav-recent.svg';
 import favouritesIcon from '@/assets/lobby/rail/nav-favourites.svg';
@@ -28,10 +25,8 @@ import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
-import { useAuth } from '@/context/AuthContext';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
-import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
-import { fullNameOf } from '@/types/profile';
+import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
 import { CoinIcon } from '@/components/icons';
 
@@ -43,42 +38,14 @@ interface Props {
   collapsed: boolean;
 }
 
-/** `n` design pixels — see PlayerLayout's `--u`. */
-const U = (n: number): string => `calc(var(--u)*${n})`;
-
-/**
- * An icon drawn through a mask so it takes the text colour around it: the
- * design's own glyphs are fixed grey files, and this is what lets the active
- * row read white and the idle ones muted from one asset each.
- */
-const Glyph: FC<{ src: string; size: number }> = ({ src, size }) => (
-  <span
-    aria-hidden="true"
-    className="block flex-shrink-0 bg-current"
-    style={{
-      width: U(size),
-      height: U(size),
-      WebkitMaskImage: `url(${src})`,
-      maskImage: `url(${src})`,
-      WebkitMaskRepeat: 'no-repeat',
-      maskRepeat: 'no-repeat',
-      WebkitMaskPosition: 'center',
-      maskPosition: 'center',
-      WebkitMaskSize: 'contain',
-      maskSize: 'contain',
-    }}
-  />
-);
-
 /* ==================================================================== */
 /* Section switch — Casino / Sports                                      */
 /* ==================================================================== */
 
 interface SectionProps {
   href: string;
-  glyph: string;
-  /** Signed in, the design swaps the line glyph for the section's 3D render. */
-  art?: string;
+  /** The section's 3D render, glow included. */
+  art: string;
   label: string;
   active: boolean;
   collapsed: boolean;
@@ -86,46 +53,34 @@ interface SectionProps {
 }
 
 /**
- * One half of the design's 228×90 section switch. Signed out: a 42px line
- * glyph over an 18px label. Signed in: the 58px 3D render over a 14px label.
+ * One half of the design's 228×90 section switch: the section's 58px 3D
+ * render over a 14px label.
  */
-const SectionTab: FC<SectionProps> = ({ href, glyph, art, label, active, collapsed, onClick }) => (
+const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onClick }) => (
   <Link
     href={href}
     onClick={onClick}
     aria-current={active ? 'page' : undefined}
     title={label}
     className={`flex flex-1 flex-col items-center justify-center rounded-[calc(var(--u)*24)] transition-colors ${
-      art ? '' : 'gap-[calc(var(--u)*2)]'
-    } ${active ? 'bg-white/[0.12] text-white' : 'text-[#9da2b4] hover:text-white'} ${
-      collapsed ? 'lg:py-[calc(var(--u)*10)]' : ''
-    }`}
+      active ? 'bg-white/[0.12] text-white' : 'text-[#9da2b4] hover:text-white'
+    } ${collapsed ? 'lg:py-[calc(var(--u)*10)]' : ''}`}
   >
-    {art ? (
-      // The render carries its glow: the image is the 58px art plus ~20px
-      // of glow on every side, so it overhangs a box the size of the art.
-      <span
-        className={`relative flex-shrink-0 ${
-          collapsed
-            ? 'h-[calc(var(--u)*40)] w-[calc(var(--u)*40)]'
-            : 'h-[calc(var(--u)*58)] w-[calc(var(--u)*58)]'
-        }`}
-      >
-        <img
-          src={art}
-          alt=""
-          className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none"
-        />
-      </span>
-    ) : (
-      <Glyph src={glyph} size={collapsed ? 30 : 42} />
-    )}
+    {/* The render carries its glow: the image is the 58px art plus ~20px of
+        glow on every side, so it overhangs a box the size of the art. */}
     <span
-      className={`${
-        art
-          ? 'text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)]'
-          : 'text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*28)]'
-      } ${collapsed ? 'lg:hidden' : ''}`}
+      className={`relative flex-shrink-0 ${
+        collapsed
+          ? 'h-[calc(var(--u)*40)] w-[calc(var(--u)*40)]'
+          : 'h-[calc(var(--u)*58)] w-[calc(var(--u)*58)]'
+      }`}
+    >
+      <img src={art} alt="" className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none" />
+    </span>
+    <span
+      className={`text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] ${
+        collapsed ? 'lg:hidden' : ''
+      }`}
     >
       {label}
     </span>
@@ -255,17 +210,12 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
  * narrower desktop; on a phone it is the slide-in drawer at its design size.
  */
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
-  const router = useRouter();
-  const { pathname } = router;
+  const { pathname } = useRouter();
   const { t } = useTranslation();
   const { openRegister } = useAuthModal();
-  const { token, logout } = useAuth();
   const { theme, applyTheme } = useTheme();
-  const { me, updateMe } = useMe();
+  const { updateMe } = useMe();
   const [themeOpen, setThemeOpen] = useState(false);
-  const [logoutOpen, setLogoutOpen] = useState(false);
-
-  const name = me ? me.display_name || fullNameOf(me) : '';
 
   const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
 
@@ -302,39 +252,6 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           </button>
         </div>
 
-        {/* Phone, signed in: the account — the bar has no room for an
-            avatar there, so Profile and Logout live here instead. */}
-        {token && (
-          <div className="mb-4 flex flex-shrink-0 items-center gap-3 rounded-[24px] bg-[#1b1f29] p-2 pr-3 sm:hidden">
-            <Link
-              href="/profile"
-              onClick={onClose}
-              className="flex min-w-0 flex-1 items-center gap-3"
-            >
-              <img
-                src={me?.avatar_url || defaultAvatar.src}
-                alt=""
-                className="h-10 w-10 flex-shrink-0 rounded-full bg-[#666666] object-cover"
-              />
-              <span className="min-w-0">
-                <span className="block truncate text-[14px] font-medium leading-5 text-white">
-                  {name || t('account.account')}
-                </span>
-                <span className="block text-[12px] leading-4 text-[#9da2b4]">
-                  {t('account.profile')}
-                </span>
-              </span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setLogoutOpen(true)}
-              className="flex-shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium text-[#ef4462] transition-colors hover:bg-[#ef4462]/10"
-            >
-              {t('account.logout')}
-            </button>
-          </div>
-        )}
-
         {/* --- Section switch ------------------------------------------- */}
         <div
           className={`rl-liquid flex h-[calc(var(--u)*90)] flex-shrink-0 gap-0 rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ${
@@ -343,8 +260,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
         >
           <SectionTab
             href="/casino"
-            glyph={casinoGlyph.src}
-            art={token ? casinoArt.src : undefined}
+            art={casinoArt.src}
             label={t('nav.casino')}
             active={pathname === '/casino' || pathname.startsWith('/game')}
             collapsed={collapsed}
@@ -352,8 +268,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           />
           <SectionTab
             href="/sports"
-            glyph={sportsGlyph.src}
-            art={token ? sportsArt.src : undefined}
+            art={sportsArt.src}
             label={t('nav.sports')}
             active={pathname === '/sports'}
             collapsed={collapsed}
@@ -555,19 +470,6 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             applyTheme(next);
             updateMe({ theme: next });
           }}
-        />
-      )}
-
-      {logoutOpen && (
-        <LogoutConfirmModal
-          onConfirm={() => {
-            // Land on the public lobby, as the bar's own logout does.
-            setLogoutOpen(false);
-            onClose();
-            logout();
-            router.push('/');
-          }}
-          onCancel={() => setLogoutOpen(false)}
         />
       )}
     </>

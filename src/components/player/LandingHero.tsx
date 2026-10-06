@@ -27,7 +27,6 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import BonusBanner from '@/components/player/BonusBanner';
-import { WinnersStrip } from '@/components/player/TopWinnersTicker';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
 import { LOBBY_STATS } from '@/constants/stats';
 
@@ -385,9 +384,8 @@ const LandingHero: FC = () => {
   return (
     <section className="lg:pt-[calc(var(--u)*22)]">
       {/* --- Live figures --------------------------------------------- */}
-      <WinnersStrip />
-
-      <div className="mt-[calc(var(--u)*12)] flex flex-wrap items-center justify-center gap-[calc(var(--u)*5)] lg:hidden">
+      {/* 8px under the phone bar: the layout's 12px top padding, less 4. */}
+      <div className="-mt-1 flex flex-wrap items-center justify-center gap-[calc(var(--u)*5)] lg:hidden">
         <StatPill>{LOBBY_STATS.todaysWinnings} Today&apos;s Winnings</StatPill>
         <StatPill>{t('dash.online', { count: LOBBY_STATS.online })}</StatPill>
         <StatPill>{LOBBY_STATS.biggestWin} Biggest Win</StatPill>

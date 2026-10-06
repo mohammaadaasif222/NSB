@@ -1,4 +1,4 @@
-import { useState, type FC, type ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Game } from '@/types';
@@ -7,6 +7,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { useGameImpression } from '@/hooks/useGameImpression';
 import { trackGameOpen } from '@/utils/events';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
+import { useFavourites } from '@/context/FavouritesContext';
 import personIcon from '@/assets/lobby/person.svg';
 
 interface Props {
@@ -77,7 +78,7 @@ const FootPill: FC<{ children: ReactNode }> = ({ children }) => (
  */
 const GameTile: FC<Props> = ({ game, shelf = false, surface }) => {
   const { t } = useTranslation();
-  const [liked, setLiked] = useState(false);
+  const { isFavourite, toggle } = useFavourites();
 
   const impressionRef = useGameImpression(game.slug, surface);
 
@@ -134,8 +135,9 @@ const GameTile: FC<Props> = ({ game, shelf = false, surface }) => {
             nested in an anchor. The design's 32px heart box, in the notch, hung
             a pixel past the card's right edge. */}
         <FavouriteHeart
-          liked={liked}
-          onToggle={() => setLiked((v) => !v)}
+          liked={isFavourite(game.id)}
+          onToggle={() => toggle(game)}
+          saved
           label={game.title}
           className="-right-[0.5cqw] top-0 h-[16.16cqw] w-[16.16cqw]"
         />

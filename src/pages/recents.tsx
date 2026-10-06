@@ -1,5 +1,24 @@
-import { createComingSoonPage } from '@/components/player/ComingSoon';
-import { ClockIcon } from '@/components/icons';
+import type { FC } from 'react';
+import MyGamesPage from '@/components/player/MyGamesPage';
+import { useRecentGames } from '@/hooks/useRecentGames';
+import { getMyGamesProps, type MyGamesPageProps } from '@/services/myGames.server';
 
-/** Recents has no feature behind it yet; the route explains that. */
-export default createComingSoonPage('nav.recents', ClockIcon);
+/** The games the player launched most recently, newest first. */
+const Recents: FC<MyGamesPageProps> = ({ winnerGames }) => {
+  const { games, failed } = useRecentGames();
+
+  return (
+    <MyGamesPage
+      titleKey="recents.title"
+      emptyKey="recents.empty"
+      surface="recents"
+      games={games}
+      failed={failed}
+      winnerGames={winnerGames}
+    />
+  );
+};
+
+export const getServerSideProps = getMyGamesProps;
+
+export default Recents;

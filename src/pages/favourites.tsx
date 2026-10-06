@@ -1,5 +1,27 @@
-import { createComingSoonPage } from '@/components/player/ComingSoon';
-import { StarIcon } from '@/components/icons';
+import type { FC } from 'react';
+import MyGamesPage from '@/components/player/MyGamesPage';
+import { useFavourites } from '@/context/FavouritesContext';
+import { getMyGamesProps, type MyGamesPageProps } from '@/services/myGames.server';
 
-/** Favourites has no feature behind it yet; the route explains that. */
-export default createComingSoonPage('nav.favourites', StarIcon);
+/**
+ * The player's favourite games, newest-hearted first. The same list drives
+ * every heart, so unhearting a tile here takes it off the page at once.
+ */
+const Favourites: FC<MyGamesPageProps> = ({ winnerGames }) => {
+  const { games, failed } = useFavourites();
+
+  return (
+    <MyGamesPage
+      titleKey="nav.favourites"
+      emptyKey="favourites.empty"
+      surface="favourites"
+      games={games}
+      failed={failed}
+      winnerGames={winnerGames}
+    />
+  );
+};
+
+export const getServerSideProps = getMyGamesProps;
+
+export default Favourites;

@@ -1,11 +1,15 @@
-import type { GameCategory, GameMode, GameShelfKey, GameType } from '@/types/game';
+import type { Game, GameCategory, GameMode, GameShelfKey, GameType } from '@/types/game';
 import type { TranslationKey } from '@/i18n/locales';
 
 /** What a shelf's "View all" page asks the list endpoint for. */
 export interface ShelfListQuery {
   category?: GameCategory;
   type?: GameType;
-  sort?: 'popular';
+  /** `popular`: most played ever; `trending`: most played this week. */
+  sort?: 'popular' | 'trending';
+  /** A word within the game's genre, matched case-insensitively. */
+  genre?: string;
+  buy_feature?: boolean;
 }
 
 /**
@@ -16,7 +20,8 @@ export interface ShelfListQuery {
  * parameter carrying a shelf's page number on `/api/games/home`, and it is the
  * URL segment for the shelf's own page here (`/games/slots`). `list` is what
  * that page asks the flat list endpoint for — a category for most shelves,
- * `type=LIVE` for Live Casino, `sort=popular` for Most Played.
+ * `type=LIVE` for Live Casino, a sort for Most Played and Trending, the genre
+ * for Table Games and the buy feature for Bonus Buys.
  */
 export const GAME_SHELVES = [
   { key: 'originals', titleKey: 'dash.originals', list: { category: 'ORIGINALS' } },
@@ -25,6 +30,9 @@ export const GAME_SHELVES = [
   { key: 'slots', titleKey: 'dash.slots', list: { category: 'SLOTS' } },
   { key: 'live', titleKey: 'dash.liveCasino', list: { type: 'LIVE' } },
   { key: 'popular', titleKey: 'dash.mostPlayed', list: { sort: 'popular' } },
+  { key: 'trending', titleKey: 'dash.trending', list: { sort: 'trending' } },
+  { key: 'table', titleKey: 'dash.tableGames', list: { genre: 'table' } },
+  { key: 'bonus-buys', titleKey: 'dash.bonusBuys', list: { buy_feature: true } },
 ] as const satisfies readonly {
   key: GameShelfKey;
   titleKey: TranslationKey;
@@ -53,6 +61,33 @@ export const PLAYER_SHELF_KEYS: readonly GameShelfKey[] = [
   'new',
   'popular',
 ];
+
+/**
+ * The casino page's shelves. Featured is the operator's curated pick, which
+ * this design titles "Recommended".
+ */
+export const CASINO_SHELF_KEYS: readonly GameShelfKey[] = [
+  'originals',
+  'slots',
+  'live',
+  'trending',
+  'new',
+  'popular',
+  'featured',
+  'table',
+  'bonus-buys',
+];
+
+/**
+ * Whether a game belongs on a shelf, judged in the browser the way the list
+ * endpoint judges it. Orders (`sort`) narrow nothing, so they match every game.
+ */
+export const listMatches = (game: Game, list: ShelfListQuery): boolean =>
+  (list.category === undefined || game.category === list.category) &&
+  (list.type === undefined || game.type === list.type) &&
+  (list.genre === undefined ||
+    (game.genre ?? '').toLowerCase().includes(list.genre.toLowerCase())) &&
+  (list.buy_feature === undefined || game.buy_feature === list.buy_feature);
 
 /** Tiles per page on a category listing. The API caps `limit` at 50. */
 export const CATEGORY_PAGE_SIZE = 24;

@@ -1,5 +1,5 @@
 import apiService from '@/services/api';
-import type { ApiError, GameDevice, GameLaunch, GameMode } from '@/types';
+import type { ApiError, Game, GameDevice, GameLaunch, GameMode } from '@/types';
 
 /**
  * Open a game. REAL needs the player's token (attached by apiService); DEMO
@@ -34,3 +34,30 @@ export async function launchGame(
  */
 export const currentGameDevice = (): GameDevice =>
   window.matchMedia('(max-width: 767px), (pointer: coarse)').matches ? 'MOBILE' : 'DESKTOP';
+
+/* ------------------------------------------------------------------ */
+/* The player's own games — both need the player's token               */
+/* ------------------------------------------------------------------ */
+
+const listOrThrow = async (url: string): Promise<Game[]> => {
+  const res = await apiService.get<Game[]>(url);
+  if (!res?.success || !Array.isArray(res.data)) {
+    throw { message: res?.message || 'Could not load games' } satisfies ApiError;
+  }
+  return res.data;
+};
+
+/** The player's favourite games, newest-hearted first. */
+export const fetchFavourites = (): Promise<Game[]> => listOrThrow('/games/favourites');
+
+/** The games the player launched most recently, newest first. */
+export const fetchRecentGames = (): Promise<Game[]> => listOrThrow('/games/recent');
+
+/** Hearts or unhearts a game. Idempotent either way. */
+export async function setFavourite(slug: string, favourite: boolean): Promise<void> {
+  const url = `/games/${encodeURIComponent(slug)}/favourite`;
+  const res = favourite ? await apiService.put(url) : await apiService.delete(url);
+  if (!res?.success) {
+    throw { message: res?.message || 'Could not update favourites' } satisfies ApiError;
+  }
+}
