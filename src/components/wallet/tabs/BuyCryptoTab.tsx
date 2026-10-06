@@ -1,8 +1,9 @@
 import { useEffect, useState, type FC } from 'react';
 import { useMe } from '@/context/UserContext';
-import { useChangellyBuyCrypto, type Cryptocurrency, type Offer } from '@/hooks/useChangellyBuyCrypto';
+import { useChangellyBuyCrypto, type Cryptocurrency, type PaymentMethod } from '@/hooks/useChangellyBuyCrypto';
+import api from '@/services/api';
 
-type BuyCryptoStep = 'step1' | 'step3';
+type BuyCryptoStep = 'step1' | 'step2';
 
 // Common fiat currencies for payment
 const FIAT_CURRENCIES = [
@@ -32,19 +33,6 @@ const US_STATES = [
   'DC', 'AS', 'GU', 'MP', 'PR', 'VI'
 ];
 
-// Available buy crypto providers
-const BUY_CRYPTO_PROVIDERS = [
-  {
-    id: 'changelly',
-    name: 'Changelly',
-    description: 'Fast & reliable crypto conversion',
-    icon: '🔄',
-    processingTime: '5-30 minutes',
-  },
-  // Future providers can be added here:
-  // { id: 'swapped', name: 'Swapped', description: '...', icon: '⚡', processingTime: '...' },
-];
-
 const BuyCryptoTab: FC = () => {
   const { me } = useMe();
   const {
@@ -62,13 +50,16 @@ const BuyCryptoTab: FC = () => {
 
   // Form state
   const [step, setStep] = useState<BuyCryptoStep>('step1');
+  const [fetchingAddress, setFetchingAddress] = useState(false);
   const [amount, setAmount] = useState('100');
   const [fiatCurrency, setFiatCurrency] = useState<string>('USD');
   const [selectedCrypto, setSelectedCrypto] = useState<Cryptocurrency | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<string>('changelly');
+  const [selectedProvider, setSelectedProvider] = useState<string>(''); // Empty until offers fetched
   const [country] = useState('US'); // TODO: Detect user's country
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [expectedAmount, setExpectedAmount] = useState<number | null>(null);
+  const [toAddress, setToAddress] = useState<string | null>(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
   const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
   const [showFiatDropdown, setShowFiatDropdown] = useState(false);
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
@@ -80,17 +71,106 @@ const BuyCryptoTab: FC = () => {
     fetchCryptos();
   }, [fetchCryptos]);
 
-  // Fetch offers when amount or crypto changes
+  // Fetch wallet address when crypto is selected
   useEffect(() => {
-    if (!selectedCrypto || !amount || Number(amount) <= 0) {
+    console.log('[Changelly] Address effect triggered - selectedCrypto:', selectedCrypto?.code, 'me:', !!me);
+
+    if (!selectedCrypto || !me) {
+      console.log('[Changelly] Skipping address fetch - missing crypto or user');
+      setToAddress(null);
+      setSelectedNetwork(null);
+      return;
+    }
+
+    console.log('[Changelly] Starting address fetch for:', selectedCrypto.code);
+    const fetchAddress = async () => {
+      try {
+        setFetchingAddress(true);
+
+        // First, fetch currency details to get available networks
+        console.log('[Changelly] Fetching currency details for:', selectedCrypto.code);
+
+        const currencyResponse = await api.get<{
+          code: string;
+          name: string;
+          networks: Array<{
+            code: string;
+            name: string;
+          }>;
+        }>(`/wallet/currencies/${selectedCrypto.code}`);
+
+        console.log('[Changelly] Currency response:', currencyResponse);
+
+        const currencyDetails = currencyResponse?.data;
+        const defaultNetwork = currencyDetails?.networks?.[0];
+
+        console.log('[Changelly] Available networks:', currencyDetails?.networks, 'Default:', defaultNetwork);
+
+        if (!defaultNetwork) {
+          console.error('[Changelly] No networks available for currency:', selectedCrypto.code);
+          setToAddress(`deposit_${selectedCrypto.code}_${me.id}`);
+          return;
+        }
+
+        setSelectedNetwork(defaultNetwork.code);
+
+        const token = sessionStorage.getItem('token');
+        console.log('[Changelly] Token available:', !!token);
+        console.log('[Changelly] Calling POST /wallet/deposit/address with:', {
+          currency: selectedCrypto.code,
+          network: defaultNetwork.code,
+        });
+
+        const addressResponse = await api.post<{
+          address: string;
+          currency_code: string;
+          network_code: string;
+        }>('/wallet/deposit/address', {
+          currency: selectedCrypto.code,
+          network: defaultNetwork.code,
+        });
+
+        console.log('[Changelly] Address response:', addressResponse);
+
+        const address = addressResponse?.data?.address;
+        setToAddress(address || null);
+        console.log('[Changelly] Successfully fetched wallet address:', address);
+      } catch (error: any) {
+        console.error('[Changelly] Address fetch error - Full details:', {
+          status: error?.status,
+          message: error?.message,
+          data: error?.data,
+          fullError: error,
+        });
+        // Use placeholder if real address fetch fails
+        setToAddress(`deposit_${selectedCrypto.code}_${me.id}`);
+        console.warn('[Changelly] Using placeholder address:', `deposit_${selectedCrypto.code}_${me.id}`);
+      } finally {
+        setFetchingAddress(false);
+      }
+    };
+
+    fetchAddress();
+  }, [selectedCrypto, me]);
+
+  // Auto-fetch offers when all 3 are selected: amount, fiat currency, and crypto
+  useEffect(() => {
+    console.log('[Changelly] Offers effect triggered - crypto:', selectedCrypto?.code, 'amount:', amount, 'fiat:', fiatCurrency);
+
+    if (!selectedCrypto || !amount || Number(amount) <= 0 || !fiatCurrency) {
+      console.log('[Changelly] Skipping offers fetch - missing required fields');
+      setSelectedProvider('');
       return;
     }
 
     // For US requests, state is required
     if (country === 'US' && !selectedState) {
+      console.log('[Changelly] Skipping offers fetch - US selected but no state');
+      setSelectedProvider('');
       return;
     }
 
+    console.log('[Changelly] Calling fetchOffers for:', selectedCrypto.code);
     fetchOffers(
       Number(amount),
       fiatCurrency,
@@ -100,36 +180,31 @@ const BuyCryptoTab: FC = () => {
     );
   }, [selectedCrypto, amount, fiatCurrency, country, selectedState, fetchOffers]);
 
+  // Auto-select first provider when offers are fetched
+  useEffect(() => {
+    if (offers.length > 0 && !selectedProvider) {
+      setSelectedProvider(offers[0].providerCode);
+    }
+  }, [offers, selectedProvider]);
+
   // Handle crypto selection
   const handleSelectCrypto = (crypto: Cryptocurrency) => {
+    console.log('[Changelly] Crypto selected:', crypto.code);
     setSelectedCrypto(crypto);
+    setShowCryptoDropdown(false);
   };
 
-  // Handle step 2: Buy Now → Create order with selected provider
+  // Handle Buy Now → Create order with selected provider
   const handleBuyNow = async () => {
-    if (!selectedCrypto || !selectedProvider || !me) return;
+    if (!selectedCrypto || !selectedProvider || !toAddress) return;
 
-    // TODO: Get user's actual Coinspaid address for this crypto
-    // For now, using placeholder (should be from wallet addresses in DB)
-    const toAddress = '1A1z7agoat'; // PLACEHOLDER
-
-    // For Changelly: use the best available offer
-    if (selectedProvider === 'changelly') {
-      if (!offers || offers.length === 0) return;
-
-      // Select the offer with best rate (lowest fee or highest toAmount)
-      const bestOffer = offers.reduce<Offer | null>((best, current) =>
-        current.toAmount > (best?.toAmount || 0) ? current : best,
-        null,
-      );
-
-      if (!bestOffer) return;
-
+    try {
+      // Create order with selected provider
       const order = await createOrder(
         Number(amount),
         fiatCurrency,
         selectedCrypto.code,
-        bestOffer.provider,
+        selectedProvider, // Use the selected provider code
         country,
         toAddress,
         country === 'US' ? selectedState : undefined,
@@ -138,10 +213,11 @@ const BuyCryptoTab: FC = () => {
       if (order) {
         setIframeUrl(order.iframeUrl);
         setExpectedAmount(order.expectedAmount);
-        setStep('step3');
+        setStep('step2');
       }
+    } catch (error: any) {
+      console.error('[Changelly] Error creating order:', error);
     }
-    // Future providers can be handled here
   };
 
   // Reset to step 1
@@ -274,55 +350,75 @@ const BuyCryptoTab: FC = () => {
             )}
           </div>
 
-          {/* Select Provider Dropdown */}
-          <div>
-            <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
-              Select Provider
-            </label>
-            <div className="relative">
-              <button
-                onClick={() => setShowProviderDropdown(!showProviderDropdown)}
-                className="w-full px-4 py-3 border border-white/10 rounded-lg hover:bg-white/5 hover:border-white/20 transition-colors text-left flex items-center justify-between"
-              >
-                <div>
-                  {BUY_CRYPTO_PROVIDERS.find(p => p.id === selectedProvider) ? (
-                    <>
-                      <div className="font-semibold text-white">
-                        {BUY_CRYPTO_PROVIDERS.find(p => p.id === selectedProvider)?.name}
-                      </div>
-                      <div className="text-xs text-white/60">
-                        {BUY_CRYPTO_PROVIDERS.find(p => p.id === selectedProvider)?.description}
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-white/60">Choose a provider...</span>
-                  )}
-                </div>
-                <span className="text-white/60">▼</span>
-              </button>
+          {/* Select Provider Dropdown - Dynamic from offers */}
+          {selectedCrypto && amount && fiatCurrency && (
+            <div>
+              <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
+                Payment Provider
+              </label>
 
-              {showProviderDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1b2e] border border-white/20 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-                  {BUY_CRYPTO_PROVIDERS.map((provider) => (
-                    <button
-                      key={provider.id}
-                      onClick={() => {
-                        setSelectedProvider(provider.id);
-                        setShowProviderDropdown(false);
-                      }}
-                      className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0 ${
-                        selectedProvider === provider.id ? 'bg-white/10 border-l-2 border-orange-500' : ''
-                      }`}
-                    >
-                      <div className="font-semibold text-white">{provider.name}</div>
-                      <div className="text-xs text-white/60">{provider.description}</div>
-                      <div className="text-xs text-white/60 mt-1">⏱️ {provider.processingTime}</div>
-                    </button>
-                  ))}
+              {loadingOffers && (
+                <div className="text-center py-6 text-white/60">Fetching available providers...</div>
+              )}
+
+              {errorOffers && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
+                  {errorOffers.message}
                 </div>
               )}
+
+              {!loadingOffers && !errorOffers && offers.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowProviderDropdown(!showProviderDropdown)}
+                    className="w-full px-4 py-3 border border-white/10 rounded-lg hover:bg-white/5 hover:border-white/20 transition-colors text-left flex items-center justify-between"
+                  >
+                    <div>
+                      {selectedProvider ? (
+                        <>
+                          <div className="font-semibold text-white capitalize">{selectedProvider}</div>
+                          {offers.find(o => o.providerCode === selectedProvider) && (
+                            <div className="text-xs text-white/60">
+                              Fee: {offers.find(o => o.providerCode === selectedProvider)?.fee}%
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-white/60">Choose a provider...</span>
+                      )}
+                    </div>
+                    <span className="text-white/60">▼</span>
+                  </button>
+
+                  {showProviderDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1b2e] border border-white/20 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                      {offers.map((offer) => (
+                        <button
+                          key={offer.providerCode}
+                          onClick={() => {
+                            setSelectedProvider(offer.providerCode);
+                            setShowProviderDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0 ${
+                            selectedProvider === offer.providerCode ? 'bg-white/10 border-l-2 border-orange-500' : ''
+                          }`}
+                        >
+                          <div className="font-semibold text-white capitalize">{offer.providerCode}</div>
+                          <div className="text-xs text-white/60">
+                            Fee: {offer.fee}% • Expected: {Number(offer.amountExpectedTo).toFixed(8)} {selectedCrypto.code}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!loadingOffers && offers.length === 0 && !errorOffers && selectedCrypto && (
+                <div className="text-center py-6 text-white/60">No providers available for this pair</div>
+              )}
             </div>
-          </div>
+          )}
 
           {/* State Selector (US only) */}
           {country === 'US' && (
@@ -362,23 +458,31 @@ const BuyCryptoTab: FC = () => {
             </div>
           )}
 
-          {/* Error Display */}
-          {errorOffers && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
-              {errorOffers.message}
-            </div>
-          )}
-
           {/* Buy Now Button */}
           <button
             onClick={handleBuyNow}
-            disabled={creatingOrder || loadingOffers || !amount || Number(amount) <= 0 || !selectedCrypto}
+            disabled={
+              creatingOrder ||
+              loadingOffers ||
+              fetchingAddress ||
+              !amount ||
+              Number(amount) <= 0 ||
+              !selectedCrypto ||
+              !selectedProvider ||
+              !toAddress ||
+              offers.length === 0
+            }
             className="w-full px-4 py-3 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] rounded-lg text-white hover:opacity-90 transition-opacity text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loadingOffers ? (
+            {fetchingAddress ? (
               <div className="flex items-center justify-center gap-2">
                 <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                Loading...
+                Getting Wallet...
+              </div>
+            ) : loadingOffers ? (
+              <div className="flex items-center justify-center gap-2">
+                <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                Loading Providers...
               </div>
             ) : creatingOrder ? (
               <div className="flex items-center justify-center gap-2">
@@ -392,8 +496,8 @@ const BuyCryptoTab: FC = () => {
         </div>
       )}
 
-      {/* Step 3: Iframe Payment */}
-      {step === 'step3' && iframeUrl && selectedCrypto && (
+      {/* Step 2: Payment Iframe */}
+      {step === 'step2' && iframeUrl && selectedCrypto && (
         <div className="space-y-4">
           {/* Summary */}
           <div className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2">

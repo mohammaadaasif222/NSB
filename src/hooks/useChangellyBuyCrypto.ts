@@ -11,19 +11,32 @@ export interface Cryptocurrency {
   icon?: string;
 }
 
+export interface PaymentMethod {
+  offerId: string;
+  amountExpectedTo: string;
+  method: string;
+  methodName: string;
+  rate: string;
+  invertedRate: string;
+  fee: string;
+}
+
 export interface Offer {
-  provider: string;
-  rate: number;
-  toAmount: number;
-  fee: number;
-  processingTime?: string;
-  minFromAmount?: number;
-  maxFromAmount?: number;
+  providerCode: string;
+  offerId: string;
+  rate: string;
+  invertedRate: string;
+  fee: string;
+  amountFrom: string;
+  amountExpectedTo: string;
+  paymentMethodOffer: PaymentMethod[];
+  additionalData: Record<string, any>;
 }
 
 export interface CreateOrderResponse {
   orderId: string;
   iframeUrl: string;
+  redirectUrl?: string;
   toAddress: string;
   expectedAmount: number;
   expectedCrypto: string;
