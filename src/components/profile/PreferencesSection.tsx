@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import type { ApiUser } from '@/types/profile';
 import PersonalGroup from '@/components/profile/preferences/PersonalGroup';
 import LanguageGroup from '@/components/profile/preferences/LanguageGroup';
@@ -31,9 +32,9 @@ const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone 
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('profile.preferences')}</h2>
+      <h2 className={SECTION_HEADING}>{t('profile.preferences')}</h2>
 
-      <div className="mt-5.75 space-y-7.5">
+      <div className="mt-[calc(var(--u)*23)] space-y-[calc(var(--u)*30)]">
         <PersonalGroup
           me={me}
           onChangeUsername={onChangeUsername}

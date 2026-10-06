@@ -5,8 +5,14 @@ import type { FC } from 'react';
  * for — both traced from the Figma "Profile" node.
  */
 
-/** The square the design gives every mark in a row — the same slot `providers.tsx` uses. */
-const SLOT = 38;
+/**
+ * The square the design gives every mark in a row — the same slot
+ * `providers.tsx` uses, in `--u` so it comes down with the row around it.
+ * The SVG's own width/height attributes are overridden by `h-full w-full`,
+ * which is what lets a fixed-size glyph scale.
+ */
+const SLOT = 'calc(var(--u) * 38)';
+const CHECK = 'calc(var(--u) * 32)';
 
 /**
  * 2FA: a handset showing a one-time code, not a shield.
@@ -18,11 +24,12 @@ const SLOT = 38;
  */
 export const TwoFactorIcon: FC = () => (
   <span
-    className="flex items-center justify-center text-[#f0f1f5]"
+    className="flex shrink-0 items-center justify-center text-[#f0f1f5]"
     style={{ width: SLOT, height: SLOT }}
     aria-hidden="true"
   >
     <svg
+      className="h-[77%] w-[77%]"
       width="29.2422"
       height="29.2422"
       viewBox="0 0 29.2422 29.2422"
@@ -59,6 +66,7 @@ export const TwoFactorIcon: FC = () => (
  */
 export const VerifiedCheck: FC<{ title?: string }> = ({ title }) => (
   <svg
+    style={{ width: CHECK, height: CHECK }}
     width="32"
     height="32"
     viewBox="0 0 32 32"

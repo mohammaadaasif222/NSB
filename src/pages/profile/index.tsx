@@ -123,15 +123,25 @@ const ProfilePage: FC = () => {
           channel, and a 1268 panel. Wider than the lobby's `max-w-6xl`, and
           deliberately: every size inside is the design's own, so a narrower
           column makes the whole section read oversized. */}
-      <div className="@container mx-auto max-w-[1544px] pb-2">
-        {/* 228px is the rail's width in the design and 48px the channel it
-            leaves — 276px of chrome, which the 1544 frame can afford and a
-            laptop cannot. Below the width where the design's own measurements
-            fit, both close up to 180 and 20: the rail still holds every label
-            at its own type size, and the 76px it gives back goes to the panel,
-            which is where the ledger and the KYC form were being squeezed.
-            Sites of this shape budget about 190 for the same chrome. */}
-        <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-5 @acct:lg:grid-cols-[228px_minmax(0,1fr)] @acct:lg:gap-12">
+      {/* The 1544 frame scales with everything else.
+          As a fixed cap it quietly broke the gap either side of the account
+          nav. At 1920 the design's 48 comes from two places — the shell's own
+          20 of gap, plus the 28 of slack `mx-auto` leaves when a 1600 column
+          is capped at 1544. On a 1251 laptop the column is only 1043, the cap
+          never bites, the slack goes to zero, and the gap collapses to the
+          shell's 13 while the nav-to-panel side stays at 31. Scaled, the cap
+          is 1006 against a 1043 column, the slack is back in proportion, and
+          both gaps land on 48 x --u together. */}
+      <div className="@container mx-auto max-w-[calc(var(--u)*1544)] pb-2">
+        {/* 228 of rail and a 48 channel, in `--u` — the shell's design pixel.
+            This replaced a two-step ladder (180/20 below 1440, 228/48 above),
+            and the step was the problem rather than the numbers: the shell's
+            own rail is drawn in `--u` and comes down smoothly, so at 1270 it
+            measured 172 while this column sat at 180 and the inner nav rendered
+            wider than the outer one. Sharing the multiplier keeps the pair in
+            proportion at every width instead of only at the two the ladder
+            named. The panel still takes whatever is left. */}
+        <div className="grid gap-4 lg:grid-cols-[calc(var(--u)*228)_minmax(0,1fr)] lg:gap-[calc(var(--u)*48)]">
           <AccountNav
             active={section}
             onSelect={selectSection}
@@ -143,7 +153,11 @@ const ProfilePage: FC = () => {
               the rail take 492px before the panel starts, so a 1266 laptop
               leaves it 740 where the design drew 1268, and a window-based
               breakpoint reads "desktop" for both. */}
-          <div className="@container rl-panel min-w-0 p-5 @acct:sm:p-7.5">
+          {/* 30 of inset in the design (the panel runs 604–1872, its content
+              634–1842), in `--u` with the rest. The phone keeps a flat 20 —
+              below `lg` the unit is 1px and 30 is more than a 390 screen can
+              spare on each side. */}
+          <div className="@container rl-panel min-w-0 p-5 lg:p-[calc(var(--u)*30)]">
             {!me ? (
               <div className="py-16 text-center">
                 {error && !loading ? (

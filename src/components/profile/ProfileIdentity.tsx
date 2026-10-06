@@ -15,10 +15,16 @@ const ProfileIdentity: FC<Props> = ({ me }) => {
   return (
     <div className="flex flex-col items-center text-center">
       <div className="relative">
+        {/* 137 across in the design, in `--u` so it comes down with the panel
+            around it rather than staying a 137px disc on a laptop. */}
         {me.avatar_url ? (
-          <img src={me.avatar_url} alt="" className="h-34.25 w-34.25 rounded-full object-cover" />
+          <img
+            src={me.avatar_url}
+            alt=""
+            className="h-[calc(var(--u)*137)] w-[calc(var(--u)*137)] rounded-full object-cover"
+          />
         ) : (
-          <span className="flex h-34.25 w-34.25 select-none items-center justify-center rounded-full bg-white/7 text-4xl font-bold text-white">
+          <span className="flex h-[calc(var(--u)*137)] w-[calc(var(--u)*137)] items-center justify-center rounded-full bg-white/7 text-[length:max(min(11px,36px),calc(var(--u)*36))] font-bold text-white select-none">
             {initialsOf(me)}
           </span>
         )}
@@ -37,15 +43,22 @@ const ProfileIdentity: FC<Props> = ({ me }) => {
         <span
           title={t('common.soon')}
           aria-label={`${t('profile.editAvatar')} — ${t('common.soon')}`}
-          className="absolute -bottom-1.75 end-1.25 flex h-12 w-12 cursor-default items-center justify-center rounded-full bg-black/39 text-[#f0f1f5] shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+          className="absolute end-[calc(var(--u)*5)] -bottom-[calc(var(--u)*7)] flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] cursor-default items-center justify-center rounded-full bg-black/39 text-[#f0f1f5] shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
         >
-          <CameraIcon size={24} strokeWidth={1.5} />
+          <CameraIcon
+            size={24}
+            strokeWidth={1.5}
+            className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
+          />
         </span>
       </div>
 
-      <p className="mt-4.25 rl-h-card font-semibold text-[#f0f1f5]">{name}</p>
+      {/* Onest SemiBold 20/28 at −0.4, per the design's own H6 style. */}
+      <p className="mt-[calc(var(--u)*10)] text-[length:max(min(11px,20px),calc(var(--u)*20))] leading-[1.4] font-semibold tracking-[-0.4px] text-[#f0f1f5]">
+        {name}
+      </p>
 
-      <p className="mt-1.5 text-base leading-6 text-[#9da2b4]">
+      <p className="mt-[calc(var(--u)*6)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] text-[#9da2b4]">
         {t('profile.id')} <span className="tabular-nums">{me.id}</span>
       </p>
     </div>

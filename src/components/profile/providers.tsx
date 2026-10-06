@@ -16,8 +16,16 @@ import { MailIcon } from '@/components/icons';
 /* Mark sizing                                                           */
 /* ==================================================================== */
 
-/** The square the design gives every provider mark in a row. */
-const SLOT = 38;
+/**
+ * The square the design gives every provider mark in a row, in `--u` so it
+ * comes down with the row around it. The marks keep their own width/height
+ * attributes; `h-full w-full` on the svg overrides them, which is what lets a
+ * fixed-size glyph scale.
+ */
+const SLOT = 'calc(var(--u) * 38)';
+
+/** `Image` still needs a number for its intrinsic size. */
+const SLOT_PX = 38;
 
 /**
  * Glyph size for the vector marks.
@@ -30,10 +38,18 @@ const SLOT = 38;
  */
 const GLYPH = 28;
 
-/** Centres a mark in the slot so the icon column lines up down the group. */
-const MarkSlot: FC<{ children: ReactNode }> = ({ children }) => (
+/**
+ * Centres a mark in the slot so the icon column lines up down the group.
+ *
+ * `full` draws the child at the whole slot rather than at the glyph size —
+ * the fox is raster artwork carrying its own margin, so it needs the room the
+ * vectors do not.
+ */
+const MarkSlot: FC<{ children: ReactNode; full?: boolean }> = ({ children, full = false }) => (
   <span
-    className="flex items-center justify-center"
+    className={`flex shrink-0 items-center justify-center [&_img]:h-full [&_img]:w-full [&_svg]:h-full [&_svg]:w-full ${
+      full ? '' : '*:h-[74%] *:w-[74%]'
+    }`}
     style={{ width: SLOT, height: SLOT }}
     aria-hidden="true"
   >
@@ -91,8 +107,8 @@ const metamask: LinkableProvider = {
   // The fox is raster artwork in the design, not a vector, so it comes in as
   // an asset rather than a sibling of the marks in `brand.tsx`.
   mark: (
-    <MarkSlot>
-      <Image src={metamaskLogo} alt="" width={SLOT} height={SLOT} />
+    <MarkSlot full>
+      <Image src={metamaskLogo} alt="" width={SLOT_PX} height={SLOT_PX} />
     </MarkSlot>
   ),
 };

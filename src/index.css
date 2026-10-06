@@ -179,6 +179,26 @@ body {
    */
   html {
     color-scheme: dark;
+
+    /*
+     * Reserve the scrollbar's gutter whether or not it is in use.
+     *
+     * Without it the page jumps every time the content crosses the viewport's
+     * height — switching from Statistic to Preferences, opening a dialog (the
+     * body is locked to `overflow: hidden` while one is open), loading a row
+     * that makes a table taller. Fifteen pixels appear or vanish and the
+     * layout resettles around them.
+     *
+     * It matters more here than in most apps because `--u`, the design pixel
+     * every scaled page is built from, is a share of the viewport's width:
+     * measured, it moves from 1 to 0.9922 at 1920 as the bar appears, so the
+     * shift is not confined to the scrolling column — every size on the page
+     * changes by a fraction of a percent at once.
+     *
+     * The cost is 15px of width given up on pages short enough not to need it,
+     * which is the usual trade and the quieter half of it.
+     */
+    scrollbar-gutter: stable;
   }
 
   html[data-theme='light'],

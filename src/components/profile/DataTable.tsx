@@ -43,15 +43,17 @@ interface Props<T> {
    their own spacing, so adding one steals it back and the last column is the
    one that loses. 26 of inset at the opening edge, 55 at the closing one,
    which is where the design right-aligns the final figure. */
-/* The design's insets are generous — 26 in, 55 out — and across six columns
-   that is 486px of air. Worth it in the 1268 panel it was drawn for; on a
-   laptop's it is most of a column, so the insets close up and the table keeps
-   more of its content on screen before it starts scrolling. */
-const CELLS = 'grid items-center ps-4 pe-6 @panel:ps-6.5 @panel:pe-13.75';
+/* The design's insets — 26 in, 55 out. They used to close up to 16/24 below
+   the `@panel` query, because at a fixed 26/55 they ate most of a column on a
+   laptop's narrower panel. In `--u` they shrink with the panel by themselves,
+   so the design's own numbers hold from `lg` up and the tighter pair is left
+   to the phone, where the unit is 1px and 55 really would be too much. */
+const CELLS =
+  'grid items-center ps-[calc(var(--u)*16)] pe-[calc(var(--u)*24)] lg:ps-[calc(var(--u)*26)] lg:pe-[calc(var(--u)*55)]';
 
 /** Every status reads the same in the design — the word carries it, not a colour. */
 export const TableBadge = ({ children }: { children: ReactNode }): ReactElement => (
-  <span className="inline-flex h-6 w-fit items-center rounded-full bg-white/10 px-2.5 text-xs leading-5 text-white">
+  <span className="inline-flex h-[calc(var(--u)*24)] w-fit items-center rounded-full bg-white/10 px-[calc(var(--u)*10)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-white">
     {children}
   </span>
 );
@@ -69,17 +71,21 @@ const DataTable = <T,>({
 
   return (
     <div className={`${surface} overflow-hidden`}>
-      {title && <p className="px-6.5 pt-3.5 pb-3.75 rl-h-card text-white">{title}</p>}
+      {title && (
+        <p className="px-[calc(var(--u)*26)] pt-[calc(var(--u)*14)] pb-[calc(var(--u)*15)] rl-h-card text-white">
+          {title}
+        </p>
+      )}
 
       {/* The table keeps its width and scrolls inside the card rather than
           pushing the page sideways or crushing the columns. */}
       <div className="thin-scrollbar overflow-x-auto">
         <div style={{ minWidth }}>
-          <div className={`${CELLS} h-11.5 bg-white/10`} style={tracks}>
+          <div className={`${CELLS} h-[calc(var(--u)*46)] bg-white/10`} style={tracks}>
             {columns.map((c) => (
               <span
                 key={c.key}
-                className={`truncate text-sm leading-5 text-white/70 ${c.end ? 'text-end' : ''}`}
+                className={`truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-white/70 ${c.end ? 'text-end' : ''}`}
               >
                 {c.header}
               </span>
@@ -88,14 +94,17 @@ const DataTable = <T,>({
 
           {rows.length === 0
             ? empty && (
-                <div className="px-6 py-14 text-center text-sm leading-5 text-[#9da2b4]">
+                <div className="px-[calc(var(--u)*24)] py-[calc(var(--u)*56)] text-center text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
                   {empty}
                 </div>
               )
             : rows.map((row) => (
                 <div
                   key={rowKey(row)}
-                  className={`${CELLS} h-10.5 border-b border-white/15 backdrop-blur-[7px] last:border-b-0`}
+                  /* The blur stays at a fixed 7: it is an optical effect, not
+                     a measurement, and scaling it with the row would thin it
+                     to nothing on a laptop for no reason the design asks for. */
+                  className={`${CELLS} h-[calc(var(--u)*42)] border-b border-white/15 backdrop-blur-[7px] last:border-b-0`}
                   style={tracks}
                 >
                   {columns.map((c) => (

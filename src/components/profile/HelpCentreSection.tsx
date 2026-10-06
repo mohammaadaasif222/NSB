@@ -1,29 +1,39 @@
 import type { FC } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
-import { FieldGroup, SettingRow } from '@/components/profile/SectionShell';
+import { FieldGroup, IconTile, SettingRow } from '@/components/profile/SectionShell';
 import { LifeBuoyIcon, ShieldIcon, SparklesIcon } from '@/components/icons';
 
 const SUPPORT_EMAIL = 'support@rolluck.com';
 
-/** The pill used for a help-centre row's action. */
+/* The rows were handing `SettingRow` a bare 15px glyph where every other
+   section gives it a 38px tile, so this one sat a third of the size of the
+   rest of the account area. The tile scales itself; the glyph inside has to
+   be told to. */
+const GLYPH = 'h-[calc(var(--u)*20)] w-[calc(var(--u)*20)]';
+
+/**
+ * The pill used for a help-centre row's action.
+ *
+ * Was a blue button beside a slate one — the palette this app shipped before
+ * the design, and the only two left in the account area. Both now carry the
+ * same glass the rest of the section does, and both are sized in `--u` so they
+ * come down with the row around them.
+ */
+const PILL =
+  'rounded-full px-[calc(var(--u)*14)] py-[calc(var(--u)*6)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.5] font-medium whitespace-nowrap transition-colors';
+
 const RowLink: FC<{ href: string; children: string; external?: boolean }> = ({
   href,
   children,
   external,
 }) =>
   external ? (
-    <a
-      href={href}
-      className="whitespace-nowrap rounded-full bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
-    >
+    <a href={href} className={`rl-btn-gold ${PILL}`}>
       {children}
     </a>
   ) : (
-    <Link
-      href={href}
-      className="whitespace-nowrap rounded-full bg-slate-800 border border-slate-700 px-3.5 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-700 transition-colors"
-    >
+    <Link href={href} className={`rl-btn-ghost ${PILL}`}>
       {children}
     </Link>
   );
@@ -36,10 +46,14 @@ const HelpCentreSection: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-[calc(var(--u)*30)]">
       <FieldGroup label={t('profile.helpCentre')}>
         <SettingRow
-          icon={<LifeBuoyIcon size={15} />}
+          icon={
+            <IconTile>
+              <LifeBuoyIcon size={20} className={GLYPH} />
+            </IconTile>
+          }
           title={t('nav.support')}
           detail={SUPPORT_EMAIL}
           action={
@@ -49,12 +63,20 @@ const HelpCentreSection: FC = () => {
           }
         />
         <SettingRow
-          icon={<ShieldIcon size={15} />}
+          icon={
+            <IconTile>
+              <ShieldIcon size={20} className={GLYPH} />
+            </IconTile>
+          }
           title={t('nav.responsiblePlay')}
           action={<RowLink href="/responsible-gambling">{t('dash.viewAll')}</RowLink>}
         />
         <SettingRow
-          icon={<SparklesIcon size={15} />}
+          icon={
+            <IconTile>
+              <SparklesIcon size={20} className={GLYPH} />
+            </IconTile>
+          }
           title={t('nav.rolluckOath')}
           action={<RowLink href="/rolluck-oath">{t('dash.viewAll')}</RowLink>}
         />

@@ -8,11 +8,17 @@ import type { FC } from 'react';
  * design's sizes — a 14.33px calendar inside a 16px box, a 10.73px cross
  * inside 12 — where rescaling the shared ones would thicken their strokes
  * past what the pill can carry.
+ *
+ * Each carries a `--u` class alongside its width/height attributes. The class
+ * wins, which is what lets a glyph drawn at a fixed size come down with the
+ * row around it — see the note at the head of `SectionShell`.
  */
+const U = (n: number): string => `calc(var(--u)*${n})`;
 
 /** Request Statistics: a message bubble with the breakdown inside it. */
 export const RequestStatsIcon: FC = () => (
   <svg
+    style={{ width: U(42), height: U(42) }}
     width="42"
     height="42"
     viewBox="0 0 42 42"
@@ -35,7 +41,14 @@ export const RequestStatsIcon: FC = () => (
  * once here.
  */
 export const RequestChevronIcon: FC = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
+  <svg
+    style={{ width: U(22), height: U(22) }}
+    width="22"
+    height="22"
+    viewBox="0 0 22 22"
+    fill="currentColor"
+    aria-hidden="true"
+  >
     <path d="M8.7992 17L15 11L8.7992 5L7 6.74092L11.4016 11L7 15.2591L8.7992 17Z" />
   </svg>
 );
@@ -43,6 +56,7 @@ export const RequestChevronIcon: FC = () => (
 /** The date pill's calendar, at the 14.33px the design draws it. */
 export const RangeCalendarIcon: FC = () => (
   <svg
+    style={{ width: U(14.3333), height: U(14.3333) }}
     width="14.3333"
     height="14.3333"
     viewBox="0 0 14.3333 14.3333"
@@ -61,6 +75,7 @@ export const RangeCalendarIcon: FC = () => (
 /** The cross that would clear that range. */
 export const RangeCloseIcon: FC = () => (
   <svg
+    style={{ width: U(10.7281), height: U(10.7279) }}
     width="10.7281"
     height="10.7279"
     viewBox="0 0 10.7281 10.7279"
