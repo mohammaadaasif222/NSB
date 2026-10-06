@@ -1,9 +1,8 @@
 import type { FC } from 'react';
 
-import ButtonLoader from '@/components/ButtonLoader';
-import { TicketIcon } from '@/components/icons';
+import BonusGlassCard, { type BonusCardAction } from '@/components/bonus/BonusGlassCard';
 import { useTranslation } from '@/context/I18nContext';
-import { BONUS_DESCRIPTION_KEYS, BONUS_TITLE_KEYS } from '@/constants/bonus';
+import { BONUS_TITLE_KEYS } from '@/constants/bonus';
 import { formatRewardAmount } from '@/utils/money';
 import type { AvailableBonus } from '@/types';
 
@@ -16,130 +15,66 @@ interface Props {
 }
 
 /**
- * One campaign on offer.
+ * One campaign on offer, in the design's glass card.
  *
- * A campaign this player cannot take yet is shown with its reason rather than
- * hidden — "deposit $20 to unlock" is an offer, where a missing card is a dead
- * end and a support ticket.
+ * A campaign this player cannot take yet is shown with its reason in place of
+ * the Claim button rather than hidden — "deposit $20 to unlock" is an offer,
+ * where a missing card is a dead end and a support ticket. That is also what
+ * the design draws: the foot of the card either acts or says what it is
+ * waiting for.
  *
- * The terms are stated on the card, not behind a link. A wagering requirement
- * and a max bet are the two things that decide whether a bonus is worth taking,
- * and burying them is how a player ends up with funds they cannot withdraw.
+ * The wagering multiplier rides on the subtitle line. It is the one term that
+ * decides whether a bonus is worth taking, and the card has a single line to
+ * spend — so it gets it, rather than the list of every term that the design
+ * leaves no room for.
  */
 const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim }) => {
   const { t } = useTranslation();
 
-  const busy = busyId === bonus.id;
-  const anyBusy = busyId !== null;
+  const wagering = Number(bonus.wagering_multiplier ?? 0);
 
-  const headline = bonus.estimated_amount
-    ? formatRewardAmount(bonus.estimated_amount, currency)
-    : bonus.free_spins_count
-      ? t('bonus.spinsCount', { count: bonus.free_spins_count })
-      : bonus.match_percentage
-        ? `${bonus.match_percentage}%`
-        : '—';
+  // The cap is the honest "up to"; without one, the estimate is what this
+  // player would actually be given, and spins and percentages are neither.
+  const cap = Number(bonus.max_bonus_amount ?? 0) > 0 ? bonus.max_bonus_amount : null;
+  const worth = cap
+    ? { label: t('bonus.winUpTo'), value: formatRewardAmount(cap, currency) }
+    : bonus.estimated_amount
+      ? { label: t('bonus.winUpTo'), value: formatRewardAmount(bonus.estimated_amount, currency) }
+      : bonus.free_spins_count
+        ? {
+            label: t('bonus.youGet'),
+            value: t('bonus.spinsCount', { count: bonus.free_spins_count }),
+          }
+        : bonus.match_percentage
+          ? { label: t('bonus.youGet'), value: `${bonus.match_percentage}%` }
+          : { label: t('bonus.youGet'), value: '—' };
 
-  const terms: string[] = [];
-  if (bonus.match_percentage && bonus.estimated_amount) {
-    terms.push(t('bonus.terms.match', { percent: bonus.match_percentage }));
-  }
-  if (bonus.min_deposit_amount && Number(bonus.min_deposit_amount) > 0) {
-    terms.push(
-      t('bonus.terms.minDeposit', {
-        amount: formatRewardAmount(bonus.min_deposit_amount, currency),
-      })
-    );
-  }
-  if (bonus.max_bonus_amount && Number(bonus.max_bonus_amount) > 0) {
-    terms.push(
-      t('bonus.terms.maxBonus', { amount: formatRewardAmount(bonus.max_bonus_amount, currency) })
-    );
-  }
-  if (bonus.wagering_multiplier && Number(bonus.wagering_multiplier) > 0) {
-    terms.push(t('bonus.terms.wagering', { multiplier: Number(bonus.wagering_multiplier) }));
-  }
-  if (bonus.max_bet_size && Number(bonus.max_bet_size) > 0) {
-    terms.push(
-      t('bonus.terms.maxBet', { amount: formatRewardAmount(bonus.max_bet_size, currency) })
-    );
-  }
-  if (bonus.free_spins_count) {
-    terms.push(t('bonus.terms.spins', { count: bonus.free_spins_count }));
-  }
+  const action: BonusCardAction = bonus.claimable
+    ? {
+        kind: 'gold',
+        label: t('bonus.claim'),
+        busy: busyId === bonus.id,
+        disabled: busyId !== null,
+        onClick: () => onClaim(bonus.id),
+      }
+    : {
+        kind: 'status',
+        label: bonus.needs_deposit
+          ? t('bonus.needsDeposit')
+          : (bonus.reason ?? t('bonus.unavailable')),
+      };
 
   return (
-    <article
-      className={`flex flex-col rounded-2xl border p-4 ${
-        bonus.claimable
-          ? 'border-amber-500/40 bg-gradient-to-b from-amber-500/10 to-slate-900'
-          : 'border-slate-800 bg-slate-900'
-      }`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <span
-          className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-            bonus.claimable ? 'bg-amber-500/15 text-amber-300' : 'bg-blue-600/15 text-blue-300'
-          }`}
-          aria-hidden="true"
-        >
-          <TicketIcon size={20} />
-        </span>
-        <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-          {t(BONUS_TITLE_KEYS[bonus.type])}
-        </span>
-      </div>
-
-      <h3 className="mt-3 text-base font-bold text-white">{bonus.name}</h3>
-      <p className="mt-1 text-xs leading-relaxed text-slate-400">
-        {bonus.description || t(BONUS_DESCRIPTION_KEYS[bonus.type])}
-      </p>
-
-      <p className="mt-3 text-2xl font-extrabold text-white">{headline}</p>
-      {bonus.estimated_amount && bonus.needs_deposit === false && (
-        <p className="text-[11px] text-slate-500">{t('bonus.basedOnDeposit')}</p>
-      )}
-
-      {terms.length > 0 && (
-        <ul className="mt-3 space-y-1">
-          {terms.map((term) => (
-            <li key={term} className="flex items-start gap-1.5 text-[11px] text-slate-400">
-              <span
-                className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-slate-600"
-                aria-hidden="true"
-              />
-              {term}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="mt-auto pt-4">
-        {bonus.claimable ? (
-          <button
-            type="button"
-            onClick={() => onClaim(bonus.id)}
-            disabled={anyBusy}
-            className="flex h-10 w-full items-center justify-center rounded-xl bg-amber-500 text-xs font-bold text-slate-950 transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {busy ? <ButtonLoader /> : t('bonus.claim')}
-          </button>
-        ) : (
-          <>
-            <button
-              type="button"
-              disabled
-              className="flex h-10 w-full cursor-not-allowed items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-500"
-            >
-              {bonus.needs_deposit ? t('bonus.needsDeposit') : t('bonus.unavailable')}
-            </button>
-            {bonus.reason && (
-              <p className="mt-1.5 text-center text-[11px] text-slate-500">{bonus.reason}</p>
-            )}
-          </>
-        )}
-      </div>
-    </article>
+    <BonusGlassCard
+      imageUrl={bonus.image_url}
+      title={bonus.name}
+      subtitle={{
+        label: t(BONUS_TITLE_KEYS[bonus.type]),
+        ...(wagering > 0 && { value: `· ${t('bonus.terms.wagering', { multiplier: wagering })}` }),
+      }}
+      worth={worth}
+      action={action}
+    />
   );
 };
 

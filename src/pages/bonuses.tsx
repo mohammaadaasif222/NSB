@@ -1,102 +1,84 @@
-import { useState, type FC, type FormEvent } from 'react';
+import type { FC, ReactNode } from 'react';
 import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
-import ButtonLoader from '@/components/ButtonLoader';
+import FaqAccordion from '@/components/player/FaqAccordion';
+import SiteFooter from '@/components/player/SiteFooter';
+import BonusGlassCard from '@/components/bonus/BonusGlassCard';
 import BonusOfferCard from '@/components/bonus/BonusOfferCard';
+import BonusCodeForm from '@/components/bonus/BonusCodeForm';
+import BonusHistoryTable from '@/components/bonus/BonusHistoryTable';
 import ActiveBonusCard from '@/components/bonus/ActiveBonusCard';
-import { TicketIcon } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useBonuses } from '@/hooks/useBonuses';
-import {
-  BONUS_DESCRIPTION_KEYS,
-  BONUS_STATUS_KEYS,
-  BONUS_TITLE_KEYS,
-  BONUS_TYPES,
-} from '@/constants/bonus';
-import { formatRewardAmount } from '@/utils/money';
-import type { UserBonusStatus } from '@/types';
+import { BONUS_DESCRIPTION_KEYS, BONUS_TITLE_KEYS, BONUS_TYPES } from '@/constants/bonus';
 
-const STATUS_STYLE: Record<UserBonusStatus, string> = {
-  ACTIVE: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
-  COMPLETED: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
-  EXPIRED: 'bg-slate-800 border-slate-700 text-slate-300',
-  FORFEITED: 'bg-red-500/10 border-red-500/30 text-red-300',
-};
+/** The design's three-across grid, 24 apart, inside the 1548 column. */
+const GRID = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-[calc(var(--u)*24)] lg:items-stretch';
 
-/** What each bonus flow is — shown to a visitor who is not signed in. */
-const BonusExplainer: FC = () => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {BONUS_TYPES.map((type) => (
-        <article key={type} className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-          <span
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/15 text-blue-300"
-            aria-hidden="true"
-          >
-            <TicketIcon size={20} />
-          </span>
-          <h3 className="mt-3 text-base font-bold text-white">{t(BONUS_TITLE_KEYS[type])}</h3>
-          <p className="mt-1 text-xs leading-relaxed text-slate-400">
-            {t(BONUS_DESCRIPTION_KEYS[type])}
-          </p>
-        </article>
-      ))}
-    </div>
-  );
-};
+/** A heading over one of the sections the design does not draw but the page keeps. */
+const SubHeading: FC<{ children: ReactNode }> = ({ children }) => (
+  <h2 className="text-[20px] font-semibold leading-7 text-[#f0f1f5] lg:text-[length:max(14px,calc(var(--u)*24))] lg:leading-[calc(var(--u)*32)]">
+    {children}
+  </h2>
+);
 
 /**
  * Deposit match, free spins, bonus cash and the rest.
  *
- * Public: a signed-out visitor sees what the bonuses are and a way to sign in.
- * A player sees what they can claim, what they are working through, and what
- * they have finished. Bonuses switched off in the console are left out —
- * except awards already running, which a player must still be able to finish.
+ * Laid out as the design's Bonuses frame: the title, the offers three across
+ * in the 1548 column, then the shared FAQ and footer that close every long
+ * page in the app.
+ *
+ * Public — a signed-out visitor gets the same grid, carrying what each kind of
+ * bonus is and a way to join, because the page is worth reading before you
+ * have an account. A player gets the real campaigns, what they are working
+ * through, and what they have finished. Bonuses switched off in the console
+ * are left out, except awards already running, which a player must still be
+ * able to finish.
  */
 const BonusesPage: FC = () => {
   const { token, hydrated } = useAuth();
   const { t, locale } = useTranslation();
-  const { openLogin, openRegister } = useAuthModal();
+  const { openRegister } = useAuthModal();
   const { summary, error, busyId, refresh, claim, forfeit } = useBonuses();
-
-  const [code, setCode] = useState('');
 
   const clockOffset = summary ? new Date(summary.server_time).getTime() - Date.now() : 0;
 
-  const redeem = async (e: FormEvent): Promise<void> => {
-    e.preventDefault();
-    const couponCode = code.trim().toUpperCase();
-    if (!couponCode) {
-      return;
-    }
-    const result = await claim({ couponCode });
-    if (result) {
-      setCode('');
-    }
-  };
+  /* --- A visitor: what the bonuses are, and a way in ------------------- */
+  const visitorView = (
+    <div className={GRID}>
+      {BONUS_TYPES.map((type) => (
+        <BonusGlassCard
+          key={type}
+          title={t(BONUS_TITLE_KEYS[type])}
+          worth={{ label: t(BONUS_DESCRIPTION_KEYS[type]) }}
+          action={{ kind: 'ghost', label: t('bonus.joinToClaim'), onClick: () => openRegister() }}
+        />
+      ))}
+    </div>
+  );
 
-  const playerView = (): React.ReactNode => {
+  /* --- A player: their own bonuses ------------------------------------- */
+  const playerView = (): ReactNode => {
     if (!summary) {
       return (
-        <section className="rounded-3xl border border-slate-800 bg-slate-900 px-6 py-16 text-center">
+        <section className="rl-glass-deep rounded-[24px] px-6 py-16 text-center lg:rounded-[calc(var(--u)*34)]">
           {error ? (
             <>
-              <p className="text-sm text-slate-400">{t('bonus.loadFailed')}</p>
+              <p className="text-sm text-white/64">{t('bonus.loadFailed')}</p>
               <button
                 type="button"
                 onClick={() => void refresh()}
-                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
+                className="rl-btn-ghost mt-4 h-11 rounded-full px-6 text-xs font-semibold"
               >
                 {t('bonus.retry')}
               </button>
             </>
           ) : (
-            <p className="text-sm text-slate-500">{t('common.loading')}</p>
+            <p className="text-sm text-white/50">{t('common.loading')}</p>
           )}
         </section>
       );
@@ -104,45 +86,39 @@ const BonusesPage: FC = () => {
 
     return (
       <>
-        {/* Redeem a code. First, because a player arriving with one has come
-            here to type it and should not have to scroll past the offers. */}
-        <section className="rounded-3xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
-          <h2 className="text-sm font-bold text-white">{t('bonus.haveACode')}</h2>
-          <p className="mt-1 text-xs text-slate-400">{t('bonus.haveACodeHint')}</p>
-          <form onSubmit={redeem} className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder={t('bonus.codePlaceholder')}
-              aria-label={t('bonus.haveACode')}
-              className="h-10 flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 text-sm font-medium tracking-wide text-white placeholder:text-slate-600 focus:border-blue-500 focus:outline-none"
-            />
-            <button
-              type="submit"
-              disabled={busyId !== null || !code.trim()}
-              className="flex h-10 items-center justify-center rounded-xl bg-blue-600 px-5 text-xs font-bold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {busyId === code.trim().toUpperCase() ? <ButtonLoader /> : t('bonus.redeem')}
-            </button>
-          </form>
-        </section>
-
         {!summary.enabled && (
-          <section className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
-            <p className="text-xs text-amber-200">{t('bonus.switchedOff')}</p>
-          </section>
+          <p className="rounded-[24px] bg-[#f9d028]/10 px-5 py-4 text-xs text-[#f9d028]">
+            {t('bonus.switchedOff')}
+          </p>
         )}
 
-        {/* Active awards */}
+        {summary.available.length === 0 ? (
+          <p className="rl-glass-deep rounded-[24px] px-6 py-16 text-center text-sm text-white/50 lg:rounded-[calc(var(--u)*34)]">
+            {t('bonus.noneAvailable')}
+          </p>
+        ) : (
+          <div className={GRID}>
+            {summary.available.map((bonus) => (
+              <BonusOfferCard
+                key={bonus.id}
+                bonus={bonus}
+                currency={summary.currency}
+                busyId={busyId}
+                onClaim={(id) => void claim({ bonusId: id })}
+              />
+            ))}
+          </div>
+        )}
+
         {summary.active.length > 0 && (
-          <section>
+          <section className="space-y-4 lg:space-y-[calc(var(--u)*24)]">
             <div className="flex items-baseline justify-between gap-3">
-              <h2 className="text-lg font-bold text-white">{t('bonus.yourBonuses')}</h2>
-              <span className="text-xs text-slate-500">
+              <SubHeading>{t('bonus.yourBonuses')}</SubHeading>
+              <span className="text-xs text-white/50">
                 {t('bonus.slotsRemaining', { count: summary.slots_remaining })}
               </span>
             </div>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className={GRID}>
               {summary.active.map((award) => (
                 <ActiveBonusCard
                   key={award.id}
@@ -157,87 +133,16 @@ const BonusesPage: FC = () => {
           </section>
         )}
 
-        {/* On offer */}
-        <section>
-          <h2 className="text-lg font-bold text-white">{t('bonus.available')}</h2>
-          {summary.available.length === 0 ? (
-            <p className="mt-3 rounded-2xl border border-slate-800 bg-slate-900 px-5 py-10 text-center text-sm text-slate-500">
-              {t('bonus.noneAvailable')}
-            </p>
-          ) : (
-            <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {summary.available.map((bonus) => (
-                <BonusOfferCard
-                  key={bonus.id}
-                  bonus={bonus}
-                  currency={summary.currency}
-                  busyId={busyId}
-                  onClaim={(id) => void claim({ bonusId: id })}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+        <BonusCodeForm busyId={busyId} onRedeem={(couponCode) => claim({ couponCode })} />
 
-        {/* History */}
         {summary.history.length > 0 && (
-          <section>
-            <h2 className="text-lg font-bold text-white">{t('bonus.history')}</h2>
-            <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900">
-              <table className="w-full min-w-[560px] text-left">
-                <thead>
-                  <tr className="border-b border-slate-800">
-                    <th className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t('bonus.table.bonus')}
-                    </th>
-                    <th className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t('bonus.table.amount')}
-                    </th>
-                    <th className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t('bonus.table.status')}
-                    </th>
-                    <th className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t('bonus.table.finished')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.history.map((award) => (
-                    <tr key={award.id} className="border-b border-slate-800/60 last:border-0">
-                      <td className="px-4 py-2.5">
-                        <p className="text-xs font-medium text-white">{award.bonus.name}</p>
-                        <p className="text-[11px] text-slate-500">
-                          {t(BONUS_TITLE_KEYS[award.bonus.type])}
-                        </p>
-                      </td>
-                      <td className="px-4 py-2.5 text-xs text-slate-300">
-                        {formatRewardAmount(award.bonus_amount, summary.currency)}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span
-                          className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-                            STATUS_STYLE[award.status]
-                          }`}
-                        >
-                          {t(BONUS_STATUS_KEYS[award.status])}
-                        </span>
-                        {award.forfeit_reason && (
-                          <p
-                            className="mt-0.5 max-w-[200px] truncate text-[10px] text-slate-500"
-                            title={award.forfeit_reason}
-                          >
-                            {award.forfeit_reason}
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5 text-[11px] text-slate-500">
-                        {new Date(award.ended_at ?? award.updated_at).toLocaleDateString(locale)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <section className="space-y-4 lg:space-y-[calc(var(--u)*24)]">
+            <SubHeading>{t('bonus.history')}</SubHeading>
+            <BonusHistoryTable
+              awards={summary.history}
+              currency={summary.currency}
+              locale={locale}
+            />
           </section>
         )}
       </>
@@ -250,49 +155,28 @@ const BonusesPage: FC = () => {
         <title>{`${t('bonus.title')} · ROLLUCK`}</title>
       </Head>
 
-      <div className="mx-auto max-w-[1600px] space-y-6 pb-2">
-        <header>
-          <h1 className="text-2xl font-extrabold text-white sm:text-3xl">{t('bonus.title')}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-400">{t('bonus.subtitle')}</p>
+      {/* The design's 1548px content column, the same one the lobby and the
+          footer use; `--u` (set by PlayerLayout) scales it on a narrower
+          desktop so the three-across grid stays three across. */}
+      <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
+        <section className="space-y-5 lg:space-y-[calc(var(--u)*25)]">
+          <h1 className="rl-h-section">{t('bonus.title')}</h1>
           {token && summary && (
-            <p className="mt-1 max-w-2xl text-xs text-slate-500">
+            <p className="text-xs text-white/50">
               {t('bonus.paidTo', {
                 currency: summary.payout.currency_code,
                 network: summary.payout.network_code,
               })}
             </p>
           )}
-        </header>
 
-        {/* Nothing until the token is restored, or a signed-in player would see
-            the visitor view flash first. */}
-        {hydrated &&
-          (token ? (
-            playerView()
-          ) : (
-            <>
-              <section className="flex flex-col items-start gap-4 rounded-3xl border border-slate-800 bg-slate-900 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                <p className="text-sm text-slate-300">{t('bonus.loginPrompt')}</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => openLogin()}
-                    className="inline-flex h-10 items-center rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700"
-                  >
-                    {t('account.login')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openRegister()}
-                    className="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
-                  >
-                    {t('account.register')}
-                  </button>
-                </div>
-              </section>
-              <BonusExplainer />
-            </>
-          ))}
+          {/* Nothing until the token is restored, or a signed-in player would
+              see the visitor grid flash first. */}
+          {hydrated && (token ? playerView() : visitorView)}
+        </section>
+
+        <FaqAccordion />
+        <SiteFooter />
       </div>
     </PlayerLayout>
   );
