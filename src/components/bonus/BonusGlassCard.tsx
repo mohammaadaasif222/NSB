@@ -16,7 +16,8 @@ export type BonusCardAction =
       label: string;
       busy?: boolean;
       disabled?: boolean;
-      onClick: () => void;
+      /** Left off while a card is still placeholder content with no endpoint behind it. */
+      onClick?: () => void;
     }
   | { kind: 'status'; label: string };
 
