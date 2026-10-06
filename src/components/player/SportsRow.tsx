@@ -1,166 +1,307 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import Link from 'next/link';
+import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
 import ScrollShelf from '@/components/player/ScrollShelf';
-import {
-  BaseballIcon,
-  BasketballIcon,
-  CricketIcon,
-  FootballIcon,
-  GlobeIcon,
-  HockeyIcon,
-  HorseIcon,
-  TennisIcon,
-  type IconProps,
-} from '@/components/icons';
+
+import leagueIcon from '@/assets/lobby/league-soccer.svg';
+import crestBayern from '@/assets/lobby/crest-bayern.webp';
+import crestUnion from '@/assets/lobby/crest-union-berlin.webp';
+import soccer from '@/assets/lobby/sports/soccer.webp';
+import basketball from '@/assets/lobby/sports/basketball.webp';
+import football from '@/assets/lobby/sports/football.webp';
+import tennis from '@/assets/lobby/sports/tennis.webp';
+import esport from '@/assets/lobby/sports/esport.webp';
+import cs2 from '@/assets/lobby/sports/cs2.webp';
+import fifa from '@/assets/lobby/sports/fifa.webp';
+import cricket from '@/assets/lobby/sports/cricket.webp';
+import tableTennis from '@/assets/lobby/sports/table-tennis.webp';
+import valorant from '@/assets/lobby/sports/valorant.webp';
+import chess from '@/assets/lobby/sports/chess.webp';
+import dota2 from '@/assets/lobby/sports/dota2.webp';
+import lol from '@/assets/lobby/sports/lol.webp';
+import golf from '@/assets/lobby/sports/golf.webp';
+import live from '@/assets/lobby/sports/live.webp';
+import boxing from '@/assets/lobby/sports/boxing.webp';
+import iceHockey from '@/assets/lobby/sports/ice-hockey.webp';
+import volleyball from '@/assets/lobby/sports/volleyball.webp';
+import wrestling from '@/assets/lobby/sports/wrestling.webp';
+import sportsbook from '@/assets/lobby/sports/sportsbook.webp';
+import mma from '@/assets/lobby/sports/mma.webp';
+import lineFootball from '@/assets/lobby/player/sport-football.svg';
+import lineBasketball from '@/assets/lobby/player/sport-basketball.svg';
+import lineTennis from '@/assets/lobby/player/sport-tennis.svg';
+import lineCricket from '@/assets/lobby/player/sport-cricket.svg';
+import lineHorse from '@/assets/lobby/player/sport-horse.svg';
+import lineBaseball from '@/assets/lobby/player/sport-baseball.svg';
+import lineHockey from '@/assets/lobby/player/sport-hockey.svg';
 
 /**
  * The sportsbook teasers.
  *
  * Nothing here is live: there is no fixtures feed and no odds provider, so the
- * disciplines below are a fixed list and the matches are sample rows. The
- * lobby shows both sections as a teaser; /sports shows them on their own.
- * English-only copy on purpose — it is replaced wholesale when the real
+ * disciplines below are a fixed list and the matches are the design's sample
+ * rows. The lobby shows both sections as a teaser; /sports shows them on their
+ * own. English-only copy on purpose — it is replaced wholesale when the real
  * sportsbook lands.
  */
 
-const DISCIPLINES: { label: string; Icon: FC<IconProps> }[] = [
-  { label: 'Football', Icon: FootballIcon },
-  { label: 'Basketball', Icon: BasketballIcon },
-  { label: 'Tennis', Icon: TennisIcon },
-  { label: 'Cricket', Icon: CricketIcon },
-  { label: 'Horse Racing', Icon: HorseIcon },
-  { label: 'Baseball', Icon: BaseballIcon },
-  { label: 'Hockey', Icon: HockeyIcon },
+/* ==================================================================== */
+/* Disciplines                                                           */
+/* ==================================================================== */
+
+interface Discipline {
+  label: string;
+  art: StaticImageData;
+  /**
+   * Where the design places the artwork inside its 198×192 tile: left, top
+   * and width in design pixels. Kept per sport because the renders are not
+   * cut to a common box — the rifle is wide, the trophy narrow.
+   */
+  box: [x: number, y: number, w: number];
+}
+
+/** In the design's order, which is also the order the shelf scrolls in. */
+const DISCIPLINES: Discipline[] = [
+  { label: 'Soccer', art: soccer, box: [48, 21, 99] },
+  { label: 'Basketball', art: basketball, box: [48, 21, 99] },
+  { label: 'Football', art: football, box: [48, 21, 99] },
+  { label: 'Tennis', art: tennis, box: [46, 21, 102] },
+  { label: 'E sport', art: esport, box: [42, 18, 110] },
+  { label: 'CS2', art: cs2, box: [26, 21, 143] },
+  { label: 'FIFA', art: fifa, box: [48, 21, 99] },
+  { label: 'Cricket', art: cricket, box: [48, 21, 99] },
+  { label: 'Table Tennis', art: tableTennis, box: [48, 21, 99] },
+  { label: 'Valorant', art: valorant, box: [48, 21, 99] },
+  { label: 'Chess', art: chess, box: [48, 21, 99] },
+  { label: 'Dota 2', art: dota2, box: [38, 15, 118] },
+  { label: 'League of Legends', art: lol, box: [48, 21, 99] },
+  { label: 'Golf', art: golf, box: [43, 18, 109] },
+  { label: 'Live', art: live, box: [41, 33, 113] },
+  { label: 'Boxing', art: boxing, box: [48, 21, 99] },
+  { label: 'Ice Hockey', art: iceHockey, box: [47, 20, 101] },
+  { label: 'Volleyball', art: volleyball, box: [48, 21, 99] },
+  { label: 'Wrestling', art: wrestling, box: [45, 21, 108] },
+  { label: 'Sportsbook', art: sportsbook, box: [48, 21, 99] },
+  { label: 'MMA', art: mma, box: [35, 27, 129] },
 ];
 
 /**
- * A flag as three bands in a disc.
- *
- * Drawn rather than set as a regional-indicator emoji: Windows has no colour
- * glyphs for those and renders the two letters instead, which would leave a
- * different design on the most common desktop platform.
+ * One discipline: the design's glass tile (198×192 on desktop, 122×150 on a
+ * phone) with its 3D render placed as the design places it — as fractions of
+ * the tile, so it holds its spot at either size — and the label at the foot.
  */
-const FlagDisc: FC<{ bands: [string, string, string]; label: string }> = ({ bands, label }) => (
-  <span
-    role="img"
-    aria-label={label}
-    title={label}
-    className="block h-4 w-4 flex-shrink-0 overflow-hidden rounded-full ring-1 ring-white/20"
-  >
-    <span className="block h-1/3 w-full" style={{ background: bands[0] }} />
-    <span className="block h-1/3 w-full" style={{ background: bands[1] }} />
-    <span className="block h-1/3 w-full" style={{ background: bands[2] }} />
-  </span>
+/**
+ * The signed-in lobby's disciplines: the same tiles drawn with the design's
+ * line icons instead of the 3D renders, and its own shorter list.
+ */
+const LINE_DISCIPLINES: { label: string; icon: StaticImageData }[] = [
+  { label: 'Football', icon: lineFootball },
+  { label: 'Basketball', icon: lineBasketball },
+  { label: 'Tennis', icon: lineTennis },
+  { label: 'Cricket', icon: lineCricket },
+  { label: 'Horse Racing', icon: lineHorse },
+  { label: 'Baseball', icon: lineBaseball },
+  { label: 'Hockey', icon: lineHockey },
+];
+
+/**
+ * A discipline's glass tile — 198×192 on desktop, 122×150 on a phone — with
+ * its label at the foot. What sits above the label is the caller's: a 3D
+ * render or a line icon.
+ */
+const TileShell: FC<{ label: string; children: ReactNode }> = ({ label, children }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Link
+      href="/sports"
+      title={`${label} — ${t('common.soon')}`}
+      className="rl-liquid group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
+    >
+      {children}
+      <span className="absolute inset-x-1 bottom-[calc(var(--u)*22)] text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white lg:bottom-[calc(var(--u)*28)] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:font-semibold lg:leading-[calc(var(--u)*28)]">
+        {label}
+      </span>
+    </Link>
+  );
+};
+
+/** A tile with the discipline's 3D render, placed as the design places it. */
+const DisciplineTile: FC<{ sport: Discipline }> = ({ sport }) => {
+  const [x, y, w] = sport.box;
+
+  return (
+    <TileShell label={sport.label}>
+      <Image
+        src={sport.art}
+        alt=""
+        sizes="(max-width: 1024px) 80px, 150px"
+        className="absolute h-auto transition-transform duration-300 group-hover:-translate-y-1"
+        style={{
+          left: `${(x / 198) * 100}%`,
+          top: `${(y / 192) * 100}%`,
+          width: `${(w / 198) * 100}%`,
+        }}
+      />
+    </TileShell>
+  );
+};
+
+/** A tile with the discipline's 82px line icon, centred above the label. */
+const LineTile: FC<{ label: string; icon: StaticImageData }> = ({ label, icon }) => (
+  <TileShell label={label}>
+    <img
+      src={icon.src}
+      alt=""
+      className="absolute left-1/2 top-[calc(var(--u)*11)] h-[calc(var(--u)*82)] w-[calc(var(--u)*82)] -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-1 lg:top-[calc(var(--u)*34)]"
+    />
+  </TileShell>
 );
 
-const GERMANY: [string, string, string] = ['#111111', '#dd0000', '#ffce00'];
+/* ==================================================================== */
+/* Fixtures                                                              */
+/* ==================================================================== */
+
+interface Team {
+  name: string;
+  crest: StaticImageData;
+}
 
 interface Match {
   id: string;
   country: string;
   league: string;
-  home: string;
-  away: string;
+  home: Team;
+  away: Team;
   time: string;
   date: string;
   odds: [string, string, string];
   more: string;
 }
 
-const MATCHES: Match[] = [
-  {
-    id: 'm1',
-    country: 'Germany',
-    league: 'Bundesliga',
-    home: 'Bayern Munich',
-    away: 'Union Berlin',
-    time: '12:00 AM',
-    date: '29/10/2026',
-    odds: ['1.04', '14.00', '30.00'],
-    more: '+55',
-  },
-  {
-    id: 'm2',
-    country: 'Germany',
-    league: 'Bundesliga',
-    home: 'Bayer Leverkusen',
-    away: 'VfB Stuttgart',
-    time: '02:30 AM',
-    date: '29/10/2026',
-    odds: ['1.72', '4.10', '4.55'],
-    more: '+48',
-  },
-  {
-    id: 'm3',
-    country: 'Germany',
-    league: 'Bundesliga',
-    home: 'Borussia Dortmund',
-    away: 'RB Leipzig',
-    time: '06:00 PM',
-    date: '29/10/2026',
-    odds: ['2.05', '3.60', '3.30'],
-    more: '+61',
-  },
-  {
-    id: 'm4',
-    country: 'Germany',
-    league: 'Bundesliga',
-    home: 'Eintracht Frankfurt',
-    away: 'SC Freiburg',
-    time: '08:30 PM',
-    date: '29/10/2026',
-    odds: ['1.95', '3.75', '3.55'],
-    more: '+42',
-  },
-];
+const BAYERN: Team = { name: 'Bayern Munich', crest: crestBayern };
+const UNION: Team = { name: 'Union Berlin', crest: crestUnion };
 
-/** One outcome chip — label on the left, price on the right. */
+/** The design's sample fixture, repeated as it is there. */
+const MATCHES: Match[] = ['m1', 'm2', 'm3', 'm4'].map((id) => ({
+  id,
+  country: 'Germany',
+  league: 'Bundesliga',
+  home: BAYERN,
+  away: UNION,
+  time: '12:00 AM',
+  date: '09/19/2026',
+  odds: ['1.04', '14.00', '30.00'],
+  more: '+55',
+}));
+
+/** One outcome chip — the label on the left, the price on the right. */
 const Odd: FC<{ label: string; price: string }> = ({ label, price }) => (
-  <span className="rl-glass rl-glass-hover flex h-8 min-w-0 flex-1 items-center justify-between gap-1 rounded-lg px-2">
-    <span className="truncate text-[10px] text-white/40">{label}</span>
-    <span className="text-[11px] font-semibold tabular-nums text-white/85">{price}</span>
+  <span className="flex h-[calc(var(--u)*40)] min-w-0 flex-1 items-center justify-between gap-[calc(var(--u)*4)] rounded-lg bg-[#292d2e] px-[calc(var(--u)*8)] transition-colors group-hover:bg-[#30353a]">
+    <span className="truncate text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#6a7287]">
+      {label}
+    </span>
+    <span className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] tabular-nums text-[#f0f1f5]">
+      {price}
+    </span>
   </span>
 );
 
+const TeamColumn: FC<{ team: Team }> = ({ team }) => (
+  <span className="flex min-w-0 flex-col items-center gap-[calc(var(--u)*8)]">
+    <Image src={team.crest} alt="" className="h-[calc(var(--u)*48)] w-[calc(var(--u)*48)]" />
+    <span className="w-full truncate text-center text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-white">
+      {team.name}
+    </span>
+  </span>
+);
+
+/** The design's 423×240 fixture card; a phone shows one at full width. */
 const MatchCard: FC<{ match: Match }> = ({ match }) => (
   <Link
     href="/sports"
-    className="rl-glass rl-glass-hover flex w-[248px] flex-shrink-0 flex-col gap-2.5 rounded-xl p-3"
+    className="rl-liquid group flex flex-col rounded-[calc(var(--u)*34)] px-px pb-[calc(var(--u)*18)] pt-[calc(var(--u)*18)] transition-colors hover:bg-white/[0.11] lg:px-[calc(var(--u)*19)]"
   >
-    <span className="flex items-center gap-1.5 text-[10px] text-white/40">
-      <GlobeIcon size={11} />
-      <span className="truncate">
-        {match.country} • {match.league}
+    <span className="flex h-[calc(var(--u)*36)] items-start justify-center gap-[calc(var(--u)*8)] pb-[calc(var(--u)*12)]">
+      <img src={leagueIcon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
+      <span className="flex items-center truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold leading-[calc(var(--u)*21)] text-[#b3bec1]">
+        {match.country}
+        <span
+          className="mx-1.5 h-[calc(var(--u)*4)] w-[calc(var(--u)*4)] flex-shrink-0 rounded-full bg-white"
+          aria-hidden="true"
+        />
+        {match.league}
       </span>
     </span>
 
-    <span className="grid grid-cols-3 items-start gap-1 text-center">
-      <span className="flex min-w-0 flex-col items-center gap-1.5">
-        <FlagDisc bands={GERMANY} label={match.country} />
-        <span className="line-clamp-2 text-[10.5px] leading-tight text-white/80">{match.home}</span>
+    <span className="mt-[calc(var(--u)*22)] grid grid-cols-[1fr_calc(var(--u)*107)_1fr] items-start gap-[calc(var(--u)*4)] px-[calc(var(--u)*16)]">
+      <TeamColumn team={match.home} />
+      <span className="flex flex-col items-center pt-[calc(var(--u)*12)]">
+        <span className="whitespace-nowrap text-[length:max(min(11px,24px),calc(var(--u)*24))] font-bold leading-[calc(var(--u)*32)] text-white">
+          {match.time}
+        </span>
+        <span className="pt-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] tabular-nums text-[#b3bec1]">
+          {match.date}
+        </span>
       </span>
-      <span className="flex flex-col items-center gap-1">
-        <span className="text-[12px] font-semibold text-white">{match.time}</span>
-        <span className="text-[9.5px] tabular-nums text-white/35">{match.date}</span>
-      </span>
-      <span className="flex min-w-0 flex-col items-center gap-1.5">
-        <FlagDisc bands={GERMANY} label={match.country} />
-        <span className="line-clamp-2 text-[10.5px] leading-tight text-white/80">{match.away}</span>
-      </span>
+      <TeamColumn team={match.away} />
     </span>
 
-    <span className="text-[9.5px] uppercase tracking-wide text-white/30">1x2</span>
+    <span className="pb-[calc(var(--u)*6)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#849194]">
+      1x2
+    </span>
 
-    <span className="flex items-center gap-1.5">
+    <span className="flex items-center gap-[calc(var(--u)*8)] px-[calc(var(--u)*12)]">
       <Odd label="1" price={match.odds[0]} />
       <Odd label="draw" price={match.odds[1]} />
       <Odd label="2" price={match.odds[2]} />
-      <span className="rl-glass flex h-8 flex-shrink-0 items-center rounded-lg px-2 text-[11px] font-semibold text-white/50">
+      <span className="flex h-[calc(var(--u)*40)] flex-shrink-0 items-center rounded-lg bg-[#292d2e] px-[calc(var(--u)*12)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#6a7287]">
         {match.more}
       </span>
     </span>
   </Link>
+);
+
+/** One fixture across on a phone, three and a half at the design's width. */
+const LIVE_TRACK =
+  'rl-shelf rl-track flex [--cols:1] [--gap:calc(var(--u)*11)] md:[--cols:2] lg:[--cols:3.5] lg:[--gap:calc(var(--u)*27)]';
+
+/* ==================================================================== */
+/* The rows                                                              */
+/* ==================================================================== */
+
+interface ShelfProps {
+  /** "View all" destination; omitted on /sports itself. */
+  viewAll?: string;
+}
+
+/**
+ * The disciplines shelf. `line` is the signed-in lobby's version, with line
+ * icons; the default has the 3D renders.
+ */
+export const SportsShelf: FC<ShelfProps & { variant?: '3d' | 'line' }> = ({
+  viewAll,
+  variant = '3d',
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll} paged>
+      {variant === 'line'
+        ? LINE_DISCIPLINES.map((sport) => <LineTile key={sport.label} {...sport} />)
+        : DISCIPLINES.map((sport) => <DisciplineTile key={sport.label} sport={sport} />)}
+    </ScrollShelf>
+  );
+};
+
+/** The live fixtures shelf. */
+export const LiveGamesShelf: FC<ShelfProps> = ({ viewAll }) => (
+  <ScrollShelf id="live-games" title="Live Games" href={viewAll} track={LIVE_TRACK}>
+    {MATCHES.map((m) => (
+      <MatchCard key={m.id} match={m} />
+    ))}
+  </ScrollShelf>
 );
 
 interface Props {
@@ -171,31 +312,14 @@ interface Props {
   standalone?: boolean;
 }
 
+/** Both sportsbook teasers together, as the signed-out lobby and /sports show them. */
 const SportsRow: FC<Props> = ({ standalone = false }) => {
-  const { t } = useTranslation();
   const viewAll = standalone ? undefined : '/sports';
 
   return (
     <>
-      <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll}>
-        {DISCIPLINES.map(({ label, Icon }) => (
-          <Link
-            key={label}
-            href="/sports"
-            title={`${label} — ${t('common.soon')}`}
-            className="rl-glass rl-glass-hover flex h-[92px] w-[118px] flex-shrink-0 flex-col items-center justify-center gap-2.5 rounded-xl text-white/70 hover:text-white sm:w-[130px]"
-          >
-            <Icon size={26} />
-            <span className="text-[11.5px] font-medium">{label}</span>
-          </Link>
-        ))}
-      </ScrollShelf>
-
-      <ScrollShelf id="live-games" title="Live Games" href={viewAll}>
-        {MATCHES.map((m) => (
-          <MatchCard key={m.id} match={m} />
-        ))}
-      </ScrollShelf>
+      <SportsShelf viewAll={viewAll} />
+      <LiveGamesShelf viewAll={viewAll} />
     </>
   );
 };

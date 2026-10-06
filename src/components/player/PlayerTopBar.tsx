@@ -2,12 +2,22 @@ import { useCallback, useEffect, useRef, useState, type FC, type ReactNode } fro
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import logo from '@/assets/logo.png';
+import wordmark from '@/assets/lobby/footer/logo.webp';
+import mobileLogo from '@/assets/lobby/rail/mobile-logo.svg';
+import menuGlyph from '@/assets/lobby/rail/bar-menu.svg';
+import searchGlyph from '@/assets/lobby/rail/bar-search.svg';
+import walletGlyph from '@/assets/lobby/rail/bar-wallet.svg';
+import giftGlyph from '@/assets/lobby/rail/bar-gift.svg';
+import bellGlyph from '@/assets/lobby/rail/bar-bell.svg';
+import chatGlyph from '@/assets/lobby/rail/bar-chat.svg';
+import profileChevron from '@/assets/lobby/rail/bar-chevron-profile.svg';
+import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useSupportChat } from '@/context/SupportChatContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
 import BalanceMenu from '@/components/player/BalanceMenu';
@@ -20,23 +30,12 @@ import NotificationPanel from '@/components/player/NotificationPanel';
 import ChatPanel from '@/components/player/ChatPanel';
 import RewardPanel from '@/components/player/RewardPanel';
 import GameSearchModal from '@/components/player/GameSearchModal';
-import {
-  BellIcon,
-  ChatIcon,
-  ChevronDownIcon,
-  GiftIcon,
-  MenuIcon,
-  SearchIcon,
-  WalletIcon,
-} from '@/components/icons';
-import { fullNameOf, initialsOf } from '@/types/profile';
+import { fullNameOf } from '@/types/profile';
 
 /** Which header tray is showing, if any. */
 type HeaderPanel = 'notifications' | 'chat' | 'rewards' | null;
 
 interface Props {
-  /** Opens the mobile drawer. Ignored at lg and above. */
-  onOpenMenu: () => void;
   /** Icon-rail state, mirrored here so the toggle button can show it. */
   collapsed: boolean;
   /** Flips the icon-rail collapse. Ignored below lg — there is no rail there. */
@@ -52,7 +51,7 @@ interface Props {
  * the order they are written in). Each usage supplies its own instead.
  */
 const ICON_BUTTON =
-  'h-[38px] w-[38px] items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/70 transition-colors hover:border-white/20 hover:bg-white/[0.08] hover:text-white';
+  'h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/80 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]';
 
 interface IconButtonProps {
   label: string;
@@ -87,31 +86,29 @@ const IconButton: FC<IconButtonProps> = ({
 /**
  * Player-app header.
  *
- * A floating pill of dark glass, inset from the viewport on every side, so the
- * lobby artwork runs underneath it rather than stopping at its edge. The
- * wordmark sits at the far left so it lines up over the nav rail below.
+ * Desktop: the design's 80px glass bar, floating beside the rail rather than
+ * above it, so the lobby artwork runs underneath. It carries what the design
+ * shows — the rail toggle, the wordmark, search, language, the winners strip,
+ * and Login / Register. Phone: a full-width bar with the small mark, Login and
+ * Register centred, and search at the end; the drawer opens from the tab bar.
  *
- * Signed out, the bar carries exactly what the design shows — brand, search,
- * winners, Login and Register. The rail-collapse toggle and the language
- * picker are signed-in chrome; a visitor reaches the language picker from the
- * footer instead.
- *
- * Three clusters on one row — brand and search at the start, the winners strip
+ * Three clusters on one row — brand and tools at the start, the winners strip
  * centred, the player's own controls at the end. The centre cluster takes the
  * leftover width and scrolls inside it, so a long locale in the right cluster
  * shortens the strip instead of pushing the row out of shape.
  *
  * Signed in, the wallet joins the centre and the strip stands down below
- * `xl` — balance and deposit are controls, the strip is decoration, and at
+ * `2xl` — balance and deposit are controls, the strip is decoration, and at
  * that width only one of them fits.
  */
-const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) => {
+const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const { token, logout } = useAuth();
   const { me, updateMe } = useMe();
   const { theme, applyTheme } = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
   const { internalChatEnabled } = useSupportChat();
+  const { openLogin, openRegister } = useAuthModal();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
@@ -154,15 +151,24 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex-shrink-0 px-3 pt-3 lg:pt-4">
-        <div className="rl-glass-dark relative flex h-14 items-center gap-2 rounded-[22px] pl-2 pr-2 sm:h-[62px] sm:rounded-[28px] sm:pl-[18px] sm:pr-[13px]">
-          {/* --- Brand and search ---------------------------------------- */}
+      {/* Phone: the full-width bar along the top. Desktop: the design's 80px
+          glass bar, floating beside the rail. Sized in `--u` (PlayerLayout). */}
+      <header className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]">
+        <div className="relative flex h-[66px] items-center gap-2 border-b border-white/[0.06] bg-black/40 px-4 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:gap-[calc(var(--u)*20)] lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.09)]">
+          {/* --- Brand, search, language --------------------------------- */}
+          {/* Collapses the rail to icons. The phone opens its drawer from the
+              tab bar instead, so this is desktop only. */}
           <IconButton
-            label={t('nav.openMenu')}
-            onClick={onOpenMenu}
-            className="inline-flex lg:hidden"
+            label={collapsed ? t('nav.expand') : t('nav.collapse')}
+            onClick={onToggleCollapsed}
+            aria-pressed={collapsed}
+            className="hidden lg:inline-flex"
           >
-            <MenuIcon size={17} />
+            <img
+              src={menuGlyph.src}
+              alt=""
+              className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
+            />
           </IconButton>
 
           <Link
@@ -171,87 +177,119 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
             aria-label="ROLLUCK"
             title="ROLLUCK"
           >
-            <Image src={logo} alt="ROLLUCK" className="h-7 w-auto sm:h-[35px]" priority />
+            <img src={mobileLogo.src} alt="ROLLUCK" className="h-[39px] w-[34px] lg:hidden" />
+            <Image
+              src={wordmark}
+              alt="ROLLUCK"
+              sizes="230px"
+              priority
+              className="hidden h-auto w-[calc(var(--u)*228)] lg:block"
+            />
           </Link>
 
           <IconButton
             label={t('search.title')}
             onClick={() => setSearchOpen(true)}
-            className="ml-[14px] hidden sm:inline-flex"
+            className={`inline-flex lg:order-none ${token ? 'order-2' : 'order-last'}`}
           >
-            <SearchIcon size={17} strokeWidth={1.8} />
+            <img
+              src={searchGlyph.src}
+              alt=""
+              className="h-[18px] w-[18px] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+            />
           </IconButton>
 
-          {/* Desktop equivalent of the hamburger: collapses the rail to icons
-              instead of opening a drawer. */}
-          {token && (
-            <IconButton
-              label={collapsed ? t('nav.expand') : t('nav.collapse')}
-              onClick={onToggleCollapsed}
-              aria-pressed={collapsed}
-              className="hidden lg:inline-flex"
-            >
-              <MenuIcon size={17} />
-            </IconButton>
-          )}
+          <div className="hidden lg:block">
+            <LanguagePicker iconOnly />
+          </div>
 
           {/* --- Centre: winners, and the wallet once signed in ----------- */}
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+          <div
+            className={`order-1 flex min-w-0 flex-1 items-center gap-2 lg:order-none ${
+              token ? 'justify-start lg:justify-center' : 'justify-center'
+            }`}
+          >
+            {/* Signed in: the balance and the wallet, centred in the bar. */}
             {token && (
-              <div className="flex flex-shrink-0 items-center gap-2">
+              <div className="flex min-w-0 items-center gap-1.5 lg:gap-[calc(var(--u)*16)]">
                 <BalanceMenu onOpenWallet={() => setSettingsOpen(true)} />
                 <button
                   type="button"
                   onClick={() => setWalletOpen(true)}
                   aria-haspopup="dialog"
                   aria-expanded={walletOpen}
-                  className="rl-glass rl-glass-hover flex h-[38px] items-center gap-2 rounded-full pl-1.5 pr-3 sm:pr-3.5"
+                  aria-label={t('nav.wallet')}
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center gap-[calc(var(--u)*5)] rounded-full bg-[#f9d028] text-[#07080a] transition-[filter] hover:brightness-110 lg:h-[calc(var(--u)*48)] lg:w-auto lg:px-[calc(var(--u)*18)]"
                 >
-                  <span
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#fcd535]/15 text-[#fcd535]"
-                    aria-hidden="true"
-                  >
-                    <WalletIcon size={15} />
-                  </span>
-                  <span className="hidden whitespace-nowrap text-[12.5px] font-medium text-white sm:block">
+                  <img
+                    src={walletGlyph.src}
+                    alt=""
+                    className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+                  />
+                  <span className="hidden whitespace-nowrap text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] lg:block">
                     {t('nav.wallet')}
                   </span>
                 </button>
               </div>
             )}
 
-            <div
-              className={
-                token
-                  ? 'hidden min-w-0 xl:flex xl:flex-1'
-                  : 'hidden min-w-0 md:flex md:flex-1 xl:absolute xl:inset-y-0 xl:left-1/2 xl:max-w-[560px] xl:-translate-x-1/2 xl:items-center'
-              }
-            >
-              <TopWinnersTicker />
-            </div>
+            {/* Signed out, the winners ride in the bar; signed in they have a
+                row of their own under it. */}
+            {!token && (
+              <div className="hidden min-w-0 lg:flex">
+                <TopWinnersTicker />
+              </div>
+            )}
+
+            {/* Phone, signed out: the design centres Login and Register. */}
+            {!token && (
+              <div className="flex items-center gap-1.5 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => openLogin()}
+                  className="inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] font-bold leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
+                >
+                  {t('account.login')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openRegister()}
+                  className="inline-flex h-10 items-center rounded-full bg-[#f9d028] px-[11px] text-[14px] font-bold leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
+                >
+                  {t('account.register')}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* --- Player controls ----------------------------------------- */}
-          <div className="flex flex-shrink-0 items-center gap-2">
-            {token && <LanguagePicker iconOnly />}
-
+          <div className="order-3 flex flex-shrink-0 items-center gap-1.5 min-[400px]:gap-2.5 lg:order-none lg:gap-[calc(var(--u)*20)]">
             {token && (
               <>
+                {/* Desktop: the design's black "Reward" pill. Phone: a gift
+                    disc at the end of the bar (after search and the bell). */}
                 <HeaderPopover
                   open={panel === 'rewards'}
                   onClose={closePanel}
                   label={t('nav.rewards')}
-                  className="hidden sm:block"
+                  className="order-2 lg:order-none"
                   trigger={
                     <button
                       type="button"
                       onClick={() => togglePanel('rewards')}
                       aria-haspopup="dialog"
                       aria-expanded={panel === 'rewards'}
-                      className="inline-flex h-[38px] items-center gap-1.5 rounded-full border border-[#fcd535]/30 bg-[#fcd535]/10 px-3 text-[12px] font-medium text-[#fcd535] transition-colors hover:bg-[#fcd535]/20"
+                      aria-label={t('nav.rewards')}
+                      className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rounded-full border border-white/10 bg-black/40 text-[#f0f1f5] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-auto lg:border-0 lg:bg-[#07080a] lg:px-[calc(var(--u)*19)]"
                     >
-                      <GiftIcon size={15} />
-                      {t('nav.rewards')}
+                      <img
+                        src={giftGlyph.src}
+                        alt=""
+                        className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+                      />
+                      <span className="hidden text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*28)] lg:block">
+                        {t('nav.rewards')}
+                      </span>
                     </button>
                   }
                 >
@@ -262,7 +300,6 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
                   open={panel === 'notifications'}
                   onClose={closePanel}
                   label={t('nav.notifications')}
-                  className="hidden sm:block"
                   trigger={
                     <IconButton
                       label={t('nav.notifications')}
@@ -270,9 +307,13 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
                       aria-expanded={panel === 'notifications'}
                       className="relative inline-flex"
                     >
-                      <BellIcon size={17} />
+                      <img
+                        src={bellGlyph.src}
+                        alt=""
+                        className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+                      />
                       <span
-                        className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-[#fcd535]"
+                        className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-[#fcd535] lg:right-[calc(var(--u)*13)] lg:top-[calc(var(--u)*13)]"
                         aria-hidden="true"
                       />
                     </IconButton>
@@ -289,7 +330,7 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
                     open={panel === 'chat'}
                     onClose={closePanel}
                     label={t('nav.liveChat')}
-                    className="hidden sm:block"
+                    className="hidden lg:block"
                     trigger={
                       <IconButton
                         label={t('nav.liveChat')}
@@ -297,7 +338,11 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
                         aria-expanded={panel === 'chat'}
                         className="inline-flex"
                       >
-                        <ChatIcon size={17} />
+                        <img
+                          src={chatGlyph.src}
+                          alt=""
+                          className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
+                        />
                       </IconButton>
                     }
                   >
@@ -308,36 +353,33 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
             )}
 
             {token ? (
-              <div className="relative" ref={ref}>
+              // Below `sm` the design's bar has no avatar; the menu drawer
+              // carries Profile and Logout there (see PlayerSidebar).
+              <div className="relative order-3 hidden sm:block lg:order-none" ref={ref}>
                 <button
                   type="button"
                   onClick={() => setMenuOpen((v) => !v)}
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
                   aria-label={name || t('account.account')}
-                  className="rl-glass rl-glass-hover flex h-[38px] items-center gap-1.5 rounded-full pl-1.5 pr-2.5"
+                  className="flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*11)] rounded-full border border-white/10 bg-black/40 backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-auto lg:pl-[calc(var(--u)*8)] lg:pr-[calc(var(--u)*12)]"
                 >
-                  {me?.avatar_url ? (
-                    <img
-                      src={me.avatar_url}
-                      alt=""
-                      className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7c5cff] to-[#4a3bd6] text-[10px] font-bold text-white">
-                      {initialsOf(me)}
-                    </span>
-                  )}
-                  <ChevronDownIcon
-                    size={12}
-                    className={`text-white/45 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+                  <img
+                    src={me?.avatar_url || defaultAvatar.src}
+                    alt=""
+                    className="h-7 w-7 flex-shrink-0 rounded-full bg-[#666666] object-cover lg:h-[calc(var(--u)*32)] lg:w-[calc(var(--u)*32)] lg:rounded-[calc(var(--u)*4)]"
+                  />
+                  <img
+                    src={profileChevron.src}
+                    alt=""
+                    className={`hidden h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] transition-transform lg:block ${menuOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
 
                 {menuOpen && (
                   <div
                     role="menu"
-                    className="rl-menu absolute right-0 top-12 z-40 w-52 overflow-hidden rounded-2xl py-1"
+                    className="rl-menu absolute right-0 top-[calc(100%+8px)] z-40 w-52 overflow-hidden rounded-2xl py-1"
                   >
                     {me && (
                       <div className="border-b border-white/[0.08] px-3 py-2">
@@ -382,20 +424,22 @@ const PlayerTopBar: FC<Props> = ({ onOpenMenu, collapsed, onToggleCollapsed }) =
                 )}
               </div>
             ) : (
-              <>
-                <Link
-                  href="/auth/login"
-                  className="inline-flex h-[37px] items-center rounded-full border border-white/[0.06] bg-[#08090b] px-4 text-[13px] font-medium text-white transition-colors hover:bg-[#15171c] sm:px-[22px] sm:text-[14px]"
+              <div className="hidden items-center gap-[calc(var(--u)*9)] lg:flex">
+                <button
+                  type="button"
+                  onClick={() => openLogin()}
+                  className="inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*108)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#07080a] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
-                </Link>
-                <Link
-                  href="/auth/register"
-                  className="rl-btn-gold inline-flex h-[37px] items-center rounded-full px-4 text-[13px] font-medium sm:px-[27px] sm:text-[14px]"
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openRegister()}
+                  className="inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*148)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
-                </Link>
-              </>
+                </button>
+              </div>
             )}
           </div>
         </div>

@@ -2,12 +2,98 @@
    Vite index.html loaded — Next.js compiles this through PostCSS instead. */
 @import 'tailwindcss';
 
+/* One design pixel. The lobby sets it from its own width — 1px at the
+   design's 1548px content column, proportionally less on a narrower desktop,
+   1px on a phone — and its sections size themselves in multiples of it, so a
+   narrower screen shows the same page scaled rather than reflowed taller.
+
+   Registered as a length so it is resolved once, where it is set, and
+   inherited as plain pixels: unregistered, a `cqw` inside it would be
+   re-resolved against every nested container down the tree (each game tile
+   is one). Anywhere it is not set it is simply 1px. */
+@property --u {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 1px;
+}
+
+/* ==================================================================== */
+/* Container sizes the footer lays itself out against.                   */
+/*                                                                       */
+/* Registered here rather than written inline as `@min-[960px]:` because */
+/* Tailwind orders arbitrary container variants BEFORE the named ones.   */
+/* An `@min-[960px]:grid-cols-…` is emitted above `@xl:grid-cols-3`, so  */
+/* at any width where both match the narrower rule loses the cascade and */
+/* the layout silently stays three columns. Sizes taken from the theme   */
+/* sort by their value, which puts these after `@xl` where they belong.  */
+/*                                                                       */
+/* `foot` is where the footer takes the design's desktop shape at all —  */
+/* five link columns, the wordmark row, the payments band on one line.   */
+/* `foot-wide` is the little further the four addresses need before they */
+/* will sit in a row without an ellipsis. Both measured against the      */
+/* rendered footer rather than guessed: the addresses stop clipping at   */
+/* 980, so the switch is at 1000 and carries 20px of slack.              */
+/* ==================================================================== */
+/* `panel` is the account panel's own width, not the window's. The design      */
+/* draws that panel at 1268 and a 14" laptop hands it about 740 once the      */
+/* shell's shelf and the account rail have taken their 492 — so the sections  */
+/* inside have to know which of those they are living in, and the window      */
+/* cannot tell them.                                                          */
+@theme {
+  --container-foot: 60rem;
+  --container-foot-wide: 62.5rem;
+  --container-panel: 61.25rem;
+  --container-acct: 90rem;
+
+  /* The legal documents are the one place the design leaves Onest — their body
+     copy is set in Rubik, Regular and Bold. Registered so `font-rubik` carries
+     the same fallback chain as the page font rather than dropping to Arial
+     while the webfont is in flight. */
+  --font-rubik: 'Rubik', 'Onest', 'Poppins', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* --- Laptop scale ---------------------------------------------------------
+ *
+ * The design is drawn once, at 1920. A laptop reports about 1266 CSS pixels —
+ * not because its panel is smaller, but because Windows scales a 14" screen so
+ * its text stays legible — so the page is handed two thirds of the width every
+ * number in the design assumes.
+ *
+ * Opening the same frame in Figma's own preview on that laptop shrinks all of
+ * it by 0.658, and matching that exactly would put body copy at 9px. Measured
+ * against that preview, the boxes already land where it puts them — the content
+ * column renders 1006 against its 1016, a card 493 against its 503. What did
+ * not come down with them is the furniture: the rail, the section titles and
+ * the panel insets all stayed at full size, which is what makes the page read
+ * zoomed in. Those step down by about a fifth here.
+ *
+ * 1536 is the switch: the narrowest viewport that still gives the 1544 content
+ * column its whole width, and therefore the point below which the design's own
+ * measurements stop being true.
+ */
+:root {
+  --rail-expanded: 180px;
+
+  /* Body copy moves least of anything here — 14 is already near the floor for
+     this palette on a near-black stage, so it gives up a single pixel. */
+  --text-sm: 0.8125rem;
+}
+
+@media (width >= 96rem) {
+  :root {
+    --rail-expanded: 205px;
+    --text-sm: 0.875rem;
+  }
+}
+
 body {
   margin: 0;
   padding: 0;
-  /* Poppins is the design's typeface; the stack degrades to the platform UI
-     font if the webfont is blocked or still in flight. */
+  /* Onest is the design's typeface — every text node in the Figma file is set
+     in it. The stack degrades through Poppins, which this app shipped before,
+     to the platform UI font if the webfont is blocked or still in flight. */
   font-family:
+    'Onest',
     'Poppins',
     ui-sans-serif,
     system-ui,
@@ -74,6 +160,58 @@ body {
   input:disabled,
   textarea:disabled {
     cursor: not-allowed;
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Controls the browser draws for us, not the ones we draw.          */
+  /* ---------------------------------------------------------------- */
+
+  /*
+   * A `<select>`'s option list is painted by the OS, outside the page, and
+   * nothing in a class reaches it. With no scheme declared the browser assumes
+   * light and paints a white list — then our near-white option colour lands on
+   * it and the choices read as greyed out. Declaring the scheme is the only
+   * thing that moves that popup, and it takes the date picker, the spell-check
+   * menu and the default scrollbars with it.
+   *
+   * Two of the eight themes are genuinely light. `contrast` is not — it is
+   * white on black — so it stays with the rest.
+   */
+  html {
+    color-scheme: dark;
+  }
+
+  html[data-theme='light'],
+  html[data-theme='white'] {
+    color-scheme: light;
+  }
+
+  /*
+   * Chromium will take an option's background from the select when that
+   * background is opaque. Ours are glass on purpose — `rl-modal-field` is 5%
+   * white — so there is nothing opaque to take, and the list falls back to
+   * whatever the browser had in mind. Name the colour.
+   */
+  html:not([data-theme='light']):not([data-theme='white']) option {
+    background-color: #16181d;
+    color: #f0f1f5;
+  }
+
+  /*
+   * The number spinner is dead weight here and lands on top of what the field
+   * already puts at its end — the "$" in the limit dialog, the figure in the
+   * budget calculator. Arrow keys still step the value; only the buttons go.
+   */
+  input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
   }
 }
 
@@ -796,9 +934,15 @@ html:not([data-theme='dark']) .border-blue-600 {
   --rl-text-3: rgba(255, 255, 255, 0.5);
   --rl-text-4: rgba(255, 255, 255, 0.34);
 
-  /* The one accent: the Register / Place bet yellow. */
-  --rl-gold: #fcd535;
-  --rl-gold-hi: #ffdd52;
+  /* The one accent: the Register / Place bet yellow.
+     #f9d028 is the design's Primary 1, read off its own nodes — the Affiliate
+     page's Change and Collect buttons and the Responsible Gambling panel's
+     "Set Gambling Limit" all declare it. This token feeds `rl-btn-gold` and
+     nothing else, so the change is to gold buttons only; the ~38 hardcoded
+     #fcd535 accents elsewhere in the app are left alone, because there is no
+     design evidence for each of them one way or the other. */
+  --rl-gold: #f9d028;
+  --rl-gold-hi: #ffdb45;
   --rl-green: #35d07f;
   --rl-red: #ef4462;
 }
@@ -846,6 +990,55 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+/* The lobby's section cards: a lighter frosted pane than rl-glass-dark,
+   brightest at the leading edge and fading toward the artwork. */
+@utility rl-glass-card {
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.07));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: linear-gradient(100deg, #313236, #1c1d20);
+  }
+}
+
+/* The game card's silhouette, traced from the design's own shape (198x261):
+   23px corners, and a step bitten out of the top-right corner for the
+   favourite heart to sit in. One mask, stretched over the card — the card
+   keeps the design's aspect ratio, so the stretch is always uniform. */
+@utility rl-card-shape {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 198 261'%3E%3Cpath d='M141.357 0C151.851 0 160.357 8.59637 160.357 19.0898C160.357 29.4845 168.784 38 179.179 38C189.573 38 198 46.4266 198 56.8213L198 238C198 250.703 187.703 261 175 261L23 261C10.2975 261 0 250.703 0 238L0 23C0 10.2975 10.2975 0 23 0L141.357 0Z'/%3E%3C/svg%3E")
+    0 0 / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 198 261'%3E%3Cpath d='M141.357 0C151.851 0 160.357 8.59637 160.357 19.0898C160.357 29.4845 168.784 38 179.179 38C189.573 38 198 46.4266 198 56.8213L198 238C198 250.703 187.703 261 175 261L23 261C10.2975 261 0 250.703 0 238L0 23C0 10.2975 10.2975 0 23 0L141.357 0Z'/%3E%3C/svg%3E")
+    0 0 / 100% 100% no-repeat;
+}
+
+/* The design's "Liquid Glass – Clear": a faint white wash over a blurred
+   backdrop, a hairline catching the light along the top edge, and a soft
+   drop shadow. The lobby's tiles, plates, fixture cards and round arrows. */
+@utility rl-liquid {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 8px 40px rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+}
+
+/* The design's "Liquid Glass – Regular": the darker pane the welcome banner
+   and the crash preview sit on — nearly the stage colour, a bright hairline
+   at the rim, and the backdrop blurred through it. */
+@utility rl-glass-deep {
+  background: rgba(10, 11, 13, 0.62);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.11),
+    0 8px 40px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+}
+
 /* A panel that also reacts to the pointer — tiles, nav rows, chips. */
 @utility rl-glass-hover {
   transition:
@@ -867,6 +1060,403 @@ html:not([data-theme='dark']) .border-blue-600 {
   backdrop-filter: blur(18px) saturate(140%);
 }
 
+/* The same lifted state, in the accent: the account rail's selected tab.
+   A pane of tinted glass rather than a flat fill — a gradient so the surface
+   catches light unevenly, a lit top edge for thickness, and a soft bloom
+   around it so the selection floats above the rail instead of sitting in it. */
+@utility rl-glass-gold {
+  background: linear-gradient(180deg, rgba(252, 213, 53, 0.17), rgba(252, 213, 53, 0.05));
+  border: 1px solid rgba(252, 213, 53, 0.45);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 0 24px -4px rgba(252, 213, 53, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: linear-gradient(180deg, rgba(58, 49, 16, 0.96), rgba(35, 31, 16, 0.96));
+  }
+}
+
+/* --- Account rail rows ----------------------------------------------- */
+/* Traced from the Figma "Account sidebar" node. The design stacks a
+   colour-burn wash, a flat tint and a screen pass to land on a single value —
+   #191A1A over the stage — which is white at 7.5%. Carried as the tint rather
+   than the flattened grey so a row still reads correctly if it is ever laid
+   over something other than the stage. A hair above `--rl-glass-2`, and
+   deliberately so: the token is the panel value, this is the rail's.
+
+   No border and no backdrop blur: the design draws neither, and the rail sits
+   on the page rather than over artwork, so there is nothing for a blur to do. */
+@utility rl-rail-row {
+  background: rgba(255, 255, 255, 0.075);
+  border-radius: 1000px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease;
+}
+
+/* The selected row — and, in the prototype, the hovered one: pointing at a row
+   lights it exactly as selecting it would, so the rail applies this through a
+   `hover:` variant rather than keeping a second, quieter hover of its own.
+
+   Figma's bloom is an unclipped drop shadow, so the gold reads *through* the
+   row as well as around it; CSS clips an outer box-shadow to the outside, so
+   the wash is carried as its own background layer and the box-shadow is left
+   to do the halo alone. The wash is graded rather than flat because the
+   design's is — the row sits a little deeper in the light at its top edge than
+   at its bottom. */
+@utility rl-rail-row-active {
+  background:
+    linear-gradient(180deg, rgba(252, 213, 53, 0.13), rgba(252, 213, 53, 0.175)),
+    rgba(255, 255, 255, 0.075);
+  border-radius: 1000px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.12),
+    0 0 17.6px rgba(255, 231, 121, 0.2);
+}
+
+/* --- Footer sitemap tracks -------------------------------------------- */
+/* The five columns the design lays its links out on, as fractions so the card
+ * scales with its container rather than sticking at 1540. They are uneven on
+ * purpose: the first three are the wide ones, and Help runs across the last two
+ * because the design heads that pair once and lets it continue.
+ *
+ * The last track's floor is a hard pixel value rather than a share, because the
+ * share shrinks with the card and "Responsible Gambling" does not. 170 rather
+ * than the design's 152 for the same reason — that is what the words measure in
+ * Onest, and they measure more in the Poppins this app ships.
+ *
+ * Here rather than inline because a container-query variant on an arbitrary
+ * `grid-cols-[…minmax(165px,170fr)]` silently emits nothing: the class is never
+ * generated and the grid quietly stays at whatever it was. A named utility
+ * takes the variant without complaint.
+ */
+@utility rl-foot-cols {
+  grid-template-columns: 336fr 336fr 336fr 280fr minmax(165px, 170fr);
+}
+
+/* --- Footer pills ----------------------------------------------------- */
+/* Every pill in the footer: the social shortcuts and the back-to-top button on
+ * the stage, the language capsule beside them, the four contact discs on a
+ * card, and the seven payment plates on the band below.
+ *
+ * One utility for all five, where the account tabs needed three, and the reason
+ * is in the numbers. The design builds these from the same colour-burn glass,
+ * so what they render as depends on what they cover — measured off the design's
+ * own export, the identical component lands on 5→15 over the black page, 14→24
+ * over a card that is itself 18, and 22→33 over a band that is 35. All three
+ * are the same arithmetic: keep half of whatever is behind, then lift it by a
+ * few percent of white. Written that way the burn does not have to be re-fitted
+ * per surface the way `rl-chip` and `rl-rail-row` each had to be.
+ *
+ * The lift runs on the DIAGONAL, and that is the whole effect: the glass is at
+ * its thinnest where the light enters at the top left and its brightest where
+ * it leaves at the bottom right, which is what reads as a pane with depth
+ * rather than a flat fill behind a drawn outline. Flattened — or run straight
+ * down, which is the same thing on the horizontal — the rim is all that is left
+ * and every pill turns into an outlined box. That was the first version of this
+ * and it was visibly wrong next to the design.
+ *
+ * Carried as a gradient rather than the pair of inset shadows the shape
+ * suggests, because an inset shadow paints over the backdrop as well: it can
+ * only darken a pill by a fraction of what is already behind it, and over the
+ * near black page there is nothing there to take a fraction of. The design
+ * grades its own wash, so this does too.
+ *
+ * The range is twice the span it has to cover. A 135° gradient splits its
+ * travel between the two axes in proportion to the pill's sides, so each axis
+ * sees about half of what is declared — and the design's fall is the full span
+ * measured along each axis independently.
+ *
+ * The rim is graded the other way, and that is not a contradiction: a lip of
+ * glass is brightest where the light arrives, so it is lit at the top left
+ * exactly where the pane behind it is at its thinnest. Two offset inset shadows
+ * rather than a border, because a border is one colour all the way round and
+ * this one is 0.38 at the head and 0.23 at the foot.
+ *
+ * 0.6px, not 1px. That looks like a typo and is not: read off a 3× export, the
+ * design's stroke peaks at 109 over a fill of 21 — far brighter than a full
+ * pixel at this alpha could be — and carries only about six tenths of a pixel's
+ * worth of light. A 1px ring at the peak value is half again too much ink, and
+ * it is the difference between a crisp hairline and a grey outline drawn round
+ * a flat box. The fractional width antialiases to the right weight at 1× and
+ * resolves to the right line on a retina screen.
+ *
+ * No radius: these are circles in two places, a capsule in a third and a
+ * rounded box in a fourth.
+ */
+@utility rl-pill {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.078)), rgba(0, 0, 0, 0.5);
+  box-shadow:
+    inset 0.6px 0.6px 0 rgba(255, 255, 255, 0.38),
+    inset -0.6px -0.6px 0 rgba(255, 255, 255, 0.23),
+    0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Kept off `rl-pill` itself: the payment plates and the contact discs are not
+   controls, and a pill that lit up under a pointer that cannot click it would
+   be a lie. Only the things that do something take this. */
+@utility rl-pill-hover {
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease;
+
+  &:hover {
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.16)),
+      rgba(0, 0, 0, 0.5);
+    box-shadow:
+      inset 0.6px 0.6px 0 rgba(255, 255, 255, 0.52),
+      inset -0.6px -0.6px 0 rgba(255, 255, 255, 0.34),
+      0 8px 40px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* The halo the design puts behind the selected Responsible Gambling tab. It is
+   on that rail's glass and nowhere else — the account rail's selected row has
+   no glow — so it is its own utility rather than a change to `rl-rail-row-active`. */
+@utility rl-rail-glow {
+  box-shadow: 0 0 17.6px 0 rgba(255, 231, 121, 0.2);
+}
+
+/* --- Section titles --------------------------------------------------- */
+/* The account area's section heading, and the Affiliate page's — one rule for
+   eight call sites that were carrying the same string, so the laptop step is a
+   single edit rather than eight that drift apart.
+   30 on a phone, 36 on a laptop, the design's own 44 once the column is whole. */
+@utility rl-h-section {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 600;
+  letter-spacing: -0.88px;
+  color: #f0f1f5;
+
+  @media (width >= 40rem) {
+    font-size: 2.25rem;
+    line-height: 2.75rem;
+  }
+
+  @media (width >= 96rem) {
+    font-size: 2.75rem;
+    line-height: 3.25rem;
+  }
+}
+
+/* The title on a card inside one of those sections — "Your Referral", "Get
+   Your Affiliate Code". The design's 20 holds at full width and gives up two
+   pixels below it; a title this size is doing less work than the section one
+   above it, so it has less to give. */
+@utility rl-h-card {
+  font-size: 1.125rem;
+  line-height: 1.625rem;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+
+  @media (width >= 96rem) {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+/* --- Account section surfaces ---------------------------------------- */
+/* The panel the selected section renders into — and, in Statistic, the tiles
+   that float on it, which the design draws from the same surface. Lighter and
+   more rounded than `rl-glass`, and with no border: the design separates it
+   from what is behind it with a dropped shadow rather than a drawn edge. */
+@utility rl-panel {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 34px;
+
+  /* The pane's own thickness. The design lights it from the top left, so the
+     glass runs a shade deeper where the light enters and a shade brighter
+     where it leaves — roughly ten pixels of fall-off on each edge. Without
+     these the fill is flat and the panel reads as paper, not glass. The third
+     shadow is the one it drops on the stage. */
+  box-shadow:
+    inset 2px 2px 12px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 12px rgba(255, 255, 255, 0.08),
+    0 8px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* A group's card inside that panel — "Email Account", "2FA", "Appearance".
+   One step quieter than the panel it sits on.
+
+   The radius belongs to the call site, not here: the design rounds a one-row
+   card far enough that it reads as a capsule (44) and pulls that back on a
+   taller one so it reads as a box (34). Same fill, two shapes. */
+@utility rl-field-card {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* The pane's edge without its fill.
+ *
+ * `rl-panel` with the `background` taken out, and nothing else changed: the
+ * Transactions ledger is outlined and bevelled exactly like a panel but left
+ * see-through, so the panel underneath reads through the rows and only the
+ * header band has a colour of its own.
+ *
+ * Carried as its own utility rather than `rl-panel` plus an override because
+ * the two would have to fight over `background`, and the loser depends on
+ * which order Tailwind happens to emit them in.
+ */
+@utility rl-glass-edge {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 34px;
+
+  /* No drop shadow — measured against the design, the panel under this card
+     is not darkened at all, where a real panel's is. */
+  box-shadow:
+    inset 2px 2px 12px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 12px rgba(255, 255, 255, 0.08);
+}
+
+/* The Referral tab's table sits in a card that goes the other way from the
+   panel it is on — a black wash rather than a white one, so the rows read as
+   recessed into the panel rather than lifted off it. */
+@utility rl-table-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 34px;
+}
+
+/* --- Range chips ------------------------------------------------------ */
+/* Statistic's period chips and the date pill beside them.
+ *
+ * The design builds these from the same frosted component as the account rail
+ * rows, but that component is not a fixed colour — its first pass is a
+ * colour-burn, so it takes its value from whatever it covers. On the near
+ * black stage it lightens, which is what `rl-rail-row` carries; here it sits
+ * on the panel and *darkens* it instead. Same source component, opposite
+ * direction, so it cannot be one utility: measured against the design's own
+ * render, that works out to a black wash over the panel.
+ *
+ * Graded rather than flat, and that grade is the whole point — the chip's top
+ * edge sits a quarter darker than the panel and its bottom edge lands level
+ * with it, which is what gives an otherwise fill-less pill its shape. Flatten
+ * it and the resting chips disappear into the panel. (The rail's rows are flat
+ * because the burn bottoms out against the near black stage; here it has room
+ * to move.)
+ */
+@utility rl-chip {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 1000px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease;
+}
+
+/* The selected chip, and the hovered one — the rail's rule applies here too.
+   The wash ends on exactly the 0.2 the design's bloom is set to; it starts
+   lower because the bloom is weakest where the chip meets its own top edge.
+
+   Flat under the wash where the resting chip is graded: the bloom washes over
+   the grade and hides it, and each was fitted to the design's own render
+   rather than derived from the other. */
+@utility rl-chip-active {
+  background:
+    linear-gradient(180deg, rgba(255, 231, 121, 0.145), rgba(255, 231, 121, 0.2)),
+    rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 1000px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.12),
+    0 0 17.6px rgba(255, 231, 121, 0.2);
+}
+
+/* The same pill lit red rather than gold — Security's "End Sessions". The
+   design reuses the rail's button here and only swaps the bloom's colour, so
+   the base below the wash is the chip's. */
+@utility rl-chip-danger {
+  background:
+    linear-gradient(180deg, rgba(227, 56, 39, 0.19), rgba(227, 56, 39, 0.19)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 1000px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.12),
+    0 0 17.6px rgba(227, 56, 39, 0.2);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:hover:not(:disabled) {
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.12),
+      0 0 17.6px rgba(227, 56, 39, 0.35);
+  }
+}
+
+/* --- Pager ------------------------------------------------------------ */
+/* The ledger's pagination, built from the same pill as everything else and
+   separated only by how far each is lifted off it: the steps sit well proud,
+   a page sits barely above, and the current page is washed gold and bloomed.
+   The black grade underneath is the chip's — what changes is the layer over
+   it. */
+@utility rl-pager-step {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 1000px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  transition: background 0.18s ease;
+}
+
+@utility rl-pager-page {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 1000px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+/* A heavier bloom than the rail's selected row — 0.55 against its 0.2 — so the
+   current page carries across a row of six. */
+@utility rl-pager-page-on {
+  background:
+    linear-gradient(180deg, rgba(249, 208, 40, 0.6), rgba(249, 208, 40, 0.6)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 1000px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.12),
+    0 0 14px rgba(249, 208, 40, 0.55);
+}
+
+/* And lit green — Verification's "start" actions. Same pill, third colour. */
+@utility rl-chip-success {
+  background:
+    linear-gradient(180deg, rgba(53, 208, 127, 0.19), rgba(53, 208, 127, 0.19)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 1000px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.12),
+    0 0 17.6px rgba(53, 208, 127, 0.2);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+
+  &:hover:not(:disabled) {
+    box-shadow:
+      0 8px 40px rgba(0, 0, 0, 0.12),
+      0 0 17.6px rgba(53, 208, 127, 0.35);
+  }
+}
+
 /* Floating menus need a darker base than a panel: their options sit over
    whatever the page happens to be showing underneath. */
 @utility rl-menu {
@@ -881,9 +1471,39 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+/* The Responsible Gambling dialog's own surface.
+ *
+ * Not `rl-menu`: that one is 86% opaque, and this dialog is not. Sampled from
+ * the design's own render, the panel adds about four points of white over what
+ * is behind it — the gold button on the page below reads straight through it,
+ * blurred — so the glass is nearly all blur and almost no fill. `rl-menu` stays
+ * as it is for the dialogs that already use it. */
+@utility rl-modal-glass {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 34px;
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  backdrop-filter: blur(40px) saturate(140%);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+
+  /* Without backdrop-filter the fill alone is unreadable, so it falls back to
+     something solid rather than to transparent text on a live page. */
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(14, 16, 21, 0.96);
+  }
+}
+
+/* A control inside it — 56 tall, 34 of radius, per the design. */
+@utility rl-modal-field {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 34px;
+}
+
 /* --- Controls -------------------------------------------------------- */
 @utility rl-btn-gold {
-  color: #111216;
+  /* Dark 1 — the ink the design puts on gold. */
+  color: #07080a;
   background: var(--rl-gold);
   border: 1px solid transparent;
   transition:
@@ -953,8 +1573,20 @@ html:not([data-theme='dark']) .border-blue-600 {
 /* Shelves scroll horizontally and are paged by the arrow buttons in their
    heading, so the native bar is hidden and the last tile is faded out
    rather than sliced. */
+/* A shelf's tiles: `--cols` across with `--gap` between, sized from the
+   scroller's own width so a whole number of tiles is always in view. Each
+   tile snaps to the start edge, so a swipe or an arrow lands on a boundary. */
+@utility rl-track {
+  gap: var(--gap);
+  scroll-snap-type: x mandatory;
+
+  & > * {
+    flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+    scroll-snap-align: start;
+  }
+}
+
 @utility rl-shelf {
-  display: flex;
   overflow-x: auto;
   scroll-behavior: smooth;
   scrollbar-width: none;
@@ -968,5 +1600,152 @@ html:not([data-theme='dark']) .border-blue-600 {
 
   @media (prefers-reduced-motion: reduce) {
     scroll-behavior: auto;
+  }
+}
+
+/* ==================================================================== */
+/* Modals — the register flow's dark frosted dialog                      */
+/* ==================================================================== */
+
+@utility rl-modal-overlay {
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: rl-fade-in 0.2s ease both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility rl-modal-card {
+  position: relative;
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(34, 35, 40, 0.74), rgba(12, 13, 16, 0.82));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(28px) saturate(140%);
+  box-shadow:
+    0 40px 100px -30px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  animation: auth-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  /* The warm glow pooled at the card's foot in the design. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(55% 32% at 50% 102%, rgba(214, 44, 44, 0.3), transparent 70%);
+    pointer-events: none;
+  }
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(18, 19, 23, 0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes rl-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Pill text field. Width is left to the caller. */
+@utility rl-field {
+  color: #fff;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  outline: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &:focus,
+  &:focus-within {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.34);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: rgba(239, 68, 98, 0.7);
+  }
+
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: #fff;
+    -webkit-box-shadow: 0 0 0 1000px rgba(36, 37, 42, 0.98) inset;
+    caret-color: #fff;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+/* A sign-up method row (Gmail, Mobile number, Email). */
+@utility rl-option {
+  color: #fff;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.26);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* The auth modals' language menu: a lighter frosted panel over the card. */
+@utility rl-lang-menu {
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(58, 60, 68, 0.78), rgba(26, 27, 32, 0.86));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow:
+    0 24px 60px -20px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(30, 31, 36, 0.98);
+  }
+}
+
+/* Round back / close control in the modal's top corners. */
+@utility rl-circle-btn {
+  color: #fff;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, rgba(60, 62, 70, 0.9), rgba(10, 11, 14, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition:
+    border-color 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover {
+    filter: brightness(1.25);
+    border-color: rgba(255, 255, 255, 0.34);
   }
 }

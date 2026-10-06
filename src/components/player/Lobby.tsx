@@ -4,12 +4,14 @@ import Head from 'next/head';
 import PlayerLayout from '@/layout/PlayerLayout';
 import HomeHero from '@/components/player/HomeHero';
 import LandingHero, { LandingBackdrop } from '@/components/player/LandingHero';
-import BonusBanner from '@/components/player/BonusBanner';
 import GameBrowser from '@/components/player/GameBrowser';
 import CrashPreview from '@/components/player/CrashPreview';
 import ProviderRow from '@/components/player/ProviderRow';
-import SportsRow from '@/components/player/SportsRow';
+import SportsRow, { SportsShelf } from '@/components/player/SportsRow';
+import { WinnersStrip } from '@/components/player/TopWinnersTicker';
+import { PLAYER_SHELF_KEYS } from '@/constants/games';
 import StreamersRow from '@/components/player/StreamersRow';
+import RecentWinners from '@/components/player/RecentWinners';
 import FaqAccordion from '@/components/player/FaqAccordion';
 import SiteFooter from '@/components/player/SiteFooter';
 import { useAuth } from '@/context/AuthContext';
@@ -54,35 +56,76 @@ const Lobby: FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const { token } = useAuth();
-  const spotlight = (shelves.find((s) => s.key === 'featured')?.games ?? []).slice(0, 3);
+  const player = !!token;
+  // The winners row pairs its sample wins with real games, newest first.
+  const winnerGames = [
+    ...(shelves.find((s) => s.key === 'new')?.games ?? []),
+    ...shelves.filter((s) => s.key !== 'new').flatMap((s) => s.games),
+  ];
+  // Signed out, the home lobby is the shelves alone, so a provider plate
+  // opens /casino, which has the browser controls to show and clear it.
+  const controls = player || !withSports;
+
+  const unavailable = catalogueFailed && (
+    <p role="status" className="rl-glass rounded-2xl px-4 py-3 text-sm text-white/55">
+      {t('dash.catalogueUnavailable')}
+    </p>
+  );
+
+  const browser = (
+    <GameBrowser
+      shelves={shelves}
+      query={query}
+      basePath={basePath}
+      controls={controls}
+      {...(player && {
+        // The signed-in design's shelves, with the sports row among them.
+        shelfKeys: PLAYER_SHELF_KEYS,
+        titles: { originals: 'nav.originals' },
+        between: { after: 'live', node: <SportsShelf viewAll="/sports" variant="line" /> },
+      })}
+    />
+  );
 
   return (
-    <PlayerLayout backdrop={token ? undefined : <LandingBackdrop />}>
+    <PlayerLayout backdrop={player ? undefined : <LandingBackdrop />}>
       <Head>
         <title>{title}</title>
       </Head>
 
-      <div className="mx-auto max-w-[1600px] space-y-5 sm:space-y-7">
-        {token ? <HomeHero spotlight={spotlight} loggedIn /> : <LandingHero />}
-
-        <BonusBanner />
-
-        <CrashPreview />
-
-        {catalogueFailed && (
-          <p role="status" className="rl-glass rounded-2xl px-4 py-3 text-sm text-white/55">
-            {t('dash.catalogueUnavailable')}
-          </p>
+      {/* The design's 1548px content column, centred in the space beside the
+          rail; `--u` (set by PlayerLayout) scales it on a narrower desktop. */}
+      <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
+        {player ? (
+          // The signed-in design packs the top of the page closer: winners,
+          // the hero, the crash card and the browser 24px apart.
+          <div className="space-y-4 lg:space-y-[calc(var(--u)*24)]">
+            <WinnersStrip desktop />
+            <HomeHero />
+            <CrashPreview />
+            {unavailable}
+            {browser}
+          </div>
+        ) : (
+          <>
+            {/* The signed-out hero carries the welcome offer itself, where
+                the design puts it among the section shortcuts. */}
+            <LandingHero />
+            <CrashPreview />
+            {unavailable}
+            {browser}
+          </>
         )}
 
-        {/* Search / sort / filter / provider over the shelves. Idle, it renders
-            the server's shelves with their URL-based paging untouched. */}
-        <GameBrowser shelves={shelves} query={query} basePath={basePath} />
-
         {/* Curated in the admin console's Providers screen. */}
-        <ProviderRow providers={providers} basePath={basePath} query={query} />
-        {withSports && <SportsRow />}
+        <ProviderRow
+          providers={providers}
+          basePath={controls ? basePath : '/casino'}
+          query={controls ? query : {}}
+        />
+        {!player && withSports && <SportsRow />}
         <StreamersRow />
+        <RecentWinners games={winnerGames} tabs={player ? 'player' : 'landing'} />
         <FaqAccordion />
         <SiteFooter />
       </div>

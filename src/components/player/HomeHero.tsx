@@ -1,393 +1,289 @@
-import { useEffect, useState, type FC, type ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
-import { categoryHref, gameHref } from '@/constants/games';
-import { fullNameOf, initialsOf } from '@/types/profile';
-import RoleBadge from '@/components/player/RoleBadge';
-import { ActivityIcon, GamepadIcon, UserIcon } from '@/components/icons';
-import type { Game } from '@/types';
+import { fullNameOf } from '@/types/profile';
+import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
+import casinoArt from '@/assets/lobby/player/panel-casino.webp';
+import sportsArt from '@/assets/lobby/player/panel-sports.webp';
+import casinoLine from '@/assets/lobby/player/panel-casino-line.svg';
+import sportsLine from '@/assets/lobby/player/panel-sports-line.svg';
+import promoArt from '@/assets/lobby/player/promo-banner.webp';
+import promoArtMobile from '@/assets/lobby/player/promo-banner-mobile.webp';
 
 /**
  * Wagering requirement on the player's active bonus.
  *
  * There is no wagering endpoint yet — /balance/me returns the two pot totals
  * and nothing about bonus progress — so these figures are illustrative, in the
- * same spirit as the winners strip in the top bar. Every number rendered below
- * is derived from this one object, so swapping it for the real payload is the
- * whole of the change once the endpoint exists.
+ * same spirit as the winners strip. Every number rendered below is derived
+ * from this one object, so swapping it for the real payload is the whole of
+ * the change once the endpoint exists.
  */
 const WAGERING = { wagered: 650, required: 1000 };
 
-/** Placeholder money, matching WAGERING's assumed USD denomination. */
 const usd = (value: number, locale: string): string => `$${value.toLocaleString(locale)}`;
 
-/* ==================================================================== */
-/* Left panel: who you are, where to play, and how the bonus is going.   */
-/* ==================================================================== */
-
-interface SectionTileProps {
-  icon: ReactNode;
-  label: string;
-  href: string;
-  /**
-   * The destination is a placeholder page rather than a built feature. The tile
-   * still navigates — it is dimmed and tagged "Soon" on hover so that is clear
-   * beforehand.
-   */
-  soon?: boolean;
-}
-
-/**
- * One of the two big section shortcuts. Fixed size rather than fluid: they sit
- * beside the identity block, which is the part that should absorb the width.
- *
- * Sized off the panel via container queries rather than the viewport: what
- * squeezes the player's name is the nav rail eating into this column, which a
- * viewport breakpoint cannot see. Thresholds are content-box widths, so they
- * read ~36px smaller than the panel itself.
+/*
+ * Sized in `--u` (see PlayerLayout): the design's px on desktop, scaled with
+ * the page. The phone layout is the phone design's own, at its own sizes.
  */
-const SectionTile: FC<SectionTileProps> = ({ icon, label, href, soon }) => {
-  const { t } = useTranslation();
 
-  const className = `group relative flex h-[112px] w-[96px] @[420px]:h-[133px] @[420px]:w-[110px] flex-shrink-0 flex-col items-center justify-between overflow-hidden rounded-2xl bg-slate-800 border border-slate-700 px-2 py-4 transition-colors ${
-    soon
-      ? 'opacity-70 hover:opacity-100 hover:border-slate-600'
-      : 'hover:border-blue-500/60 hover:bg-slate-700'
-  }`;
+/* ==================================================================== */
+/* Pieces                                                                */
+/* ==================================================================== */
 
-  const body = (
-    <>
-      <span
-        className="pointer-events-none absolute -top-8 left-1/2 h-20 w-20 -translate-x-1/2 rounded-full bg-blue-500/15 blur-2xl"
-        aria-hidden="true"
-      />
-      <span className="relative mt-2 text-blue-300">{icon}</span>
-      <span className="relative text-[13px] font-semibold text-slate-100">{label}</span>
-    </>
-  );
+/** The player's picture: their own if they set one, the design's otherwise. */
+const Avatar: FC<{ ringed?: boolean }> = ({ ringed }) => {
+  const { me } = useMe();
+  const src = me?.avatar_url || defaultAvatar.src;
 
   return (
-    <Link
-      href={href}
-      className={className}
-      title={soon ? `${label} — ${t('common.soon')}` : undefined}
+    <span
+      className={`flex flex-shrink-0 items-center justify-center rounded-full ${
+        ringed ? 'h-[calc(var(--u)*85)] w-[calc(var(--u)*85)] ring-1 ring-[#9da2b4]' : ''
+      }`}
     >
-      {body}
-    </Link>
+      <img
+        src={src}
+        alt=""
+        className="h-[81px] w-[81px] rounded-full bg-[#666666] object-cover lg:h-[calc(var(--u)*81)] lg:w-[calc(var(--u)*81)]"
+      />
+    </span>
   );
 };
 
-/** Avatar + display name. Falls back to a neutral "Guest" for visitors. */
-const Identity: FC<{ loggedIn: boolean }> = ({ loggedIn }) => {
+const useDisplayName = (): string => {
   const { me } = useMe();
   const { t } = useTranslation();
+  return (me && (me.display_name || fullNameOf(me) || me.username)) || t('account.account');
+};
 
-  const name = me ? me.display_name || fullNameOf(me) || me.username : '';
+/**
+ * A section shortcut in the panel. Desktop: the design's 125×158 glass tile
+ * with the section's 3D render and its glow. Phone: a 174×110 tile with the
+ * line mark.
+ */
+const SectionTile: FC<{
+  href: string;
+  label: string;
+  art: string;
+  mark: string;
+}> = ({ href, label, art, mark }) => (
+  <Link
+    href={href}
+    className="rl-liquid group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0"
+  >
+    <img src={mark} alt="" className="h-[49px] w-[49px] lg:hidden" />
+    {/* The render carries its glow, so the image is the art plus a 34px
+        margin of light on every side — hence the negative offset. */}
+    <img
+      src={art}
+      alt=""
+      className="absolute left-1/2 top-[calc(var(--u)*-18)] hidden h-[calc(var(--u)*169)] w-[calc(var(--u)*169)] max-w-none -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-1 lg:block"
+    />
+    <span className="mt-auto pb-3 text-[18px] leading-7 text-[#f0f1f5] lg:pb-[calc(var(--u)*16)] lg:text-[length:max(min(11px,18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
+      {label}
+    </span>
+  </Link>
+);
 
-  const AVATAR = 'h-[60px] w-[60px] @[420px]:h-[68px] @[420px]:w-[68px] flex-shrink-0 rounded-full';
+/**
+ * The remaining amount as the design's odometer: a dollar cell and six glass
+ * digit cells on a dark plate with a slate rim, lit from behind.
+ */
+const Odometer: FC<{ value: number }> = ({ value }) => {
+  const digits = String(Math.max(0, Math.round(value)))
+    .padStart(6, '0')
+    .slice(-6)
+    .split('');
+  const cell =
+    'flex h-[calc(var(--u)*61)] items-center justify-center rounded-[calc(var(--u)*3)] bg-white/10 font-bold text-[#f0f1f5] shadow-[inset_0_1px_1px_rgba(255,255,255,0.22),inset_0_-2px_2px_rgba(0,0,0,0.3)]';
 
   return (
-    <div className="flex w-full min-w-0 items-center gap-3 @[350px]:w-auto @[350px]:flex-1 @[420px]:gap-3.5">
-      {loggedIn && me?.avatar_url ? (
-        <img
-          src={me.avatar_url}
-          alt=""
-          className={`${AVATAR} border-2 border-slate-800 object-cover`}
-        />
-      ) : loggedIn ? (
+    <div
+      className="flex h-[calc(var(--u)*68)] w-[calc(var(--u)*342)] items-center gap-[calc(var(--u)*2)] rounded-[calc(var(--u)*10)] border-[length:calc(var(--u)*2.5)] border-[#6a7287] bg-[#14191c] px-[calc(var(--u)*1.5)] shadow-[0_0_35px_rgba(255,255,255,0.2)]"
+      aria-label={`$${value}`}
+    >
+      <span
+        className={`${cell} w-[calc(var(--u)*50)] text-[length:max(min(11px,36px),calc(var(--u)*36))] leading-[calc(var(--u)*44)] tracking-[-0.02em]`}
+      >
+        $
+      </span>
+      {digits.map((d, i) => (
         <span
-          className={`${AVATAR} flex select-none items-center justify-center border-2 border-slate-800 bg-gradient-to-br from-blue-500 to-indigo-600 text-lg font-bold text-white`}
+          // Positional digits: the index is their identity.
+          key={i}
+          className={`${cell} flex-1 text-[length:max(min(11px,48px),calc(var(--u)*48))] leading-[calc(var(--u)*52)] tracking-[-0.02em]`}
         >
-          {initialsOf(me)}
+          {d}
         </span>
-      ) : (
-        <span
-          className={`${AVATAR} flex items-center justify-center border-2 border-slate-800 bg-slate-800 text-slate-400`}
-        >
-          <UserIcon size={26} />
-        </span>
-      )}
-
-      <div className="min-w-0">
-        <p className="truncate text-[15px] font-bold text-white">
-          {loggedIn ? name || t('account.account') : t('dash.guest')}
-        </p>
-        <div className="mt-1.5">
-          {loggedIn ? (
-            <RoleBadge role={me?.role} />
-          ) : (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <Link
-                href="/auth/login"
-                className="whitespace-nowrap rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
-              >
-                {t('account.login')}
-              </Link>
-              <Link
-                href="/auth/register"
-                className="whitespace-nowrap rounded-lg bg-blue-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-blue-500 transition-colors"
-              >
-                {t('account.register')}
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
 
-/**
- * Bonus progress: the bar, its end labels, and what is left to wager.
- *
- * A visitor gets the same block sitting at zero, with the pill turned into the
- * way in. The alternative — restating the welcome offer here — would print the
- * banner's own headline twice, side by side.
- */
-const WageringProgress: FC<{ loggedIn: boolean }> = ({ loggedIn }) => {
-  const { t, locale } = useTranslation();
+/** The phone's progress bar: the design's glowing gold fill on a glass track. */
+const ProgressBar: FC<{ percent: number; label: string }> = ({ percent, label }) => (
+  <div
+    className="rl-liquid h-[17px] w-full rounded-[34px]"
+    role="progressbar"
+    aria-valuenow={percent}
+    aria-valuemin={0}
+    aria-valuemax={100}
+    aria-label={label}
+  >
+    <div
+      className="h-full rounded-[34px] bg-[#d1ba3e] shadow-[0_2px_15px_rgba(249,208,40,0.8)]"
+      style={{ width: `${percent}%` }}
+    />
+  </div>
+);
 
-  const { wagered: earned, required } = WAGERING;
-  const wagered = loggedIn ? earned : 0;
+/** A pale pill under the progress: "$350 remaining to unlock your bonus". */
+const RemainingPill: FC<{ children: ReactNode }> = ({ children }) => (
+  <span className="inline-flex h-[38px] items-center rounded-[24px] bg-white/10 px-[38px] text-[12px] leading-5 text-white lg:h-[calc(var(--u)*34)] lg:rounded-[calc(var(--u)*24)] lg:px-[calc(var(--u)*18)] lg:text-[length:max(min(11px,12px),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
+    {children}
+  </span>
+);
+
+/* ==================================================================== */
+/* Player panel                                                          */
+/* ==================================================================== */
+
+/**
+ * Who the player is, where to play, and how their bonus is going — laid out
+ * as each design draws it: the desktop panel puts the identity beside the two
+ * tiles and shows the remaining amount on an odometer; the phone stacks
+ * everything and uses a progress bar.
+ */
+const PlayerPanel: FC = () => {
+  const { t, locale } = useTranslation();
+  const name = useDisplayName();
+
+  const { wagered, required } = WAGERING;
   const percent = Math.min(100, Math.round((wagered / required) * 100));
   const remaining = Math.max(0, required - wagered);
 
   return (
-    <div className="mt-4">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-xs font-medium text-slate-300">{t('dash.wageringProgress')}</span>
-        <span className="text-xs font-semibold text-slate-100 tabular-nums">
-          {t('dash.percentComplete', { percent })}
-        </span>
-      </div>
-
-      <div
-        className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-800"
-        role="progressbar"
-        aria-valuenow={percent}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={t('dash.wageringProgress')}
-      >
-        <div className="h-full rounded-full bg-blue-600" style={{ width: `${percent}%` }} />
-      </div>
-
-      <div className="mt-2 grid grid-cols-3 items-center text-[11px] tabular-nums text-slate-500">
-        <span>{usd(0, locale)}</span>
-        <span className="text-center font-medium text-slate-300">
-          {t('dash.wagered', { amount: usd(wagered, locale) })}
-        </span>
-        <span className="text-end">{usd(required, locale)}</span>
-      </div>
-
-      <p className="mt-3.5 flex justify-center">
-        {loggedIn ? (
-          <span className="rounded-full bg-slate-800 border border-slate-700 px-3.5 py-1 text-center text-[11px] text-slate-300">
-            {t('dash.bonusRemaining', { amount: usd(remaining, locale) })}
+    <section className="rl-liquid relative overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*415)] lg:rounded-[calc(var(--u)*34)]">
+      {/* --- Identity and tiles ----------------------------------------- */}
+      <div className="flex flex-col items-center px-[15px] pt-5 lg:h-[calc(var(--u)*212)] lg:flex-row lg:items-start lg:justify-between lg:px-[calc(var(--u)*20)] lg:pl-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*20)]">
+        <div className="flex flex-col items-center gap-px lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">
+          <Avatar ringed />
+          <span className="max-w-[calc(var(--u)*140)] truncate text-[18px] font-medium leading-7 text-white lg:text-[length:max(min(11px,18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
+            {name}
           </span>
-        ) : (
-          <Link
-            href="/auth/register"
-            className="rounded-full bg-blue-600 px-4 py-1 text-center text-[11px] font-semibold text-white hover:bg-blue-500 transition-colors"
-          >
-            {t('dash.unlockBonus')}
-          </Link>
-        )}
-      </p>
-    </div>
-  );
-};
+        </div>
 
-const PlayerPanel: FC<{ loggedIn: boolean }> = ({ loggedIn }) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="@container flex min-h-[282px] flex-col rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-[18px]">
-      <div className="flex flex-1 flex-col items-start gap-4 @[350px]:flex-row @[350px]:items-center @[350px]:gap-3 @[420px]:gap-4">
-        <Identity loggedIn={loggedIn} />
-
-        <div className="flex flex-shrink-0 gap-2.5 @[420px]:gap-3">
+        <div className="mt-[20px] flex w-full gap-[11px] lg:mt-0 lg:w-auto lg:gap-[calc(var(--u)*12)]">
           <SectionTile
-            icon={<GamepadIcon size={26} />}
+            href="/casino"
             label={t('nav.casino')}
-            href={categoryHref('featured')}
+            art={casinoArt.src}
+            mark={casinoLine.src}
           />
           <SectionTile
-            icon={<ActivityIcon size={26} />}
-            label={t('nav.sports')}
             href="/sports"
-            soon
+            label={t('nav.sports')}
+            art={sportsArt.src}
+            mark={sportsLine.src}
           />
         </div>
       </div>
 
-      <WageringProgress loggedIn={loggedIn} />
-    </div>
-  );
-};
-
-/* ==================================================================== */
-/* Right panel: the promo banner.                                        */
-/* ==================================================================== */
-
-interface Slide {
-  key: string;
-  href: string;
-  /** Absent on the bonus slide, which paints a gradient instead. */
-  image?: string;
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  cta: string;
-}
-
-const SLIDE_MS = 6000;
-
-/**
- * Auto-advancing promo banner.
- *
- * Slides are built from the featured shelf the page already fetched rather
- * than a second request, with the welcome offer leading for signed-out
- * visitors. Rotation stops on hover and for anyone who has asked for reduced
- * motion; the dots drive it manually in either case.
- */
-const PromoBanner: FC<{ spotlight: Game[]; loggedIn: boolean }> = ({ spotlight, loggedIn }) => {
-  const { t } = useTranslation();
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [mayAnimate, setMayAnimate] = useState(false);
-
-  const slides: Slide[] = [
-    ...(loggedIn
-      ? []
-      : [
-          {
-            key: 'welcome-bonus',
-            href: '/auth/register',
-            eyebrow: t('dash.welcomeBonus'),
-            title: '100% up to $1,000 + 200 Free Spins',
-            subtitle: t('dash.heroSubtitle'),
-            cta: t('dash.claimNow'),
-          },
-        ]),
-    ...spotlight.map((game) => ({
-      key: game.id,
-      href: gameHref(game.slug),
-      image: game.image_url ?? undefined,
-      eyebrow: game.is_new ? t('game.new') : t('dash.featuredGames'),
-      title: game.title,
-      subtitle: game.provider,
-      cta: t('dash.playNow'),
-    })),
-  ];
-
-  // The catalogue can fail to load; the banner is not the place to show that.
-  if (slides.length === 0) {
-    slides.push({
-      key: 'fallback',
-      href: categoryHref('featured'),
-      eyebrow: t('dash.featuredGames'),
-      title: t('dash.heroTitle'),
-      subtitle: t('dash.heroSubtitle'),
-      cta: t('dash.playNow'),
-    });
-  }
-
-  const count = slides.length;
-  const active = slides[Math.min(index, count - 1)];
-
-  useEffect(() => {
-    setMayAnimate(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }, []);
-
-  useEffect(() => {
-    if (!mayAnimate || paused || count < 2) {
-      return;
-    }
-    const id = window.setInterval(() => setIndex((i) => (i + 1) % count), SLIDE_MS);
-    return () => window.clearInterval(id);
-  }, [mayAnimate, paused, count]);
-
-  return (
-    <div
-      className="relative min-h-[282px] overflow-hidden rounded-2xl bg-slate-900 border border-slate-800"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      {active.image ? (
-        <>
-          <Image
-            key={active.key}
-            src={active.image}
-            alt=""
-            fill
-            sizes="(max-width: 1024px) 100vw, 63vw"
-            priority
-            className="object-cover"
-          />
-          {/* Text sits on the artwork, so it needs its own ground to stay
-              readable whatever the tile happens to look like. */}
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/20"
-            aria-hidden="true"
-          />
-        </>
-      ) : (
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-900 to-slate-950"
-          aria-hidden="true"
-        />
-      )}
-
-      <div className="relative flex h-full min-h-[282px] flex-col justify-center gap-3 p-6 sm:p-8">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-300">
-          {active.eyebrow}
-        </p>
-        <h2 className="max-w-md text-2xl font-extrabold leading-tight text-white sm:text-3xl">
-          {active.title}
-        </h2>
-        <p className="max-w-md text-sm text-slate-300">{active.subtitle}</p>
-        <Link
-          href={active.href}
-          className="mt-1 inline-flex w-fit items-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-500 transition-colors"
-        >
-          {active.cta}
-        </Link>
-      </div>
-
-      {count > 1 && (
-        <div className="absolute bottom-4 end-5 flex items-center gap-1.5">
-          {slides.map((slide, i) => (
-            <button
-              key={slide.key}
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={slide.title}
-              aria-current={i === index}
-              className={`h-1.5 rounded-full transition-all ${
-                i === index ? 'w-5 bg-white' : 'w-1.5 bg-white/40 hover:bg-white/70'
-              }`}
-            />
-          ))}
+      {/* --- Wagering --------------------------------------------------- */}
+      <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[21px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*17)]">
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-[calc(var(--u)*4)]">
+            <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
+              {t('dash.wageringProgress')}
+            </span>
+            <span className="hidden h-[calc(var(--u)*16)] items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[calc(var(--u)*5)] text-[length:max(min(11px,10px),calc(var(--u)*10))] leading-none text-[#03b739] lg:inline-flex">
+              {percent}%
+            </span>
+          </span>
+          <span className="text-[12px] font-medium leading-5 text-white lg:hidden">
+            {t('dash.percentComplete', { percent })}
+          </span>
+          <span className="hidden text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
+            {t('dash.wagered', { amount: usd(wagered, locale) })}
+          </span>
         </div>
-      )}
-    </div>
+
+        {/* Phone: the bar, with its ends and the amount so far. */}
+        <div className="mt-[22px] lg:hidden">
+          <ProgressBar percent={percent} label={t('dash.wageringProgress')} />
+          <div className="mt-[14px] flex items-center justify-between text-[12px] leading-5 text-[#9da2b4]">
+            <span>{usd(0, locale)}</span>
+            <span className="text-[14px] font-medium text-white">
+              {t('dash.wagered', { amount: usd(wagered, locale) })}
+            </span>
+            <span>{usd(required, locale)}</span>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <RemainingPill>
+              {t('dash.remainingToUnlock', { amount: usd(remaining, locale) })}
+            </RemainingPill>
+          </div>
+        </div>
+
+        {/* Desktop: the remaining amount on the odometer. */}
+        <div className="hidden flex-col items-center gap-[calc(var(--u)*16)] lg:mt-[calc(var(--u)*24)] lg:flex">
+          <Odometer value={remaining} />
+          <RemainingPill>{t('dash.remainingToUnlockShort')}</RemainingPill>
+        </div>
+      </div>
+    </section>
   );
 };
 
+/* ==================================================================== */
+/* Promo                                                                 */
+/* ==================================================================== */
+
 /**
- * The lobby banner: the player's own panel beside the promo slider.
- *
- * The two columns keep the 37 / 63 split of the design at `lg` and stack below
- * it, where the panel's tiles and the banner's copy both need the full width.
+ * The promotion artwork beside the panel — each design's own crop — opening
+ * the promotions page.
  */
-const HomeHero: FC<{ spotlight: Game[]; loggedIn: boolean }> = ({ spotlight, loggedIn }) => (
-  <section className="grid gap-4 lg:grid-cols-[minmax(0,37fr)_minmax(0,63fr)] lg:gap-5">
-    <PlayerPanel loggedIn={loggedIn} />
-    <PromoBanner spotlight={spotlight} loggedIn={loggedIn} />
-  </section>
+const PromoBanner: FC = () => (
+  <Link
+    href="/promotions"
+    aria-label="Promotions"
+    className="group relative block h-[168px] overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*416)] lg:rounded-[calc(var(--u)*34)]"
+  >
+    <Image
+      src={promoArtMobile}
+      alt=""
+      fill
+      sizes="100vw"
+      className="object-cover transition-transform duration-500 group-hover:scale-[1.02] lg:hidden"
+    />
+    <Image
+      src={promoArt}
+      alt=""
+      fill
+      priority
+      sizes="(max-width: 1024px) 100vw, 60vw"
+      className="hidden object-cover transition-transform duration-500 group-hover:scale-[1.02] lg:block"
+    />
+  </Link>
+);
+
+/* ==================================================================== */
+/* The hero                                                              */
+/* ==================================================================== */
+
+/**
+ * The signed-in lobby's hero: the player panel and the promotion beside it —
+ * 558 and 966 of the design's 1548px — stacked on a phone.
+ */
+const HomeHero: FC = () => (
+  <div className="flex flex-col gap-[15px] lg:grid lg:grid-cols-[calc(var(--u)*558)_minmax(0,1fr)] lg:gap-[calc(var(--u)*24)]">
+    <PlayerPanel />
+    <PromoBanner />
+  </div>
 );
 
 export default HomeHero;

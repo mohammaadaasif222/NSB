@@ -26,11 +26,20 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/dashboard', destination: '/', permanent: true },
-      { source: '/login', destination: '/auth/login', permanent: true },
-      { source: '/register', destination: '/auth/register', permanent: true },
-      { source: '/reset-password', destination: '/auth/reset-password', permanent: true },
+      // Login, registration and password reset are modals now; the query
+      // string opens the right one on the lobby, and any ?mobile= prefill
+      // passes straight through.
+      { source: '/login', destination: '/?auth=login', permanent: false },
+      { source: '/auth/login', destination: '/?auth=login', permanent: false },
+      { source: '/reset-password', destination: '/?auth=forgot', permanent: false },
+      { source: '/auth/reset-password', destination: '/?auth=forgot', permanent: false },
+      { source: '/register', destination: '/?auth=register', permanent: false },
+      { source: '/auth/register', destination: '/?auth=register', permanent: false },
       { source: '/unauthorized', destination: '/auth/unauthorized', permanent: true },
       { source: '/games', destination: '/games/featured', permanent: false },
+      // The placeholder Responsible Play page became the real tools, under the
+      // name the footer and the terms of service have always used for it.
+      { source: '/responsible-play', destination: '/responsible-gambling', permanent: true },
     ];
   },
 };

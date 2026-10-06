@@ -3,7 +3,8 @@ import Link from 'next/link';
 import type { Game, GameShelfKey } from '@/types';
 import { categoryHref } from '@/constants/games';
 import { useTranslation } from '@/context/I18nContext';
-import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
+import chevronLeft from '@/assets/lobby/chevron-left.svg';
+import chevronRight from '@/assets/lobby/chevron-right.svg';
 import GameTile from './GameTile';
 
 interface Props {
@@ -23,26 +24,39 @@ interface Props {
   basePath?: string;
 }
 
-const ARROW = 'flex h-8 w-8 items-center justify-center rounded-full';
-
 /* ==================================================================== */
 /* Shared heading                                                        */
 /* ==================================================================== */
+
+/**
+ * The round arrow at the end of a shelf heading: the design's 40px dark glass
+ * disc on phones, its 48px clear glass disc on desktop.
+ */
+export const ARROW_CLASS =
+  'flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-md transition-colors lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] lg:border-white/[0.06] lg:bg-white/[0.07] lg:shadow-[0_8px_40px_rgba(0,0,0,0.2)]';
+
+export const ArrowGlyph: FC<{ dir: 'prev' | 'next' }> = ({ dir }) => (
+  <img
+    src={(dir === 'prev' ? chevronLeft : chevronRight).src}
+    alt=""
+    className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+  />
+);
 
 interface HeadingProps {
   title: string;
   /** Omit to render the heading without a "View all" link. */
   href?: string;
-  /** Rendered in place of the arrow pair — used by the scroll-paged shelves. */
+  /** The arrow pair, or whatever stands in for it. */
   controls?: ReactNode;
   className?: string;
 }
 
 /**
- * The heading every shelf on the lobby shares: the title, "View all", and a
+ * The heading every shelf on the lobby shares: the title, "View All", and a
  * pair of round arrows at the end.
  *
- * Exported because the sports, live-game and streamer rows are not built from
+ * Exported because the provider, sports and live-game rows are not built from
  * catalogue games and so cannot use `GameRow`, but must line up with it to the
  * pixel.
  */
@@ -50,16 +64,16 @@ export const ShelfHeading: FC<HeadingProps> = ({ title, href, controls, classNam
   const { t } = useTranslation();
 
   return (
-    <div className={`flex items-center justify-between gap-3 ${className}`}>
-      <h2 className="min-w-0 truncate text-[17px] font-semibold text-white sm:text-[19px]">
+    <div className={`flex items-center justify-between gap-[calc(var(--u)*12)] ${className}`}>
+      <h2 className="min-w-0 truncate text-[length:max(min(11px,20px),calc(var(--u)*20))] font-semibold leading-[calc(var(--u)*28)] tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(min(11px,36px),calc(var(--u)*36))] lg:font-bold lg:leading-[calc(var(--u)*44)]">
         {title}
       </h2>
 
-      <div className="flex flex-shrink-0 items-center gap-2.5">
+      <div className="flex flex-shrink-0 items-center gap-[calc(var(--u)*15)] lg:gap-[calc(var(--u)*27)]">
         {href && (
           <Link
             href={href}
-            className="whitespace-nowrap text-[12px] text-white/50 transition-colors hover:text-white"
+            className="whitespace-nowrap text-[length:max(min(11px,14px),calc(var(--u)*14))] font-medium leading-[calc(var(--u)*20)] text-[#f0f1f5] transition-colors hover:text-[#f9d028] lg:text-[length:max(min(11px,18px),calc(var(--u)*18))] lg:font-normal lg:leading-[calc(var(--u)*28)]"
           >
             {t('dash.viewAll')}
           </Link>
@@ -69,6 +83,15 @@ export const ShelfHeading: FC<HeadingProps> = ({ title, href, controls, classNam
     </div>
   );
 };
+
+/**
+ * The shelf's track: a scroller that shows a whole number of tiles — three on
+ * a phone, seven at the design's 1548px — with the design's gutter between
+ * them. Each child is sized from `--cols` and `--gap`, so a tile is exactly
+ * 198px wide where the design measures it and scales with the column below.
+ */
+export const SHELF_TRACK =
+  'rl-shelf rl-track flex [--cols:3] [--gap:calc(var(--u)*11)] sm:[--cols:4] md:[--cols:5] lg:[--cols:7] lg:[--gap:calc(var(--u)*27)]';
 
 /* ==================================================================== */
 /* Catalogue shelf                                                       */
@@ -110,16 +133,11 @@ const GameRow: FC<Props> = ({
 
   const arrow = (dir: 'prev' | 'next'): ReactNode => {
     const enabled = paged && (dir === 'prev' ? page > 1 : page < totalPages);
-    const glyph = dir === 'prev' ? <ChevronLeftIcon size={13} /> : <ChevronRightIcon size={13} />;
 
     if (!enabled) {
       return (
-        <span
-          aria-hidden="true"
-          className={`${ARROW} border border-white/[0.05] text-white/15`}
-          key={dir}
-        >
-          {glyph}
+        <span aria-hidden="true" className={`${ARROW_CLASS} opacity-40`} key={dir}>
+          <ArrowGlyph dir={dir} />
         </span>
       );
     }
@@ -130,21 +148,21 @@ const GameRow: FC<Props> = ({
         href={hrefForPage(dir === 'prev' ? page - 1 : page + 1)}
         scroll={false}
         aria-label={`${t(dir === 'prev' ? 'games.prev' : 'games.next')}: ${title}`}
-        className={`rl-glass rl-glass-hover ${ARROW} text-white/70 hover:text-white`}
+        className={`${ARROW_CLASS} hover:bg-white/10`}
       >
-        {glyph}
+        <ArrowGlyph dir={dir} />
       </Link>
     );
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-[calc(var(--u)*14)] lg:space-y-[calc(var(--u)*20)]">
       <ShelfHeading
         title={title}
         href={categoryHref(shelfKey)}
         controls={
           paged && totalPages > 1 ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-[calc(var(--u)*8)] lg:gap-[calc(var(--u)*14)]">
               {arrow('prev')}
               {arrow('next')}
             </div>
@@ -153,13 +171,13 @@ const GameRow: FC<Props> = ({
       />
 
       {games.length === 0 ? (
-        <p className="rl-glass rounded-2xl px-4 py-6 text-center text-xs text-white/40">
+        <p className="rl-liquid rounded-[calc(var(--u)*24)] px-[calc(var(--u)*16)] py-[calc(var(--u)*24)] text-center text-xs text-white/40">
           {t('games.empty')}
         </p>
       ) : (
-        <div className="rl-shelf -mx-1 gap-2.5 px-1 pb-1">
+        <div className={SHELF_TRACK}>
           {games.map((game) => (
-            <GameTile key={game.id} game={game} layout="shelf" surface={shelfKey} />
+            <GameTile key={game.id} game={game} surface={shelfKey} />
           ))}
         </div>
       )}

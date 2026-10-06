@@ -6,9 +6,11 @@ export type GameCategory = 'ORIGINALS' | 'NEW_RELEASE' | 'FEATURED' | 'SLOTS';
 
 /**
  * Query-parameter name carrying a shelf's page number (`/?slots=2`), and the
- * URL segment of that category's listing page (`/games/slots`).
+ * URL segment of that shelf's listing page (`/games/slots`). `live` is the
+ * live-dealer games and `popular` the most played — shelves that are not a
+ * category.
  */
-export type GameShelfKey = 'originals' | 'new' | 'featured' | 'slots';
+export type GameShelfKey = 'originals' | 'new' | 'featured' | 'slots' | 'live' | 'popular';
 
 export type GameType = 'STANDARD' | 'LIVE' | 'LOBBY';
 
@@ -70,7 +72,8 @@ export interface GameShelf {
   key: GameShelfKey;
   /** English fallback; the UI prefers its own translated title. */
   title: string;
-  category: GameCategory;
+  /** The category the shelf lists; null for live and most played. */
+  category: GameCategory | null;
   games: Game[];
   pagination: GamePagination;
 }

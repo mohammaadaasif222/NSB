@@ -5,7 +5,8 @@ export type GaParams = Record<string, unknown>;
 
 declare global {
   interface Window {
-    // Must match the declaration in utils/ga.ts; TypeScript merges the two.
+    // The single GA4 global declaration in the app — utils/ga.ts used to carry
+    // a second one, with its own gtag installation, and was deleted.
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
   }

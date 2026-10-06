@@ -60,3 +60,32 @@ export interface AddOrUpdateUserRequest {
   role: string;
   status: string;
 }
+
+/** Where a verification code can be sent. */
+export type ContactChannel = 'mobile' | 'email';
+
+/** The two password signup flows the register modal offers. */
+export type SignupMethod = ContactChannel;
+
+/** The three credentials the login modal accepts with a password. */
+export type LoginMethod = 'username' | 'mobile' | 'email';
+
+/**
+ * Body of POST /auth/register for the register modal: a chosen username plus
+ * exactly one of email or mobile. Optional fields are omitted, not sent empty.
+ */
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  email?: string;
+  mobile?: string;
+  country_code?: string;
+  promo_code?: string;
+  referral_code?: string;
+  /** Cloudflare Turnstile token, when the captcha is enabled. */
+  captcha_token?: string;
+}
+
+export interface RegisterResponseData {
+  username?: string;
+}

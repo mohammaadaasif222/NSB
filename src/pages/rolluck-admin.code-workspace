@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../../rolluck-admin"
+		},
+		{
+			"path": "../../../rolluck-backend"
+		},
+		{
+			"path": "../.."
+		}
+	]
+}

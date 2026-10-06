@@ -17,9 +17,15 @@
  * already knows who is signed in from the request; a browser that could name
  * a player could name any player. Currency codes, game slugs and step names
  * are safe — they describe the product, not the person.
+ *
+ * These go through `track()` rather than straight to the internal tracker, so
+ * there is ONE transport for every product event in the app and each of these
+ * reaches GA4 and Clarity as well. That was not previously true: signup was
+ * recorded internally only, which meant GA4 — where `sign_up` is a key
+ * conversion event — never saw a single social registration.
  */
 
-import { trackEvent } from './tracker';
+import { track } from '@/services/analytics/track';
 
 /* -------------------------------------------------------------------------- */
 /* Names                                                                       */
@@ -30,6 +36,7 @@ export const EVENTS = {
   DEPOSIT_START: 'deposit_start',
   DEPOSIT_ABANDONED: 'deposit_abandoned',
   GAME_OPEN: 'game_open',
+  GAME_LAUNCH: 'game_launch',
   GAME_IMPRESSION: 'game_impression',
 } as const;
 
@@ -56,14 +63,17 @@ export type SignupMethod = 'mail' | 'phone' | 'google' | 'telegram' | 'steam';
  * every returning player as a new one.
  */
 export const trackSignupComplete = (method: SignupMethod): void =>
-  trackEvent(EVENTS.SIGNUP_COMPLETE, { method });
+  // GA4 gets its reserved `sign_up`, which is what unlocks its conversion
+  // reporting; our own stream keeps `signup_complete`, which is the name every
+  // existing row already uses.
+  track('sign_up', { method }, { internalName: EVENTS.SIGNUP_COMPLETE });
 
 /* -------------------------------------------------------------------------- */
 /* Deposit                                                                     */
 /* -------------------------------------------------------------------------- */
 
 /** The deposit screen was opened. Says nothing yet about intent to pay. */
-export const trackDepositStart = (): void => trackEvent(EVENTS.DEPOSIT_START);
+export const trackDepositStart = (): void => track(EVENTS.DEPOSIT_START);
 
 /**
  * The player left the deposit screen.
@@ -88,7 +98,7 @@ export const trackDepositAbandoned = (props: {
   seconds_on_screen: number;
   currency: string | null;
   network: string | null;
-}): void => trackEvent(EVENTS.DEPOSIT_ABANDONED, props);
+}): void => track(EVENTS.DEPOSIT_ABANDONED, props);
 
 /* -------------------------------------------------------------------------- */
 /* Games                                                                       */
@@ -96,7 +106,23 @@ export const trackDepositAbandoned = (props: {
 
 /** A game tile was clicked. `shelf` is the row it was clicked from. */
 export const trackGameOpen = (slug: string, shelf?: string): void =>
-  trackEvent(EVENTS.GAME_OPEN, { slug, shelf: shelf ?? null });
+  track(EVENTS.GAME_OPEN, { slug, shelf: shelf ?? null });
+
+/**
+ * The game frame actually loaded — the player is playing.
+ *
+ * Distinct from `game_open`, which is the tile click. Between the two sit a
+ * launch request to the aggregator, a provider that may refuse, and a frame
+ * that may never load; a player who gives up in that gap has opened a game and
+ * not played one. `analytics_sessions.games_played` counts this event and
+ * `games_viewed` counts the click, so the gap between them is the launch
+ * failure rate nobody could previously see.
+ *
+ * `mode` separates real play from demo, which is the other thing a raw open
+ * count silently merges.
+ */
+export const trackGameLaunch = (slug: string, mode: string): void =>
+  track(EVENTS.GAME_LAUNCH, { slug, mode });
 
 /**
  * Games that were actually on screen — sent as ONE event carrying a list, not
@@ -113,5 +139,7 @@ export const trackGameOpen = (slug: string, shelf?: string): void =>
  */
 export const trackGameImpressions = (slugs: string[], shelf?: string): void => {
   if (slugs.length === 0) return;
-  trackEvent(EVENTS.GAME_IMPRESSION, { slugs, count: slugs.length, shelf: shelf ?? null });
+  // Clarity is capped on distinct event names and this is the highest-frequency
+  // event in the app, so it is kept out of there and left to GA4 and our own stream.
+  track(EVENTS.GAME_IMPRESSION, { slugs, count: slugs.length, shelf: shelf ?? null }, { clarity: false });
 };

@@ -17,6 +17,9 @@ import { ChatIcon } from '@/components/icons';
  * Sits above the built-in chat panel's top-bar icon rather than beside it, so
  * that with both switched on a player sees two clearly separate things instead
  * of two chat icons side by side.
+ *
+ * On a phone page with the tab bar it is hidden: the bar has its own Chat tab,
+ * and the bubble would sit on top of it.
  */
 const IntercomLauncher: FC = () => {
   const { intercomEnabled, openIntercom } = useSupportChat();
@@ -39,7 +42,7 @@ const IntercomLauncher: FC = () => {
       // tests; distinguishing them for screen readers needs a second i18n
       // string, which is a copy decision rather than a code one.
       data-testid="intercom-launcher"
-      className="rl-glass rl-glass-hover fixed bottom-5 right-5 z-[90] flex h-13 w-13 items-center justify-center rounded-full border border-white/10 bg-slate-900/90 text-white shadow-lg shadow-black/40 backdrop-blur transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fcd535] sm:bottom-6 sm:right-6"
+      className="rl-glass rl-glass-hover fixed bottom-5 right-5 z-[90] flex h-13 w-13 items-center justify-center rounded-full border border-white/10 bg-slate-900/90 text-white shadow-lg shadow-black/40 backdrop-blur transition hover:scale-105 max-lg:[body:has([data-mobile-tabbar])_&]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fcd535] sm:bottom-6 sm:right-6"
     >
       <ChatIcon size={22} />
     </button>

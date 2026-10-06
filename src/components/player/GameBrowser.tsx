@@ -1,19 +1,20 @@
-import { useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { useTranslation } from '@/context/I18nContext';
 import { fetchCatalogue, gameMatches, providersOf } from '@/services/catalogue';
-import { GAME_CATEGORIES } from '@/constants/games';
+import { LOBBY_SHELF_KEYS, shelfFor } from '@/constants/games';
 import GameRow from '@/components/player/GameRow';
 import GameTile from '@/components/player/GameTile';
 import {
-  CATEGORY_ICONS,
-  ChevronDownIcon,
-  LayersIcon,
-  SearchIcon,
-  SlidersIcon,
-  SortIcon,
-  type IconProps,
-} from '@/components/icons';
+  CategoryChips,
+  Dropdown,
+  Option,
+  SearchField,
+  type ChipKey,
+} from '@/components/player/BrowseControls';
+import sortIcon from '@/assets/lobby/player/tool-sort.svg';
+import filterIcon from '@/assets/lobby/player/tool-filter.svg';
+import providerIcon from '@/assets/lobby/player/tool-provider.svg';
 import type { Game, GameShelf, GameShelfKey } from '@/types';
 import type { TranslationKey } from '@/i18n/locales';
 
@@ -36,160 +37,6 @@ const FILTERS: { key: FilterKey; labelKey: TranslationKey }[] = [
   { key: 'new', labelKey: 'browse.filterNew' },
 ];
 
-interface DropdownProps {
-  icon: ReactNode;
-  label: string;
-  children: (close: () => void) => ReactNode;
-}
-
-/** A toolbar dropdown: pill trigger, panel anchored under it, closes on click-away. */
-const Dropdown: FC<DropdownProps> = ({ icon, label, children }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const away = (e: MouseEvent): void => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const esc = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', esc);
-    return () => {
-      document.removeEventListener('mousedown', away);
-      document.removeEventListener('keydown', esc);
-    };
-  }, [open]);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="rl-glass rl-glass-hover flex h-11 w-full items-center gap-2 rounded-xl px-3 text-[12px] font-medium text-white/85 sm:w-auto"
-      >
-        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-white/60">
-          {icon}
-        </span>
-        <span className="truncate">{label}</span>
-        <ChevronDownIcon
-          size={12}
-          className={`ms-auto flex-shrink-0 text-white/40 transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {open && (
-        <div
-          role="menu"
-          className="rl-menu thin-scrollbar absolute end-0 top-12 z-30 max-h-72 w-56 overflow-y-auto rounded-xl py-1"
-        >
-          {children(() => setOpen(false))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const Option: FC<{ selected: boolean; onSelect: () => void; children: ReactNode }> = ({
-  selected,
-  onSelect,
-  children,
-}) => (
-  <button
-    type="button"
-    role="menuitemradio"
-    aria-checked={selected}
-    onClick={onSelect}
-    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
-      selected ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'
-    }`}
-  >
-    <span className="truncate">{children}</span>
-  </button>
-);
-
-/* ==================================================================== */
-/* Category chips                                                        */
-/* ==================================================================== */
-
-/**
- * The chip row.
- *
- * The first five are real: "Lobby" plus the four categories the catalogue
- * actually has. The rest are in the design but have no games behind them —
- * the backend's category enum is ORIGINALS / NEW_RELEASE / FEATURED / SLOTS —
- * so they render dimmed and tagged "Soon" rather than filtering to an empty
- * grid. Delete DESIGN_ONLY_CHIPS to drop them.
- */
-const DESIGN_ONLY_CHIPS = [
-  'Live Casino',
-  'Blackjack',
-  'Roulette',
-  'Baccarat',
-  'Game Shows',
-  'Table Games',
-];
-
-type ChipKey = GameShelfKey | 'lobby';
-
-const CategoryChips: FC<{
-  active: ChipKey;
-  onChange: (key: ChipKey) => void;
-  soonLabel: string;
-}> = ({ active, onChange, soonLabel }) => {
-  const { t } = useTranslation();
-
-  const chip = (key: ChipKey, label: string, Icon: FC<IconProps>): ReactNode => (
-    <button
-      key={key}
-      type="button"
-      onClick={() => onChange(key)}
-      aria-pressed={active === key}
-      className={`inline-flex h-9 flex-shrink-0 items-center gap-2 rounded-full px-3 text-[12px] font-medium transition-colors ${
-        active === key
-          ? 'rl-glass-active text-white'
-          : 'rl-glass rl-glass-hover text-white/55 hover:text-white'
-      }`}
-    >
-      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white/60">
-        <Icon size={11} />
-      </span>
-      {label}
-    </button>
-  );
-
-  return (
-    <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
-      {chip('lobby', t('browse.lobby'), LayersIcon)}
-      {GAME_CATEGORIES.map((c) => chip(c.key, t(c.titleKey), CATEGORY_ICONS[c.key]))}
-
-      {DESIGN_ONLY_CHIPS.map((label) => (
-        <span
-          key={label}
-          title={`${label} — ${soonLabel}`}
-          aria-disabled="true"
-          className="rl-glass inline-flex h-9 flex-shrink-0 cursor-default items-center gap-2 rounded-full px-3 text-[12px] font-medium text-white/25"
-        >
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.06] text-white/25">
-            <LayersIcon size={11} />
-          </span>
-          {label}
-        </span>
-      ))}
-    </div>
-  );
-};
-
 /* ==================================================================== */
 /* The browser                                                           */
 /* ==================================================================== */
@@ -208,6 +55,18 @@ interface Props {
   query: Record<string, string>;
   /** The route the shelves are on; their pager links are built against it. */
   basePath?: string;
+  /**
+   * Show the search / sort / filter toolbar and the category chips. The home
+   * lobby's design has neither — it is the shelves alone, and browsing lives
+   * on /casino — so it turns them off.
+   */
+  controls?: boolean;
+  /** Which shelves to show when idle, in order. */
+  shelfKeys?: readonly GameShelfKey[];
+  /** A heading to use instead of a shelf's default one. */
+  titles?: Partial<Record<GameShelfKey, TranslationKey>>;
+  /** A row to place between the shelves — the signed-in lobby's sports row. */
+  between?: { after: GameShelfKey; node: ReactNode };
 }
 
 const sortGames = (games: Game[], key: SortKey): Game[] => {
@@ -237,7 +96,15 @@ const sortGames = (games: Game[], key: SortKey): Game[] => {
  * fetched once, lazily, the first time a control is touched — an idle visitor
  * never pays for it.
  */
-const GameBrowser: FC<Props> = ({ shelves, query, basePath = '/' }) => {
+const GameBrowser: FC<Props> = ({
+  shelves,
+  query,
+  basePath = '/',
+  controls = true,
+  shelfKeys = LOBBY_SHELF_KEYS,
+  titles = {},
+  between,
+}) => {
   const { t } = useTranslation();
   const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
@@ -331,12 +198,36 @@ const GameBrowser: FC<Props> = ({ shelves, query, basePath = '/' }) => {
 
   const providers = useMemo(() => providersOf(games), [games]);
 
+  // A shelf with nothing on it (no live games catalogued yet, say) is left
+  // out rather than drawn as an empty bar — unless every shelf is empty, when
+  // the empty states are the honest thing to show.
+  const lobbyShelves = useMemo(() => {
+    const listed = shelfKeys
+      .map((key) => shelves.find((s) => s.key === key))
+      .filter((s): s is GameShelf => s !== undefined);
+    const stocked = listed.filter((s) => s.games.length > 0);
+    return stocked.length > 0 ? stocked : listed;
+  }, [shelves, shelfKeys]);
+
+  // `between` follows its shelf, or — if that shelf was left out — the
+  // nearest shown shelf before it, so the row keeps its place in the order.
+  const betweenAfter = useMemo(() => {
+    if (!between) return undefined;
+    const limit = shelfKeys.indexOf(between.after);
+    const before = lobbyShelves.filter((s) => shelfKeys.indexOf(s.key) <= limit);
+    return before[before.length - 1]?.key;
+  }, [between, shelfKeys, lobbyShelves]);
+
   const results = useMemo(() => {
     let out = games;
 
     if (category !== 'lobby') {
-      const def = GAME_CATEGORIES.find((c) => c.key === category);
-      out = def ? out.filter((g) => g.category === def.category) : out;
+      const { list } = shelfFor(category);
+      out = out.filter(
+        (g) =>
+          (!('category' in list) || g.category === list.category) &&
+          (!('type' in list) || g.type === list.type)
+      );
     }
     if (trimmed) {
       out = out.filter((g) => gameMatches(g, trimmed));
@@ -362,107 +253,113 @@ const GameBrowser: FC<Props> = ({ shelves, query, basePath = '/' }) => {
   const filterLabel = t(FILTERS.find((f) => f.key === filter)?.labelKey ?? 'browse.filter');
 
   return (
-    <section id={BROWSE_ANCHOR} ref={sectionRef} className="scroll-mt-20 space-y-4">
-      {/* --- Toolbar --------------------------------------------------- */}
-      <div className="rl-glass rounded-2xl p-3">
-        <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
-          <label className="rl-field flex h-11 items-center gap-2.5 rounded-xl px-3">
-            <span className="flex-shrink-0 text-white/40" aria-hidden="true">
-              <SearchIcon size={17} />
-            </span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('search.placeholder')}
-              aria-label={t('search.title')}
-              className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
-            />
-          </label>
+    <section
+      id={BROWSE_ANCHOR}
+      ref={sectionRef}
+      className="scroll-mt-20 space-y-[30px] lg:space-y-[calc(var(--u)*26)]"
+    >
+      {/* --- Toolbar ---------------------------------------------------
+          The design's search field with the three dropdowns beside it on
+          desktop, and under it, three across, on a phone. */}
+      {controls && (
+        <div className="flex flex-col gap-[14px] lg:flex-row lg:gap-[calc(var(--u)*20)]">
+          <SearchField
+            value={search}
+            onChange={setSearch}
+            placeholder={t('search.placeholder')}
+            label={t('search.title')}
+          />
 
-          <Dropdown icon={<SortIcon size={12} />} label={sortLabel}>
-            {(close) =>
-              SORTS.map((s) => (
-                <Option
-                  key={s.key}
-                  selected={sort === s.key}
-                  onSelect={() => {
-                    setSort(s.key);
-                    close();
-                  }}
-                >
-                  {t(s.labelKey)}
-                </Option>
-              ))
-            }
-          </Dropdown>
-
-          <Dropdown icon={<SlidersIcon size={12} />} label={filterLabel}>
-            {(close) =>
-              FILTERS.map((f) => (
-                <Option
-                  key={f.key}
-                  selected={filter === f.key}
-                  onSelect={() => {
-                    setFilter(f.key);
-                    close();
-                  }}
-                >
-                  {t(f.labelKey)}
-                </Option>
-              ))
-            }
-          </Dropdown>
-
-          <Dropdown icon={<LayersIcon size={12} />} label={provider || t('browse.provider')}>
-            {(close) => (
-              <>
-                <Option
-                  selected={provider === ''}
-                  onSelect={() => {
-                    chooseProvider('');
-                    close();
-                  }}
-                >
-                  {t('browse.allProviders')}
-                </Option>
-                {providers.map((name) => (
+          <div className="grid grid-cols-[1fr_1fr_1.53fr] gap-[7px] lg:flex lg:gap-[calc(var(--u)*10)]">
+            <Dropdown icon={sortIcon} label={sortLabel}>
+              {(close) =>
+                SORTS.map((s) => (
                   <Option
-                    key={name}
-                    selected={provider === name}
+                    key={s.key}
+                    selected={sort === s.key}
                     onSelect={() => {
-                      chooseProvider(name);
+                      setSort(s.key);
                       close();
                     }}
                   >
-                    {name}
+                    {t(s.labelKey)}
                   </Option>
-                ))}
-              </>
-            )}
-          </Dropdown>
-        </div>
-      </div>
+                ))
+              }
+            </Dropdown>
 
-      {/* --- Category chips -------------------------------------------- */}
-      <CategoryChips active={category} onChange={setCategory} soonLabel={t('common.soon')} />
+            <Dropdown icon={filterIcon} label={filterLabel}>
+              {(close) =>
+                FILTERS.map((f) => (
+                  <Option
+                    key={f.key}
+                    selected={filter === f.key}
+                    onSelect={() => {
+                      setFilter(f.key);
+                      close();
+                    }}
+                  >
+                    {t(f.labelKey)}
+                  </Option>
+                ))
+              }
+            </Dropdown>
+
+            <Dropdown icon={providerIcon} label={provider || t('browse.provider')}>
+              {(close) => (
+                <>
+                  <Option
+                    selected={provider === ''}
+                    onSelect={() => {
+                      chooseProvider('');
+                      close();
+                    }}
+                  >
+                    {t('browse.allProviders')}
+                  </Option>
+                  {providers.map((name) => (
+                    <Option
+                      key={name}
+                      selected={provider === name}
+                      onSelect={() => {
+                        chooseProvider(name);
+                        close();
+                      }}
+                    >
+                      {name}
+                    </Option>
+                  ))}
+                </>
+              )}
+            </Dropdown>
+          </div>
+        </div>
+      )}
+
+      {/* --- Category chips: desktop only, as the designs have it -------- */}
+      {controls && (
+        <div className="hidden lg:block">
+          <CategoryChips active={category} onChange={setCategory} />
+        </div>
+      )}
 
       {/* --- Body ------------------------------------------------------- */}
       {!browsing ? (
-        <div className="space-y-5 sm:space-y-7">
-          {shelves.map((shelf) => (
-            <GameRow
-              key={shelf.key}
-              title={t(
-                GAME_CATEGORIES.find((c) => c.key === shelf.key)?.titleKey ?? 'dash.featuredGames'
-              )}
-              games={shelf.games}
-              shelfKey={shelf.key}
-              page={shelf.pagination.page}
-              totalPages={shelf.pagination.totalPages}
-              query={query}
-              basePath={basePath}
-            />
+        <div className="space-y-10 lg:space-y-[calc(var(--u)*80)]">
+          {between && betweenAfter === undefined && between.node}
+          {lobbyShelves.map((shelf) => (
+            <Fragment key={shelf.key}>
+              <GameRow
+                title={t(titles[shelf.key] ?? shelfFor(shelf.key).titleKey)}
+                games={shelf.games}
+                shelfKey={shelf.key}
+                page={shelf.pagination.page}
+                totalPages={shelf.pagination.totalPages}
+                query={query}
+                basePath={basePath}
+              />
+              {betweenAfter === shelf.key && between?.node}
+            </Fragment>
           ))}
         </div>
       ) : (

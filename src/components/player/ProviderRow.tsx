@@ -1,29 +1,86 @@
-import { useState, type FC } from 'react';
+import { useState, type CSSProperties, type FC } from 'react';
 import Link, { type LinkProps } from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
-import { HeartIcon } from '@/components/icons';
+import FavouriteHeart from '@/components/player/FavouriteHeart';
 import ScrollShelf from '@/components/player/ScrollShelf';
 import { BROWSE_ANCHOR } from '@/components/player/GameBrowser';
 import type { LobbyProvider } from '@/types';
+import type { StaticImageData } from 'next/image';
+import pragmaticPlay from '@/assets/providers/pragmatic-play.svg';
+import evolution from '@/assets/providers/evolution.svg';
+import relaxGaming from '@/assets/providers/relax-gaming.svg';
+import bgaming from '@/assets/providers/bgaming.svg';
+import hacksawGaming from '@/assets/providers/hacksaw-gaming.svg';
+import thunderkick from '@/assets/providers/thunderkick.svg';
+import nolimitCity from '@/assets/providers/nolimit-city.svg';
+import rolluck from '@/assets/lobby/footer/logo.webp';
+
+/**
+ * The design's own studio logos, keyed by provider slug — the fallback when
+ * the admin console has not set a `logo_url` for a studio. A logo set there
+ * always wins; a studio with neither shows its name.
+ */
+const BUNDLED_LOGOS: Record<string, StaticImageData> = {
+  'pragmatic-play': pragmaticPlay,
+  evolution,
+  'relax-gaming': relaxGaming,
+  bgaming,
+  'hacksaw-gaming': hacksawGaming,
+  thunderkick,
+  'nolimit-city': nolimitCity,
+  'rolluck-originals': rolluck,
+};
 
 /**
  * One studio's plate: its logo, or its name when it has none or the image
  * fails to load — a broken-image icon on a lobby plate reads as a broken site.
- *
- * The heart is local-only for the same reason the game tile's is: there is no
- * favourites endpoint to persist it to yet.
+ * The design's glass plate, 103px tall, with the favourite heart inset in its
+ * top-right corner.
  */
+/**
+ * A logo's box: every mark fitted into the same 130×78 frame, which is how
+ * the design sizes them — the wide wordmarks (Evolution, Hacksaw, Nolimit)
+ * all run 130px across, the stacked Pragmatic badge as well, and the tall
+ * Thunderkick shield stands 78px high. One rule, so every studio reads the
+ * same size, uploaded logos included.
+ *
+ * Sized in `--logo-w`, the frame's width as a share of the plate (`cqw`): the
+ * design gives it 130 of 198px on desktop and 102 of 122px on a phone, so the
+ * plate sets the variable per breakpoint and this returns fractions of it.
+ */
+const LOGO_W = 130; // the frame, in design px on the 198px plate
+const LOGO_H = 78;
+
+const logoBox = (ratio: number): CSSProperties => {
+  let w = LOGO_W;
+  let h = w / ratio;
+  if (h > LOGO_H) {
+    h = LOGO_H;
+    w = h * ratio;
+  }
+  return {
+    width: `calc(var(--logo-w) * ${+(w / LOGO_W).toFixed(4)})`,
+    height: `calc(var(--logo-w) * ${+(h / LOGO_W).toFixed(4)})`,
+  };
+};
+
 const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = ({
   provider,
   href,
 }) => {
-  const { t } = useTranslation();
   const [liked, setLiked] = useState(false);
   const [broken, setBroken] = useState(false);
-  const showLogo = !!provider.logo_url && !broken;
+  const bundled = BUNDLED_LOGOS[provider.slug];
+  const logo = provider.logo_url || bundled?.src || null;
+  const showLogo = !!logo && !broken;
+  // Known up front for a bundled mark; read from the image once an uploaded
+  // one loads.
+  const [ratio, setRatio] = useState<number | null>(
+    !provider.logo_url && bundled ? bundled.width / bundled.height : null
+  );
 
   return (
-    <div className="rl-glass rl-glass-hover group relative h-[76px] w-[148px] flex-shrink-0 rounded-xl sm:w-[160px]">
+    <div className="group @container relative h-[calc(var(--u)*103)] [--logo-w:83.6cqw] lg:[--logo-w:65.7cqw]">
       <Link
         href={href}
         // The lobby's own browser does the filtering, so this is a query
@@ -31,35 +88,37 @@ const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = (
         shallow
         scroll={false}
         title={`${provider.name} · ${provider.game_count}`}
-        className="flex h-full w-full items-center justify-center px-5 text-center"
+        className="rl-liquid flex h-full w-full items-center justify-center rounded-[calc(var(--u)*24)] px-[calc(var(--u)*10)] text-center transition-colors hover:bg-white/[0.11] focus:outline-none focus-visible:bg-white/[0.11] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*20)]"
       >
         {showLogo ? (
           <img
-            src={provider.logo_url ?? undefined}
+            src={logo ?? undefined}
             alt={provider.name}
             loading="lazy"
             onError={() => setBroken(true)}
-            className="max-h-[34px] max-w-full object-contain opacity-70 transition-opacity group-hover:opacity-100"
+            onLoad={(e) => {
+              const img = e.currentTarget;
+              if (img.naturalWidth && img.naturalHeight) {
+                setRatio(img.naturalWidth / img.naturalHeight);
+              }
+            }}
+            style={ratio ? logoBox(ratio) : undefined}
+            className={`object-contain ${ratio ? '' : 'max-h-[calc(var(--logo-w)*0.6)] max-w-[var(--logo-w)]'}`}
           />
         ) : (
-          <span className="line-clamp-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-white/60 transition-colors group-hover:text-white">
+          <span className="line-clamp-2 text-[length:max(min(11px,13px),calc(var(--u)*13))] font-semibold uppercase tracking-[0.06em] text-[#f0f1f5] lg:text-[length:max(min(11px,15px),calc(var(--u)*15))]">
             {provider.name}
           </span>
         )}
       </Link>
 
-      <button
-        type="button"
-        onClick={() => setLiked((v) => !v)}
-        aria-pressed={liked}
-        title={`${t('nav.favourites')} — ${t('common.soon')}`}
-        aria-label={`${provider.name} — ${t('nav.favourites')}`}
-        className={`absolute right-1.5 top-1.5 inline-flex h-[22px] w-[22px] items-center justify-center rounded-[6px] transition-colors ${
-          liked ? 'text-[#ef4462]' : 'text-white/35 hover:text-white'
-        }`}
-      >
-        <HeartIcon size={13} className={liked ? 'fill-current' : undefined} />
-      </button>
+      <FavouriteHeart
+        liked={liked}
+        onToggle={() => setLiked((v) => !v)}
+        label={provider.name}
+        tone="red"
+        className="right-[calc(var(--u)*6)] top-[calc(var(--u)*6)] h-[calc(var(--u)*32)] w-[calc(var(--u)*32)] lg:right-[calc(var(--u)*10)] lg:top-[calc(var(--u)*10)]"
+      />
     </div>
   );
 };
@@ -92,7 +151,9 @@ const ProviderRow: FC<Props> = ({ providers, basePath, query }) => {
   }
 
   return (
-    <ScrollShelf title={t('dash.providers')}>
+    // No studio directory exists, so "View all" opens the game browser,
+    // whose provider picker lists every studio.
+    <ScrollShelf title={t('dash.providers')} href={`${basePath}#${BROWSE_ANCHOR}`} paged>
       {providers.map((provider) => (
         <ProviderCard
           key={provider.id}

@@ -1,27 +1,38 @@
-import { useEffect, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { FieldGroup, SettingRow } from '@/components/profile/SectionShell';
-import { ReceiptIcon, WalletIcon } from '@/components/icons';
+import TransactionFilters from '@/components/profile/transactions/TransactionFilters';
+import TransactionTable from '@/components/profile/transactions/TransactionTable';
+import TablePager from '@/components/profile/transactions/TablePager';
+import {
+  PAGE_SIZE,
+  queryTransactions,
+  type Transaction,
+  type TxFilter,
+} from '@/components/profile/transactions/mockTransactions';
 import { analytics } from '@/services/analytics';
-import type { Balance } from '@/types';
-
-/** Exact decimal string in, display string out — never through a float. */
-const formatAmount = (amount: string): string =>
-  Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-interface Props {
-  balance: Balance | null;
-  loading: boolean;
-}
 
 /**
- * What the wallet holds now, and the ledger that would explain how it got
- * there. The balances are real (GET /balance/me); there is no transactions
- * endpoint yet, so the history below is an empty state rather than invented
- * rows.
+ * The ledger.
+ *
+ * NOT WIRED — `queryTransactions` answers off an array in memory, and is the
+ * one function to replace when a ledger endpoint exists. Everything this
+ * section does around it is already what a request needs: the search, the
+ * category and the page go out as parameters, and the pager counts pages from
+ * the `total` that comes back rather than from the rows it is holding.
+ *
+ * The wallet summary this tab used to open with is gone: it was not in the
+ * design, and the top bar's `BalanceMenu` carries the live balance on every
+ * page, so nothing was stranded by dropping it.
  */
-const TransactionsSection: FC<Props> = ({ balance, loading }) => {
+const TransactionsSection: FC = () => {
   const { t } = useTranslation();
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<TxFilter>('all');
+  const [page, setPage] = useState(1);
+
+  const [rows, setRows] = useState<readonly Transaction[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   // The closest thing to a cashier the app has today. Traffic here is the
   // baseline for the buy/redeem flows when they arrive.
@@ -29,42 +40,55 @@ const TransactionsSection: FC<Props> = ({ balance, loading }) => {
     analytics.wallet.viewed();
   }, []);
 
+  useEffect(() => {
+    let live = true;
+    setLoading(true);
+
+    void queryTransactions({ query, filter, page, pageSize: PAGE_SIZE }).then((result) => {
+      // A slower answer to an older query must not overwrite a newer one.
+      if (!live) return;
+      setRows(result.rows);
+      setTotal(result.total);
+      setLoading(false);
+    });
+
+    return () => {
+      live = false;
+    };
+  }, [query, filter, page]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  /** Any change to what is being asked for starts again at page one. */
+  const reset =
+    <T,>(set: (value: T) => void) =>
+    (value: T) => {
+      set(value);
+      setPage(1);
+    };
+
   return (
-    <div className="space-y-6">
-      <FieldGroup label={t('profile.wallet')}>
-        {loading && <SettingRow title={t('common.loading')} />}
+    <div>
+      <h2 className="rl-h-section">{t('profile.transactions')}</h2>
 
-        {!loading && !balance && <SettingRow title="—" detail={t('profile.loadFailed')} />}
+      <div className="mt-4.5">
+        <TransactionFilters
+          query={query}
+          onQuery={reset(setQuery)}
+          filter={filter}
+          onFilter={reset(setFilter)}
+        />
+      </div>
 
-        {!loading && balance && (
-          <>
-            <SettingRow
-              icon={<WalletIcon size={15} />}
-              title={`${formatAmount(balance.real_amount)} ${balance.currency}`}
-              detail={t('wallet.real')}
-            />
-            <SettingRow
-              icon={<WalletIcon size={15} />}
-              title={`${formatAmount(balance.bonus_amount)} ${balance.currency}`}
-              detail={t('wallet.bonus')}
-            />
-            <SettingRow
-              icon={<WalletIcon size={15} />}
-              title={`${formatAmount(balance.total_amount)} ${balance.currency}`}
-              detail={t('wallet.total')}
-            />
-          </>
-        )}
-      </FieldGroup>
+      {/* Held at the table's height while a page is in flight, so the pager
+          below does not jump up and back down on every keystroke. */}
+      <div className={`mt-3.5 transition-opacity ${loading ? 'opacity-60' : ''}`}>
+        <TransactionTable rows={rows} />
+      </div>
 
-      <FieldGroup label={t('profile.transactions')}>
-        <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 text-slate-600">
-            <ReceiptIcon size={20} />
-          </span>
-          <p className="text-xs text-slate-500">{t('profile.noTransactions')}</p>
-        </div>
-      </FieldGroup>
+      <div className="mt-8.25">
+        <TablePager page={Math.min(page, totalPages)} totalPages={totalPages} onPage={setPage} />
+      </div>
     </div>
   );
 };

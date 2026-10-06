@@ -1,15 +1,26 @@
 import { Html, Head, Main, NextScript } from 'next/document';
 
-import { GA_MEASUREMENT_ID } from '@/utils/ga';
-
 /**
  * `data-theme` is seeded with the same default ThemeContext starts from, so
  * the server markup matches the first client render. ThemeContext swaps in the
  * user's stored theme once it mounts.
  *
- * Poppins is loaded here rather than through `next/font` so the build does not
- * need network access to succeed; `display=swap` means a blocked or slow font
- * costs nothing but a repaint — the stack in index.css carries the first frame.
+ * The typefaces are loaded here rather than through `next/font` so the build
+ * does not need network access to succeed; `display=swap` means a blocked or
+ * slow font costs nothing but a repaint — the stack in index.css carries the
+ * first frame.
+ *
+ * Onest is the design's typeface almost everywhere: nearly every text node in
+ * the Figma file reports `Onest` at Regular, Medium or SemiBold. Rubik comes
+ * with it for the two places that do not — the selected tab on the Responsible
+ * Gambling rail, and the whole body of the Terms and Privacy documents, which
+ * the design sets in Rubik Regular and Bold. 700 is loaded for those headings;
+ * without it the browser synthesises a fake bold and the weight reads wrong.
+ *
+ * The app shipped Poppins until now, which is why column widths measured
+ * against Onest in the design were always a few pixels out here. It is kept at
+ * the end of the stack so anything still rendering while Onest loads lands on
+ * the face this app has been read in rather than on Arial.
  */
 export default function Document() {
   return (
@@ -19,40 +30,9 @@ export default function Document() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap"
         />
 
-        {/*
-          GA4, only when a measurement id is configured — development and
-          preview builds send nothing.
-
-          `send_page_view: false` because useTracking reports every page view
-          itself, including the client-side route changes GA cannot see in a
-          single-page app. Left at its default, the first page of every visit
-          would be counted twice.
-
-          Loaded with `async` and left out of the tracker's own path entirely:
-          this layer is a convenience for marketing, and nothing in the admin
-          console depends on it arriving.
-        */}
-        {GA_MEASUREMENT_ID !== '' && (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
-                `,
-              }}
-            />
-          </>
-        )}
       </Head>
       <body>
         <Main />

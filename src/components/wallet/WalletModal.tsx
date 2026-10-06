@@ -71,17 +71,24 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-lg rounded-2xl bg-slate-800 border border-slate-700 shadow-2xl overflow-hidden">
+      <div className="rl-modal-glass w-full max-w-lg overflow-hidden">
         {/* Header + close */}
-        <div className="flex items-center justify-between px-4 pt-4">
-          <h2 className="text-sm font-semibold text-slate-100">Wallet Total</h2>
+        <div className="flex items-center justify-between gap-3 px-4 pt-4">
+          <h2 className="rl-h-card min-w-0 truncate text-[#f0f1f5]">Wallet Total</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -90,7 +97,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
 
         {/* Tab bar */}
         <div className="mt-3 px-4">
-          <div className="flex items-center gap-1 border-b border-slate-700 overflow-x-auto no-scrollbar">
+          <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-white/8">
             {TABS.map((tab) => {
               const isActive = active === tab.id;
               return (
@@ -101,7 +108,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
                   aria-selected={isActive}
                   onClick={() => setActive(tab.id)}
                   className={`relative px-3 pb-2 pt-1 text-xs font-semibold whitespace-nowrap transition-colors ${
-                    isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                    isActive ? 'text-[#f0f1f5]' : 'text-[#9da2b4] hover:text-[#f0f1f5]'
                   }`}
                 >
                   {tab.label}
@@ -116,7 +123,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
 
         {/* Tab content */}
         <div className="p-4">
-          {active === 'deposit' && <DepositTab />}
+          {active === 'deposit' && <DepositTab onLeave={onClose} />}
           {active === 'withdraw' && <WithdrawTab />}
           {active === 'buy' && <ComingSoonTab title="Buy Crypto" />}
           {active === 'tip' && <ComingSoonTab title="Tip" />}

@@ -1,6 +1,5 @@
 import { useState, type FC, type FormEvent } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import ButtonLoader from '@/components/ButtonLoader';
@@ -9,6 +8,7 @@ import ActiveBonusCard from '@/components/bonus/ActiveBonusCard';
 import { TicketIcon } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 import { useBonuses } from '@/hooks/useBonuses';
 import {
   BONUS_DESCRIPTION_KEYS,
@@ -61,6 +61,7 @@ const BonusExplainer: FC = () => {
 const BonusesPage: FC = () => {
   const { token, hydrated } = useAuth();
   const { t, locale } = useTranslation();
+  const { openLogin, openRegister } = useAuthModal();
   const { summary, error, busyId, refresh, claim, forfeit } = useBonuses();
 
   const [code, setCode] = useState('');
@@ -273,18 +274,20 @@ const BonusesPage: FC = () => {
               <section className="flex flex-col items-start gap-4 rounded-3xl border border-slate-800 bg-slate-900 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <p className="text-sm text-slate-300">{t('bonus.loginPrompt')}</p>
                 <div className="flex gap-2">
-                  <Link
-                    href="/auth/login"
+                  <button
+                    type="button"
+                    onClick={() => openLogin()}
                     className="inline-flex h-10 items-center rounded-xl border border-slate-700 bg-slate-800 px-4 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700"
                   >
                     {t('account.login')}
-                  </Link>
-                  <Link
-                    href="/auth/register"
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openRegister()}
                     className="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
                   >
                     {t('account.register')}
-                  </Link>
+                  </button>
                 </div>
               </section>
               <BonusExplainer />

@@ -1,11 +1,15 @@
-import type { FC, ReactNode } from 'react';
+import type { FC } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import liveOne from '@/assets/live_1.png';
 import liveTwo from '@/assets/live_2.png';
+import avatarJohn from '@/assets/lobby/avatar-john.webp';
+import avatarTony from '@/assets/lobby/avatar-tony.webp';
+import pauseIcon from '@/assets/lobby/stream-pause.svg';
+import linkIcon from '@/assets/lobby/stream-link.svg';
+import shareIcon from '@/assets/lobby/stream-share.svg';
 import { useTranslation } from '@/context/I18nContext';
 import { categoryHref } from '@/constants/games';
-import { LinkIcon, PauseIcon, ShareIcon } from '@/components/icons';
 
 /**
  * Illustrative "loved by live streamers" row.
@@ -21,98 +25,102 @@ const STREAMS: {
   game: string;
   blurb: string;
   still: StaticImageData;
+  avatar: StaticImageData;
 }[] = [
   {
     name: 'John Mathew',
     game: 'Wild Falls',
     blurb: 'Free spins on Wild Falls at $50 a spin.',
     still: liveOne,
+    avatar: avatarJohn,
   },
   {
     name: 'Tony Stark',
     game: 'Return of the Dead',
     blurb: 'Auto-spinning Return of the Dead at $25 a spin.',
     still: liveTwo,
+    avatar: avatarTony,
   },
 ];
 
-/** A small round control on the still. Inert: there is no player behind it. */
-const Control: FC<{ label: string; children: ReactNode }> = ({ label, children }) => (
+/**
+ * A round control on the still, 48px at the design's 754px card. Inert: there
+ * is no player behind it. The first one wears the design's white ring.
+ */
+const Control: FC<{ label: string; icon: StaticImageData; ringed?: boolean }> = ({
+  label,
+  icon,
+  ringed,
+}) => (
   <span
     role="img"
     aria-label={label}
     title={label}
-    className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white/80 backdrop-blur-sm"
+    className={`flex h-[6.37cqw] w-[6.37cqw] items-center justify-center rounded-full backdrop-blur-md ${
+      ringed ? 'bg-white/[0.07] ring-1 ring-inset ring-[#f0f1f5]' : 'bg-black/45'
+    }`}
   >
-    {children}
+    <img src={icon.src} alt="" className="h-[3.18cqw] w-[3.18cqw]" />
   </span>
 );
 
 /**
- * Two cards share the row from `sm` up, which is how the design lays them out;
- * on a phone each takes most of the width and the next one peeks in from the
- * edge, so the row still reads as scrollable. The stills are 754×579, and the
- * cards keep that ratio so nothing is cropped out of the frame.
+ * Two cards share the row from lg up, as the design lays them out; a phone
+ * shows one at a time. Each card is laid out in `cqw` of the design's 754px
+ * card — the phone design is the same card at half size — with floors on the
+ * caption so it stays readable there.
  */
 const StreamersRow: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-center text-[17px] font-semibold text-white sm:text-[19px]">
+    <section className="space-y-[calc(var(--u)*14)] lg:space-y-[calc(var(--u)*45)]">
+      <h2 className="text-center text-[length:max(min(11px,24px),calc(var(--u)*24))] font-semibold leading-[calc(var(--u)*32)] tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(min(11px,36px),calc(var(--u)*36))] lg:font-bold lg:leading-[calc(var(--u)*44)] lg:text-[#f2f5f9]">
         {t('dash.liveStreamers')}
       </h2>
 
-      <div className="rl-shelf -mx-1 gap-3 px-1 pb-1">
+      <div className="rl-shelf flex snap-x snap-mandatory gap-[calc(var(--u)*12)] lg:gap-[calc(var(--u)*40)]">
         {STREAMS.map((s) => (
           <Link
             key={s.name}
             href={categoryHref('featured')}
             title={`${s.name} — ${s.game}`}
-            className="group relative aspect-[754/579] w-[86%] flex-shrink-0 overflow-hidden rounded-2xl border border-white/[0.07] sm:w-[calc(50%-6px)]"
+            className="group @container relative aspect-[754/579] w-full flex-shrink-0 snap-start overflow-hidden rounded-[calc(var(--u)*17)] lg:w-[calc(50%-20px)] lg:rounded-[calc(var(--u)*34)]"
           >
             <Image
               src={s.still}
               alt={`${s.name} streaming ${s.game}`}
               fill
               placeholder="blur"
-              sizes="(max-width: 640px) 86vw, (max-width: 1600px) 42vw, 680px"
+              sizes="(max-width: 1024px) 100vw, 760px"
               className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
 
             {/* Grounds the caption over whatever the stream shows at the foot. */}
             <span
-              className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/90 via-black/55 to-transparent"
+              className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-black/80 to-transparent"
               aria-hidden="true"
             />
 
-            <span className="absolute right-3 top-3 flex flex-col items-center gap-2">
-              <Control label="Paused">
-                <PauseIcon size={12} />
-              </Control>
-              <Control label="Open stream">
-                <LinkIcon size={12} />
-              </Control>
-              <Control label="Share">
-                <ShareIcon size={12} />
-              </Control>
+            <span className="absolute right-[2.92cqw] top-[2.92cqw] flex flex-col gap-[1.59cqw]">
+              <Control label="Paused" icon={pauseIcon} ringed />
+              <Control label="Open stream" icon={linkIcon} />
+              <Control label="Share" icon={shareIcon} />
             </span>
 
-            <span className="absolute inset-x-0 bottom-0 flex items-center gap-3 p-4">
-              <span
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/15 text-[12px] font-semibold text-white backdrop-blur-sm"
-                aria-hidden="true"
-              >
-                {s.name
-                  .split(' ')
-                  .map((part) => part.charAt(0))
-                  .join('')}
-              </span>
+            <span className="absolute inset-x-0 bottom-0 flex h-[14.6cqw] items-center gap-[1.9cqw] px-[2.92cqw]">
+              <Image
+                src={s.avatar}
+                alt=""
+                className="h-[6.9cqw] w-[6.9cqw] flex-shrink-0 rounded-full object-cover"
+              />
               <span className="min-w-0">
-                <span className="block truncate text-[14px] font-semibold text-white">
+                <span className="block truncate text-[max(14px,2.65cqw)] font-medium leading-[1.4] text-[#f0f1f5] lg:font-semibold lg:tracking-[-0.02em]">
                   {s.name}
                 </span>
-                <span className="block truncate text-[12px] text-white/60">{s.blurb}</span>
+                <span className="block truncate text-[max(12px,2.39cqw)] leading-[1.55] text-[#f0f1f5]">
+                  {s.blurb}
+                </span>
               </span>
             </span>
           </Link>

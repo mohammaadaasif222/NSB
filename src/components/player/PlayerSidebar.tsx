@@ -1,35 +1,39 @@
 import { useState, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image, { type StaticImageData } from 'next/image';
 import { useRouter } from 'next/router';
 import logo from '@/assets/logo.png';
-import casinoGlyph from '@/assets/casino-sidebar.svg';
-import sportsGlyph from '@/assets/sports-sidebar.svg';
+import casinoGlyph from '@/assets/lobby/rail/section-casino.svg';
+import sportsGlyph from '@/assets/lobby/rail/section-sports.svg';
+import casinoArt from '@/assets/lobby/player/panel-casino.webp';
+import sportsArt from '@/assets/lobby/player/panel-sports.webp';
+import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
+import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
+import recentIcon from '@/assets/lobby/rail/nav-recent.svg';
+import favouritesIcon from '@/assets/lobby/rail/nav-favourites.svg';
+import originalsIcon from '@/assets/lobby/rail/nav-originals.svg';
+import betsIcon from '@/assets/lobby/rail/nav-bets.svg';
+import themeIcon from '@/assets/lobby/rail/nav-theme.svg';
+import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
+import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
+import promotionIcon from '@/assets/lobby/rail/nav-promotion.svg';
+import bonusesIcon from '@/assets/lobby/rail/nav-bonuses.svg';
+import telegramIcon from '@/assets/lobby/rail/rail-telegram.svg';
+import suggestionIcon from '@/assets/lobby/rail/rail-suggestion.svg';
+import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
+import instagram from '@/assets/lobby/footer/social-instagram.svg';
+import facebook from '@/assets/lobby/footer/social-facebook.svg';
+import xSocial from '@/assets/lobby/footer/social-x.svg';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useAuthModal } from '@/context/AuthModalContext';
+import { useAuth } from '@/context/AuthContext';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
+import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
+import { fullNameOf } from '@/types/profile';
 import { categoryHref } from '@/constants/games';
-import {
-  ClockIcon,
-  CoinIcon,
-  CrownIcon,
-  DiamondIcon,
-  FacebookIcon,
-  GiftIcon,
-  HeartIcon,
-  InstagramIcon,
-  PaletteIcon,
-  SendIcon,
-  ShieldIcon,
-  SuggestionIcon,
-  TicketIcon,
-  TrophyIcon,
-  WhatsappIcon,
-  XSocialIcon,
-  ZapIcon,
-  type IconProps,
-} from '@/components/icons';
+import { CoinIcon } from '@/components/icons';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -39,6 +43,33 @@ interface Props {
   collapsed: boolean;
 }
 
+/** `n` design pixels — see PlayerLayout's `--u`. */
+const U = (n: number): string => `calc(var(--u)*${n})`;
+
+/**
+ * An icon drawn through a mask so it takes the text colour around it: the
+ * design's own glyphs are fixed grey files, and this is what lets the active
+ * row read white and the idle ones muted from one asset each.
+ */
+const Glyph: FC<{ src: string; size: number }> = ({ src, size }) => (
+  <span
+    aria-hidden="true"
+    className="block flex-shrink-0 bg-current"
+    style={{
+      width: U(size),
+      height: U(size),
+      WebkitMaskImage: `url(${src})`,
+      maskImage: `url(${src})`,
+      WebkitMaskRepeat: 'no-repeat',
+      maskRepeat: 'no-repeat',
+      WebkitMaskPosition: 'center',
+      maskPosition: 'center',
+      WebkitMaskSize: 'contain',
+      maskSize: 'contain',
+    }}
+  />
+);
+
 /* ==================================================================== */
 /* Section switch — Casino / Sports                                      */
 /* ==================================================================== */
@@ -46,6 +77,8 @@ interface Props {
 interface SectionProps {
   href: string;
   glyph: string;
+  /** Signed in, the design swaps the line glyph for the section's 3D render. */
+  art?: string;
   label: string;
   active: boolean;
   collapsed: boolean;
@@ -53,40 +86,49 @@ interface SectionProps {
 }
 
 /**
- * One half of the section switch. The glyph is the design's own line artwork
- * rather than an icon from the set — it is the single largest thing in the
- * rail and the two shapes (roulette, ball) are what identify the sections at
- * a glance.
- *
- * The SVG files paint a fixed grey, so they are drawn through a mask and take
- * the button's own text colour: that is what makes the active half read as
- * white and the idle one as muted, from one asset each.
+ * One half of the design's 228×90 section switch. Signed out: a 42px line
+ * glyph over an 18px label. Signed in: the 58px 3D render over a 14px label.
  */
-const SectionTab: FC<SectionProps> = ({ href, glyph, label, active, collapsed, onClick }) => (
+const SectionTab: FC<SectionProps> = ({ href, glyph, art, label, active, collapsed, onClick }) => (
   <Link
     href={href}
     onClick={onClick}
     aria-current={active ? 'page' : undefined}
     title={label}
-    className={`flex flex-1 flex-col items-center justify-center gap-1.5 rounded-xl transition-colors ${
-      active ? 'text-white' : 'text-white/60 hover:text-white/90'
-    } ${collapsed ? 'lg:py-2.5' : ''}`}
+    className={`flex flex-1 flex-col items-center justify-center rounded-[calc(var(--u)*24)] transition-colors ${
+      art ? '' : 'gap-[calc(var(--u)*2)]'
+    } ${active ? 'bg-white/[0.12] text-white' : 'text-[#9da2b4] hover:text-white'} ${
+      collapsed ? 'lg:py-[calc(var(--u)*10)]' : ''
+    }`}
   >
+    {art ? (
+      // The render carries its glow: the image is the 58px art plus ~20px
+      // of glow on every side, so it overhangs a box the size of the art.
+      <span
+        className={`relative flex-shrink-0 ${
+          collapsed
+            ? 'h-[calc(var(--u)*40)] w-[calc(var(--u)*40)]'
+            : 'h-[calc(var(--u)*58)] w-[calc(var(--u)*58)]'
+        }`}
+      >
+        <img
+          src={art}
+          alt=""
+          className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none"
+        />
+      </span>
+    ) : (
+      <Glyph src={glyph} size={collapsed ? 30 : 42} />
+    )}
     <span
-      aria-hidden="true"
-      className={`block bg-current ${collapsed ? 'h-[30px] w-[30px] lg:h-6 lg:w-6' : 'h-[30px] w-[30px]'}`}
-      style={{
-        WebkitMaskImage: `url(${glyph})`,
-        maskImage: `url(${glyph})`,
-        WebkitMaskRepeat: 'no-repeat',
-        maskRepeat: 'no-repeat',
-        WebkitMaskPosition: 'center',
-        maskPosition: 'center',
-        WebkitMaskSize: 'contain',
-        maskSize: 'contain',
-      }}
-    />
-    <span className={`text-[14px] leading-none ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
+      className={`${
+        art
+          ? 'text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)]'
+          : 'text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*28)]'
+      } ${collapsed ? 'lg:hidden' : ''}`}
+    >
+      {label}
+    </span>
   </Link>
 );
 
@@ -95,9 +137,9 @@ const SectionTab: FC<SectionProps> = ({ href, glyph, label, active, collapsed, o
 /* ==================================================================== */
 
 const ROW =
-  'flex h-[38px] w-full items-center gap-2.5 rounded-xl px-3 text-[13.5px] transition-colors';
+  'flex h-[calc(var(--u)*44)] w-full flex-shrink-0 items-center gap-[calc(var(--u)*11)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*15)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] transition-colors';
 const ROW_ACTIVE = 'bg-white/10 text-white';
-const ROW_IDLE = 'text-white/75 hover:bg-white/5 hover:text-white';
+const ROW_IDLE = 'text-[#9da2b4] hover:bg-white/5 hover:text-white';
 
 interface RailLinkProps {
   href?: string;
@@ -127,12 +169,12 @@ const RailLink: FC<RailLinkProps> = ({
   collapsed,
 }) => {
   const className = `${ROW} ${active ? ROW_ACTIVE : ROW_IDLE} ${
-    collapsed ? 'lg:justify-center lg:px-2' : ''
+    collapsed ? 'lg:justify-center lg:px-[calc(var(--u)*8)]' : ''
   }`;
 
   const body = (
     <>
-      <span className="flex-shrink-0 text-current opacity-80">{icon}</span>
+      {icon}
       <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{children}</span>
     </>
   );
@@ -168,32 +210,30 @@ const RailLink: FC<RailLinkProps> = ({
   );
 };
 
-/** A footer pill — Join Telegram, Suggestion Box. */
+/** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
 const RailButton: FC<{
-  icon: FC<IconProps>;
+  icon: StaticImageData;
   label: string;
   href: string;
   collapsed: boolean;
-}> = ({ icon: Icon, label, href, collapsed }) => (
+}> = ({ icon, label, href, collapsed }) => (
   <a
     href={href}
     target={href.startsWith('http') ? '_blank' : undefined}
     rel={href.startsWith('http') ? 'noreferrer' : undefined}
     title={label}
-    className={`rl-btn-ghost flex h-9 items-center justify-center gap-2 rounded-xl text-[11.5px] font-medium ${
-      collapsed ? 'lg:px-0' : 'px-2'
-    }`}
+    className="flex h-[calc(var(--u)*44)] items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white"
   >
-    <Icon size={14} />
+    <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
     <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
   </a>
 );
 
-const SOCIALS: { Icon: FC<IconProps>; label: string; href: string }[] = [
-  { Icon: WhatsappIcon, label: 'WhatsApp', href: 'https://wa.me/' },
-  { Icon: InstagramIcon, label: 'Instagram', href: 'https://instagram.com/' },
-  { Icon: FacebookIcon, label: 'Facebook', href: 'https://facebook.com/' },
-  { Icon: XSocialIcon, label: 'X', href: 'https://x.com/' },
+const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
+  { icon: whatsapp, label: 'WhatsApp', href: 'https://wa.me/' },
+  { icon: instagram, label: 'Instagram', href: 'https://instagram.com/' },
+  { icon: facebook, label: 'Facebook', href: 'https://facebook.com/' },
+  { icon: xSocial, label: 'X', href: 'https://x.com/' },
 ];
 
 /* ==================================================================== */
@@ -201,26 +241,33 @@ const SOCIALS: { Icon: FC<IconProps>; label: string; href: string }[] = [
 /* ==================================================================== */
 
 /**
- * Category rail.
+ * Category rail, as the design draws it: a 260px dark glass panel floating
+ * down the left from the top of the page — the bar sits beside it, not above.
  *
- * Casino (this app) and Sports sit up top as the two site sections, then the
- * welcome-package teaser, then the player's own shortcuts. Rolluck Originals
- * is the only entry with a built feature behind it — the originals shelf's own
- * category page. Every other destination routes to a placeholder page that
- * says so.
+ * Casino and Sports sit up top as the two site sections, then the
+ * welcome-package teaser, then the player's own shortcuts in a list that
+ * scrolls on its own, and the socials and contact pills pinned at the foot.
+ * Rolluck Originals is the only entry with a built feature behind it — the
+ * originals shelf's own category page. Every other destination routes to a
+ * placeholder page that says so.
  *
- * It floats: a rounded glass panel inset from the viewport rather than a
- * bordered column, sticky under the bar with its own scroll so a long list
- * never pushes the footer pills off-screen.
+ * Sized in `--u` (see PlayerLayout), so it shrinks with the page on a
+ * narrower desktop; on a phone it is the slide-in drawer at its design size.
  */
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
-  const { pathname } = useRouter();
+  const router = useRouter();
+  const { pathname } = router;
   const { t } = useTranslation();
+  const { openRegister } = useAuthModal();
+  const { token, logout } = useAuth();
   const { theme, applyTheme } = useTheme();
-  const { updateMe } = useMe();
+  const { me, updateMe } = useMe();
   const [themeOpen, setThemeOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
-  const width = collapsed ? 'lg:w-[76px]' : 'lg:w-[205px]';
+  const name = me ? me.display_name || fullNameOf(me) : '';
+
+  const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
 
   return (
     <>
@@ -234,16 +281,16 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
       )}
 
       <aside
-        className={`rl-glass-dark fixed left-0 top-0 z-50 flex h-screen w-[220px] flex-shrink-0 flex-col rounded-none transition-[transform,width] duration-200 lg:sticky lg:top-[94px] lg:z-auto lg:h-[calc(100vh-106px)] lg:translate-x-0 lg:rounded-[20px] ${width} ${
+        className={`rl-glass-deep fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-shrink-0 flex-col rounded-none p-4 transition-[transform,width] duration-200 lg:sticky lg:top-[calc(var(--u)*20)] lg:z-auto lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-x-0 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-label={t('nav.games')}
       >
-        {/* The wordmark lives in the bar on desktop; the phone drawer covers
-            it, so it is repeated here with the drawer's close control. */}
-        <div className="flex h-14 flex-shrink-0 items-center justify-between gap-2 border-b border-white/[0.07] px-3 lg:hidden">
+        {/* The phone drawer covers the bar, so it repeats the wordmark with
+            the drawer's close control. */}
+        <div className="mb-4 flex h-10 flex-shrink-0 items-center justify-between gap-2 lg:hidden">
           <Link href="/" onClick={onClose} className="flex min-w-0 items-center">
-            <Image src={logo} alt="ROLLUCK" className="h-6 w-auto" priority />
+            <Image src={logo} alt="ROLLUCK" className="h-7 w-auto" priority />
           </Link>
           <button
             type="button"
@@ -255,66 +302,108 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           </button>
         </div>
 
-        {/* --- Section switch ------------------------------------------- */}
-        <div className="flex-shrink-0 px-3 pt-3">
-          <div
-            className={`flex h-[70px] rounded-2xl border border-white/[0.08] bg-white/[0.05] ${
-              collapsed ? 'lg:h-auto lg:flex-col lg:py-1' : ''
-            }`}
-          >
-            <SectionTab
-              href="/casino"
-              glyph={casinoGlyph.src}
-              label={t('nav.casino')}
-              active={pathname === '/' || pathname === '/casino' || pathname.startsWith('/game')}
-              collapsed={collapsed}
+        {/* Phone, signed in: the account — the bar has no room for an
+            avatar there, so Profile and Logout live here instead. */}
+        {token && (
+          <div className="mb-4 flex flex-shrink-0 items-center gap-3 rounded-[24px] bg-[#1b1f29] p-2 pr-3 sm:hidden">
+            <Link
+              href="/profile"
               onClick={onClose}
-            />
-            <SectionTab
-              href="/sports"
-              glyph={sportsGlyph.src}
-              label={t('nav.sports')}
-              active={pathname === '/sports'}
-              collapsed={collapsed}
-              onClick={onClose}
-            />
+              className="flex min-w-0 flex-1 items-center gap-3"
+            >
+              <img
+                src={me?.avatar_url || defaultAvatar.src}
+                alt=""
+                className="h-10 w-10 flex-shrink-0 rounded-full bg-[#666666] object-cover"
+              />
+              <span className="min-w-0">
+                <span className="block truncate text-[14px] font-medium leading-5 text-white">
+                  {name || t('account.account')}
+                </span>
+                <span className="block text-[12px] leading-4 text-[#9da2b4]">
+                  {t('account.profile')}
+                </span>
+              </span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setLogoutOpen(true)}
+              className="flex-shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium text-[#ef4462] transition-colors hover:bg-[#ef4462]/10"
+            >
+              {t('account.logout')}
+            </button>
           </div>
+        )}
+
+        {/* --- Section switch ------------------------------------------- */}
+        <div
+          className={`rl-liquid flex h-[calc(var(--u)*90)] flex-shrink-0 gap-0 rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ${
+            collapsed ? 'lg:h-auto lg:flex-col' : ''
+          }`}
+        >
+          <SectionTab
+            href="/casino"
+            glyph={casinoGlyph.src}
+            art={token ? casinoArt.src : undefined}
+            label={t('nav.casino')}
+            active={pathname === '/casino' || pathname.startsWith('/game')}
+            collapsed={collapsed}
+            onClick={onClose}
+          />
+          <SectionTab
+            href="/sports"
+            glyph={sportsGlyph.src}
+            art={token ? sportsArt.src : undefined}
+            label={t('nav.sports')}
+            active={pathname === '/sports'}
+            collapsed={collapsed}
+            onClick={onClose}
+          />
         </div>
 
         {/* --- Welcome package ------------------------------------------ */}
-        <Link
-          href="/auth/register"
-          onClick={onClose}
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            openRegister();
+          }}
           title="Welcome package — $1,500 + 100 free spins"
-          className={`mx-3 mt-4 flex h-[96px] flex-shrink-0 flex-col justify-center rounded-[14px] border border-white/[0.05] bg-white/[0.07] px-[13px] transition-colors hover:bg-white/10 ${
-            collapsed ? 'lg:h-auto lg:px-2 lg:py-3 lg:text-center' : ''
+          className={`mt-[calc(var(--u)*24)] flex flex-shrink-0 flex-col gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*16.25)] bg-[#1b1f29] px-[calc(var(--u)*16.25)] py-[calc(var(--u)*17.5)] text-start transition-colors hover:bg-[#222735] ${
+            collapsed ? 'lg:items-center lg:px-[calc(var(--u)*8)] lg:text-center' : ''
           }`}
         >
-          <p
-            className={`text-[11px] uppercase leading-none tracking-[0.02em] text-white/70 ${
+          <span
+            className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] uppercase leading-[calc(var(--u)*20)] text-[#9da2b4] ${
               collapsed ? 'lg:hidden' : ''
             }`}
           >
             Welcome package
-          </p>
-          <p
-            className={`font-bold leading-none text-white ${collapsed ? 'text-[13px]' : 'mt-2 text-[21px]'}`}
+          </span>
+          <span
+            className={`block font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
+              collapsed
+                ? 'text-[length:max(min(11px,16px),calc(var(--u)*16))]'
+                : 'text-[length:max(min(11px,28px),calc(var(--u)*28))]'
+            }`}
           >
             $1,500
-          </p>
-          <p
-            className={`mt-2 text-[10.5px] leading-none text-white/55 ${collapsed ? 'lg:hidden' : ''}`}
+          </span>
+          <span
+            className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] ${
+              collapsed ? 'lg:hidden' : ''
+            }`}
           >
             + 100 free spins
-          </p>
-        </Link>
+          </span>
+        </button>
 
         {/* --- Shortcuts ------------------------------------------------- */}
-        <nav className="thin-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-2 pt-2.5">
+        <nav className="thin-scrollbar -mx-1 mt-[calc(var(--u)*12)] flex min-h-0 flex-1 flex-col gap-[calc(var(--u)*4)] overflow-y-auto px-1">
           <RailLink
             href="/rolluck-oath"
             active={pathname === '/rolluck-oath'}
-            icon={<ShieldIcon size={18} strokeWidth={1.6} />}
+            icon={icon(oathIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -323,7 +412,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <RailLink
             href="/recents"
             active={pathname === '/recents'}
-            icon={<ClockIcon size={18} strokeWidth={1.6} />}
+            icon={icon(recentIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -332,7 +421,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <RailLink
             href="/favourites"
             active={pathname === '/favourites'}
-            icon={<HeartIcon size={18} strokeWidth={1.6} />}
+            icon={icon(favouritesIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -341,7 +430,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <RailLink
             href={categoryHref('originals')}
             active={pathname === '/games/[category]'}
-            icon={<DiamondIcon size={18} strokeWidth={1.6} />}
+            icon={icon(originalsIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -350,7 +439,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <RailLink
             href="/my-bets"
             active={pathname === '/my-bets'}
-            icon={<TicketIcon size={18} strokeWidth={1.6} />}
+            icon={icon(betsIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -359,16 +448,16 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <RailLink
             onSelect={() => setThemeOpen(true)}
             active={false}
-            icon={<PaletteIcon size={18} strokeWidth={1.6} />}
+            icon={icon(themeIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
-            {t('account.appearance')}
+            {t('nav.theme')}
           </RailLink>
           <RailLink
             href="/vip-club"
             active={pathname === '/vip-club'}
-            icon={<CrownIcon size={18} strokeWidth={1.6} />}
+            icon={icon(vipIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -377,20 +466,16 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <RailLink
             href="/tournaments"
             active={pathname === '/tournaments'}
-            icon={<TrophyIcon size={18} strokeWidth={1.6} />}
+            icon={icon(tournamentsIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
             {t('nav.tournaments')}
           </RailLink>
-
-          {/* Built features the design's shortlist leaves out. They keep the
-              rail's styling and sit below it, so the visible top of the list
-              still matches the design while nothing becomes unreachable. */}
           <RailLink
             href="/promotions"
             active={pathname === '/promotions'}
-            icon={<GiftIcon size={18} strokeWidth={1.6} />}
+            icon={icon(promotionIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -399,16 +484,23 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <RailLink
             href="/bonuses"
             active={pathname === '/bonuses'}
-            icon={<ZapIcon size={18} strokeWidth={1.6} />}
+            icon={icon(bonusesIcon)}
             onClick={onClose}
             collapsed={collapsed}
           >
             {t('nav.bonuses')}
           </RailLink>
+
+          {/* A built feature the design's list leaves out: kept at the end,
+              below the fold of the list, so nothing becomes unreachable. */}
           <RailLink
             href="/rewards"
             active={pathname === '/rewards'}
-            icon={<CoinIcon size={18} strokeWidth={1.6} />}
+            icon={
+              <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
+                <CoinIcon size={18} strokeWidth={1.6} />
+              </span>
+            }
             onClick={onClose}
             collapsed={collapsed}
           >
@@ -417,36 +509,41 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
         </nav>
 
         {/* --- Socials and contact pills --------------------------------- */}
-        <div className={`flex-shrink-0 space-y-2 px-2.5 pb-3 pt-2 ${collapsed ? 'lg:px-2' : ''}`}>
+        <div className="flex-shrink-0 pt-[calc(var(--u)*13)]">
           <div
-            className={`flex items-center justify-between gap-1 ${collapsed ? 'lg:flex-col' : ''}`}
+            className={`flex items-center justify-center gap-[calc(var(--u)*18)] py-[calc(var(--u)*6)] ${
+              collapsed ? 'lg:flex-col' : ''
+            }`}
           >
-            {SOCIALS.map(({ Icon, label, href }) => (
+            {SOCIALS.map(({ icon: mark, label, href }) => (
               <a
                 key={label}
                 href={href}
                 target="_blank"
                 rel="noreferrer"
                 aria-label={label}
-                className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+                title={label}
+                className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] items-center justify-center transition-transform hover:-translate-y-0.5"
               >
-                <Icon size={14} />
+                <img src={mark.src} alt="" className="h-full w-full" />
               </a>
             ))}
           </div>
 
-          <RailButton
-            icon={SendIcon}
-            label="Join Telegram"
-            href="https://t.me/"
-            collapsed={collapsed}
-          />
-          <RailButton
-            icon={SuggestionIcon}
-            label="Suggestion Box"
-            href="mailto:support@rolluck.com?subject=Suggestion"
-            collapsed={collapsed}
-          />
+          <div className="mt-[calc(var(--u)*11)] space-y-[calc(var(--u)*7)]">
+            <RailButton
+              icon={telegramIcon}
+              label="Join Telegram"
+              href="https://t.me/"
+              collapsed={collapsed}
+            />
+            <RailButton
+              icon={suggestionIcon}
+              label="Suggestion Box"
+              href="mailto:support@rolluck.com?subject=Suggestion"
+              collapsed={collapsed}
+            />
+          </div>
         </div>
       </aside>
 
@@ -458,6 +555,19 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             applyTheme(next);
             updateMe({ theme: next });
           }}
+        />
+      )}
+
+      {logoutOpen && (
+        <LogoutConfirmModal
+          onConfirm={() => {
+            // Land on the public lobby, as the bar's own logout does.
+            setLogoutOpen(false);
+            onClose();
+            logout();
+            router.push('/');
+          }}
+          onCancel={() => setLogoutOpen(false)}
         />
       )}
     </>

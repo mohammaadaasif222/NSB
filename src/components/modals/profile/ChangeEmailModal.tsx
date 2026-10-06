@@ -1,17 +1,24 @@
 import { useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import ModalInput from '@/components/inputs/ModalInput';
 import ProfileModalShell from './ProfileModalShell';
 
 interface Props {
-  currentEmail: string;
+  /** Null when the account has no email yet — the field opens empty. */
+  currentEmail: string | null;
   onClose: () => void;
   onSaved: (email: string) => void;
 }
 
 const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
-  const [email, setEmail] = useState(currentEmail);
+  // Security-sensitive profile changes are risk-scored: redirecting recovery
+  // to a new address is how an account takeover is made permanent.
+  const { run } = useSeonGuard();
+
+  const [email, setEmail] = useState(currentEmail ?? '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +28,7 @@ const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
       setError('Please enter a valid email address');
       return;
     }
-    if (trimmed === currentEmail.toLowerCase()) {
+    if (trimmed === currentEmail?.toLowerCase()) {
       setError('This is already your email');
       return;
     }
@@ -29,7 +36,9 @@ const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await apiService.patch('/users/me', { email: trimmed });
+      const res = await run((headers) =>
+        apiService.patch('/users/me', { email: trimmed }, { headers })
+      );
       if (res?.success) {
         toast.success('Email updated successfully');
         onSaved(trimmed);
@@ -38,6 +47,8 @@ const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
         setError(res?.message || 'Failed to update email');
       }
     } catch (err) {
+      // Closing the code prompt is a decision, not a failure.
+      if (isStepUpCancelled(err)) return;
       const e = err as { message?: string; errors?: Record<string, string> };
       setError(e?.errors?.email || e?.message || 'Failed to update email');
     } finally {

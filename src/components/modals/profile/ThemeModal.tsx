@@ -41,7 +41,11 @@ const ThemeModal: FC<Props> = ({ currentTheme, onClose, onSaved }) => {
       loading={loading}
       submitLabel="Apply Theme"
     >
-      <div className="grid grid-cols-2 gap-3">
+      {/* The dialog's own field, one per theme — same 34 radius and white-5%
+          fill, so the grid reads as a row of controls rather than a second
+          palette inside a glass dialog. The chosen one takes the gold the rest
+          of the app uses for "this is the one". */}
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {THEME_OPTIONS.map((opt) => {
           const active = selected === opt.value;
           return (
@@ -49,18 +53,19 @@ const ThemeModal: FC<Props> = ({ currentTheme, onClose, onSaved }) => {
               key={opt.value}
               type="button"
               onClick={() => setSelected(opt.value)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors ${
-                active
-                  ? 'border-blue-500 bg-blue-600/15'
-                  : 'border-slate-700 bg-slate-800 hover:border-slate-500'
+              aria-pressed={active}
+              className={`rl-modal-field flex h-14 items-center gap-3 px-5 text-start transition-colors ${
+                active ? 'border-(--rl-gold)/60 bg-white/10' : 'hover:bg-white/8'
               }`}
             >
               <span
-                className="w-6 h-6 rounded-full border border-slate-600 flex-shrink-0"
+                className="h-6 w-6 shrink-0 rounded-full border border-white/20"
                 style={{ background: opt.swatch }}
               />
-              <span className="text-sm text-slate-200 flex-1 text-left">{opt.label}</span>
-              {active && <Check size={16} className="text-blue-400" />}
+              <span className="flex-1 truncate text-base leading-6 font-medium text-[#f0f1f5]">
+                {opt.label}
+              </span>
+              {active && <Check size={16} className="shrink-0 text-(--rl-gold)" />}
             </button>
           );
         })}

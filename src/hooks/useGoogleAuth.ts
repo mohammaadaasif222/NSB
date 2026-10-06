@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 
@@ -7,6 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import apiService from '@/services/api';
 import { isPlatformRole } from '@/constants/roles';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import { analytics, failureReason } from '@/services/analytics';
 import { trackSignupComplete } from '@/utils/events';
 
@@ -66,8 +67,9 @@ export interface GoogleAuth {
 
 export function useGoogleAuth(): GoogleAuth {
   const { login } = useAuth();
-  const router = useRouter();
   const { t } = useTranslation();
+  // Handles a fraud step-up on a risky sign-in.
+  const { run } = useSeonGuard();
 
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
@@ -106,10 +108,17 @@ export function useGoogleAuth(): GoogleAuth {
       try {
         setLoading(true);
 
-        const response = await apiService.post<LoginResponseData>('/auth/social/login', {
-          token: accessToken,
-          type: 'google',
-        });
+        // A risky social sign-in is challenged for a one-time code. Only an
+        // EXISTING account can be challenged — a brand-new one has no address
+        // on file yet, so the backend lets those through (the provider has
+        // already vouched for the email). A BLOCK still refuses either way.
+        const response = await run((headers) =>
+          apiService.post<LoginResponseData>(
+            '/auth/social/login',
+            { token: accessToken, type: 'google' },
+            { headers }
+          )
+        );
 
         const sessionToken = response?.data?.token;
 
@@ -148,9 +157,12 @@ export function useGoogleAuth(): GoogleAuth {
         // login either way; a first-time Google account shows up as a new user
         // in GA4 regardless.
         analytics.auth.loginCompleted('google');
-        router.push('/');
+        // No redirect: sign-in happens in a modal over whatever page the
+        // player was on, and the modal closes itself once there is a session.
         toast.success(t('login.success'));
       } catch (err) {
+        // Closing the code prompt is a decision, not a failed sign-in.
+        if (isStepUpCancelled(err)) return;
         const apiErr = err as ApiError;
         analytics.auth.loginFailed('google', failureReason(apiErr));
         toast.error(apiErr?.message || t('auth.googleFailed'));
@@ -158,7 +170,9 @@ export function useGoogleAuth(): GoogleAuth {
         setLoading(false);
       }
     },
-    [login, router, t]
+    // `run` is stable (memoised in SeonGuardProvider), so listing it does
+    // not rebuild this callback on every render.
+    [login, t, run]
   );
 
   const signIn = useCallback((): void => {

@@ -56,7 +56,7 @@ export function ConversionWithMetadata() {
  * Example 3: Display transaction history
  */
 export function TransactionHistoryExample() {
-  const { convertMultiple } = useCurrencyConversion();
+  const { formatCurrencyDisplay } = useCurrencyConversion();
 
   // Mock transaction data from backend (all in USD)
   const transactions = [
@@ -64,11 +64,6 @@ export function TransactionHistoryExample() {
     { id: 2, amountUSD: '25.50', type: 'withdrawal', date: '2026-09-27' },
     { id: 3, amountUSD: '100.25', type: 'deposit', date: '2026-09-26' },
   ];
-
-  // Convert all amounts at once
-  const converted = convertMultiple(
-    transactions.map((t) => ({ amount: t.amountUSD, currency: 'USD' }))
-  );
 
   return (
     <table>
@@ -80,15 +75,20 @@ export function TransactionHistoryExample() {
         </tr>
       </thead>
       <tbody>
-        {transactions.map((tx, idx) => (
-          <tr key={tx.id}>
-            <td>{tx.type}</td>
-            <td>
-              {converted[idx].displayAmount} {converted[idx].currency}
-            </td>
-            <td>{tx.date}</td>
-          </tr>
-        ))}
+        {transactions.map((tx, idx) => {
+          // The whole point of the example: read the batch-converted row
+          // rather than converting again per cell.
+          const row = converted[idx];
+          return (
+            <tr key={tx.id}>
+              <td>{tx.type}</td>
+              <td>
+                {row ? `${row.displayAmount} ${row.currency}` : formatCurrencyDisplay(tx.amountUSD)}
+              </td>
+              <td>{tx.date}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

@@ -2,6 +2,7 @@ import { useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
 import { TIMEZONE_OPTIONS } from '@/types/profile';
+import RlSelect, { type RlOption } from '@/components/inputs/RlSelect';
 import ProfileModalShell from './ProfileModalShell';
 
 interface Props {
@@ -9,6 +10,9 @@ interface Props {
   onClose: () => void;
   onSaved: (timezone: string) => void;
 }
+
+/** The zone strings are their own labels — nothing to map, just the shape. */
+const TZ_OPTIONS: RlOption<string>[] = TIMEZONE_OPTIONS.map((tz) => ({ value: tz, label: tz }));
 
 const ChangeTimezoneModal: FC<Props> = ({ currentTimezone, onClose, onSaved }) => {
   const [timezone, setTimezone] = useState(currentTimezone || TIMEZONE_OPTIONS[0]);
@@ -47,23 +51,30 @@ const ChangeTimezoneModal: FC<Props> = ({ currentTimezone, onClose, onSaved }) =
       onSubmit={handleSubmit}
       loading={loading}
     >
-      <div>
-        <label htmlFor="profile-timezone" className="text-sm block mb-1 text-slate-300">
+      <div className="space-y-1.75">
+        <label
+          htmlFor="profile-timezone"
+          className="block text-sm leading-5 font-medium text-[#f0f1f5]"
+        >
           Time Zone
         </label>
-        <select
+
+        {/* `RlSelect`, not a native one: the option list a `<select>` opens is
+            drawn by the operating system, square and outside the page, and no
+            stylesheet reaches it. In a glass dialog that reads as a different
+            application. */}
+        <RlSelect
           id="profile-timezone"
-          className="w-full px-3 py-2 bg-slate-800 rounded text-slate-200 outline-none"
           value={timezone}
-          onChange={(e) => setTimezone(e.target.value)}
-        >
-          {TIMEZONE_OPTIONS.map((tz) => (
-            <option key={tz} value={tz}>
-              {tz}
-            </option>
-          ))}
-        </select>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+          options={TZ_OPTIONS}
+          onChange={setTimezone}
+        />
+
+        {error && (
+          <p role="alert" className="text-sm leading-5 text-[#ef4462]">
+            {error}
+          </p>
+        )}
       </div>
     </ProfileModalShell>
   );

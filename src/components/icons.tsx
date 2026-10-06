@@ -224,6 +224,12 @@ export const MailIcon: FC<IconProps> = (p) => (
   </Svg>
 );
 
+export const PhoneIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" />
+  </Svg>
+);
+
 export const CheckIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <polyline points="20 6 9 17 4 12" />
@@ -233,6 +239,75 @@ export const CheckIcon: FC<IconProps> = (p) => (
 export const PencilIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
+  </Svg>
+);
+
+/** The avatar's "change picture" affordance. */
+export const CameraIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2l1.2-2h8.2l1.2 2h2.2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z" />
+    <circle cx="12" cy="13" r="3.2" />
+  </Svg>
+);
+
+/* --- The account rail's set ------------------------------------------ */
+/* Drawn to match the design's sidebar, which uses bare glyphs rather than
+   the filled/axis-bearing variants used elsewhere in the app. */
+
+/** Statistic: three bars on an implied baseline, no axis drawn. */
+export const BarsIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <line x1="6" y1="20" x2="6" y2="13" />
+    <line x1="12" y1="20" x2="12" y2="4" />
+    <line x1="18" y1="20" x2="18" y2="9" />
+  </Svg>
+);
+
+/** A signed-in device, in the Security tab's session list. */
+export const MonitorIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <rect x="2.5" y="4" width="19" height="12.5" rx="2" />
+    <line x1="8.5" y1="20.5" x2="15.5" y2="20.5" />
+    <line x1="12" y1="16.5" x2="12" y2="20.5" />
+  </Svg>
+);
+
+/** Contact number, in the Verification tab. */
+export const ContactPhoneIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M6.6 3h3l1.5 3.8-2 1.4a12 12 0 0 0 5.7 5.7l1.4-2L20 13.4v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.2 2 2 0 0 1 6.6 3z" />
+  </Svg>
+);
+
+/** Verification: a plain circle, kept distinct from Security's shield. */
+export const CircleCheckIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <polyline points="8.5 12 11 14.5 15.5 9.5" />
+  </Svg>
+);
+
+/** Transactions: money going out and coming back. */
+export const ArrowsUpDownIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <line x1="8" y1="19" x2="8" y2="5" />
+    <polyline points="5 8 8 5 11 8" />
+    <line x1="16" y1="5" x2="16" y2="19" />
+    <polyline points="13 16 16 19 19 16" />
+  </Svg>
+);
+
+/**
+ * Log out: the arrow leaves the bracket.
+ *
+ * `LogInIcon` is its mirror and is what the rail used to borrow — it points
+ * the wrong way for a control that ends the session.
+ */
+export const LogOutIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
   </Svg>
 );
 
@@ -446,6 +521,14 @@ export const ArrowUpIcon: FC<IconProps> = (p) => (
   </Svg>
 );
 
+/** The diagonal "leaves this page" arrow on the account rail's log-out row. */
+export const ArrowUpRightIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <line x1="7" y1="17" x2="17" y2="7" />
+    <polyline points="7 7 17 7 17 17" />
+  </Svg>
+);
+
 export const ChevronLeftIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <polyline points="15 18 9 12 15 6" />
@@ -575,7 +658,55 @@ export const CATEGORY_ICONS: Record<GameShelfKey, FC<IconProps>> = {
   new: ZapIcon,
   featured: StarIcon,
   slots: DiceIcon,
+  live: ActivityIcon,
+  popular: TrophyIcon,
 };
+
+export const ShieldCheckIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <polyline points="9 12 11 14 15 10" />
+  </Svg>
+);
+
+export const AlertTriangleIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </Svg>
+);
+
+export const RefreshCwIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+    <path d="M16 21h5v-5" />
+  </Svg>
+);
+
+export const EditIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </Svg>
+);
+
+export const CalendarIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </Svg>
+);
+
+export const MapPinIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </Svg>
+);
 
 /** One glyph per reward, shared by the rewards tray and the rewards page. */
 export const REWARD_ICONS: Record<RewardType, FC<IconProps>> = {

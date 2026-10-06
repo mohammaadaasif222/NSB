@@ -29,7 +29,8 @@ export interface ApiUser {
   first_name: string;
   last_name: string;
   username: string | null;
-  email: string;
+  /** Null on accounts with no email on file — the API does send it. */
+  email: string | null;
   mobile: string;
   role: UserRole;
   status: UserStatus;

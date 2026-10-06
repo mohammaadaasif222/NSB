@@ -2,6 +2,7 @@ import { useEffect, type FC } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 import { PanelHeader } from '@/components/player/HeaderPopover';
 import ButtonLoader from '@/components/ButtonLoader';
 import { ClockIcon, LinkIcon, REWARD_ICONS, TrophyIcon } from '@/components/icons';
@@ -131,6 +132,7 @@ const Notice: FC<{ children: React.ReactNode }> = ({ children }) => (
 const RewardPanel: FC = () => {
   const { token } = useAuth();
   const { t } = useTranslation();
+  const { openLogin } = useAuthModal();
   const { summary, error, claiming, clockOffset, refresh, claim } = useRewards();
 
   const visible = summary?.rewards.filter((reward) => reward.enabled) ?? [];
@@ -140,12 +142,13 @@ const RewardPanel: FC = () => {
       return (
         <Notice>
           <p>{t('rewards.loginPrompt')}</p>
-          <Link
-            href="/auth/login"
+          <button
+            type="button"
+            onClick={() => openLogin()}
             className="mt-3 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 transition-colors"
           >
             {t('account.login')}
-          </Link>
+          </button>
         </Notice>
       );
     }

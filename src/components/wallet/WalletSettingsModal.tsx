@@ -45,7 +45,7 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-2xl rounded-2xl bg-slate-800 border border-slate-700 shadow-2xl overflow-hidden">
+      <div className="rl-modal-glass w-full max-w-2xl overflow-hidden">
         {/* Header + close */}
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="text-slate-400"
+              className="text-[#9da2b4]"
             >
               <circle cx="12" cy="12" r="1" />
               <path d="M12 1v6m0 6v6" />
@@ -64,13 +64,13 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
               <path d="M1 12h6m6 0h6" />
               <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24" />
             </svg>
-            <h2 className="text-sm font-semibold text-slate-100">Wallet Settings</h2>
+            <h2 className="rl-h-card min-w-0 truncate text-[#f0f1f5]">Wallet Settings</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
             <svg
               width="14"
@@ -90,12 +90,12 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
         <div className="p-6 space-y-6">
           {/* Display Currency Section */}
           <div>
-            <h3 className="text-xs font-semibold text-slate-300 mb-4 uppercase tracking-wider">
+            <h3 className="mb-4 text-xs font-semibold tracking-wider text-[#9da2b4] uppercase">
               Display Currency
             </h3>
 
             {displayCurrencies.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-4">No currencies available</p>
+              <p className="py-4 text-center text-xs text-[#9da2b4]">No currencies available</p>
             ) : (
               <div className="grid grid-cols-3 gap-3">
                 {displayCurrencies.map((fiat) => (
@@ -103,21 +103,21 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
                     key={fiat.code}
                     type="button"
                     onClick={() => switchDisplayCurrency(fiat?.code as DisplayFiat)}
-                    className={`relative p-3 rounded-lg border-2 transition-all ${
+                    className={`rl-modal-field relative p-3 transition-colors ${
                       displayCurrency === fiat?.code
-                        ? 'bg-blue-500/20 border-blue-500 text-blue-100'
-                        : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-600'
+                        ? 'border-(--rl-gold)/60 bg-white/10 text-[#f0f1f5]'
+                        : 'text-[#9da2b4] hover:bg-white/8'
                     }`}
                   >
                     {/* Checkmark for selected */}
                     {displayCurrency === fiat?.code && (
-                      <div className="absolute -top-2 -right-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-(--rl-gold)">
                         <svg
                           width="12"
                           height="12"
                           viewBox="0 0 24 24"
                           fill="none"
-                          stroke="white"
+                          stroke="#07080a"
                           strokeWidth="3"
                         >
                           <polyline points="20 6 9 17 4 12" />

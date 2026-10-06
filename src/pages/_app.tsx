@@ -6,9 +6,12 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { I18nProvider } from '@/context/I18nContext';
 import { UserProvider } from '@/context/UserContext';
 import { WalletProvider } from '@/context/WalletContext';
+import { SeonGuardProvider } from '@/context/SeonGuardContext';
 import { SupportChatProvider } from '@/context/SupportChatContext';
 import { CurrencyConversionProvider } from '@/context/CurrencyConversionContext';
+import { AuthModalProvider } from '@/context/AuthModalContext';
 import RouteLoader from '@/components/RouteLoader';
+import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import Analytics from '@/components/analytics/Analytics';
 import IntercomLauncher from '@/components/support/IntercomLauncher';
 import { EventListeners } from '@/components/listeners/EventListeners';
@@ -48,24 +51,35 @@ export default function App({ Component, pageProps }: AppProps) {
           <ThemeProvider>
             <UserProvider>
               <WalletProvider>
+                {/* Inside WalletProvider: it reads the summary's snapshot
+                    rates to convert crypto amounts for display. */}
                 <CurrencyConversionProvider>
-                  <EventListeners />
+                  {/* Outside AuthModalProvider so the auth modals' "Need help?"
+                      can open the support messenger. */}
                   <SupportChatProvider>
-                    <Component {...pageProps} />
-                    <RouteLoader />
-                    {/* Outside the page so the bubble survives route changes,
-                        and inside SupportChatProvider so an operator switching
-                        Intercom off removes it without a deploy. */}
-                    <IntercomLauncher />
-                    <ToastContainer
-                      position="top-right"
-                      autoClose={3000}
-                      newestOnTop
-                      closeOnClick
-                      pauseOnHover
-                      draggable
-                      theme="dark"
-                    />
+                    <AuthModalProvider>
+                      {/* Innermost, so the step-up prompt renders above every page
+                          and any component can reach it through useSeonGuard(). */}
+                      <SeonGuardProvider>
+                        <EventListeners />
+                        <Component {...pageProps} />
+                      </SeonGuardProvider>
+                      <SeonAgentWarmup />
+                      <RouteLoader />
+                      {/* Outside the page so the bubble survives route changes,
+                          and inside SupportChatProvider so an operator switching
+                          Intercom off removes it without a deploy. */}
+                      <IntercomLauncher />
+                      <ToastContainer
+                        position="top-right"
+                        autoClose={3000}
+                        newestOnTop
+                        closeOnClick
+                        pauseOnHover
+                        draggable
+                        theme="dark"
+                      />
+                    </AuthModalProvider>
                   </SupportChatProvider>
                 </CurrencyConversionProvider>
               </WalletProvider>

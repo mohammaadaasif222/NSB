@@ -11,9 +11,12 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "node --test \"src/**/*.spec.ts\"",
+    "test:watch": "node --test --watch \"src/**/*.spec.ts\""
   },
   "dependencies": {
+    "@sumsub/websdk-react": "^2.9.0",
     "axios": "^1.7.7",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^1.14.0",

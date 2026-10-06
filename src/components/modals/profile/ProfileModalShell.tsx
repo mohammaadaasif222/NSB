@@ -1,5 +1,28 @@
-import type { FC, ReactNode } from 'react';
+import { useId, type FC, type ReactNode } from 'react';
+import { useTranslation } from '@/context/I18nContext';
+import { useModalA11y } from '@/hooks/useModalA11y';
+import { CloseIcon } from '@/components/icons';
 
+/**
+ * The account dialogs' shell.
+ *
+ * REBUILT FROM THE DESIGN'S GLASS. What was here was a slate-900 card with a
+ * blue Save button — the palette this app shipped before the Figma file, and
+ * nothing like the dialogs the design draws. Those are measured in
+ * `SetLimitModal` and `SelfExclusionConfirmModal`; this carries the same
+ * numbers, so an account dialog and a Responsible Gambling one are the same
+ * object: 581 wide, 34 of radius, blurred glass over a 60% black backdrop, a
+ * centred title with the close chip beside it, and the actions stacked at the
+ * bottom — gold primary, then a white-10% cancel under it.
+ *
+ * There is a second reason beyond looks. The slate palette is rewritten by the
+ * per-user theme remap, so these dialogs changed colour per skin while the
+ * design's own ones did not. Built from `rl-*` they now match on every theme.
+ *
+ * `useModalA11y` brings what this shell never had: Tab stays inside, Escape
+ * closes, focus goes back where it came from, and the page behind does not
+ * scroll underneath.
+ */
 interface ProfileModalShellProps {
   title: string;
   onClose: () => void;
@@ -7,8 +30,15 @@ interface ProfileModalShellProps {
   loading: boolean;
   submitLabel?: string;
   submitDisabled?: boolean;
+  /** Reds the primary — for the dialogs that take something away. */
+  destructive?: boolean;
   children: ReactNode;
 }
+
+/* Both actions, same shape: the design gives them equal weight and stacks
+   them rather than putting a quiet link beside a loud button. */
+const BUTTON =
+  'flex h-14 w-full shrink-0 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium transition-colors';
 
 const ProfileModalShell: FC<ProfileModalShellProps> = ({
   title,
@@ -17,39 +47,72 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
   loading,
   submitLabel = 'Save',
   submitDisabled = false,
+  destructive = false,
   children,
 }) => {
+  const { t } = useTranslation();
+  const titleId = useId();
+  const dialogRef = useModalA11y(onClose);
+
   return (
     <div
-      className="fixed inset-0 bg-black/70 flex justify-center items-center z-50"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-xl p-6"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
+        className="rl-modal-glass flex max-h-[96vh] w-full max-w-[581px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7"
       >
-        <h2 className="text-xl font-bold mb-5 text-slate-100">{title}</h2>
+        <div className="flex shrink-0 items-start">
+          <h2
+            id={titleId}
+            className="min-w-0 flex-1 text-center text-[20px] leading-7 font-semibold tracking-[-0.56px] text-[#f0f1f5] sm:text-[28px] sm:leading-9"
+          >
+            {title}
+          </h2>
 
-        <div className="space-y-4">{children}</div>
-
-        <div className="flex justify-end gap-3 mt-6">
           <button
+            type="button"
             onClick={onClose}
-            type="button"
-            className="px-4 py-2 rounded text-slate-300 hover:text-white"
+            aria-label={t('common.close')}
+            className="rl-chip -mt-2 flex h-12 w-12 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
-            Cancel
-          </button>
-
-          <button
-            onClick={onSubmit}
-            type="button"
-            disabled={loading || submitDisabled}
-            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-2 rounded text-white transition-colors"
-          >
-            {loading ? 'Saving…' : submitLabel}
+            <CloseIcon size={18} />
           </button>
         </div>
+
+        {/* `min-h-0` is what lets this shrink and scroll instead of growing and
+            pushing the buttons off a short screen. */}
+        <div className="thin-scrollbar mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto">
+          {children}
+        </div>
+
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={loading || submitDisabled}
+          className={
+            destructive
+              ? `${BUTTON} mt-6 bg-[#e33827] text-white hover:bg-[#f04433] disabled:cursor-not-allowed disabled:opacity-50`
+              : `${BUTTON} rl-btn-gold mt-6 disabled:cursor-not-allowed disabled:opacity-50`
+          }
+        >
+          {loading ? t('common.saving') : submitLabel}
+        </button>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className={`${BUTTON} mt-2.5 bg-white/10 text-[#f0f1f5] hover:bg-white/15`}
+        >
+          {t('common.cancel')}
+        </button>
       </div>
     </div>
   );

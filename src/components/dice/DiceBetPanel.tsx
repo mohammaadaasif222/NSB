@@ -1,8 +1,8 @@
 import { useState, type FC, type ReactNode } from 'react';
-import Link from 'next/link';
 
 import ButtonLoader from '@/components/ButtonLoader';
 import { useTranslation } from '@/context/I18nContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 import { useWallet } from '@/context/WalletContext';
 import { sanitizeDecimal } from '@/utils/dice';
 import { formatAmount, withCurrency } from '@/utils/money';
@@ -109,6 +109,7 @@ const AutoRuleField: FC<{
 /** Bet size, profit on win, and the Roll / autobet controls. */
 const DiceBetPanel: FC<Props> = ({ dice, config, authReady, signedIn }) => {
   const { t } = useTranslation();
+  const { openLogin } = useAuthModal();
   const { summary } = useWallet();
   const [mode, setMode] = useState<Mode>('manual');
 
@@ -121,12 +122,13 @@ const DiceBetPanel: FC<Props> = ({ dice, config, authReady, signedIn }) => {
   const action = (): ReactNode => {
     if (authReady && !signedIn) {
       return (
-        <Link
-          href="/auth/login"
+        <button
+          type="button"
+          onClick={() => openLogin()}
           className={`${PRIMARY_BUTTON} bg-blue-600 text-white hover:bg-blue-500`}
         >
           {t('game.loginToPlay')}
-        </Link>
+        </button>
       );
     }
 

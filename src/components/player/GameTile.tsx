@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useState, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Game } from '@/types';
@@ -6,15 +6,16 @@ import { gameHref } from '@/constants/games';
 import { useTranslation } from '@/context/I18nContext';
 import { useGameImpression } from '@/hooks/useGameImpression';
 import { trackGameOpen } from '@/utils/events';
-import { HeartIcon, UserIcon } from '@/components/icons';
+import FavouriteHeart from '@/components/player/FavouriteHeart';
+import personIcon from '@/assets/lobby/person.svg';
 
 interface Props {
   game: Game;
   /**
-   * `shelf` is a fixed-width tile for a horizontal row; `grid` fills its
-   * column and keeps the artwork at a 3:4 ratio.
+   * Fixed-width tile for a horizontally scrolling shelf. When false the tile
+   * fills its parent (grid cell).
    */
-  layout?: 'shelf' | 'grid';
+  shelf?: boolean;
   /**
    * Which shelf or page this tile was rendered in, recorded alongside the
    * impression and the open.
@@ -43,31 +44,46 @@ const playersOn = (id: string): number => {
   return 120 + (hash % 3200);
 };
 
-/**
- * One game: artwork, the badges that sit over it, and a favourite toggle.
+/*
+ * Every measurement below is the design's 198px-wide card expressed in `cqw`
+ * (1cqw = 1.98px at that width), so the whole tile — badge, pills, heart —
+ * scales as one piece from the phone shelf to the desktop's 198px. Text sizes
+ * keep a floor so they stay legible on the smallest tiles.
  *
- * The design drops the caption under the tile — the catalogue's artwork
- * already carries the game's name and studio — so the title rides on the
- * image's `alt` and the link's tooltip instead, which is also where the RTP
- * now lives.
- *
- * The heart is deliberately local-only. There is no favourites endpoint yet
- * (the rail's Favourites entry is a placeholder page for the same reason), so
- * it fills in for the session and says so on hover rather than pretending the
- * choice was saved.
+ * `cqw` resolves against the nearest ancestor with a `container-type`, which
+ * is the `group` div below.
  */
-const GameTile: FC<Props> = ({ game, layout = 'grid', surface }) => {
+
+/** A frosted pill along the tile's foot: 19px tall, 10px text at 198px. */
+const FootPill: FC<{ children: ReactNode }> = ({ children }) => (
+  <span className="inline-flex h-[9.6cqw] items-center gap-[1.52cqw] rounded-full border border-white/30 bg-white/20 px-[4.55cqw] text-[max(7px,5.05cqw)] leading-none tabular-nums text-[#f0f1f5] shadow-[0_0_15px_rgba(0,0,0,0.36)]">
+    {children}
+  </span>
+);
+
+/**
+ * One game: the artwork in the design's notched card (`rl-card-shape` — 23px
+ * corners and the step bitten out of the top-right), a "New" badge, the
+ * players and RTP pills along its foot, and a favourite heart sitting in the
+ * notch. Without the notch the heart lands on the artwork and is lost in it,
+ * which is why the shape is not a plain rounded rectangle.
+ *
+ * The tile fills whatever width its parent gives it — a shelf track or a grid
+ * cell — and keeps the design's 198:261 shape.
+ *
+ * The catalogue's artwork already carries the game's name and studio, so
+ * neither is drawn again; the title rides on the image's `alt` and the link's
+ * tooltip.
+ */
+const GameTile: FC<Props> = ({ game, shelf = false, surface }) => {
   const { t } = useTranslation();
   const [liked, setLiked] = useState(false);
-  const shelf = layout === 'shelf';
-
-  const players = playersOn(game.id);
 
   const impressionRef = useGameImpression(game.slug, surface);
 
   return (
     <div ref={impressionRef} className={shelf ? 'w-[112px] flex-shrink-0 sm:w-[130px]' : 'w-full'}>
-      <div className="group relative">
+      <div className="group relative [container-type:inline-size]">
         <Link
           href={gameHref(game.slug)}
           // Recorded on click rather than on the game page's own mount: this is
@@ -75,69 +91,54 @@ const GameTile: FC<Props> = ({ game, layout = 'grid', surface }) => {
           // that is half of what makes the impression figure readable.
           onClick={() => trackGameOpen(game.slug, surface)}
           title={`${game.title} — ${game.provider} · ${t('game.rtp')} ${game.rtp}`}
-          className="block rounded-xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+          className="rl-card-shape block text-left focus:outline-none focus-visible:brightness-110"
         >
-          <div
-            className={`relative overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.03] transition-colors group-hover:border-white/20 ${
-              shelf ? 'h-[148px] sm:h-[172px]' : 'aspect-[3/4]'
-            }`}
-          >
-            {game.image_url ? (
-              <Image
-                src={game.image_url}
-                alt={game.title}
-                fill
-                sizes={
-                  shelf
-                    ? '(max-width: 640px) 112px, 130px'
-                    : '(max-width: 640px) 33vw, (max-width: 1280px) 20vw, 200px'
-                }
-                className="object-cover transition-transform duration-300 group-hover:scale-[1.06]"
-              />
-            ) : (
-              // Synced games can arrive without artwork; show the title rather
-              // than an empty grey box.
-              <span className="absolute inset-0 flex items-end bg-gradient-to-br from-slate-700 to-slate-900 p-2 text-[11px] font-bold leading-tight text-slate-200">
-                {game.title}
-              </span>
-            )}
-
-            {/* A scrim so the badges stay legible over pale artwork. */}
-            <span
-              className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-black/60 to-transparent"
-              aria-hidden="true"
+          <div className="relative aspect-[198/261] overflow-hidden bg-[#333333]">
+            <Image
+              src={game.image_url || '/images/placeholder.png'}
+              alt={game.title}
+              fill
+              sizes={
+                shelf
+                  ? '(max-width: 640px) 112px, 130px'
+                  : '(max-width: 640px) 33vw, (max-width: 1280px) 20vw, 200px'
+              }
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.06]"
             />
-          </div>
-        </Link>
 
-        {/* Badges live outside the Link so the heart is its own control rather
-            than a button nested in an anchor. */}
-        <div className="pointer-events-none absolute inset-x-1.5 top-1.5 flex items-start justify-between gap-1">
-          <span className="flex min-w-0 flex-wrap items-center gap-1">
+            {/* The design's foot shade: clear to 66% black over the last 92px. */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[35.25%] bg-gradient-to-b from-transparent to-black/[0.66]"
+            />
+
             {game.is_new && (
-              <span className="rounded-[5px] bg-white px-1.5 py-[3px] text-[8.5px] font-bold uppercase leading-none tracking-wide text-[#14161b]">
+              <span className="absolute left-[5.05cqw] top-[5.05cqw] flex h-[12.12cqw] items-center rounded-full bg-[#f9d028] px-[5.05cqw] text-[max(8px,6.06cqw)] font-medium leading-none text-[#07080a]">
                 {t('game.new')}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 rounded-[5px] bg-black/55 px-1.5 py-[3px] text-[8.5px] font-semibold leading-none tabular-nums text-white/85 backdrop-blur-sm">
-              <UserIcon size={8} />
-              {players.toLocaleString('en-US')}
-            </span>
-          </span>
 
-          <button
-            type="button"
-            onClick={() => setLiked((v) => !v)}
-            aria-pressed={liked}
-            title={`${t('nav.favourites')} — ${t('common.soon')}`}
-            aria-label={`${game.title} — ${t('nav.favourites')}`}
-            className={`pointer-events-auto inline-flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-[6px] transition-colors ${
-              liked ? 'text-[#ef4462]' : 'text-white/70 hover:text-white'
-            }`}
-          >
-            <HeartIcon size={13} className={liked ? 'fill-current' : undefined} />
-          </button>
-        </div>
+            <span className="absolute inset-x-[5.05cqw] bottom-[5.05cqw] flex items-center justify-between gap-1">
+              <FootPill>
+                <img src={personIcon.src} alt="" className="h-[6.06cqw] w-[6.06cqw]" />
+                {playersOn(game.id)}
+              </FootPill>
+              <FootPill>
+                {t('game.rtp')}: {game.rtp}
+              </FootPill>
+            </span>
+          </div>
+        </Link>
+
+        {/* Outside the Link so it is its own control rather than a button
+            nested in an anchor. The design's 32px heart box, in the notch, hung
+            a pixel past the card's right edge. */}
+        <FavouriteHeart
+          liked={liked}
+          onToggle={() => setLiked((v) => !v)}
+          label={game.title}
+          className="-right-[0.5cqw] top-0 h-[16.16cqw] w-[16.16cqw]"
+        />
       </div>
     </div>
   );

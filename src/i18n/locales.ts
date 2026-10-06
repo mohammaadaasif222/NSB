@@ -6,6 +6,8 @@
  * Missing keys therefore cannot ship silently.
  */
 
+import type { FlagCountry } from '@/constants/flags';
+
 export const LOCALES = ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'] as const;
 
 export type Locale = (typeof LOCALES)[number];
@@ -13,21 +15,22 @@ export type Locale = (typeof LOCALES)[number];
 export interface LocaleMeta {
   code: Locale;
   label: string;
-  flag: string;
+  /** Whose flag stands for the language in pickers (see assets/flags). */
+  country: FlagCountry;
   /** Right-to-left script — flips the document direction. */
   rtl?: boolean;
 }
 
 export const LOCALE_META: LocaleMeta[] = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'ar', label: 'العربية', flag: '🇸🇦', rtl: true },
-  { code: 'tr', label: 'Türkçe', flag: '🇹🇷' },
-  { code: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
-  { code: 'pt', label: 'Português', flag: '🇵🇹' },
-  { code: 'es', label: 'Español', flag: '🇪🇸' },
-  { code: 'it', label: 'Italiano', flag: '🇮🇹' },
+  { code: 'en', label: 'English', country: 'GB' },
+  { code: 'ar', label: 'العربية', country: 'SA', rtl: true },
+  { code: 'tr', label: 'Türkçe', country: 'TR' },
+  { code: 'hi', label: 'हिन्दी', country: 'IN' },
+  { code: 'fr', label: 'Français', country: 'FR' },
+  { code: 'ru', label: 'Русский', country: 'RU' },
+  { code: 'pt', label: 'Português', country: 'PT' },
+  { code: 'es', label: 'Español', country: 'ES' },
+  { code: 'it', label: 'Italiano', country: 'IT' },
 ];
 
 const en = {
@@ -37,8 +40,39 @@ const en = {
   'auth.firstName': 'First name',
   'auth.lastName': 'Last name',
   'auth.mobile': 'Mobile',
+  'auth.dateOfBirth': 'Date of birth',
+  'auth.ageRequirement': '{min}+ only',
   'auth.show': 'Show',
   'auth.hide': 'Hide',
+
+  // KYC — the player-facing verification journey.
+  //
+  // English only, deliberately. The catalogue's other eight locales are
+  // human-translated; machine-translating compliance copy into eight
+  // languages and presenting it as done would be worse than the honest
+  // fallback, which renders English and is what happens today. These keys
+  // exist so a translator has something to work from.
+  'kyc.title': 'Identity Verification (KYC)',
+  'kyc.loading': 'Loading verification details…',
+  'kyc.level1Title': 'Level 1 - Personal Information',
+  'kyc.level1Hint': 'Basic details: Full name, date of birth, and address',
+  'kyc.level2Title': 'Level 2 - Upload ID and Liveness Check',
+  'kyc.level2Hint': 'Government ID card/passport photo + interactive 3D selfie',
+  'kyc.startLevel2': 'Start ID & Liveness Verification',
+  'kyc.statusVerified': 'Verified',
+  'kyc.statusInReview': 'In Review',
+  'kyc.statusActionRequired': 'Action Required',
+  'kyc.statusBlocked': 'Blocked',
+  'kyc.statusNotRequired': 'Not required yet',
+  'kyc.approvedHeading': 'Identity Successfully Verified',
+  'kyc.inReview': 'Documents are under review by compliance. Usually takes 2–5 minutes.',
+  'kyc.syncStatus': 'Sync Status',
+  'kyc.syncChecking': 'Checking…',
+  'kyc.pollingStopped':
+    'This is taking longer than usual, so we have stopped checking automatically. Use Sync Status above, or come back later — we will email you when there is a result.',
+  'kyc.complianceHold':
+    'Your verification is with our compliance team. Nothing further is needed from you; we will be in touch.',
+  'kyc.rejectedRetry': 'Verification was not approved. Please upload clearer documents.',
 
   // Auth — method chooser
   'auth.methodRegister': 'Register with',
@@ -78,7 +112,8 @@ const en = {
   // Auth — Steam sign-in
   'auth.steamFailed': 'Steam sign-in failed. Please try again.',
   'auth.steamNotConfigured': 'Steam sign-in is not configured yet.',
-  'auth.steamPopupBlocked': 'Your browser blocked the Steam sign-in popup. Please allow popups and try again.',
+  'auth.steamPopupBlocked':
+    'Your browser blocked the Steam sign-in popup. Please allow popups and try again.',
 
   // Login
   'login.title': 'Welcome back!',
@@ -102,6 +137,73 @@ const en = {
   'register.login': 'Login',
   'register.success': 'Account created — please log in',
 
+  // Register modal
+  'registerModal.title': 'Register',
+  'registerModal.registeredToday': '{count} Registered Today',
+  'registerModal.recommended': 'Recommended',
+  'registerModal.mobile': 'Mobile number',
+  'registerModal.email': 'Email',
+  'registerModal.moreOptions': 'more option',
+  'registerModal.withMobile': 'Register with Mobile number',
+  'registerModal.withEmail': 'Register with Email Address',
+  'registerModal.usernameMobile': 'Enter Username',
+  'registerModal.usernameEmail': 'Username',
+  'registerModal.mobilePlaceholder': 'Enter mobile number',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'Create a Password',
+  'registerModal.dialCode': 'Country code',
+  'registerModal.hasCodes': 'I have Promo / Referral Code',
+  'registerModal.promoPlaceholder': 'Add Promo code',
+  'registerModal.referralPlaceholder': 'Add Referral code',
+  'registerModal.continue': 'Continue',
+  'registerModal.legal': 'By Continuing, you agree to Rolluck Terms of Service and Privacy Policy.',
+  'registerModal.rulesTitle': 'Password must include:',
+  'registerModal.ruleLength': 'At least {min} characters',
+  'registerModal.ruleLower': 'At least 1 lowercase letter (a–z)',
+  'registerModal.ruleUpper': 'At least 1 uppercase letter (A–Z)',
+  'registerModal.ruleSpecial': 'At least 1 special character (e.g., ! # @ $ % & *)',
+  'registerModal.errUsername': 'Username must be 3–20 letters, numbers or underscores, and not only numbers',
+  'registerModal.errEmail': 'Enter a valid email address',
+  'registerModal.errMobile': 'Enter a valid mobile number',
+  'registerModal.errPassword': 'Your password doesn\'t meet all the requirements',
+  'registerModal.errCaptcha': 'Please confirm you are human',
+  'registerModal.failed': 'Registration failed. Please try again.',
+  'registerModal.otpTitle': 'Enter OTP',
+  'registerModal.otpSentMobile': 'Enter the 6-digit verification code sent to your Mobile number. {target}',
+  'registerModal.otpSentEmail': 'Enter the 6-digit verification code sent to your Email Address. {target}',
+  'registerModal.needHelp': 'Need help?',
+  'registerModal.close': 'Close',
+
+  // Login modal
+  'loginModal.title': 'Login',
+  'loginModal.suggestion': 'Give us suggestion for us',
+  'loginModal.username': 'Username',
+  'loginModal.withUsername': 'Login with Username',
+  'loginModal.withMobile': 'Login with Mobile number',
+  'loginModal.withEmail': 'Login with Email Address',
+  'loginModal.usernamePlaceholder': 'Enter Username',
+  'loginModal.passwordPlaceholder': 'Password',
+  'loginModal.forgot': 'Forgot Password?',
+  'loginModal.submit': 'Login',
+  'loginModal.register': 'Register',
+  'loginModal.forgotTitle': 'Forgot Password?',
+  'loginModal.forgotMobileHint': 'Enter your Mobile number to receive 6-digit verification code to reset your password',
+  'loginModal.forgotEmailHint': 'Enter your Email Address to receive 6-digit verification code to reset your password',
+  'loginModal.send': 'Send',
+  'loginModal.useEmail': 'Get OTP on Mail Address',
+  'loginModal.useMobile': 'Get OTP on Mobile number',
+  'loginModal.newPasswordTitle': 'Create New Password',
+  'loginModal.newPassword': 'Create New Password',
+  'loginModal.confirmPassword': 'Re-enter New Password',
+  'loginModal.submitReset': 'Submit',
+  'loginModal.errUsername': 'Enter your username',
+  'loginModal.errPassword': 'Enter your password',
+  'loginModal.failed': 'Login failed. Please try again.',
+  'loginModal.operatorAccount': 'This app is for player accounts. Operators sign in on the admin console.',
+  'loginModal.resetDone': 'Password updated — you can log in now',
+  'loginModal.resetFailed': 'Could not reset your password. Please try again.',
+  'loginModal.codeFailed': 'Could not send the code. Please try again.',
+
   // Reset password
   'reset.title': 'Reset password',
   'reset.newPassword': 'New password',
@@ -116,15 +218,15 @@ const en = {
   // Shell / nav
   'nav.home': 'Home',
   'nav.profile': 'Profile',
-  'nav.recents': 'Recents',
+  'nav.recents': 'Recent',
   'nav.favourites': 'Favourites',
   'nav.myBets': 'My Bets',
   'nav.featuredGames': 'Featured Games',
-  'nav.originals': 'ROLLUCK Originals',
+  'nav.originals': 'Rolluck Originals',
   'nav.games': 'Games',
   'nav.vipClub': 'VIP Club',
   'nav.bonuses': 'Bonuses',
-  'nav.promotions': 'Promotions',
+  'nav.promotions': 'Promotion',
   'nav.blogs': 'Blogs',
   'nav.support': 'Support',
   'nav.casino': 'Casino',
@@ -136,13 +238,16 @@ const en = {
   'nav.rewards': 'Rewards',
   'nav.collapse': 'Collapse',
   'nav.openMenu': 'Open menu',
+  'nav.menu': 'Menu',
+  'nav.chat': 'Chat',
+  'nav.theme': 'Theme',
   'nav.closeMenu': 'Close menu',
 
   // Account menu
   'account.account': 'Account',
   'account.profile': 'Profile',
   'account.appearance': 'Appearance',
-  'account.logout': 'Logout',
+  'account.logout': 'Log out',
   'account.logoutTitle': 'Log out?',
   'account.logoutMessage': 'You will need to log in again to access your account.',
   'account.logoutConfirm': 'Log out',
@@ -161,8 +266,10 @@ const en = {
   'dash.continuePlaying': 'Continue playing',
   'dash.originals': 'Originals',
   'dash.newReleases': 'New Releases',
-  'dash.featuredGames': 'Featured Games',
+  'dash.featuredGames': 'Featured Lobby',
   'dash.slots': 'Slots',
+  'dash.liveCasino': 'Live Casino',
+  'dash.mostPlayed': 'Most Played',
   'dash.catalogueUnavailable': 'Games are unavailable right now. Please try again shortly.',
 
   // Wallet
@@ -187,7 +294,7 @@ const en = {
   'dash.joinNow': 'Join now',
   'dash.categories': 'Categories',
   'dash.gamesCount': '{count} games',
-  'dash.viewAll': 'View all',
+  'dash.viewAll': 'View All',
   'dash.memberSince': 'Member since {date}',
   'dash.quickProfile': 'My profile',
   'dash.online': '{count} Online',
@@ -196,8 +303,8 @@ const en = {
   'dash.playNow': 'Play now',
   'dash.betNow': 'Bet now',
   'dash.sportsCount': '{count} sports',
-  'dash.providers': 'Providers',
-  'dash.liveStreamers': 'Games loved by live streamers',
+  'dash.providers': 'Provider',
+  'dash.liveStreamers': 'Games Loved by Live Streamers',
   'dash.recentWins': 'Recent big wins',
   'dash.faqTitle': 'Frequently asked questions',
   'games.empty': 'No games in this category yet.',
@@ -230,6 +337,17 @@ const en = {
   'game.retry': 'Try again',
   'game.fullscreen': 'Full screen',
   'game.insufficientFunds': 'Not enough balance for this bet.',
+
+  // 404.
+  // `notFound.body1` reads as though a word is missing — "the page you are
+  // trying to" — and it is the design's own copy, carried verbatim rather
+  // than quietly corrected. "trying to reach" is the obvious fix when the
+  // client wants one.
+  'notFound.eyebrow': 'Page not found',
+  'notFound.title': 'This page is outside of the universe',
+  'notFound.body1': "The page you are trying to doesn't exist or has been moved",
+  'notFound.body2': 'Try going back to our homepage.',
+  'notFound.cta': 'Go to homepage',
 
   'dice.demo': 'Demo',
   'dice.demoNotice':
@@ -302,6 +420,9 @@ const en = {
   'profile.emailUnverified': 'Unverified',
   'common.loading': 'Loading…',
   'common.soon': 'Soon',
+  'common.cancel': 'Cancel',
+  'common.close': 'Close',
+  'common.saving': 'Saving…',
 
   // Top bar & lobby banner
   'nav.wallet': 'Wallet',
@@ -311,6 +432,8 @@ const en = {
   'dash.wageringProgress': 'Wagering Progress',
   'dash.percentComplete': '{percent}% Complete',
   'dash.wagered': '{amount} Wagered',
+  'dash.remainingToUnlock': '{amount} remaining to unlock your bonus',
+  'dash.remainingToUnlockShort': 'remaining to unlock your bonus',
   'dash.bonusRemaining': '{amount} remaining to unlock your bonus',
   'dash.unlockBonus': 'Unlock your welcome bonus',
 
@@ -359,6 +482,120 @@ const en = {
   'profile.noTransactions': 'No transactions yet.',
   'profile.referralCode': 'Referral code',
   'profile.contactSupport': 'Contact support',
+
+  // Account area: the Statistic section
+  'stats.lifetime': 'Lifetime',
+  'stats.weekly': 'Weekly',
+  'stats.lastMonthly': 'Last Monthly',
+  'stats.last6Month': 'Last 6 Month',
+  'stats.yearly': 'Yearly',
+  'stats.totalBets': 'Total Bets',
+  'stats.totalWins': 'Total Wins',
+  'stats.bestBetWin': 'Best Amount / Bet Win',
+  'stats.bestGameWin': 'Best Game Win',
+  'stats.totalWagered': 'Total Wagered',
+  'stats.requestStatistics': 'Request Statistics',
+  'stats.clearRange': 'Clear date range',
+  'stats.range': 'Date range',
+  'stats.requestBody':
+    'To request statistics enter your email address and we will send you stats on your email',
+  'stats.emailLabel': 'Email address',
+  'stats.submit': 'Submit',
+  'stats.invalidEmail': 'Please enter a valid email address',
+  'stats.requestUnavailable': 'Statistics requests are not available yet. Please check back soon.',
+  'stats.close': 'Close',
+
+  // Account area: the Referral section
+  'ref.referralCode': 'Referral Code',
+  'ref.copyCode': 'Copy Code',
+  'ref.copied': 'Copied',
+  'ref.orShare': 'Or share on social media',
+  'ref.shareOn': 'Share on {name}',
+  'ref.yourReferral': 'Your Referral',
+  'ref.colId': 'Referral ID',
+  'ref.colDate': 'Date',
+  'ref.colUser': 'Referred User',
+  'ref.colStatus': 'Status',
+  'ref.colReward': 'Reward',
+  'ref.completed': 'Completed',
+  'ref.pending': 'Pending',
+  'ref.inProgress': 'In Progress',
+  'ref.cancelled': 'Cancelled',
+  'ref.noChange': 'No Change',
+
+  // The Affiliate page
+  'aff.title': 'Affiliate',
+  'aff.getCode': 'Get Your Affiliate Code',
+  // The design's own copy reads "Share Rainbet with your friends" — Rainbet is
+  // a different operator, so that is a paste left in the file rather than the
+  // line anyone meant to ship. Our own name is used here.
+  'aff.shareBlurb': 'Share Rolluck with your friends and earn as they play',
+  'aff.copyLink': 'Copy affiliate link',
+  'aff.copied': 'Copied',
+  'aff.change': 'Change',
+  'aff.orShare': 'Or share on social media',
+  'aff.totalEarnings': 'Total Earnings',
+  'aff.totalWagered': 'Total Wagered',
+  'aff.totalCollected': 'Total Collected',
+  'aff.totalReferrals': 'Total Referrals',
+  'aff.availableFunds': 'Available Funds',
+  'aff.collect': 'Collect',
+  'aff.terms': 'Terms & Condition',
+
+  // Account area: the Preferences section
+  'pref.appearance': 'Appearance',
+  'pref.currency': 'Currency',
+  'pref.privacy': 'Privacy',
+  'pref.tipping': 'Tipping',
+  'pref.marketing': 'Marketing',
+  'pref.hideUnavailable': 'Hide all the unavailable games in your region',
+  'pref.hideUnavailableNote':
+    'When active, games that are not available in your location will not be displayed.',
+  'pref.displayCryptoInCash': 'Display Crypto in Cash',
+  'pref.selectCurrency': 'Select Currency',
+  'pref.currencyNote':
+    'Display amounts in your selected currency. Estimation based on current rates.',
+  'pref.selectLanguage': 'Select Language',
+  'pref.hideUsername': 'Hide Username',
+  'pref.hideUsernameNote': 'Keeps your username private across the platform.',
+  'pref.acceptTips': 'Accept Tips/Rain',
+  'pref.acceptTipsNote': 'By turning off, all tips from users will be completely blocked.',
+  'pref.disableTipsNotifications': 'Disable Tips/Rain Notifications',
+  'pref.disableTipsNote':
+    "You'll still receive tips and win, but you won't get notifications or emails about them.",
+  'pref.receiveMarketing': 'Receive Marketing Offers',
+
+  // Account area: the Security section
+  'sec.changePassword': 'Change Password',
+  'sec.sessions': 'Sessions',
+  'sec.endAllSessions': 'End All Sessions',
+  'sec.endSession': 'End Sessions',
+  'sec.currentSession': 'Current',
+  'sec.connectedWallet': 'Connected Wallet',
+
+  // Account area: the Verification section's contact cards
+  'verify.contactInfo': 'Contact Info',
+  'verify.phoneNumber': 'Phone number',
+  'verify.notProvided': 'Not provided',
+
+  // Account area: the Transactions section
+  'tx.search': 'Search',
+  'tx.all': 'All Transactions',
+  'tx.deposits': 'Deposits',
+  'tx.withdrawals': 'Withdrawals',
+  'tx.rewards': 'Rewards',
+  'tx.id': 'Transaction ID',
+  'tx.date': 'Date',
+  'tx.valueUsd': 'Value (USD)',
+  'tx.valueCrypto': 'Value (Crypto)',
+  'tx.type': 'Type',
+  'tx.walletEffect': 'Wallet Effect',
+  'tx.completed': 'Completed',
+  'tx.pending': 'Pending',
+  'tx.failed': 'Failed',
+  'tx.prev': 'Previous',
+  'tx.next': 'Next',
+  'tx.noResults': 'No transactions match your search.',
 
   // Rewards: rakeback, cashback and the daily / weekly / monthly bonuses
   'rewards.title': 'Rewards',
@@ -489,18 +726,217 @@ const en = {
   'rewards.col.cashback': 'Cashback',
   'rewards.currentTier': 'Current',
   'rewards.tiersEmpty': 'No VIP tiers have been set up yet.',
+
+  // Responsible Gambling — the player-protection tools.
+  //
+  // English only, on the same reasoning as the KYC block above: the other
+  // eight locales are human-translated, and machine-translating harm-reduction
+  // copy into eight languages and presenting it as done would be worse than
+  // the honest English fallback `t()` already gives. These keys exist so a
+  // translator has something to work from — and this is the block to
+  // prioritise, because somebody reading it may be in trouble.
+  'rg.title': 'Responsible Gambling',
+  'rg.metaDescription':
+    'Set deposit, loss, wager and time limits, take a break with self-exclusion, check your budget, or take a short self-assessment.',
+
+  'rg.navFaqs': 'FAQ’s',
+  'rg.navAssessment': 'Self-Assessment',
+  'rg.navLimits': 'Gambling Limits',
+  'rg.navExclusion': 'Self-exclusion',
+  'rg.navBudget': 'Budget Calculator',
+
+  'rg.supportTitle': 'Independent help',
+  'rg.supportLead':
+    'These organisations have nothing to do with us. They are free, confidential, and talking to them does not commit you to anything.',
+
+  // FAQs
+  // "FAQ's" with the apostrophe is how the design writes it, in the panel
+  // heading and in the rail, and it is reproduced on instruction. It is not
+  // correct English — the word is a plural, not a possessive — so it is the
+  // one thing on this page worth changing if anyone ever wants to.
+  'rg.faqsTitle': 'FAQ’s',
+  'rg.faqsLead':
+    'What the tools on this page do, what they cost you, and what we will and will not do for you.',
+
+  // Self-assessment
+  // Capital A, matching the rail and the design's own panel heading.
+  'rg.assessmentTitle': 'Self-Assessment',
+  'rg.assessmentLead':
+    'Ten questions, about a minute. They are the ones support services normally start with.',
+  'rg.assessmentNotDxTitle': 'This is not a diagnosis',
+  'rg.assessmentNotDxBody':
+    'It cannot tell you whether you have a gambling problem, and it is not a medical assessment. It can only show you how your own answers look written down. Anyone qualified to say more is listed at the bottom of this page.',
+  'rg.assessmentModalLead':
+    'Tick anything that has applied to you in the last 12 months. Leave the rest.',
+  'rg.assessmentDisclaimer':
+    'Your answers are counted, not stored against your name for any other purpose, and are never used to decide what marketing you receive.',
+  'rg.assessmentSeeResult': 'See my result',
+  'rg.assessmentStartTitle': 'Take the self-assessment',
+  'rg.assessmentStartBody':
+    '{count} short questions about the last year. Nobody sees your answers but you.',
+  'rg.assessmentStart': 'Start',
+  'rg.assessmentYourResult': 'Your result',
+  'rg.assessmentTicked': 'ticked',
+  'rg.assessmentSetLimit': 'Set a limit',
+  'rg.assessmentTakeBreak': 'Take a break',
+  'rg.assessmentRetake': 'Take it again',
+
+  // Limits
+  // Capital L, matching the rail and the design's own panel heading.
+  'rg.limitsTitle': 'Gambling Limits',
+  // The design's own button label on this panel.
+  'rg.limitsSet': 'Set Gambling Limit',
+  'rg.limitsLead':
+    'Decide in advance what you are willing to spend, lose and play — then let the account hold you to it.',
+  'rg.limitsRuleTitle': 'Lowering is instant. Raising is not.',
+  'rg.limitsRuleBody':
+    'A new or tighter limit applies the moment you confirm it. Raising one waits {hours} hours first, because the moment you most want to raise a limit is usually the moment it is working. You can cancel a pending increase at any time before it lands.',
+  'rg.limitNotSet': 'No limit set',
+  'rg.limitSet': 'Set limit',
+  'rg.limitSetTitle': 'Set a limit',
+  'rg.limitChange': 'Change',
+  'rg.limitChangeTitle': 'Change this limit',
+  'rg.limitUpdate': 'Update limit',
+  // The three field labels and the action, worded as the dialog draws them.
+  'rg.limitTypeLabel': 'Limit Type',
+  'rg.limitAdd': 'Add Limit',
+  'rg.limitPeriod': 'Limit Period',
+  'rg.limitAmount': 'Limit Amount',
+  'rg.limitAmountMinutes': 'Minutes',
+  'rg.limitMinutes': 'min',
+  'rg.limitCurrently': 'Currently',
+  'rg.limitOf': 'of',
+  'rg.limitResets': 'Resets',
+  'rg.limitRemaining': 'Remaining',
+  'rg.limitDelayTitle': 'This increase will not apply yet',
+  'rg.limitDelayBody':
+    'Your current limit stays in force for the next {hours} hours. After that the new figure applies on its own — you do not have to come back and confirm it.',
+  'rg.limitImmediateTitle': 'This applies immediately',
+  'rg.limitImmediateBody': 'The new limit takes effect as soon as you confirm it.',
+  'rg.limitPendingTitle': 'Increase pending',
+  'rg.limitPendingBody': 'Your limit rises to {amount} {when}. Until then the current one applies.',
+  'rg.limitPendingCancel': 'Cancel this increase',
+
+  // Self-exclusion
+  'rg.exclusionTitle': 'Self-exclusion',
+  // The design's own two paragraphs for this panel.
+  'rg.exclusionLead':
+    'Are you seeking a break from Rolluck? Initiate the automated self-exclusion process by establishing a limit, and you will be temporarily barred from accessing your account for the selected period. Please be aware that during this time, you will not have access to any products on the website, and any remaining balances will also be unavailable.',
+  'rg.exclusionEmailNote': 'You will receive an email to confirm your request.',
+  'rg.exclusionAlternativeTitle': 'If you are not sure, start smaller',
+  'rg.exclusionAlternativeBody':
+    'A deposit or loss limit does most of the same work and can be tightened whenever you like. Self-exclusion is the option for when you have decided that should not be up to you any more.',
+  'rg.exclusionAlternativeAction': 'Set a limit instead',
+  // The two step cards, the consent line and the action, as the design words
+  // them. The design writes "self-exclusionand" in the consent — a missing
+  // space, not a phrase — so the space is put back.
+  'rg.exclusionStep1': 'Step 1: Take a 24 Hours Cooldown',
+  'rg.exclusionStep2': 'Step 2: Self-Exclusion',
+  'rg.exclusionConsent':
+    'By requesting self-exclusion, I acknowledge the rules of self-exclusion and take full responsibility',
+  'rg.exclusionContinueAction': 'Continue',
+  'rg.exclusionChoosePeriod': 'Choose how long',
+  'rg.exclusionReason': 'Reason (optional)',
+  'rg.exclusionReasonPlaceholder':
+    'Only if you want to tell us. You do not have to, and leaving it empty changes nothing.',
+  'rg.exclusionContinue': 'Choose a period to continue',
+  'rg.exclusionContinueWith': 'Continue — exclude me for {period}',
+  // The confirm dialog, as the design writes it.
+  //
+  // NOTE: the design states that a player CAN still log in and withdraw during
+  // an exclusion, and only betting is blocked. The terms this section shipped
+  // with said the opposite — signed out immediately, no withdrawals. Both
+  // cannot be true; the design is taken as the policy here, and whatever
+  // enforces exclusions has to match it.
+  'rg.exclusionBreakPeriod': 'Break period',
+  'rg.exclusionConfirmBody':
+    'During the self-exclusion period, you can still log in and withdraw your available balance. However, any amount requiring wagering (e.g., bonus or promotional credits) cannot be withdrawn until the exclusion period ends and the wagering requirements are fulfilled.',
+  'rg.exclusionUnderstand': 'By clicking confirm, I understand that:',
+  'rg.exclusionPoint1': 'I will STRICTLY NOT be able to cancel the {period}.',
+  'rg.exclusionPoint2': 'I will still be able to access my account and make withdrawals.',
+  'rg.exclusionPoint3': 'I will NOT be able to place any bets during {period}.',
+  'rg.exclusionPoint4': 'I will have my host automatically unassigned.',
+  'rg.exclusionConfirmWith': 'Confirm {period}',
+  'rg.exclusionToday': 'Today',
+  'rg.exclusionConfirmTitle': 'Self-exclusion ({period})',
+  'rg.exclusionConfirmAction': 'Confirm self-exclusion',
+  'rg.exclusionIrreversibleTitle': 'This cannot be undone',
+  'rg.exclusionIrreversibleBody':
+    'You are about to close your account to yourself for {period}. No one at ROLLUCK can shorten or lift it once it starts, whatever the reason you give later.',
+  'rg.exclusionTermsTitle': 'What happens when you confirm',
+  'rg.exclusionAcknowledge':
+    'I understand that this lasts {period}, that it starts immediately, and that it cannot be reversed.',
+  'rg.exclusionTypeToConfirm': 'Type {phrase} to confirm',
+  'rg.exclusionActiveTitle': 'Self-exclusion',
+  'rg.exclusionActiveHeading': 'Your self-exclusion is active',
+  'rg.exclusionActiveBody':
+    'You cannot deposit, bet, or open another account for the duration. This cannot be lifted early — please do not contact support to ask, because they are not able to do it.',
+  'rg.exclusionPeriod': 'Period',
+  'rg.exclusionEnds': 'Ends',
+  'rg.exclusionNever': 'Never',
+
+  // Budget calculator
+  // Capital C, matching the rail and the design's own panel heading.
+  'rg.budgetTitle': 'Budget Calculator',
+  'rg.budgetExpenses': 'Expenses',
+  'rg.budgetTotalIncome': 'Total income',
+  'rg.budgetTotalExpenses': 'Total expenses',
+  'rg.budgetDisposable': 'Disposable income',
+  'rg.budgetLead':
+    'Work out what is genuinely left at the end of your month, before you decide what any of it is for.',
+  'rg.budgetPrivacy':
+    'This runs entirely in your browser. Nothing you type is sent to us, saved to your account, or kept when you leave the page.',
+  'rg.budgetYourMonth': 'Your month',
+  'rg.budgetOutgoings': 'What goes out',
+  'rg.budgetReset': 'Clear',
+  'rg.budgetResult': 'What is left',
+  'rg.budgetIncome': 'Income',
+  'rg.budgetEssentials': 'Essentials',
+  'rg.budgetLeftOver': 'Left over',
+  'rg.budgetAdviceTitle': 'Before you decide what to do with it',
+  'rg.budgetAdviceBody':
+    'Anything you gamble should come out of this figure and never out of the lines above it. Treat it as money already spent — if losing all of it would change your month, it is too much.',
+  'rg.budgetOverdrawnTitle': 'There is nothing left to gamble with',
+  'rg.budgetOverdrawnBody':
+    'Your outgoings meet or exceed what comes in. On these numbers there is no amount that is safe to gamble, and no run of luck fixes a shortfall. The services below give free, confidential money advice.',
+  'rg.budgetSetLimit': 'Set a deposit limit',
+
+  // The sign-in gate on the two account-bound tools
+  'rg.signInTitle': 'Log in to use this',
+  'rg.signInLimits':
+    'Limits are set on your account, so we need to know whose account to set them on. Everything else on this page is open without logging in.',
+  'rg.signInExclusion':
+    'Self-exclusion applies to your account, so you need to be logged in to set it. If you have already excluded yourself and cannot log in, that is working as intended — please contact support rather than opening a new account.',
+  'rg.signInReadInstead': 'Read the FAQs instead',
 } as const;
 
 export type TranslationKey = keyof typeof en;
 
 type Dictionary = Record<TranslationKey, string>;
 
-const ar: Dictionary = {
+/**
+ * A locale that has not been fully translated yet.
+ *
+ * `en` remains complete and is the source of truth — `TranslationKey` is
+ * derived from it, so a typo in a key is still a compile error. The other
+ * locales may lag behind it.
+ *
+ * This matches what already happens at runtime: `t()` falls back to English
+ * for a key the active locale does not carry. Requiring every locale to be
+ * complete forced the alternative — pasting English into all nine and calling
+ * it translated — which renders identically and hides which strings a
+ * translator still has to do.
+ */
+type PartialDictionary = Partial<Dictionary>;
+
+const ar: PartialDictionary = {
   'auth.email': 'البريد الإلكتروني',
   'auth.password': 'كلمة المرور',
   'auth.firstName': 'الاسم الأول',
   'auth.lastName': 'اسم العائلة',
   'auth.mobile': 'رقم الجوال',
+  'auth.dateOfBirth': 'تاريخ الميلاد',
+  'auth.ageRequirement': '‏{min}+ فقط',
   'auth.show': 'إظهار',
   'auth.hide': 'إخفاء',
 
@@ -542,7 +978,8 @@ const ar: Dictionary = {
   // Auth — Steam sign-in
   'auth.steamFailed': 'فشل تسجيل الدخول عبر Steam. حاول مرة أخرى.',
   'auth.steamNotConfigured': 'لم يتم إعداد تسجيل الدخول عبر Steam بعد.',
-  'auth.steamPopupBlocked': 'قام متصفحك بحظر نافذة تسجيل الدخول عبر Steam. يرجى السماح بالنوافذ المنبثقة والمحاولة مرة أخرى.',
+  'auth.steamPopupBlocked':
+    'قام متصفحك بحظر نافذة تسجيل الدخول عبر Steam. يرجى السماح بالنوافذ المنبثقة والمحاولة مرة أخرى.',
   'login.title': 'مرحباً بعودتك!',
   'login.subtitle': 'سجّل الدخول لاستكشاف الألعاب المميزة والمكافآت والبطولات والجوائز اليومية.',
   'login.forgot': 'نسيت كلمة المرور؟',
@@ -560,6 +997,73 @@ const ar: Dictionary = {
   'register.haveAccount': 'لديك حساب بالفعل؟',
   'register.login': 'تسجيل الدخول',
   'register.success': 'تم إنشاء الحساب — يرجى تسجيل الدخول',
+
+  // Register modal
+  'registerModal.title': 'التسجيل',
+  'registerModal.registeredToday': '{count} سجّلوا اليوم',
+  'registerModal.recommended': 'موصى به',
+  'registerModal.mobile': 'رقم الجوال',
+  'registerModal.email': 'البريد الإلكتروني',
+  'registerModal.moreOptions': 'خيارات أخرى',
+  'registerModal.withMobile': 'التسجيل برقم الجوال',
+  'registerModal.withEmail': 'التسجيل بالبريد الإلكتروني',
+  'registerModal.usernameMobile': 'أدخل اسم المستخدم',
+  'registerModal.usernameEmail': 'اسم المستخدم',
+  'registerModal.mobilePlaceholder': 'أدخل رقم الجوال',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'أنشئ كلمة مرور',
+  'registerModal.dialCode': 'رمز الدولة',
+  'registerModal.hasCodes': 'لدي رمز ترويجي / رمز إحالة',
+  'registerModal.promoPlaceholder': 'أضف الرمز الترويجي',
+  'registerModal.referralPlaceholder': 'أضف رمز الإحالة',
+  'registerModal.continue': 'متابعة',
+  'registerModal.legal': 'بالمتابعة، أنت توافق على شروط الخدمة وسياسة الخصوصية الخاصة بـ Rolluck.',
+  'registerModal.rulesTitle': 'يجب أن تحتوي كلمة المرور على:',
+  'registerModal.ruleLength': '{min} أحرف على الأقل',
+  'registerModal.ruleLower': 'حرف صغير واحد على الأقل (a–z)',
+  'registerModal.ruleUpper': 'حرف كبير واحد على الأقل (A–Z)',
+  'registerModal.ruleSpecial': 'رمز خاص واحد على الأقل (مثل ! # @ $ % & *)',
+  'registerModal.errUsername': 'يجب أن يتكون اسم المستخدم من 3–20 حرفًا أو رقمًا أو شرطة سفلية، وألا يكون أرقامًا فقط',
+  'registerModal.errEmail': 'أدخل بريدًا إلكترونيًا صالحًا',
+  'registerModal.errMobile': 'أدخل رقم جوال صالحًا',
+  'registerModal.errPassword': 'كلمة المرور لا تستوفي جميع الشروط',
+  'registerModal.errCaptcha': 'يرجى تأكيد أنك إنسان',
+  'registerModal.failed': 'فشل التسجيل. حاول مرة أخرى.',
+  'registerModal.otpTitle': 'أدخل رمز التحقق',
+  'registerModal.otpSentMobile': 'أدخل رمز التحقق المكوّن من 6 أرقام المرسل إلى رقم جوالك. {target}',
+  'registerModal.otpSentEmail': 'أدخل رمز التحقق المكوّن من 6 أرقام المرسل إلى بريدك الإلكتروني. {target}',
+  'registerModal.needHelp': 'تحتاج مساعدة؟',
+  'registerModal.close': 'إغلاق',
+
+  // Login modal
+  'loginModal.title': 'تسجيل الدخول',
+  'loginModal.suggestion': 'شاركنا اقتراحك',
+  'loginModal.username': 'اسم المستخدم',
+  'loginModal.withUsername': 'تسجيل الدخول باسم المستخدم',
+  'loginModal.withMobile': 'تسجيل الدخول برقم الجوال',
+  'loginModal.withEmail': 'تسجيل الدخول بالبريد الإلكتروني',
+  'loginModal.usernamePlaceholder': 'أدخل اسم المستخدم',
+  'loginModal.passwordPlaceholder': 'كلمة المرور',
+  'loginModal.forgot': 'نسيت كلمة المرور؟',
+  'loginModal.submit': 'تسجيل الدخول',
+  'loginModal.register': 'التسجيل',
+  'loginModal.forgotTitle': 'نسيت كلمة المرور؟',
+  'loginModal.forgotMobileHint': 'أدخل رقم جوالك لتلقي رمز تحقق من 6 أرقام لإعادة تعيين كلمة المرور',
+  'loginModal.forgotEmailHint': 'أدخل بريدك الإلكتروني لتلقي رمز تحقق من 6 أرقام لإعادة تعيين كلمة المرور',
+  'loginModal.send': 'إرسال',
+  'loginModal.useEmail': 'احصل على الرمز عبر البريد الإلكتروني',
+  'loginModal.useMobile': 'احصل على الرمز عبر رقم الجوال',
+  'loginModal.newPasswordTitle': 'إنشاء كلمة مرور جديدة',
+  'loginModal.newPassword': 'أنشئ كلمة مرور جديدة',
+  'loginModal.confirmPassword': 'أعد إدخال كلمة المرور الجديدة',
+  'loginModal.submitReset': 'إرسال',
+  'loginModal.errUsername': 'أدخل اسم المستخدم',
+  'loginModal.errPassword': 'أدخل كلمة المرور',
+  'loginModal.failed': 'فشل تسجيل الدخول. حاول مرة أخرى.',
+  'loginModal.operatorAccount': 'هذا التطبيق لحسابات اللاعبين. يسجّل المشغّلون الدخول من لوحة الإدارة.',
+  'loginModal.resetDone': 'تم تحديث كلمة المرور — يمكنك تسجيل الدخول الآن',
+  'loginModal.resetFailed': 'تعذّر إعادة تعيين كلمة المرور. حاول مرة أخرى.',
+  'loginModal.codeFailed': 'تعذّر إرسال الرمز. حاول مرة أخرى.',
   'reset.title': 'إعادة تعيين كلمة المرور',
   'reset.newPassword': 'كلمة المرور الجديدة',
   'reset.confirmPassword': 'تأكيد كلمة المرور',
@@ -591,6 +1095,9 @@ const ar: Dictionary = {
   'nav.rewards': 'المكافآت',
   'nav.collapse': 'طيّ',
   'nav.openMenu': 'فتح القائمة',
+  'nav.menu': 'القائمة',
+  'nav.chat': 'الدردشة',
+  'nav.theme': 'المظهر',
   'nav.closeMenu': 'إغلاق القائمة',
   'account.account': 'الحساب',
   'account.profile': 'الملف الشخصي',
@@ -614,6 +1121,8 @@ const ar: Dictionary = {
   'dash.newReleases': 'إصدارات جديدة',
   'dash.featuredGames': 'الألعاب المميزة',
   'dash.slots': 'السلوتس',
+  'dash.liveCasino': 'الكازينو المباشر',
+  'dash.mostPlayed': 'الأكثر لعباً',
   'dash.catalogueUnavailable': 'الألعاب غير متاحة حالياً. يرجى المحاولة بعد قليل.',
   'wallet.balance': 'الرصيد',
   'wallet.real': 'الرصيد الحقيقي',
@@ -756,6 +1265,8 @@ const ar: Dictionary = {
   'dash.wageringProgress': 'تقدّم الرهان',
   'dash.percentComplete': 'اكتمل {percent}%',
   'dash.wagered': 'تم الرهان بـ {amount}',
+  'dash.remainingToUnlock': 'متبقٍ {amount} لفتح مكافأتك',
+  'dash.remainingToUnlockShort': 'متبقٍ لفتح مكافأتك',
   'dash.bonusRemaining': 'يتبقى {amount} لفتح مكافأتك',
   'dash.unlockBonus': 'افتح مكافأة الترحيب',
   'search.title': 'البحث عن الألعاب',
@@ -925,12 +1436,14 @@ const ar: Dictionary = {
   'rewards.tiersEmpty': 'لم يتم إعداد مستويات VIP بعد.',
 };
 
-const tr: Dictionary = {
+const tr: PartialDictionary = {
   'auth.email': 'E-posta',
   'auth.password': 'Şifre',
   'auth.firstName': 'Ad',
   'auth.lastName': 'Soyad',
   'auth.mobile': 'Telefon',
+  'auth.dateOfBirth': 'Doğum tarihi',
+  'auth.ageRequirement': 'Yalnızca {min}+',
   'auth.show': 'Göster',
   'auth.hide': 'Gizle',
 
@@ -973,7 +1486,8 @@ const tr: Dictionary = {
   // Auth — Steam sign-in
   'auth.steamFailed': 'Steam ile giriş başarısız. Lütfen tekrar deneyin.',
   'auth.steamNotConfigured': 'Steam ile giriş henüz yapılandırılmadı.',
-  'auth.steamPopupBlocked': 'Tarayıcınız Steam giriş penceresini engelledi. Lütfen açılır pencerelere izin verip tekrar deneyin.',
+  'auth.steamPopupBlocked':
+    'Tarayıcınız Steam giriş penceresini engelledi. Lütfen açılır pencerelere izin verip tekrar deneyin.',
   'login.title': 'Tekrar hoş geldiniz!',
   'login.subtitle':
     'Premium oyunları, bonusları, turnuvaları ve günlük ödülleri keşfetmek için giriş yapın.',
@@ -994,6 +1508,73 @@ const tr: Dictionary = {
   'register.haveAccount': 'Zaten hesabınız var mı?',
   'register.login': 'Giriş yap',
   'register.success': 'Hesap oluşturuldu — lütfen giriş yapın',
+
+  // Register modal
+  'registerModal.title': 'Kayıt Ol',
+  'registerModal.registeredToday': 'Bugün {count} kayıt',
+  'registerModal.recommended': 'Önerilen',
+  'registerModal.mobile': 'Cep telefonu',
+  'registerModal.email': 'E-posta',
+  'registerModal.moreOptions': 'diğer seçenekler',
+  'registerModal.withMobile': 'Cep telefonu ile kayıt ol',
+  'registerModal.withEmail': 'E-posta adresi ile kayıt ol',
+  'registerModal.usernameMobile': 'Kullanıcı adı girin',
+  'registerModal.usernameEmail': 'Kullanıcı adı',
+  'registerModal.mobilePlaceholder': 'Cep telefonu numarası girin',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'Şifre oluşturun',
+  'registerModal.dialCode': 'Ülke kodu',
+  'registerModal.hasCodes': 'Promosyon / Referans kodum var',
+  'registerModal.promoPlaceholder': 'Promosyon kodu ekle',
+  'registerModal.referralPlaceholder': 'Referans kodu ekle',
+  'registerModal.continue': 'Devam',
+  'registerModal.legal': 'Devam ederek Rolluck Hizmet Şartları ve Gizlilik Politikasını kabul etmiş olursunuz.',
+  'registerModal.rulesTitle': 'Şifre şunları içermelidir:',
+  'registerModal.ruleLength': 'En az {min} karakter',
+  'registerModal.ruleLower': 'En az 1 küçük harf (a–z)',
+  'registerModal.ruleUpper': 'En az 1 büyük harf (A–Z)',
+  'registerModal.ruleSpecial': 'En az 1 özel karakter (ör. ! # @ $ % & *)',
+  'registerModal.errUsername': 'Kullanıcı adı 3–20 harf, rakam veya alt çizgi olmalı ve yalnızca rakamlardan oluşmamalıdır',
+  'registerModal.errEmail': 'Geçerli bir e-posta adresi girin',
+  'registerModal.errMobile': 'Geçerli bir cep telefonu numarası girin',
+  'registerModal.errPassword': 'Şifreniz tüm gereksinimleri karşılamıyor',
+  'registerModal.errCaptcha': 'Lütfen insan olduğunuzu doğrulayın',
+  'registerModal.failed': 'Kayıt başarısız. Lütfen tekrar deneyin.',
+  'registerModal.otpTitle': 'Doğrulama kodunu girin',
+  'registerModal.otpSentMobile': 'Cep telefonunuza gönderilen 6 haneli doğrulama kodunu girin. {target}',
+  'registerModal.otpSentEmail': 'E-posta adresinize gönderilen 6 haneli doğrulama kodunu girin. {target}',
+  'registerModal.needHelp': 'Yardım mı lazım?',
+  'registerModal.close': 'Kapat',
+
+  // Login modal
+  'loginModal.title': 'Giriş Yap',
+  'loginModal.suggestion': 'Bize önerini ilet',
+  'loginModal.username': 'Kullanıcı adı',
+  'loginModal.withUsername': 'Kullanıcı adı ile giriş',
+  'loginModal.withMobile': 'Cep telefonu ile giriş',
+  'loginModal.withEmail': 'E-posta adresi ile giriş',
+  'loginModal.usernamePlaceholder': 'Kullanıcı adı girin',
+  'loginModal.passwordPlaceholder': 'Şifre',
+  'loginModal.forgot': 'Şifremi unuttum?',
+  'loginModal.submit': 'Giriş Yap',
+  'loginModal.register': 'Kayıt Ol',
+  'loginModal.forgotTitle': 'Şifremi unuttum?',
+  'loginModal.forgotMobileHint': 'Şifrenizi sıfırlamak için 6 haneli doğrulama kodu almak üzere cep telefonu numaranızı girin',
+  'loginModal.forgotEmailHint': 'Şifrenizi sıfırlamak için 6 haneli doğrulama kodu almak üzere e-posta adresinizi girin',
+  'loginModal.send': 'Gönder',
+  'loginModal.useEmail': 'Kodu e-posta ile al',
+  'loginModal.useMobile': 'Kodu cep telefonuna al',
+  'loginModal.newPasswordTitle': 'Yeni Şifre Oluştur',
+  'loginModal.newPassword': 'Yeni şifre oluşturun',
+  'loginModal.confirmPassword': 'Yeni şifreyi tekrar girin',
+  'loginModal.submitReset': 'Gönder',
+  'loginModal.errUsername': 'Kullanıcı adınızı girin',
+  'loginModal.errPassword': 'Şifrenizi girin',
+  'loginModal.failed': 'Giriş başarısız. Lütfen tekrar deneyin.',
+  'loginModal.operatorAccount': 'Bu uygulama oyuncu hesapları içindir. Operatörler yönetim panelinden giriş yapar.',
+  'loginModal.resetDone': 'Şifre güncellendi — artık giriş yapabilirsiniz',
+  'loginModal.resetFailed': 'Şifre sıfırlanamadı. Lütfen tekrar deneyin.',
+  'loginModal.codeFailed': 'Kod gönderilemedi. Lütfen tekrar deneyin.',
   'reset.title': 'Şifre sıfırlama',
   'reset.newPassword': 'Yeni şifre',
   'reset.confirmPassword': 'Şifreyi onayla',
@@ -1025,6 +1606,9 @@ const tr: Dictionary = {
   'nav.rewards': 'Ödüller',
   'nav.collapse': 'Daralt',
   'nav.openMenu': 'Menüyü aç',
+  'nav.menu': 'Menü',
+  'nav.chat': 'Sohbet',
+  'nav.theme': 'Tema',
   'nav.closeMenu': 'Menüyü kapat',
   'account.account': 'Hesap',
   'account.profile': 'Profil',
@@ -1048,6 +1632,8 @@ const tr: Dictionary = {
   'dash.newReleases': 'Yeni çıkanlar',
   'dash.featuredGames': 'Öne çıkan oyunlar',
   'dash.slots': 'Slotlar',
+  'dash.liveCasino': 'Canlı Casino',
+  'dash.mostPlayed': 'En Çok Oynanan',
   'dash.catalogueUnavailable':
     'Oyunlar şu anda kullanılamıyor. Lütfen kısa süre sonra tekrar deneyin.',
   'wallet.balance': 'Bakiye',
@@ -1192,6 +1778,8 @@ const tr: Dictionary = {
   'dash.wageringProgress': 'Çevrim İlerlemesi',
   'dash.percentComplete': '%{percent} Tamamlandı',
   'dash.wagered': '{amount} Çevrildi',
+  'dash.remainingToUnlock': 'Bonusunu açmak için {amount} kaldı',
+  'dash.remainingToUnlockShort': 'bonusunu açmak için kalan',
   'dash.bonusRemaining': 'Bonusunuzu açmak için {amount} kaldı',
   'dash.unlockBonus': 'Hoş geldin bonusunuzu açın',
   'search.title': 'Oyun ara',
@@ -1363,12 +1951,14 @@ const tr: Dictionary = {
   'rewards.tiersEmpty': 'Henüz VIP seviyesi tanımlanmadı.',
 };
 
-const hi: Dictionary = {
+const hi: PartialDictionary = {
   'auth.email': 'ईमेल',
   'auth.password': 'पासवर्ड',
   'auth.firstName': 'पहला नाम',
   'auth.lastName': 'अंतिम नाम',
   'auth.mobile': 'मोबाइल',
+  'auth.dateOfBirth': 'जन्म तिथि',
+  'auth.ageRequirement': 'केवल {min}+',
   'auth.show': 'दिखाएं',
   'auth.hide': 'छिपाएं',
 
@@ -1410,7 +2000,8 @@ const hi: Dictionary = {
   // Auth — Steam sign-in
   'auth.steamFailed': 'Steam साइन-इन विफल रहा। कृपया पुनः प्रयास करें।',
   'auth.steamNotConfigured': 'Steam साइन-इन अभी कॉन्फ़िगर नहीं किया गया है।',
-  'auth.steamPopupBlocked': 'आपके ब्राउज़र ने Steam साइन-इन पॉपअप को ब्लॉक कर दिया। कृपया पॉपअप की अनुमति दें और पुनः प्रयास करें।',
+  'auth.steamPopupBlocked':
+    'आपके ब्राउज़र ने Steam साइन-इन पॉपअप को ब्लॉक कर दिया। कृपया पॉपअप की अनुमति दें और पुनः प्रयास करें।',
   'login.title': 'वापसी पर स्वागत है!',
   'login.subtitle': 'प्रीमियम गेम, बोनस, टूर्नामेंट और दैनिक पुरस्कार देखने के लिए लॉग इन करें।',
   'login.forgot': 'पासवर्ड भूल गए?',
@@ -1428,6 +2019,73 @@ const hi: Dictionary = {
   'register.haveAccount': 'पहले से खाता है?',
   'register.login': 'लॉग इन',
   'register.success': 'खाता बन गया — कृपया लॉग इन करें',
+
+  // Register modal
+  'registerModal.title': 'रजिस्टर करें',
+  'registerModal.registeredToday': 'आज {count} रजिस्टर हुए',
+  'registerModal.recommended': 'अनुशंसित',
+  'registerModal.mobile': 'मोबाइल नंबर',
+  'registerModal.email': 'ईमेल',
+  'registerModal.moreOptions': 'और विकल्प',
+  'registerModal.withMobile': 'मोबाइल नंबर से रजिस्टर करें',
+  'registerModal.withEmail': 'ईमेल पते से रजिस्टर करें',
+  'registerModal.usernameMobile': 'यूज़रनेम दर्ज करें',
+  'registerModal.usernameEmail': 'यूज़रनेम',
+  'registerModal.mobilePlaceholder': 'मोबाइल नंबर दर्ज करें',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'पासवर्ड बनाएं',
+  'registerModal.dialCode': 'देश कोड',
+  'registerModal.hasCodes': 'मेरे पास प्रोमो / रेफ़रल कोड है',
+  'registerModal.promoPlaceholder': 'प्रोमो कोड जोड़ें',
+  'registerModal.referralPlaceholder': 'रेफ़रल कोड जोड़ें',
+  'registerModal.continue': 'जारी रखें',
+  'registerModal.legal': 'जारी रखकर, आप Rolluck की सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं।',
+  'registerModal.rulesTitle': 'पासवर्ड में होना चाहिए:',
+  'registerModal.ruleLength': 'कम से कम {min} अक्षर',
+  'registerModal.ruleLower': 'कम से कम 1 छोटा अक्षर (a–z)',
+  'registerModal.ruleUpper': 'कम से कम 1 बड़ा अक्षर (A–Z)',
+  'registerModal.ruleSpecial': 'कम से कम 1 विशेष चिह्न (जैसे ! # @ $ % & *)',
+  'registerModal.errUsername': 'यूज़रनेम 3–20 अक्षर, अंक या अंडरस्कोर का होना चाहिए, और केवल अंक नहीं हो सकता',
+  'registerModal.errEmail': 'मान्य ईमेल पता दर्ज करें',
+  'registerModal.errMobile': 'मान्य मोबाइल नंबर दर्ज करें',
+  'registerModal.errPassword': 'आपका पासवर्ड सभी शर्तें पूरी नहीं करता',
+  'registerModal.errCaptcha': 'कृपया पुष्टि करें कि आप इंसान हैं',
+  'registerModal.failed': 'रजिस्ट्रेशन विफल रहा। कृपया फिर से प्रयास करें।',
+  'registerModal.otpTitle': 'OTP दर्ज करें',
+  'registerModal.otpSentMobile': 'आपके मोबाइल नंबर पर भेजा गया 6 अंकों का सत्यापन कोड दर्ज करें। {target}',
+  'registerModal.otpSentEmail': 'आपके ईमेल पते पर भेजा गया 6 अंकों का सत्यापन कोड दर्ज करें। {target}',
+  'registerModal.needHelp': 'मदद चाहिए?',
+  'registerModal.close': 'बंद करें',
+
+  // Login modal
+  'loginModal.title': 'लॉग इन',
+  'loginModal.suggestion': 'हमें अपना सुझाव दें',
+  'loginModal.username': 'यूज़रनेम',
+  'loginModal.withUsername': 'यूज़रनेम से लॉग इन करें',
+  'loginModal.withMobile': 'मोबाइल नंबर से लॉग इन करें',
+  'loginModal.withEmail': 'ईमेल पते से लॉग इन करें',
+  'loginModal.usernamePlaceholder': 'यूज़रनेम दर्ज करें',
+  'loginModal.passwordPlaceholder': 'पासवर्ड',
+  'loginModal.forgot': 'पासवर्ड भूल गए?',
+  'loginModal.submit': 'लॉग इन',
+  'loginModal.register': 'रजिस्टर करें',
+  'loginModal.forgotTitle': 'पासवर्ड भूल गए?',
+  'loginModal.forgotMobileHint': 'पासवर्ड रीसेट करने के लिए 6 अंकों का सत्यापन कोड पाने हेतु अपना मोबाइल नंबर दर्ज करें',
+  'loginModal.forgotEmailHint': 'पासवर्ड रीसेट करने के लिए 6 अंकों का सत्यापन कोड पाने हेतु अपना ईमेल पता दर्ज करें',
+  'loginModal.send': 'भेजें',
+  'loginModal.useEmail': 'ईमेल पर OTP पाएं',
+  'loginModal.useMobile': 'मोबाइल नंबर पर OTP पाएं',
+  'loginModal.newPasswordTitle': 'नया पासवर्ड बनाएं',
+  'loginModal.newPassword': 'नया पासवर्ड बनाएं',
+  'loginModal.confirmPassword': 'नया पासवर्ड दोबारा दर्ज करें',
+  'loginModal.submitReset': 'सबमिट करें',
+  'loginModal.errUsername': 'अपना यूज़रनेम दर्ज करें',
+  'loginModal.errPassword': 'अपना पासवर्ड दर्ज करें',
+  'loginModal.failed': 'लॉग इन विफल रहा। कृपया फिर से प्रयास करें।',
+  'loginModal.operatorAccount': 'यह ऐप प्लेयर खातों के लिए है। ऑपरेटर एडमिन कंसोल पर लॉग इन करते हैं।',
+  'loginModal.resetDone': 'पासवर्ड अपडेट हो गया — अब आप लॉग इन कर सकते हैं',
+  'loginModal.resetFailed': 'पासवर्ड रीसेट नहीं हो सका। कृपया फिर से प्रयास करें।',
+  'loginModal.codeFailed': 'कोड नहीं भेजा जा सका। कृपया फिर से प्रयास करें।',
   'reset.title': 'पासवर्ड रीसेट करें',
   'reset.newPassword': 'नया पासवर्ड',
   'reset.confirmPassword': 'पासवर्ड की पुष्टि करें',
@@ -1459,6 +2117,9 @@ const hi: Dictionary = {
   'nav.rewards': 'रिवॉर्ड्स',
   'nav.collapse': 'छोटा करें',
   'nav.openMenu': 'मेन्यू खोलें',
+  'nav.menu': 'मेन्यू',
+  'nav.chat': 'चैट',
+  'nav.theme': 'थीम',
   'nav.closeMenu': 'मेन्यू बंद करें',
   'account.account': 'खाता',
   'account.profile': 'प्रोफ़ाइल',
@@ -1482,6 +2143,8 @@ const hi: Dictionary = {
   'dash.newReleases': 'नए रिलीज़',
   'dash.featuredGames': 'चुनिंदा गेम',
   'dash.slots': 'स्लॉट',
+  'dash.liveCasino': 'लाइव कैसीनो',
+  'dash.mostPlayed': 'सबसे ज़्यादा खेले गए',
   'dash.catalogueUnavailable': 'गेम अभी उपलब्ध नहीं हैं। कृपया थोड़ी देर बाद पुनः प्रयास करें।',
   'wallet.balance': 'बैलेंस',
   'wallet.real': 'रियल बैलेंस',
@@ -1623,6 +2286,8 @@ const hi: Dictionary = {
   'dash.wageringProgress': 'वेजरिंग प्रगति',
   'dash.percentComplete': '{percent}% पूर्ण',
   'dash.wagered': '{amount} वेजर किया गया',
+  'dash.remainingToUnlock': 'बोनस अनलॉक करने के लिए {amount} बाकी',
+  'dash.remainingToUnlockShort': 'बोनस अनलॉक करने के लिए बाकी',
   'dash.bonusRemaining': 'बोनस अनलॉक करने के लिए {amount} शेष',
   'dash.unlockBonus': 'अपना वेलकम बोनस अनलॉक करें',
   'search.title': 'गेम खोजें',
@@ -1792,12 +2457,14 @@ const hi: Dictionary = {
   'rewards.tiersEmpty': 'अभी कोई VIP टियर सेट नहीं किया गया है।',
 };
 
-const fr: Dictionary = {
+const fr: PartialDictionary = {
   'auth.email': 'E-mail',
   'auth.password': 'Mot de passe',
   'auth.firstName': 'Prénom',
   'auth.lastName': 'Nom',
   'auth.mobile': 'Mobile',
+  'auth.dateOfBirth': 'Date de naissance',
+  'auth.ageRequirement': '{min}+ uniquement',
   'auth.show': 'Afficher',
   'auth.hide': 'Masquer',
 
@@ -1864,6 +2531,73 @@ const fr: Dictionary = {
   'register.haveAccount': 'Vous avez déjà un compte ?',
   'register.login': 'Connexion',
   'register.success': 'Compte créé — veuillez vous connecter',
+
+  // Register modal
+  'registerModal.title': 'S\'inscrire',
+  'registerModal.registeredToday': '{count} inscrits aujourd\'hui',
+  'registerModal.recommended': 'Recommandé',
+  'registerModal.mobile': 'Numéro de mobile',
+  'registerModal.email': 'E-mail',
+  'registerModal.moreOptions': 'plus d\'options',
+  'registerModal.withMobile': 'S\'inscrire avec un numéro de mobile',
+  'registerModal.withEmail': 'S\'inscrire avec une adresse e-mail',
+  'registerModal.usernameMobile': 'Entrez un nom d\'utilisateur',
+  'registerModal.usernameEmail': 'Nom d\'utilisateur',
+  'registerModal.mobilePlaceholder': 'Entrez votre numéro de mobile',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'Créez un mot de passe',
+  'registerModal.dialCode': 'Indicatif pays',
+  'registerModal.hasCodes': 'J\'ai un code promo / de parrainage',
+  'registerModal.promoPlaceholder': 'Ajouter un code promo',
+  'registerModal.referralPlaceholder': 'Ajouter un code de parrainage',
+  'registerModal.continue': 'Continuer',
+  'registerModal.legal': 'En continuant, vous acceptez les Conditions d\'utilisation et la Politique de confidentialité de Rolluck.',
+  'registerModal.rulesTitle': 'Le mot de passe doit contenir :',
+  'registerModal.ruleLength': 'Au moins {min} caractères',
+  'registerModal.ruleLower': 'Au moins 1 lettre minuscule (a–z)',
+  'registerModal.ruleUpper': 'Au moins 1 lettre majuscule (A–Z)',
+  'registerModal.ruleSpecial': 'Au moins 1 caractère spécial (ex. ! # @ $ % & *)',
+  'registerModal.errUsername': 'Le nom d\'utilisateur doit comporter 3 à 20 lettres, chiffres ou tirets bas, et pas uniquement des chiffres',
+  'registerModal.errEmail': 'Entrez une adresse e-mail valide',
+  'registerModal.errMobile': 'Entrez un numéro de mobile valide',
+  'registerModal.errPassword': 'Votre mot de passe ne remplit pas toutes les conditions',
+  'registerModal.errCaptcha': 'Veuillez confirmer que vous êtes humain',
+  'registerModal.failed': 'L\'inscription a échoué. Veuillez réessayer.',
+  'registerModal.otpTitle': 'Entrez le code OTP',
+  'registerModal.otpSentMobile': 'Entrez le code de vérification à 6 chiffres envoyé à votre numéro de mobile. {target}',
+  'registerModal.otpSentEmail': 'Entrez le code de vérification à 6 chiffres envoyé à votre adresse e-mail. {target}',
+  'registerModal.needHelp': 'Besoin d\'aide ?',
+  'registerModal.close': 'Fermer',
+
+  // Login modal
+  'loginModal.title': 'Connexion',
+  'loginModal.suggestion': 'Donnez-nous votre suggestion',
+  'loginModal.username': 'Nom d\'utilisateur',
+  'loginModal.withUsername': 'Connexion avec nom d\'utilisateur',
+  'loginModal.withMobile': 'Connexion avec numéro de mobile',
+  'loginModal.withEmail': 'Connexion avec adresse e-mail',
+  'loginModal.usernamePlaceholder': 'Entrez votre nom d\'utilisateur',
+  'loginModal.passwordPlaceholder': 'Mot de passe',
+  'loginModal.forgot': 'Mot de passe oublié ?',
+  'loginModal.submit': 'Connexion',
+  'loginModal.register': 'S\'inscrire',
+  'loginModal.forgotTitle': 'Mot de passe oublié ?',
+  'loginModal.forgotMobileHint': 'Entrez votre numéro de mobile pour recevoir un code de vérification à 6 chiffres afin de réinitialiser votre mot de passe',
+  'loginModal.forgotEmailHint': 'Entrez votre adresse e-mail pour recevoir un code de vérification à 6 chiffres afin de réinitialiser votre mot de passe',
+  'loginModal.send': 'Envoyer',
+  'loginModal.useEmail': 'Recevoir le code par e-mail',
+  'loginModal.useMobile': 'Recevoir le code par SMS',
+  'loginModal.newPasswordTitle': 'Créer un nouveau mot de passe',
+  'loginModal.newPassword': 'Créez un nouveau mot de passe',
+  'loginModal.confirmPassword': 'Confirmez le nouveau mot de passe',
+  'loginModal.submitReset': 'Valider',
+  'loginModal.errUsername': 'Entrez votre nom d\'utilisateur',
+  'loginModal.errPassword': 'Entrez votre mot de passe',
+  'loginModal.failed': 'La connexion a échoué. Veuillez réessayer.',
+  'loginModal.operatorAccount': 'Cette application est réservée aux comptes joueurs. Les opérateurs se connectent sur la console d\'administration.',
+  'loginModal.resetDone': 'Mot de passe mis à jour — vous pouvez vous connecter',
+  'loginModal.resetFailed': 'Impossible de réinitialiser le mot de passe. Veuillez réessayer.',
+  'loginModal.codeFailed': 'Impossible d\'envoyer le code. Veuillez réessayer.',
   'reset.title': 'Réinitialiser le mot de passe',
   'reset.newPassword': 'Nouveau mot de passe',
   'reset.confirmPassword': 'Confirmer le mot de passe',
@@ -1895,6 +2629,9 @@ const fr: Dictionary = {
   'nav.rewards': 'Récompenses',
   'nav.collapse': 'Réduire',
   'nav.openMenu': 'Ouvrir le menu',
+  'nav.menu': 'Menu',
+  'nav.chat': 'Chat',
+  'nav.theme': 'Thème',
   'nav.closeMenu': 'Fermer le menu',
   'account.account': 'Compte',
   'account.profile': 'Profil',
@@ -1918,6 +2655,8 @@ const fr: Dictionary = {
   'dash.newReleases': 'Nouveautés',
   'dash.featuredGames': 'Jeux en vedette',
   'dash.slots': 'Machines à sous',
+  'dash.liveCasino': 'Casino en direct',
+  'dash.mostPlayed': 'Les plus joués',
   'dash.catalogueUnavailable':
     'Les jeux sont indisponibles pour le moment. Réessayez dans un instant.',
   'wallet.balance': 'Solde',
@@ -2063,6 +2802,8 @@ const fr: Dictionary = {
   'dash.wageringProgress': 'Progression du pari',
   'dash.percentComplete': '{percent} % complété',
   'dash.wagered': '{amount} misés',
+  'dash.remainingToUnlock': '{amount} restants pour débloquer votre bonus',
+  'dash.remainingToUnlockShort': 'restants pour débloquer votre bonus',
   'dash.bonusRemaining': 'Encore {amount} pour débloquer votre bonus',
   'dash.unlockBonus': 'Débloquez votre bonus de bienvenue',
   'search.title': 'Rechercher des jeux',
@@ -2236,12 +2977,14 @@ const fr: Dictionary = {
   'rewards.tiersEmpty': "Aucun niveau VIP n'a encore été configuré.",
 };
 
-const ru: Dictionary = {
+const ru: PartialDictionary = {
   'auth.email': 'Эл. почта',
   'auth.password': 'Пароль',
   'auth.firstName': 'Имя',
   'auth.lastName': 'Фамилия',
   'auth.mobile': 'Телефон',
+  'auth.dateOfBirth': 'Дата рождения',
+  'auth.ageRequirement': 'Только {min}+',
   'auth.show': 'Показать',
   'auth.hide': 'Скрыть',
 
@@ -2306,6 +3049,73 @@ const ru: Dictionary = {
   'register.haveAccount': 'Уже есть аккаунт?',
   'register.login': 'Войти',
   'register.success': 'Аккаунт создан — войдите в систему',
+
+  // Register modal
+  'registerModal.title': 'Регистрация',
+  'registerModal.registeredToday': 'Сегодня зарегистрировались: {count}',
+  'registerModal.recommended': 'Рекомендуем',
+  'registerModal.mobile': 'Номер телефона',
+  'registerModal.email': 'Эл. почта',
+  'registerModal.moreOptions': 'другие способы',
+  'registerModal.withMobile': 'Регистрация по номеру телефона',
+  'registerModal.withEmail': 'Регистрация по эл. почте',
+  'registerModal.usernameMobile': 'Введите имя пользователя',
+  'registerModal.usernameEmail': 'Имя пользователя',
+  'registerModal.mobilePlaceholder': 'Введите номер телефона',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'Придумайте пароль',
+  'registerModal.dialCode': 'Код страны',
+  'registerModal.hasCodes': 'У меня есть промокод / реферальный код',
+  'registerModal.promoPlaceholder': 'Добавить промокод',
+  'registerModal.referralPlaceholder': 'Добавить реферальный код',
+  'registerModal.continue': 'Продолжить',
+  'registerModal.legal': 'Продолжая, вы соглашаетесь с Условиями использования и Политикой конфиденциальности Rolluck.',
+  'registerModal.rulesTitle': 'Пароль должен содержать:',
+  'registerModal.ruleLength': 'Не менее {min} символов',
+  'registerModal.ruleLower': 'Не менее 1 строчной буквы (a–z)',
+  'registerModal.ruleUpper': 'Не менее 1 заглавной буквы (A–Z)',
+  'registerModal.ruleSpecial': 'Не менее 1 спецсимвола (например, ! # @ $ % & *)',
+  'registerModal.errUsername': 'Имя пользователя: 3–20 букв, цифр или подчёркиваний, и не только цифры',
+  'registerModal.errEmail': 'Введите корректный адрес эл. почты',
+  'registerModal.errMobile': 'Введите корректный номер телефона',
+  'registerModal.errPassword': 'Пароль не соответствует всем требованиям',
+  'registerModal.errCaptcha': 'Подтвердите, что вы человек',
+  'registerModal.failed': 'Не удалось зарегистрироваться. Попробуйте ещё раз.',
+  'registerModal.otpTitle': 'Введите код',
+  'registerModal.otpSentMobile': 'Введите 6-значный код подтверждения, отправленный на ваш номер телефона. {target}',
+  'registerModal.otpSentEmail': 'Введите 6-значный код подтверждения, отправленный на вашу эл. почту. {target}',
+  'registerModal.needHelp': 'Нужна помощь?',
+  'registerModal.close': 'Закрыть',
+
+  // Login modal
+  'loginModal.title': 'Вход',
+  'loginModal.suggestion': 'Поделитесь с нами идеей',
+  'loginModal.username': 'Имя пользователя',
+  'loginModal.withUsername': 'Вход по имени пользователя',
+  'loginModal.withMobile': 'Вход по номеру телефона',
+  'loginModal.withEmail': 'Вход по эл. почте',
+  'loginModal.usernamePlaceholder': 'Введите имя пользователя',
+  'loginModal.passwordPlaceholder': 'Пароль',
+  'loginModal.forgot': 'Забыли пароль?',
+  'loginModal.submit': 'Войти',
+  'loginModal.register': 'Регистрация',
+  'loginModal.forgotTitle': 'Забыли пароль?',
+  'loginModal.forgotMobileHint': 'Введите номер телефона, чтобы получить 6-значный код для сброса пароля',
+  'loginModal.forgotEmailHint': 'Введите адрес эл. почты, чтобы получить 6-значный код для сброса пароля',
+  'loginModal.send': 'Отправить',
+  'loginModal.useEmail': 'Получить код на эл. почту',
+  'loginModal.useMobile': 'Получить код на телефон',
+  'loginModal.newPasswordTitle': 'Новый пароль',
+  'loginModal.newPassword': 'Придумайте новый пароль',
+  'loginModal.confirmPassword': 'Повторите новый пароль',
+  'loginModal.submitReset': 'Сохранить',
+  'loginModal.errUsername': 'Введите имя пользователя',
+  'loginModal.errPassword': 'Введите пароль',
+  'loginModal.failed': 'Не удалось войти. Попробуйте ещё раз.',
+  'loginModal.operatorAccount': 'Это приложение для игроков. Операторы входят через панель администратора.',
+  'loginModal.resetDone': 'Пароль обновлён — теперь можно войти',
+  'loginModal.resetFailed': 'Не удалось сбросить пароль. Попробуйте ещё раз.',
+  'loginModal.codeFailed': 'Не удалось отправить код. Попробуйте ещё раз.',
   'reset.title': 'Сброс пароля',
   'reset.newPassword': 'Новый пароль',
   'reset.confirmPassword': 'Подтвердите пароль',
@@ -2337,6 +3147,9 @@ const ru: Dictionary = {
   'nav.rewards': 'Награды',
   'nav.collapse': 'Свернуть',
   'nav.openMenu': 'Открыть меню',
+  'nav.menu': 'Меню',
+  'nav.chat': 'Чат',
+  'nav.theme': 'Тема',
   'nav.closeMenu': 'Закрыть меню',
   'account.account': 'Аккаунт',
   'account.profile': 'Профиль',
@@ -2360,6 +3173,8 @@ const ru: Dictionary = {
   'dash.newReleases': 'Новинки',
   'dash.featuredGames': 'Избранные игры',
   'dash.slots': 'Слоты',
+  'dash.liveCasino': 'Live-казино',
+  'dash.mostPlayed': 'Самые популярные',
   'dash.catalogueUnavailable': 'Игры сейчас недоступны. Повторите попытку чуть позже.',
   'wallet.balance': 'Баланс',
   'wallet.real': 'Реальный баланс',
@@ -2501,6 +3316,8 @@ const ru: Dictionary = {
   'dash.wageringProgress': 'Прогресс отыгрыша',
   'dash.percentComplete': 'Выполнено {percent}%',
   'dash.wagered': 'Отыграно {amount}',
+  'dash.remainingToUnlock': 'Осталось {amount} до разблокировки бонуса',
+  'dash.remainingToUnlockShort': 'осталось до разблокировки бонуса',
   'dash.bonusRemaining': 'Осталось {amount} до разблокировки бонуса',
   'dash.unlockBonus': 'Разблокируйте приветственный бонус',
   'search.title': 'Поиск игр',
@@ -2673,12 +3490,14 @@ const ru: Dictionary = {
   'rewards.tiersEmpty': 'VIP-уровни ещё не настроены.',
 };
 
-const pt: Dictionary = {
+const pt: PartialDictionary = {
   'auth.email': 'E-mail',
   'auth.password': 'Senha',
   'auth.firstName': 'Nome',
   'auth.lastName': 'Sobrenome',
   'auth.mobile': 'Telemóvel',
+  'auth.dateOfBirth': 'Data de nascimento',
+  'auth.ageRequirement': 'Apenas {min}+',
   'auth.show': 'Mostrar',
   'auth.hide': 'Ocultar',
 
@@ -2742,6 +3561,73 @@ const pt: Dictionary = {
   'register.haveAccount': 'Já tem uma conta?',
   'register.login': 'Entrar',
   'register.success': 'Conta criada — inicie sessão',
+
+  // Register modal
+  'registerModal.title': 'Registar',
+  'registerModal.registeredToday': '{count} registos hoje',
+  'registerModal.recommended': 'Recomendado',
+  'registerModal.mobile': 'Número de telemóvel',
+  'registerModal.email': 'E-mail',
+  'registerModal.moreOptions': 'mais opções',
+  'registerModal.withMobile': 'Registar com número de telemóvel',
+  'registerModal.withEmail': 'Registar com endereço de e-mail',
+  'registerModal.usernameMobile': 'Introduza o nome de utilizador',
+  'registerModal.usernameEmail': 'Nome de utilizador',
+  'registerModal.mobilePlaceholder': 'Introduza o número de telemóvel',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'Crie uma palavra-passe',
+  'registerModal.dialCode': 'Código do país',
+  'registerModal.hasCodes': 'Tenho um código promocional / de indicação',
+  'registerModal.promoPlaceholder': 'Adicionar código promocional',
+  'registerModal.referralPlaceholder': 'Adicionar código de indicação',
+  'registerModal.continue': 'Continuar',
+  'registerModal.legal': 'Ao continuar, concorda com os Termos de Serviço e a Política de Privacidade da Rolluck.',
+  'registerModal.rulesTitle': 'A palavra-passe deve incluir:',
+  'registerModal.ruleLength': 'Pelo menos {min} caracteres',
+  'registerModal.ruleLower': 'Pelo menos 1 letra minúscula (a–z)',
+  'registerModal.ruleUpper': 'Pelo menos 1 letra maiúscula (A–Z)',
+  'registerModal.ruleSpecial': 'Pelo menos 1 carácter especial (ex. ! # @ $ % & *)',
+  'registerModal.errUsername': 'O nome de utilizador deve ter 3–20 letras, números ou sublinhados, e não apenas números',
+  'registerModal.errEmail': 'Introduza um endereço de e-mail válido',
+  'registerModal.errMobile': 'Introduza um número de telemóvel válido',
+  'registerModal.errPassword': 'A sua palavra-passe não cumpre todos os requisitos',
+  'registerModal.errCaptcha': 'Confirme que é humano',
+  'registerModal.failed': 'O registo falhou. Tente novamente.',
+  'registerModal.otpTitle': 'Introduza o código OTP',
+  'registerModal.otpSentMobile': 'Introduza o código de verificação de 6 dígitos enviado para o seu telemóvel. {target}',
+  'registerModal.otpSentEmail': 'Introduza o código de verificação de 6 dígitos enviado para o seu e-mail. {target}',
+  'registerModal.needHelp': 'Precisa de ajuda?',
+  'registerModal.close': 'Fechar',
+
+  // Login modal
+  'loginModal.title': 'Iniciar sessão',
+  'loginModal.suggestion': 'Deixe-nos a sua sugestão',
+  'loginModal.username': 'Nome de utilizador',
+  'loginModal.withUsername': 'Entrar com nome de utilizador',
+  'loginModal.withMobile': 'Entrar com número de telemóvel',
+  'loginModal.withEmail': 'Entrar com e-mail',
+  'loginModal.usernamePlaceholder': 'Introduza o nome de utilizador',
+  'loginModal.passwordPlaceholder': 'Palavra-passe',
+  'loginModal.forgot': 'Esqueceu-se da palavra-passe?',
+  'loginModal.submit': 'Entrar',
+  'loginModal.register': 'Registar',
+  'loginModal.forgotTitle': 'Esqueceu-se da palavra-passe?',
+  'loginModal.forgotMobileHint': 'Introduza o seu número de telemóvel para receber um código de verificação de 6 dígitos e redefinir a palavra-passe',
+  'loginModal.forgotEmailHint': 'Introduza o seu e-mail para receber um código de verificação de 6 dígitos e redefinir a palavra-passe',
+  'loginModal.send': 'Enviar',
+  'loginModal.useEmail': 'Receber código por e-mail',
+  'loginModal.useMobile': 'Receber código por telemóvel',
+  'loginModal.newPasswordTitle': 'Criar nova palavra-passe',
+  'loginModal.newPassword': 'Crie uma nova palavra-passe',
+  'loginModal.confirmPassword': 'Repita a nova palavra-passe',
+  'loginModal.submitReset': 'Submeter',
+  'loginModal.errUsername': 'Introduza o seu nome de utilizador',
+  'loginModal.errPassword': 'Introduza a sua palavra-passe',
+  'loginModal.failed': 'Falha ao iniciar sessão. Tente novamente.',
+  'loginModal.operatorAccount': 'Esta aplicação é para contas de jogador. Os operadores entram na consola de administração.',
+  'loginModal.resetDone': 'Palavra-passe atualizada — já pode iniciar sessão',
+  'loginModal.resetFailed': 'Não foi possível redefinir a palavra-passe. Tente novamente.',
+  'loginModal.codeFailed': 'Não foi possível enviar o código. Tente novamente.',
   'reset.title': 'Redefinir senha',
   'reset.newPassword': 'Nova senha',
   'reset.confirmPassword': 'Confirmar senha',
@@ -2773,6 +3659,9 @@ const pt: Dictionary = {
   'nav.rewards': 'Recompensas',
   'nav.collapse': 'Recolher',
   'nav.openMenu': 'Abrir menu',
+  'nav.menu': 'Menu',
+  'nav.chat': 'Chat',
+  'nav.theme': 'Tema',
   'nav.closeMenu': 'Fechar menu',
   'account.account': 'Conta',
   'account.profile': 'Perfil',
@@ -2796,6 +3685,8 @@ const pt: Dictionary = {
   'dash.newReleases': 'Novidades',
   'dash.featuredGames': 'Jogos em destaque',
   'dash.slots': 'Slots',
+  'dash.liveCasino': 'Casino ao vivo',
+  'dash.mostPlayed': 'Mais jogados',
   'dash.catalogueUnavailable':
     'Os jogos estão indisponíveis no momento. Tente novamente em instantes.',
   'wallet.balance': 'Saldo',
@@ -2940,6 +3831,8 @@ const pt: Dictionary = {
   'dash.wageringProgress': 'Progresso de aposta',
   'dash.percentComplete': '{percent}% concluído',
   'dash.wagered': '{amount} apostados',
+  'dash.remainingToUnlock': 'Faltam {amount} para desbloquear o seu bónus',
+  'dash.remainingToUnlockShort': 'em falta para desbloquear o seu bónus',
   'dash.bonusRemaining': 'Faltam {amount} para desbloquear o seu bónus',
   'dash.unlockBonus': 'Desbloqueie o seu bónus de boas-vindas',
   'search.title': 'Procurar jogos',
@@ -3112,12 +4005,14 @@ const pt: Dictionary = {
   'rewards.tiersEmpty': 'Ainda não foram configurados níveis VIP.',
 };
 
-const es: Dictionary = {
+const es: PartialDictionary = {
   'auth.email': 'Correo electrónico',
   'auth.password': 'Contraseña',
   'auth.firstName': 'Nombre',
   'auth.lastName': 'Apellido',
   'auth.mobile': 'Móvil',
+  'auth.dateOfBirth': 'Fecha de nacimiento',
+  'auth.ageRequirement': 'Solo {min}+',
   'auth.show': 'Mostrar',
   'auth.hide': 'Ocultar',
 
@@ -3182,6 +4077,73 @@ const es: Dictionary = {
   'register.haveAccount': '¿Ya tienes una cuenta?',
   'register.login': 'Iniciar sesión',
   'register.success': 'Cuenta creada — inicia sesión',
+
+  // Register modal
+  'registerModal.title': 'Registrarse',
+  'registerModal.registeredToday': '{count} registrados hoy',
+  'registerModal.recommended': 'Recomendado',
+  'registerModal.mobile': 'Número de móvil',
+  'registerModal.email': 'Correo',
+  'registerModal.moreOptions': 'más opciones',
+  'registerModal.withMobile': 'Registrarse con número de móvil',
+  'registerModal.withEmail': 'Registrarse con correo electrónico',
+  'registerModal.usernameMobile': 'Introduce un nombre de usuario',
+  'registerModal.usernameEmail': 'Nombre de usuario',
+  'registerModal.mobilePlaceholder': 'Introduce tu número de móvil',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'Crea una contraseña',
+  'registerModal.dialCode': 'Código de país',
+  'registerModal.hasCodes': 'Tengo un código promocional / de referido',
+  'registerModal.promoPlaceholder': 'Añadir código promocional',
+  'registerModal.referralPlaceholder': 'Añadir código de referido',
+  'registerModal.continue': 'Continuar',
+  'registerModal.legal': 'Al continuar, aceptas los Términos del servicio y la Política de privacidad de Rolluck.',
+  'registerModal.rulesTitle': 'La contraseña debe incluir:',
+  'registerModal.ruleLength': 'Al menos {min} caracteres',
+  'registerModal.ruleLower': 'Al menos 1 letra minúscula (a–z)',
+  'registerModal.ruleUpper': 'Al menos 1 letra mayúscula (A–Z)',
+  'registerModal.ruleSpecial': 'Al menos 1 carácter especial (p. ej., ! # @ $ % & *)',
+  'registerModal.errUsername': 'El nombre de usuario debe tener 3–20 letras, números o guiones bajos, y no solo números',
+  'registerModal.errEmail': 'Introduce un correo electrónico válido',
+  'registerModal.errMobile': 'Introduce un número de móvil válido',
+  'registerModal.errPassword': 'Tu contraseña no cumple todos los requisitos',
+  'registerModal.errCaptcha': 'Confirma que eres humano',
+  'registerModal.failed': 'El registro ha fallado. Inténtalo de nuevo.',
+  'registerModal.otpTitle': 'Introduce el código OTP',
+  'registerModal.otpSentMobile': 'Introduce el código de verificación de 6 dígitos enviado a tu número de móvil. {target}',
+  'registerModal.otpSentEmail': 'Introduce el código de verificación de 6 dígitos enviado a tu correo electrónico. {target}',
+  'registerModal.needHelp': '¿Necesitas ayuda?',
+  'registerModal.close': 'Cerrar',
+
+  // Login modal
+  'loginModal.title': 'Iniciar sesión',
+  'loginModal.suggestion': 'Danos tu sugerencia',
+  'loginModal.username': 'Nombre de usuario',
+  'loginModal.withUsername': 'Entrar con nombre de usuario',
+  'loginModal.withMobile': 'Entrar con número de móvil',
+  'loginModal.withEmail': 'Entrar con correo electrónico',
+  'loginModal.usernamePlaceholder': 'Introduce tu nombre de usuario',
+  'loginModal.passwordPlaceholder': 'Contraseña',
+  'loginModal.forgot': '¿Olvidaste tu contraseña?',
+  'loginModal.submit': 'Entrar',
+  'loginModal.register': 'Registrarse',
+  'loginModal.forgotTitle': '¿Olvidaste tu contraseña?',
+  'loginModal.forgotMobileHint': 'Introduce tu número de móvil para recibir un código de verificación de 6 dígitos y restablecer tu contraseña',
+  'loginModal.forgotEmailHint': 'Introduce tu correo electrónico para recibir un código de verificación de 6 dígitos y restablecer tu contraseña',
+  'loginModal.send': 'Enviar',
+  'loginModal.useEmail': 'Recibir código por correo',
+  'loginModal.useMobile': 'Recibir código por móvil',
+  'loginModal.newPasswordTitle': 'Crear nueva contraseña',
+  'loginModal.newPassword': 'Crea una nueva contraseña',
+  'loginModal.confirmPassword': 'Repite la nueva contraseña',
+  'loginModal.submitReset': 'Enviar',
+  'loginModal.errUsername': 'Introduce tu nombre de usuario',
+  'loginModal.errPassword': 'Introduce tu contraseña',
+  'loginModal.failed': 'No se pudo iniciar sesión. Inténtalo de nuevo.',
+  'loginModal.operatorAccount': 'Esta aplicación es para cuentas de jugador. Los operadores inician sesión en la consola de administración.',
+  'loginModal.resetDone': 'Contraseña actualizada — ya puedes iniciar sesión',
+  'loginModal.resetFailed': 'No se pudo restablecer la contraseña. Inténtalo de nuevo.',
+  'loginModal.codeFailed': 'No se pudo enviar el código. Inténtalo de nuevo.',
   'reset.title': 'Restablecer contraseña',
   'reset.newPassword': 'Nueva contraseña',
   'reset.confirmPassword': 'Confirmar contraseña',
@@ -3213,6 +4175,9 @@ const es: Dictionary = {
   'nav.rewards': 'Recompensas',
   'nav.collapse': 'Contraer',
   'nav.openMenu': 'Abrir menú',
+  'nav.menu': 'Menú',
+  'nav.chat': 'Chat',
+  'nav.theme': 'Tema',
   'nav.closeMenu': 'Cerrar menú',
   'account.account': 'Cuenta',
   'account.profile': 'Perfil',
@@ -3236,6 +4201,8 @@ const es: Dictionary = {
   'dash.newReleases': 'Novedades',
   'dash.featuredGames': 'Juegos destacados',
   'dash.slots': 'Slots',
+  'dash.liveCasino': 'Casino en vivo',
+  'dash.mostPlayed': 'Más jugados',
   'dash.catalogueUnavailable':
     'Los juegos no están disponibles ahora mismo. Inténtalo de nuevo en breve.',
   'wallet.balance': 'Saldo',
@@ -3379,6 +4346,8 @@ const es: Dictionary = {
   'dash.wageringProgress': 'Progreso de apuesta',
   'dash.percentComplete': '{percent}% completado',
   'dash.wagered': '{amount} apostados',
+  'dash.remainingToUnlock': 'Faltan {amount} para desbloquear tu bono',
+  'dash.remainingToUnlockShort': 'restante para desbloquear tu bono',
   'dash.bonusRemaining': 'Faltan {amount} para desbloquear tu bono',
   'dash.unlockBonus': 'Desbloquea tu bono de bienvenida',
   'search.title': 'Buscar juegos',
@@ -3552,12 +4521,14 @@ const es: Dictionary = {
   'rewards.tiersEmpty': 'Todavía no se han configurado niveles VIP.',
 };
 
-const it: Dictionary = {
+const it: PartialDictionary = {
   'auth.email': 'E-mail',
   'auth.password': 'Password',
   'auth.firstName': 'Nome',
   'auth.lastName': 'Cognome',
   'auth.mobile': 'Cellulare',
+  'auth.dateOfBirth': 'Data di nascita',
+  'auth.ageRequirement': 'Solo {min}+',
   'auth.show': 'Mostra',
   'auth.hide': 'Nascondi',
 
@@ -3621,6 +4592,73 @@ const it: Dictionary = {
   'register.haveAccount': 'Hai già un account?',
   'register.login': 'Accedi',
   'register.success': 'Account creato — effettua l’accesso',
+
+  // Register modal
+  'registerModal.title': 'Registrati',
+  'registerModal.registeredToday': '{count} registrati oggi',
+  'registerModal.recommended': 'Consigliato',
+  'registerModal.mobile': 'Numero di cellulare',
+  'registerModal.email': 'Email',
+  'registerModal.moreOptions': 'altre opzioni',
+  'registerModal.withMobile': 'Registrati con numero di cellulare',
+  'registerModal.withEmail': 'Registrati con indirizzo email',
+  'registerModal.usernameMobile': 'Inserisci nome utente',
+  'registerModal.usernameEmail': 'Nome utente',
+  'registerModal.mobilePlaceholder': 'Inserisci il numero di cellulare',
+  'registerModal.emailPlaceholder': 'user@example.com',
+  'registerModal.passwordPlaceholder': 'Crea una password',
+  'registerModal.dialCode': 'Prefisso internazionale',
+  'registerModal.hasCodes': 'Ho un codice promo / referral',
+  'registerModal.promoPlaceholder': 'Aggiungi codice promo',
+  'registerModal.referralPlaceholder': 'Aggiungi codice referral',
+  'registerModal.continue': 'Continua',
+  'registerModal.legal': 'Continuando, accetti i Termini di servizio e l’Informativa sulla privacy di Rolluck.',
+  'registerModal.rulesTitle': 'La password deve contenere:',
+  'registerModal.ruleLength': 'Almeno {min} caratteri',
+  'registerModal.ruleLower': 'Almeno 1 lettera minuscola (a–z)',
+  'registerModal.ruleUpper': 'Almeno 1 lettera maiuscola (A–Z)',
+  'registerModal.ruleSpecial': 'Almeno 1 carattere speciale (es. ! # @ $ % & *)',
+  'registerModal.errUsername': 'Il nome utente deve avere 3–20 lettere, numeri o trattini bassi, e non solo numeri',
+  'registerModal.errEmail': 'Inserisci un indirizzo email valido',
+  'registerModal.errMobile': 'Inserisci un numero di cellulare valido',
+  'registerModal.errPassword': 'La password non soddisfa tutti i requisiti',
+  'registerModal.errCaptcha': 'Conferma di essere umano',
+  'registerModal.failed': 'Registrazione non riuscita. Riprova.',
+  'registerModal.otpTitle': 'Inserisci il codice OTP',
+  'registerModal.otpSentMobile': 'Inserisci il codice di verifica a 6 cifre inviato al tuo cellulare. {target}',
+  'registerModal.otpSentEmail': 'Inserisci il codice di verifica a 6 cifre inviato alla tua email. {target}',
+  'registerModal.needHelp': 'Serve aiuto?',
+  'registerModal.close': 'Chiudi',
+
+  // Login modal
+  'loginModal.title': 'Accedi',
+  'loginModal.suggestion': 'Inviaci un suggerimento',
+  'loginModal.username': 'Nome utente',
+  'loginModal.withUsername': 'Accedi con nome utente',
+  'loginModal.withMobile': 'Accedi con numero di cellulare',
+  'loginModal.withEmail': 'Accedi con indirizzo email',
+  'loginModal.usernamePlaceholder': 'Inserisci nome utente',
+  'loginModal.passwordPlaceholder': 'Password',
+  'loginModal.forgot': 'Password dimenticata?',
+  'loginModal.submit': 'Accedi',
+  'loginModal.register': 'Registrati',
+  'loginModal.forgotTitle': 'Password dimenticata?',
+  'loginModal.forgotMobileHint': 'Inserisci il tuo numero di cellulare per ricevere un codice di verifica a 6 cifre e reimpostare la password',
+  'loginModal.forgotEmailHint': 'Inserisci il tuo indirizzo email per ricevere un codice di verifica a 6 cifre e reimpostare la password',
+  'loginModal.send': 'Invia',
+  'loginModal.useEmail': 'Ricevi il codice via email',
+  'loginModal.useMobile': 'Ricevi il codice sul cellulare',
+  'loginModal.newPasswordTitle': 'Crea nuova password',
+  'loginModal.newPassword': 'Crea una nuova password',
+  'loginModal.confirmPassword': 'Reinserisci la nuova password',
+  'loginModal.submitReset': 'Invia',
+  'loginModal.errUsername': 'Inserisci il tuo nome utente',
+  'loginModal.errPassword': 'Inserisci la password',
+  'loginModal.failed': 'Accesso non riuscito. Riprova.',
+  'loginModal.operatorAccount': 'Questa app è per gli account giocatore. Gli operatori accedono dalla console di amministrazione.',
+  'loginModal.resetDone': 'Password aggiornata — ora puoi accedere',
+  'loginModal.resetFailed': 'Impossibile reimpostare la password. Riprova.',
+  'loginModal.codeFailed': 'Impossibile inviare il codice. Riprova.',
   'reset.title': 'Reimposta password',
   'reset.newPassword': 'Nuova password',
   'reset.confirmPassword': 'Conferma password',
@@ -3652,6 +4690,9 @@ const it: Dictionary = {
   'nav.rewards': 'Ricompense',
   'nav.collapse': 'Comprimi',
   'nav.openMenu': 'Apri menu',
+  'nav.menu': 'Menu',
+  'nav.chat': 'Chat',
+  'nav.theme': 'Tema',
   'nav.closeMenu': 'Chiudi menu',
   'account.account': 'Account',
   'account.profile': 'Profilo',
@@ -3675,6 +4716,8 @@ const it: Dictionary = {
   'dash.newReleases': 'Nuove uscite',
   'dash.featuredGames': 'Giochi in evidenza',
   'dash.slots': 'Slot',
+  'dash.liveCasino': 'Casinò dal vivo',
+  'dash.mostPlayed': 'I più giocati',
   'dash.catalogueUnavailable': 'I giochi non sono disponibili al momento. Riprova tra poco.',
   'wallet.balance': 'Saldo',
   'wallet.real': 'Saldo reale',
@@ -3817,6 +4860,8 @@ const it: Dictionary = {
   'dash.wageringProgress': 'Progresso di puntata',
   'dash.percentComplete': '{percent}% completato',
   'dash.wagered': '{amount} puntati',
+  'dash.remainingToUnlock': 'Mancano {amount} per sbloccare il tuo bonus',
+  'dash.remainingToUnlockShort': 'mancanti per sbloccare il tuo bonus',
   'dash.bonusRemaining': 'Mancano {amount} per sbloccare il tuo bonus',
   'dash.unlockBonus': 'Sblocca il tuo bonus di benvenuto',
   'search.title': 'Cerca giochi',
@@ -3990,7 +5035,7 @@ const it: Dictionary = {
   'rewards.tiersEmpty': 'Nessun livello VIP ancora configurato.',
 };
 
-export const DICTIONARIES: Record<Locale, Dictionary> = {
+export const DICTIONARIES: Record<Locale, PartialDictionary> & { en: Dictionary } = {
   en,
   ar,
   tr,

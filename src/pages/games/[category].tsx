@@ -10,11 +10,12 @@ import { CATEGORY_ICONS } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
 import {
   CATEGORY_PAGE_SIZE,
-  GAME_CATEGORIES,
+  GAME_SHELVES,
   categoryForKey,
   categoryHref,
+  shelfFor,
 } from '@/constants/games';
-import { fetchGamesByCategory, parsePageParam } from '@/services/games.server';
+import { fetchShelfList, parsePageParam } from '@/services/games.server';
 import type { Game, GamePagination, GameShelfKey } from '@/types';
 
 interface Props {
@@ -25,15 +26,16 @@ interface Props {
 }
 
 /**
- * Every game in one category, paged.
+ * Every game on one shelf, paged.
  *
- * Backed by `GET /games?category=…&page=…&limit=…`. Each page is a real URL
+ * Backed by `GET /games?…&page=…&limit=…` with the shelf's own filter — a
+ * category, `type=LIVE`, or `sort=popular`. Each page is a real URL
  * (`/games/slots?page=3`), so it survives a refresh and works with the back
  * button; the pager links are plain navigations.
  */
 const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed }) => {
   const { t } = useTranslation();
-  const def = GAME_CATEGORIES.find((c) => c.key === categoryKey) ?? GAME_CATEGORIES[0];
+  const def = shelfFor(categoryKey);
   const title = t(def.titleKey);
 
   const from =
@@ -60,7 +62,7 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed }) => 
           className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
           aria-label={t('dash.categories')}
         >
-          {GAME_CATEGORIES.map((c) => {
+          {GAME_SHELVES.map((c) => {
             const Icon = CATEGORY_ICONS[c.key];
             const active = c.key === def.key;
             return (
@@ -126,7 +128,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, qu
   }
 
   const page = parsePageParam(query.page);
-  const result = await fetchGamesByCategory(def.category, page, CATEGORY_PAGE_SIZE);
+  const result = await fetchShelfList(def.list, page, CATEGORY_PAGE_SIZE);
 
   return {
     props: {

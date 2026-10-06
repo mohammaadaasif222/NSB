@@ -1,26 +1,33 @@
-import { useEffect, useMemo, useState, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useWallet } from '@/context/WalletContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
-import { requestWithdrawal, getRates } from '@/services/wallet';
-import type { Currency, WalletBalance, ExchangeRate } from '@/types';
+import { requestWithdrawal } from '@/services/wallet';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
+import kycApi from '@/services/kyc.api';
+import type { PlayerKycProfile } from '@/types/kyc';
+import { readKycError } from '@/utils/kyc-status';
+import KycVerifyModal from '@/components/modals/profile/KycVerifyModal';
+import { ShieldCheckIcon, AlertTriangleIcon } from '@/components/icons';
+import type { Currency, WalletBalance } from '@/types';
 import CurrencyPicker from '../shared/CurrencyPicker';
 import NetworkPicker from '../shared/NetworkPicker';
 
 /**
- * Withdraw tab with USD-native model.
+ * Withdraw tab with display currency model.
  *
  * Shows balance in user's active display currency.
- * Two input fields with live-rate conversion:
- * - Left: Active currency amount (e.g., EUR)
- * - Right: Crypto amount (e.g., BNB)
- *
- * When user enters amount in one field, the other auto-updates using live exchange rates.
- * Both amounts sent to backend for storage and audit trail.
+ * Single input field for display currency amount (e.g., EUR, GBP, INR).
+ * User enters amount in their display currency only.
+ * Crypto amount is calculated at approval time using LIVE rates.
  */
 const WithdrawTab: FC = () => {
-  const { summary, currencies, refresh, rates: _rates } = useWallet();
+  // Handles a fraud step-up: on a 428 it prompts for the one-time code and
+  // resubmits this exact request.
+  const { run } = useSeonGuard();
+  const { summary, currencies, refresh } = useWallet();
   const { convertToDisplayCurrency } = useCurrencyConversion();
 
   const displayCurrency = summary?.preferences.active_currency ?? 'USD';
@@ -28,9 +35,9 @@ const WithdrawTab: FC = () => {
   const eligible = useMemo(
     () =>
       currencies.filter(
-        (c) => c.category === 'CRYPTO' && c.is_withdrawal_enabled && c.networks.length > 0,
+        (c) => c.category === 'CRYPTO' && c.is_withdrawal_enabled && c.networks.length > 0
       ),
-    [currencies],
+    [currencies]
   );
 
   const [currency, setCurrency] = useState<string>(() => {
@@ -41,12 +48,12 @@ const WithdrawTab: FC = () => {
 
   const currencyRow: Currency | undefined = useMemo(
     () => eligible.find((c) => c.code === currency),
-    [eligible, currency],
+    [eligible, currency]
   );
 
   const enabledNetworks = useMemo(
     () => currencyRow?.networks.filter((n) => n.is_enabled) ?? [],
-    [currencyRow],
+    [currencyRow]
   );
 
   const [network, setNetwork] = useState<string>(() => {
@@ -80,119 +87,52 @@ const WithdrawTab: FC = () => {
     return converted.displayAmount;
   }, [balanceRow, availableUSD, convertToDisplayCurrency]);
 
-  /* ── Form state with two-way conversion ────────────────────────── */
+  /* ── KYC Compliance State ─────────────────────────────────────── */
+
+  const [kyc, setKyc] = useState<PlayerKycProfile | null>(null);
+  const [kycLoading, setKycLoading] = useState(true);
+  /**
+   * Which verification level the modal should open, or null when closed.
+   *
+   * A level rather than a boolean: a tier upgrade and a missing Level 2 both
+   * open this modal, but they must present different steps.
+   */
+  const [kycModalTier, setKycModalTier] = useState<number | null>(null);
+
+  const fetchKyc = useCallback(async () => {
+    try {
+      setKycLoading(true);
+      const data = await kycApi.getKycMe();
+      setKyc(data);
+    } catch {
+      setKyc(null);
+    } finally {
+      setKycLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchKyc();
+  }, [fetchKyc]);
+
+  const isKycMandatory = summary?.kyc_mandatory_for_withdrawal ?? true;
+  const isKycApproved = !isKycMandatory || kyc?.status === 'APPROVED';
+
+  /* ── Form state ────────────────────────────────────────────────── */
 
   const [toAddress, setToAddress] = useState('');
   const [displayAmount, setDisplayAmount] = useState('');
-  const [cryptoAmount, setCryptoAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [_lastEditedField, setLastEditedField] = useState<'display' | 'crypto'>('crypto');
-  const [fetchedRates, setFetchedRates] = useState<ExchangeRate[]>([]);
-  const [ratesLoading, setRatesLoading] = useState(false);
 
-  // Fetch rates directly from backend when displayCurrency changes
-  useEffect(() => {
-    const fetchRates = async () => {
-      setRatesLoading(true);
-      try {
-        const response = await getRates(displayCurrency as any);
-        console.log(`[WithdrawTab] Fetched rates for ${displayCurrency}:`, response?.data);
-        if (response?.data) {
-          setFetchedRates(response.data);
-        }
-      } catch (err) {
-        console.error('[WithdrawTab] Failed to fetch rates:', err);
-      } finally {
-        setRatesLoading(false);
-      }
-    };
-
-    fetchRates();
-  }, [displayCurrency]);
-
-  // Get live rate for the current currency from fetched rates
-  const liveExchangeRate = useMemo(() => {
-    const rate = fetchedRates.find((r) => r.from === currency && r.to === displayCurrency);
-    if (!rate) {
-      if (fetchedRates.length === 0) {
-        console.warn(`[WithdrawTab] No rates fetched yet for ${displayCurrency}`);
-      } else {
-        console.warn(
-          `[WithdrawTab] Rate not found for ${currency}→${displayCurrency}. Looking for: from="${currency}" to="${displayCurrency}". Available (first 10):`,
-          fetchedRates.map((r) => `${r.from}→${r.to}: ${r.rate}`).slice(0, 10)
-        );
-      }
-    }
-    return rate?.rate ?? null;
-  }, [fetchedRates, currency, displayCurrency]);
-
-  // Convert display amount to crypto amount
+  // Handle display amount input
   const handleDisplayChange = (value: string) => {
     const cleanValue = value.replace(/[^\d.]/g, '');
     setDisplayAmount(cleanValue);
-    setLastEditedField('display');
-
-    if (!cleanValue) {
-      setCryptoAmount('');
-      return;
-    }
-
-    if (!liveExchangeRate) {
-      console.warn(`[WithdrawTab] No live rate available for ${currency}→${displayCurrency}`);
-      setCryptoAmount('');
-      return;
-    }
-
-    const displayNum = Number(cleanValue);
-    if (!isFinite(displayNum) || displayNum <= 0) {
-      setCryptoAmount('');
-      return;
-    }
-
-    // Formula: crypto_amount = display_amount ÷ live_rate
-    // If 1 BNB = 350 EUR, then 700 EUR = 700 ÷ 350 = 2 BNB
-    const cryptoNum = displayNum / Number(liveExchangeRate);
-    const precision = currencyRow?.precision ?? 8;
-    const formatted = cryptoNum.toFixed(precision).replace(/\.?0+$/, '');
-    console.log(`[WithdrawTab] Convert: ${cleanValue} ${displayCurrency} ÷ ${liveExchangeRate} = ${formatted} ${currency}`);
-    setCryptoAmount(formatted);
-  };
-
-  // Convert crypto amount to display amount
-  const handleCryptoChange = (value: string) => {
-    const cleanValue = value.replace(/[^\d.]/g, '');
-    setCryptoAmount(cleanValue);
-    setLastEditedField('crypto');
-
-    if (!cleanValue) {
-      setDisplayAmount('');
-      return;
-    }
-
-    if (!liveExchangeRate) {
-      console.warn(`[WithdrawTab] No live rate available for ${currency}→${displayCurrency}`);
-      setDisplayAmount('');
-      return;
-    }
-
-    const cryptoNum = Number(cleanValue);
-    if (!isFinite(cryptoNum) || cryptoNum <= 0) {
-      setDisplayAmount('');
-      return;
-    }
-
-    // Formula: display_amount = crypto_amount × live_rate
-    // If 1 BNB = 350 EUR, then 2 BNB = 2 × 350 = 700 EUR
-    const displayNum = cryptoNum * Number(liveExchangeRate);
-    const formatted = displayNum.toFixed(2).replace(/\.?0+$/, '');
-    console.log(`[WithdrawTab] Convert: ${cleanValue} ${currency} × ${liveExchangeRate} = ${formatted} ${displayCurrency}`);
-    setDisplayAmount(formatted);
   };
 
   const setPercent = (pct: 25 | 50 | 75 | 100): void => {
     const n = Number(availableUSD);
     if (!isFinite(n) || n <= 0) {
-      setCryptoAmount('0');
       setDisplayAmount('0');
       return;
     }
@@ -206,50 +146,59 @@ const WithdrawTab: FC = () => {
 
     // Update display amount
     setDisplayAmount(displayNum.toFixed(2).replace(/\.?0+$/, ''));
-    setLastEditedField('display');
-
-    // Auto-convert to crypto
-    if (liveExchangeRate && !ratesLoading) {
-      const cryptoNum = displayNum / Number(liveExchangeRate);
-      const precision = currencyRow?.precision ?? 8;
-      setCryptoAmount(cryptoNum.toFixed(precision).replace(/\.?0+$/, ''));
-    }
   };
 
-  // Min withdrawal is per-chain
-  const selectedNetwork = enabledNetworks.find((n) => n.code === network);
-  const minWithdrawal =
-    selectedNetwork?.min_withdrawal ?? currencyRow?.min_withdrawal ?? '0';
-  const belowMin = Number(cryptoAmount || 0) < Number(minWithdrawal);
-  const overBalance = Number(availableUSD) > 0 && Number(cryptoAmount || 0) * Number(liveExchangeRate || 0) > Number(availableUSD);
   const canSubmit =
-    !!currency && !!network && !!toAddress.trim() && !!cryptoAmount &&
-    !belowMin && !overBalance && !submitting && liveExchangeRate && !ratesLoading;
+    isKycApproved &&
+    !!currency && !!network && !!toAddress.trim() && !!displayAmount &&
+    !submitting;
 
   const submit = async (): Promise<void> => {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const res = await requestWithdrawal({
-        currency,
-        network,
-        amount: cryptoAmount,
-        to_address: toAddress.trim(),
-        display_currency_amount: displayAmount, // Send display currency amount too
-      });
+      // Wrapped so a fraud step-up prompts for a code and resubmits the
+      // IDENTICAL request — the amount and destination cannot change between
+      // the challenge and its clearance.
+      const res = await run((headers) =>
+        requestWithdrawal(
+          {
+            currency,
+            network,
+            amount: displayAmount, // Amount is now in display currency (e.g., EUR, GBP, INR)
+            to_address: toAddress.trim(),
+          },
+          headers
+        )
+      );
       if (res?.success && res.data) {
         setToAddress('');
-        setCryptoAmount('');
         setDisplayAmount('');
         void refresh();
       } else {
         toast.error(res?.message || 'Withdrawal failed');
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Closing the code prompt is a decision, not a failure — no error toast.
+      if (isStepUpCancelled(err)) return;
+
+      // Every KYC refusal — Level 2 missing, compliance hold, or a tier
+      // upgrade — arrives with a `requiredLevel`, so one branch opens the
+      // right step instead of three.
+      const kycError = readKycError(err);
+      if (kycError) {
+        setKycModalTier(kycError.requiredLevel);
+        void fetchKyc();
+        toast.error(kycError.message);
+        return;
+      }
+
+      const errData = err?.response?.data ?? err;
       const message =
-        typeof err === 'object' && err && 'message' in err
+        errData?.message ||
+        (typeof err === 'object' && err && 'message' in err
           ? String((err as { message: string }).message)
-          : 'Withdrawal failed';
+          : 'Withdrawal failed');
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -273,6 +222,48 @@ const WithdrawTab: FC = () => {
         </span>
       </p>
 
+      {/* ── KYC Compliance Notice ───────────────────────────────── */}
+      {!kycLoading && isKycMandatory && !isKycApproved && (
+        <div className="rounded-xl p-3 bg-amber-500/10 border border-amber-500/30 text-amber-200">
+          <div className="flex items-start gap-2.5">
+            <div className="p-1 rounded-lg bg-amber-500/20 text-amber-400 mt-0.5 shrink-0">
+              <AlertTriangleIcon size={16} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold text-white">Identity Verification Required</p>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
+                  {kyc?.status === 'REJECTED'
+                    ? 'Rejected'
+                    : kyc?.status === 'PENDING_REVIEW' || kyc?.status === 'IN_PROGRESS'
+                      ? 'In Review'
+                      : 'Unverified'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                {kyc?.status === 'PENDING_REVIEW' || kyc?.status === 'IN_PROGRESS'
+                  ? 'Your verification documents are being reviewed. Withdrawals will unlock once approved.'
+                  : kyc?.status === 'REJECTED'
+                    ? 'Your identity documents need to be re-submitted before you can withdraw.'
+                    : 'To comply with regulatory standards and protect your account, identity verification must be completed before requesting withdrawals.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => setKycModalTier(2)}
+                className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors"
+              >
+                <ShieldCheckIcon size={13} />
+                {kyc?.status === 'PENDING_REVIEW' || kyc?.status === 'IN_PROGRESS'
+                  ? 'Check Verification'
+                  : kyc?.status === 'REJECTED'
+                    ? 'Retry Verification'
+                    : 'Verify Identity Now'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CurrencyPicker
         label="Currency"
         currencies={eligible}
@@ -294,9 +285,7 @@ const WithdrawTab: FC = () => {
       )}
 
       <div>
-        <label className="block text-[11px] text-slate-400 mb-1">
-          {currency} Address
-        </label>
+        <label className="block text-[11px] text-slate-400 mb-1">{currency} Address</label>
         <input
           value={toAddress}
           onChange={(e) => setToAddress(e.target.value)}
@@ -305,21 +294,18 @@ const WithdrawTab: FC = () => {
         />
       </div>
 
-      {/* Two-input amount conversion system */}
+      {/* Amount Input - Display Currency Only */}
       <div className="space-y-3">
         <div className="flex items-center justify-between mb-1">
-          <label className="text-[11px] text-slate-400">Amount</label>
+          <label className="text-[11px] text-slate-400">Withdrawal Amount</label>
           <div className="flex gap-3 items-center text-[11px]">
             <span className="text-slate-500">
               Balance: {availableDisplay} {displayCurrency}
             </span>
-            <span className="text-slate-600">
-              Min: {minWithdrawal} {currency}
-            </span>
           </div>
         </div>
 
-        {/* Display Currency Amount (Left Input) */}
+        {/* Display Currency Amount Input */}
         <div>
           <label className="block text-[10px] text-slate-500 mb-1">
             {displayCurrency} Amount
@@ -328,38 +314,17 @@ const WithdrawTab: FC = () => {
             type="text"
             inputMode="decimal"
             value={displayAmount}
-            onChange={(e) => handleDisplayChange(e.target.value.replace(/[^\d.]/g, ''))}
+            onChange={(e) => handleDisplayChange(e.target.value)}
             placeholder={`Enter ${displayCurrency} amount`}
             className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
           />
         </div>
 
-        {/* Exchange Rate Info */}
-        <div className="text-[10px] text-slate-500 text-center py-1">
-          {ratesLoading ? (
-            <span className="text-amber-500">⚠️ Loading rates...</span>
-          ) : liveExchangeRate ? (
-            <>
-              1 {currency} = {Number(liveExchangeRate).toFixed(6)} {displayCurrency}
-            </>
-          ) : (
-            <span className="text-amber-500">⚠️ Rate not available</span>
-          )}
-        </div>
-
-        {/* Crypto Amount (Right Input) */}
-        <div>
-          <label className="block text-[10px] text-slate-500 mb-1">
-            {currency} Amount
-          </label>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={cryptoAmount}
-            onChange={(e) => handleCryptoChange(e.target.value.replace(/[^\d.]/g, ''))}
-            placeholder={`Enter ${currency} amount`}
-            className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
-          />
+        {/* Info Text */}
+        <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-2.5">
+          <p className="text-[10px] text-blue-200 leading-relaxed">
+            ℹ️ Crypto amount will be calculated at approval based on live {currency} rates.
+          </p>
         </div>
 
         {/* Quick percentage buttons */}
@@ -376,28 +341,45 @@ const WithdrawTab: FC = () => {
           ))}
         </div>
 
-        {belowMin && cryptoAmount && (
-          <p className="mt-1 text-[11px] text-amber-300">
-            Minimum withdrawal is {minWithdrawal} {currency}
-          </p>
-        )}
-        {overBalance && cryptoAmount && (
+        {displayAmount && Number(displayAmount) > Number(availableDisplay) && (
           <p className="mt-1 text-[11px] text-red-400">Insufficient balance</p>
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => void submit()}
-        disabled={!canSubmit}
-        className="w-full h-11 rounded-xl bg-white text-black text-sm font-semibold disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
-      >
-        {submitting ? 'Submitting…' : 'Withdraw'}
-      </button>
+      {isKycApproved ? (
+        <button
+          type="button"
+          onClick={() => void submit()}
+          disabled={!canSubmit}
+          className="w-full h-11 rounded-xl bg-white text-black text-sm font-semibold disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+        >
+          {submitting ? 'Submitting…' : 'Withdraw'}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setKycModalTier(2)}
+          className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+        >
+          <ShieldCheckIcon size={16} />
+          Verify Identity to Enable Withdrawals
+        </button>
+      )}
 
-      <p className="text-center text-[11px] text-slate-400 pt-1">
-        Need help with your Withdraw?
-      </p>
+      {kycModalTier !== null && (
+        <KycVerifyModal
+          tier={kycModalTier}
+          onClose={() => {
+            setKycModalTier(null);
+            void fetchKyc();
+          }}
+          onSubmitted={() => {
+            void fetchKyc();
+          }}
+        />
+      )}
+
+      <p className="text-center text-[11px] text-slate-400 pt-1">Need help with your Withdraw?</p>
     </div>
   );
 };

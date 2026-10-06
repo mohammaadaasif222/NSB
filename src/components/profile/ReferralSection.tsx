@@ -1,17 +1,24 @@
-import { useEffect, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { FieldGroup, SectionPlaceholder } from '@/components/profile/SectionShell';
-import { UsersIcon } from '@/components/icons';
+import ReferralCodeCard from '@/components/profile/referral/ReferralCodeCard';
+import ReferralTable from '@/components/profile/referral/ReferralTable';
+import { fetchReferrals, type ReferralRow } from '@/components/profile/referral/mockReferral';
 import { analytics } from '@/services/analytics';
 
 /**
  * Referrals.
  *
- * No referral endpoint exists, so no code can be issued — showing a fabricated
- * one would be worse than useless, since a player might share it.
+ * NOT WIRED. There is no referral endpoint: the code and every row below come
+ * from `referral/mockReferral.ts`, which is the one file to replace. The code
+ * in particular must not ship as it stands — see the note in that file.
+ *
+ * The design puts a second card beside the code, and leaves it empty. Nothing
+ * is rendered there rather than shipping a hollow box; the column is held open
+ * so dropping its content in later needs no layout change.
  */
 const ReferralSection: FC = () => {
   const { t } = useTranslation();
+  const [rows, setRows] = useState<readonly ReferralRow[]>([]);
 
   // Demand for a feature that does not exist yet: how many players go looking
   // for a referral code before there is one to give them.
@@ -19,11 +26,27 @@ const ReferralSection: FC = () => {
     analytics.referral.sectionViewed();
   }, []);
 
+  useEffect(() => {
+    let live = true;
+    void fetchReferrals().then((result) => {
+      if (live) setRows(result.rows);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+
   return (
-    <div className="space-y-6">
-      <FieldGroup label={t('profile.referral')}>
-        <SectionPlaceholder icon={<UsersIcon size={26} />} />
-      </FieldGroup>
+    <div>
+      <h2 className="rl-h-section">{t('profile.referral')}</h2>
+
+      <div className="mt-7.25 grid gap-5.5 lg:grid-cols-2">
+        <ReferralCodeCard />
+      </div>
+
+      <div className="mt-5.5">
+        <ReferralTable rows={rows} />
+      </div>
     </div>
   );
 };

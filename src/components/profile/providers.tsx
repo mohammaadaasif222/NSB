@@ -1,0 +1,160 @@
+import type { FC, ReactNode } from 'react';
+import Image from 'next/image';
+import metamaskLogo from '@/assets/metamask.png';
+import { GoogleMark, TelegramMark } from '@/components/brand';
+import { MailIcon } from '@/components/icons';
+
+/**
+ * Who the account is attached to: the host behind the sign-in email, and the
+ * third parties a player could one day link.
+ *
+ * Kept out of the components so that wiring this up later is a change to one
+ * file. Each export below says what it is standing in for.
+ */
+
+/* ==================================================================== */
+/* Mark sizing                                                           */
+/* ==================================================================== */
+
+/** The square the design gives every provider mark in a row. */
+const SLOT = 38;
+
+/**
+ * Glyph size for the vector marks.
+ *
+ * Smaller than the slot on purpose. The fox is raster artwork that carries its
+ * own margin — it covers 82% of its canvas — so it is drawn at the full slot
+ * and still reads at roughly this size. `GoogleMark` and `TelegramMark` fill
+ * their viewBox edge to edge, so drawing them at 38 would make them noticeably
+ * larger than the fox beside them.
+ */
+const GLYPH = 28;
+
+/** Centres a mark in the slot so the icon column lines up down the group. */
+const MarkSlot: FC<{ children: ReactNode }> = ({ children }) => (
+  <span
+    className="flex items-center justify-center"
+    style={{ width: SLOT, height: SLOT }}
+    aria-hidden="true"
+  >
+    {children}
+  </span>
+);
+
+/* ==================================================================== */
+/* Linked accounts                                                       */
+/* ==================================================================== */
+
+export interface LinkableProvider {
+  /** Stable key — becomes the provider id when an endpoint exists. */
+  key: string;
+  /** Proper noun, deliberately not run through i18n. */
+  label: string;
+  mark: ReactNode;
+}
+
+/**
+ * The providers the design offers to link.
+ *
+ * NOT WIRED. There is no OAuth handshake and nothing persisting a connection,
+ * so the rows render inert switches — see `SoonToggle` in SectionShell. When
+ * the backend lands, this list becomes the catalogue and the *connected* state
+ * comes from the API alongside it; the row component already takes the
+ * provider as data, so only this file and the section's props need to change.
+ */
+const google: LinkableProvider = {
+  key: 'google',
+  label: 'Google',
+  mark: (
+    <MarkSlot>
+      <GoogleMark size={GLYPH} />
+    </MarkSlot>
+  ),
+};
+
+const telegram: LinkableProvider = {
+  key: 'telegram',
+  label: 'Telegram',
+  // TelegramMark draws in `currentColor`, so the brand blue comes from here.
+  mark: (
+    <MarkSlot>
+      <span className="text-[#2aabee]">
+        <TelegramMark size={GLYPH} />
+      </span>
+    </MarkSlot>
+  ),
+};
+
+const metamask: LinkableProvider = {
+  key: 'metamask',
+  label: 'Metamask',
+  // The fox is raster artwork in the design, not a vector, so it comes in as
+  // an asset rather than a sibling of the marks in `brand.tsx`.
+  mark: (
+    <MarkSlot>
+      <Image src={metamaskLogo} alt="" width={SLOT} height={SLOT} />
+    </MarkSlot>
+  ),
+};
+
+export const LINKED_PROVIDERS: readonly LinkableProvider[] = [google, telegram, metamask];
+
+/**
+ * The wallets the Security tab offers to connect.
+ *
+ * NOT WIRED, same as the list above — there is no wallet-linking endpoint and
+ * nothing storing a connected address.
+ */
+export const WALLET_PROVIDERS: readonly LinkableProvider[] = [metamask];
+
+/* ==================================================================== */
+/* The email behind the account                                          */
+/* ==================================================================== */
+
+export interface MailHost {
+  /** The host's name, or the bare domain when we have no artwork for it. */
+  label: string;
+  mark: ReactNode;
+}
+
+const googleHost: MailHost = {
+  label: 'Google',
+  mark: (
+    <MarkSlot>
+      <GoogleMark size={GLYPH} />
+    </MarkSlot>
+  ),
+};
+
+/** Hosts we can put a face to. Anything else falls back to its domain. */
+const KNOWN_HOSTS: Record<string, MailHost> = {
+  'gmail.com': googleHost,
+  'googlemail.com': googleHost,
+};
+
+const GenericMailMark: FC = () => (
+  <MarkSlot>
+    <span className="text-white/50">
+      <MailIcon size={GLYPH - 4} />
+    </span>
+  </MarkSlot>
+);
+
+/**
+ * The mail host behind an address — the Google mark and name for a Gmail
+ * address, the bare domain otherwise.
+ *
+ * This describes where the mail is *hosted*, which the address alone tells us.
+ * It deliberately does not claim the player signed in *through* that provider:
+ * `/users/me` returns no `auth_provider`, and a Gmail address is just as
+ * likely to belong to a password signup. Swap this for that field when the
+ * backend exposes it — the row renders whatever `MailHost` it is handed.
+ *
+ * Takes the address as nullable because the API sends `null` for accounts with
+ * no email on file, and falls back to the generic mark for that case and for
+ * anything that does not parse as an address.
+ */
+export const mailHostOf = (email: string | null | undefined): MailHost => {
+  const domain = email?.split('@')[1]?.toLowerCase() ?? '';
+  return KNOWN_HOSTS[domain] ?? { label: domain || 'Email', mark: <GenericMailMark /> };
+};

@@ -1,6 +1,5 @@
 import { useEffect, useState, type FC } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import RewardCard from '@/components/rewards/RewardCard';
@@ -11,6 +10,7 @@ import { REWARD_ICONS } from '@/components/icons';
 import apiService from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 import { useRewards } from '@/hooks/useRewards';
 import { REWARD_DESCRIPTION_KEYS, REWARD_TITLE_KEYS, REWARD_TYPES } from '@/constants/rewards';
 import type { VipTier } from '@/types';
@@ -53,6 +53,7 @@ const RewardExplainer: FC = () => {
 const RewardsPage: FC = () => {
   const { token, hydrated } = useAuth();
   const { t } = useTranslation();
+  const { openLogin, openRegister } = useAuthModal();
   const { summary, error, claiming, clockOffset, refresh, claim } = useRewards();
 
   const [tiers, setTiers] = useState<VipTier[]>([]);
@@ -155,18 +156,20 @@ const RewardsPage: FC = () => {
               <section className="flex flex-col items-start gap-4 rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <p className="text-sm text-slate-300">{t('rewards.loginPrompt')}</p>
                 <div className="flex gap-2">
-                  <Link
-                    href="/auth/login"
+                  <button
+                    type="button"
+                    onClick={() => openLogin()}
                     className="inline-flex h-10 items-center rounded-xl bg-slate-800 border border-slate-700 px-4 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
                   >
                     {t('account.login')}
-                  </Link>
-                  <Link
-                    href="/auth/register"
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openRegister()}
                     className="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
                   >
                     {t('account.register')}
-                  </Link>
+                  </button>
                 </div>
               </section>
               <RewardExplainer />

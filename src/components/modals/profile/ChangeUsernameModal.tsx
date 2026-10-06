@@ -1,6 +1,8 @@
 import { useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import ModalInput from '@/components/inputs/ModalInput';
 import ProfileModalShell from './ProfileModalShell';
 
@@ -11,6 +13,10 @@ interface Props {
 }
 
 const ChangeUsernameModal: FC<Props> = ({ currentUsername, onClose, onSaved }) => {
+  // Security-sensitive profile changes are risk-scored: redirecting recovery
+  // to a new address is how an account takeover is made permanent.
+  const { run } = useSeonGuard();
+
   const [username, setUsername] = useState(currentUsername);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,7 +35,9 @@ const ChangeUsernameModal: FC<Props> = ({ currentUsername, onClose, onSaved }) =
     setLoading(true);
     setError('');
     try {
-      const res = await apiService.patch('/users/me', { username: trimmed });
+      const res = await run((headers) =>
+        apiService.patch('/users/me', { username: trimmed }, { headers })
+      );
       if (res?.success) {
         toast.success('Username updated successfully');
         onSaved(trimmed);
@@ -38,6 +46,8 @@ const ChangeUsernameModal: FC<Props> = ({ currentUsername, onClose, onSaved }) =
         setError(res?.message || 'Failed to update username');
       }
     } catch (err) {
+      // Closing the code prompt is a decision, not a failure.
+      if (isStepUpCancelled(err)) return;
       const e = err as { message?: string; errors?: Record<string, string> };
       setError(e?.errors?.username || e?.message || 'Failed to update username');
     } finally {

@@ -1,0 +1,173 @@
+import { useState, type FC } from 'react';
+
+import { useTranslation } from '@/context/I18nContext';
+import { useGoogleAuth } from '@/hooks/useGoogleAuth';
+import { usePasswordReset, type ResetTarget } from '@/hooks/usePasswordReset';
+import { analytics } from '@/services/analytics';
+import AuthModalShell from '@/components/auth/AuthModalShell';
+import AuthModalFooter from '@/components/auth/AuthModalFooter';
+import OtpVerification from '@/components/auth/OtpVerification';
+import LoginMethodStep from '@/components/auth/login/LoginMethodStep';
+import LoginFormStep from '@/components/auth/login/LoginFormStep';
+import ForgotPasswordStep from '@/components/auth/login/ForgotPasswordStep';
+import NewPasswordStep from '@/components/auth/login/NewPasswordStep';
+
+import type { TranslationKey } from '@/i18n/locales';
+import type { LoginMethod } from '@/types';
+
+export type LoginEntry = 'method' | 'forgot';
+
+interface LoginModalProps {
+  onClose: () => void;
+  onSwitchToRegister: () => void;
+  /** Open straight on Forgot Password (the old reset link lands here). */
+  entry?: LoginEntry;
+}
+
+type Step = 'method' | 'form' | 'forgot' | 'otp' | 'newPassword';
+
+const FORM_TITLE: Record<LoginMethod, TranslationKey> = {
+  username: 'loginModal.withUsername',
+  mobile: 'loginModal.withMobile',
+  email: 'loginModal.withEmail',
+};
+
+const STEP_TITLE: Record<Exclude<Step, 'form'>, TranslationKey> = {
+  method: 'loginModal.title',
+  forgot: 'loginModal.forgotTitle',
+  otp: 'registerModal.otpTitle',
+  newPassword: 'loginModal.newPasswordTitle',
+};
+
+/**
+ * Login as a modal:
+ *
+ *   method → form (username / mobile / email + password)
+ *                 └ Forgot Password → code → new password → back to the form
+ *
+ * Earlier steps stay mounted, hidden, while later ones show, so Back returns
+ * to each form as the player left it. A signed-in session closes the modal
+ * from AuthModalContext.
+ */
+const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 'method' }) => {
+  const { t } = useTranslation();
+  const google = useGoogleAuth();
+  const reset = usePasswordReset();
+
+  const [step, setStep] = useState<Step>(entry);
+  const [method, setMethod] = useState<LoginMethod>('mobile');
+  // The form mounts once a method is chosen and then stays, hidden, behind
+  // the reset steps.
+  const [formOpened, setFormOpened] = useState(false);
+  // After a reset the form reopens with the account filled in; the key
+  // remounts it so the prefill takes.
+  const [prefill, setPrefill] = useState<{ identifier: string; key: number }>({
+    identifier: '',
+    key: 0,
+  });
+
+  const chooseMethod = (next: LoginMethod): void => {
+    analytics.auth.loginStarted(next === 'mobile' ? 'phone' : next === 'email' ? 'mail' : next);
+    setMethod(next);
+    setFormOpened(true);
+    setStep('form');
+  };
+
+  const requestCode = async (target: ResetTarget): Promise<boolean> => {
+    const sent = await reset.requestCode(target);
+    if (sent) setStep('otp');
+    return sent;
+  };
+
+  const submitNewPassword = async (password: string): Promise<void> => {
+    const outcome = await reset.submitNewPassword(password);
+    if (outcome === 'bad-code') setStep('otp');
+    if (outcome === 'done' && reset.target) {
+      setMethod(reset.target.channel);
+      setPrefill((p) => ({ identifier: reset.target?.identifier ?? '', key: p.key + 1 }));
+      setFormOpened(true);
+      setStep('form');
+    }
+  };
+
+  const back = (): void => {
+    const previous: Record<Step, Step> = {
+      method: 'method',
+      form: 'method',
+      // Opened straight on Forgot Password there is no form to return to.
+      forgot: entry === 'forgot' ? 'method' : 'form',
+      otp: 'forgot',
+      newPassword: 'otp',
+    };
+    setStep(previous[step]);
+  };
+
+  const inResetFlow = step === 'forgot' || step === 'otp' || step === 'newPassword';
+  const title = step === 'form' ? t(FORM_TITLE[method]) : t(STEP_TITLE[step]);
+
+  return (
+    <AuthModalShell
+      titleId="login-modal-title"
+      title={title}
+      hero={step === 'method'}
+      onBack={back}
+      onClose={onClose}
+      footer={
+        step === 'method' && (
+          <AuthModalFooter actionLabel={t('loginModal.register')} onAction={onSwitchToRegister} />
+        )
+      }
+    >
+      {step === 'method' && (
+        <LoginMethodStep
+          onSelectMethod={chooseMethod}
+          onGoogle={() => {
+            analytics.auth.loginStarted('google');
+            google.signIn();
+          }}
+          googleBusy={google.loading}
+        />
+      )}
+
+      {formOpened && step !== 'method' && (
+        <div hidden={step !== 'form'}>
+          <LoginFormStep
+            key={`${method}-${prefill.key}`}
+            method={method}
+            initialIdentifier={prefill.identifier}
+            onForgotPassword={() => setStep('forgot')}
+            onLoggedIn={onClose}
+          />
+        </div>
+      )}
+
+      {inResetFlow && (
+        <div hidden={step !== 'forgot'}>
+          <ForgotPasswordStep
+            initialChannel={method === 'email' ? 'email' : 'mobile'}
+            busy={reset.busy}
+            onRequest={requestCode}
+          />
+        </div>
+      )}
+
+      {step === 'otp' && reset.target && (
+        <OtpVerification
+          channel={reset.target.channel}
+          target={reset.target.identifier}
+          onSubmit={(code) => {
+            // Only kept here; the API checks it with the new password.
+            reset.setCode(code);
+            setStep('newPassword');
+            return true;
+          }}
+          onResend={reset.resendCode}
+        />
+      )}
+
+      {step === 'newPassword' && <NewPasswordStep busy={reset.busy} onSubmit={submitNewPassword} />}
+    </AuthModalShell>
+  );
+};
+
+export default LoginModal;

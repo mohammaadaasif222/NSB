@@ -75,6 +75,12 @@ export interface WalletSummary {
   balance: WalletBalance | null;
   /** Snapshot rates for all currencies user has held */
   snapshot_rates: Record<string, string>;
+  /**
+   * Whether the player must clear KYC before a withdrawal is accepted. Absent
+   * on older responses, so call sites treat `undefined` as "required" rather
+   * than letting a missing flag wave a withdrawal through.
+   */
+  kyc_mandatory_for_withdrawal?: boolean;
 }
 
 /* ── Currency catalogue (deposit / withdraw pickers) ─────────────── */

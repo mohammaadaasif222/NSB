@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 
@@ -7,6 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import apiService from '@/services/api';
 import { isPlatformRole } from '@/constants/roles';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import { trackSignupComplete } from '@/utils/events';
 
 import type { ApiError, JwtPayload, LoginResponseData } from '@/types';
@@ -65,8 +66,9 @@ export interface TelegramAuth {
 
 export function useTelegramAuth(): TelegramAuth {
   const { login } = useAuth();
-  const router = useRouter();
   const { t } = useTranslation();
+  // Handles a fraud step-up on a risky sign-in.
+  const { run } = useSeonGuard();
 
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
@@ -102,10 +104,15 @@ export function useTelegramAuth(): TelegramAuth {
       try {
         setLoading(true);
 
-        const response = await apiService.post<LoginResponseData>('/auth/social/login', {
-          type: 'telegram',
-          telegram: data,
-        });
+        // See the note in useGoogleAuth: existing accounts can be challenged
+        // for a code, new ones are allowed through, BLOCK always refuses.
+        const response = await run((headers) =>
+          apiService.post<LoginResponseData>(
+            '/auth/social/login',
+            { type: 'telegram', telegram: data },
+            { headers }
+          )
+        );
 
         const sessionToken = response?.data?.token;
 
@@ -137,16 +144,21 @@ export function useTelegramAuth(): TelegramAuth {
         }
 
         login(sessionToken);
-        router.push('/');
+        // No redirect: sign-in happens in a modal over whatever page the
+        // player was on, and the modal closes itself once there is a session.
         toast.success(t('login.success'));
       } catch (err) {
+        // Closing the code prompt is a decision, not a failed sign-in.
+        if (isStepUpCancelled(err)) return;
         const apiErr = err as ApiError;
         toast.error(apiErr?.message || t('auth.telegramFailed'));
       } finally {
         setLoading(false);
       }
     },
-    [login, router, t]
+    // `run` is stable (memoised in SeonGuardProvider), so listing it does
+    // not rebuild this callback on every render.
+    [login, t, run]
   );
 
   const signIn = useCallback((): void => {

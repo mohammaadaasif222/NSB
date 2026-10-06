@@ -21,6 +21,7 @@ import { gameHref, playHref } from '@/constants/games';
 import { fetchGameBySlug } from '@/services/games.server';
 import { currentGameDevice, launchGame } from '@/services/games';
 import { requestBalanceRefresh } from '@/utils/balanceEvents';
+import { trackGameLaunch } from '@/utils/events';
 import type { ApiError, Game, GameLaunch, GameMode } from '@/types';
 
 interface Props {
@@ -290,6 +291,15 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
               referrerPolicy={launch.referrer_policy as HTMLAttributeReferrerPolicy}
               allow="autoplay; fullscreen; encrypted-media; clipboard-write"
               className="absolute inset-0 h-full w-full border-0"
+              /*
+                `game_launch` fires here rather than on the tile click, which is
+                what `game_open` already records. The difference is the measure
+                everyone actually wants: a player who taps a game and backs out
+                before the provider returns a URL, or whose launch fails, has
+                opened it and not played it. onLoad is the first moment the
+                game frame genuinely exists.
+              */
+              onLoad={() => trackGameLaunch(game.slug, mode)}
             />
           )}
 

@@ -51,7 +51,7 @@ const HelpCentreSection: FC = () => {
         <SettingRow
           icon={<ShieldIcon size={15} />}
           title={t('nav.responsiblePlay')}
-          action={<RowLink href="/responsible-play">{t('dash.viewAll')}</RowLink>}
+          action={<RowLink href="/responsible-gambling">{t('dash.viewAll')}</RowLink>}
         />
         <SettingRow
           icon={<SparklesIcon size={15} />}

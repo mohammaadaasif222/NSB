@@ -10,6 +10,10 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
+    /* Spec files import with an explicit .ts extension because Node runs them
+       directly (node --test), and Node ESM requires the extension. Only
+       PERMITTED here, never required of application code. Safe with noEmit. */
+    "allowImportingTsExtensions": true,
     "incremental": true,
     "jsx": "preserve",
     "allowJs": true,

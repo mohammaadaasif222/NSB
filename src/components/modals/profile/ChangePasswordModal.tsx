@@ -1,6 +1,8 @@
 import { useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import ModalInput from '@/components/inputs/ModalInput';
 import ProfileModalShell from './ProfileModalShell';
 import { analytics } from '@/services/analytics';
@@ -10,6 +12,9 @@ interface Props {
 }
 
 const ChangePasswordModal: FC<Props> = ({ onClose }) => {
+  // Changing a password is a security-sensitive change and is risk-scored:
+  // it is how a hijacked session is turned into a permanent takeover.
+  const { run } = useSeonGuard();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -27,10 +32,13 @@ const ChangePasswordModal: FC<Props> = ({ onClose }) => {
 
     setLoading(true);
     try {
-      const res = await apiService.post('/users/me/change-password', {
-        current_password: current,
-        new_password: next,
-      });
+      const res = await run((headers) =>
+        apiService.post(
+          '/users/me/change-password',
+          { current_password: current, new_password: next },
+          { headers }
+        )
+      );
       if (res?.success) {
         analytics.auth.passwordChanged();
         toast.success('Password changed successfully');
@@ -39,6 +47,8 @@ const ChangePasswordModal: FC<Props> = ({ onClose }) => {
         setErrors({ current: res?.message || 'Failed to change password' });
       }
     } catch (err) {
+      // Closing the code prompt is a decision, not a failure.
+      if (isStepUpCancelled(err)) return;
       const ex = err as { message?: string; errors?: Record<string, string> };
       setErrors({
         current: ex?.errors?.current_password || ex?.message || 'Failed to change password',

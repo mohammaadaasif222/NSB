@@ -18,16 +18,18 @@ import ChangeUsernameModal from '@/components/modals/profile/ChangeUsernameModal
 import ChangeTimezoneModal from '@/components/modals/profile/ChangeTimezoneModal';
 import ChangePasswordModal from '@/components/modals/profile/ChangePasswordModal';
 import TwoFactorModal from '@/components/modals/profile/TwoFactorModal';
-import ThemeModal from '@/components/modals/profile/ThemeModal';
 import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
-import apiService from '@/services/api';
 import { useMe } from '@/context/UserContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { DEFAULT_TIMEZONE } from '@/types/profile';
-import type { Balance } from '@/types';
 
-type ActiveModal = 'email' | 'username' | 'timezone' | 'password' | '2fa' | 'theme' | null;
+/**
+ * The theme picker is not one of these: the design drops it from Preferences,
+ * and it stays reachable from the top bar and the lobby rail, which own their
+ * own copy of the modal.
+ */
+type ActiveModal = 'email' | 'username' | 'timezone' | 'password' | '2fa' | null;
 
 /**
  * The account area: a section nav beside one panel of settings.
@@ -46,8 +48,6 @@ const ProfilePage: FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const [balance, setBalance] = useState<Balance | null>(null);
-  const [balanceLoading, setBalanceLoading] = useState(true);
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [section, setSection] = useState<AccountSection>('profile');
@@ -69,28 +69,6 @@ const ProfilePage: FC = () => {
     );
   };
 
-  useEffect(() => {
-    let active = true;
-    apiService
-      .get<Balance>('/balance/me')
-      .then((res) => {
-        if (active && res?.success && res.data) {
-          setBalance(res.data);
-        }
-      })
-      .catch(() => {
-        /* the wallet rows show a dash */
-      })
-      .finally(() => {
-        if (active) {
-          setBalanceLoading(false);
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
   const confirmLogout = (): void => {
     setLogoutOpen(false);
     logout();
@@ -104,13 +82,7 @@ const ProfilePage: FC = () => {
 
     switch (section) {
       case 'profile':
-        return (
-          <ProfileSection
-            me={me}
-            onChangeEmail={() => setActiveModal('email')}
-            onToggle2FA={() => setActiveModal('2fa')}
-          />
-        );
+        return <ProfileSection me={me} onToggle2FA={() => setActiveModal('2fa')} />;
       case 'statistic':
         return <StatisticSection />;
       case 'preferences':
@@ -119,7 +91,6 @@ const ProfilePage: FC = () => {
             me={me}
             onChangeUsername={() => setActiveModal('username')}
             onChangeTimezone={() => setActiveModal('timezone')}
-            onChangeTheme={() => setActiveModal('theme')}
           />
         );
       case 'referral':
@@ -127,6 +98,7 @@ const ProfilePage: FC = () => {
       case 'security':
         return (
           <SecuritySection
+            email={me.email}
             twoFactorEnabled={me.two_factor_enabled}
             onChangePassword={() => setActiveModal('password')}
             onToggle2FA={() => setActiveModal('2fa')}
@@ -135,7 +107,7 @@ const ProfilePage: FC = () => {
       case 'verification':
         return <VerificationSection me={me} onChangeEmail={() => setActiveModal('email')} />;
       case 'transactions':
-        return <TransactionsSection balance={balance} loading={balanceLoading} />;
+        return <TransactionsSection />;
       case 'help':
         return <HelpCentreSection />;
     }
@@ -147,30 +119,46 @@ const ProfilePage: FC = () => {
         <title>{`${t('profile.title')} · ROLLUCK`}</title>
       </Head>
 
-      <div className="mx-auto max-w-6xl pb-2">
-        <div className="grid gap-4 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-6">
+      {/* 1544 is the account area's width in the design — 228 of rail, a 48px
+          channel, and a 1268 panel. Wider than the lobby's `max-w-6xl`, and
+          deliberately: every size inside is the design's own, so a narrower
+          column makes the whole section read oversized. */}
+      <div className="@container mx-auto max-w-[1544px] pb-2">
+        {/* 228px is the rail's width in the design and 48px the channel it
+            leaves — 276px of chrome, which the 1544 frame can afford and a
+            laptop cannot. Below the width where the design's own measurements
+            fit, both close up to 180 and 20: the rail still holds every label
+            at its own type size, and the 76px it gives back goes to the panel,
+            which is where the ledger and the KYC form were being squeezed.
+            Sites of this shape budget about 190 for the same chrome. */}
+        <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-5 @acct:lg:grid-cols-[228px_minmax(0,1fr)] @acct:lg:gap-12">
           <AccountNav
             active={section}
             onSelect={selectSection}
             onLogout={() => setLogoutOpen(true)}
           />
 
-          <div className="min-w-0 rounded-3xl bg-slate-900 border border-slate-800 p-4 sm:p-6">
+          {/* `@container` so the sections size themselves against the panel
+              rather than the window. The two part company badly: the shelf and
+              the rail take 492px before the panel starts, so a 1266 laptop
+              leaves it 740 where the design drew 1268, and a window-based
+              breakpoint reads "desktop" for both. */}
+          <div className="@container rl-panel min-w-0 p-5 @acct:sm:p-7.5">
             {!me ? (
               <div className="py-16 text-center">
                 {error && !loading ? (
                   <>
-                    <p className="text-sm text-slate-400">{t('profile.loadFailed')}</p>
+                    <p className="text-sm text-white/60">{t('profile.loadFailed')}</p>
                     <button
                       type="button"
                       onClick={() => void refresh()}
-                      className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
+                      className="rl-btn-gold mt-4 rounded-full px-4 py-2 text-xs font-semibold"
                     >
                       {t('profile.retry')}
                     </button>
                   </>
                 ) : (
-                  <p className="text-sm text-slate-500">{t('common.loading')}</p>
+                  <p className="text-sm text-white/50">{t('common.loading')}</p>
                 )}
               </div>
             ) : (
@@ -182,7 +170,7 @@ const ProfilePage: FC = () => {
           <button
             type="button"
             onClick={() => setLogoutOpen(true)}
-            className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2.5 text-[13px] font-semibold text-slate-200 hover:bg-slate-700 transition-colors lg:hidden"
+            className="rl-glass rl-glass-hover rounded-2xl px-3 py-2.5 text-[13px] font-medium text-white/70 lg:hidden"
           >
             {t('account.logout')}
           </button>
@@ -220,14 +208,6 @@ const ProfilePage: FC = () => {
           currentlyEnabled={me.two_factor_enabled}
           onClose={closeModal}
           onSaved={(enabled) => updateMe({ two_factor_enabled: enabled })}
-        />
-      )}
-
-      {me && activeModal === 'theme' && (
-        <ThemeModal
-          currentTheme={me.theme ?? 'dark'}
-          onClose={closeModal}
-          onSaved={(theme) => updateMe({ theme })}
         />
       )}
 

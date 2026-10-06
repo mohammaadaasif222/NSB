@@ -1,14 +1,13 @@
 import type {
   DiceConfig,
   Game,
-  GameCategory,
   GameListResponse,
   GameShelf,
   GameShelfKey,
   HomeShelvesResponse,
   LobbyProvider,
 } from '@/types';
-import { GAME_CATEGORIES, SHELF_KEYS } from '@/constants/games';
+import { SHELF_KEYS, shelfFor, type ShelfListQuery } from '@/constants/games';
 
 /**
  * Server-side catalogue fetching, for getServerSideProps.
@@ -82,11 +81,11 @@ export const parsePageParam = (value: string | string[] | undefined): number => 
 
 /** Empty shelf, so the page still renders when the API is unreachable. */
 const emptyShelf = (key: GameShelfKey, page: number): GameShelf => {
-  const def = GAME_CATEGORIES.find((c) => c.key === key) ?? GAME_CATEGORIES[0];
+  const { list } = shelfFor(key);
   return {
     key,
     title: key,
-    category: def.category,
+    category: 'category' in list ? list.category : null,
     games: [],
     pagination: { total: 0, page, limit: 10, totalPages: 0 },
   };
@@ -150,16 +149,17 @@ export interface CategoryPageResult extends GameListResponse {
 }
 
 /**
- * One page of a single category, via the flat list endpoint
- * (`GET /games?category=SLOTS&page=2&limit=24`).
+ * One page of a shelf's full listing, via the flat list endpoint —
+ * `GET /games?category=SLOTS&page=2&limit=24`, `?type=LIVE` for Live Casino,
+ * `?sort=popular` for Most Played.
  */
-export async function fetchGamesByCategory(
-  category: GameCategory,
+export async function fetchShelfList(
+  list: ShelfListQuery,
   page: number,
   limit: number
 ): Promise<CategoryPageResult> {
   const query = new URLSearchParams({
-    category,
+    ...list,
     page: String(page),
     limit: String(limit),
   });
@@ -173,7 +173,7 @@ export async function fetchGamesByCategory(
 
     return { ...data, failed: false };
   } catch (error) {
-    logFailure(`Category ${category} fetch`, error);
+    logFailure(`Shelf list ${query} fetch`, error);
     return {
       data: [],
       pagination: { total: 0, page, limit, totalPages: 0 },

@@ -9,13 +9,13 @@ interface Props {
 }
 
 const ProfileInfoRow: FC<Props> = ({ label, value, hint, action }) => (
-  <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-800/60 border border-slate-800 px-4 py-3 hover:border-slate-600 transition-colors">
+  <div className="rl-glass rl-glass-hover flex items-center justify-between gap-3 rounded-xl px-4 py-3">
     <div className="min-w-0">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      {value !== undefined && <p className="mt-0.5 text-sm text-slate-100 truncate">{value}</p>}
-      {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">{label}</p>
+      {value !== undefined && <p className="mt-0.5 truncate text-sm text-white">{value}</p>}
+      {hint && <p className="mt-0.5 text-[11px] text-white/40">{hint}</p>}
     </div>
-    {action && <div className="flex-shrink-0">{action}</div>}
+    {action && <div className="shrink-0">{action}</div>}
   </div>
 );
 
@@ -27,7 +27,7 @@ export const RowButton: FC<{ onClick: () => void; children: ReactNode }> = ({
   <button
     type="button"
     onClick={onClick}
-    className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3.5 py-1.5 rounded-full transition-colors whitespace-nowrap"
+    className="rl-btn-ghost whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium"
   >
     {children}
   </button>

@@ -10,9 +10,10 @@ import DiceGame from '@/components/dice/DiceGame';
 import { CATEGORY_ICONS } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 import { DICE_SLUG } from '@/constants/dice';
 import { categoryForEnum, categoryHref, playHref } from '@/constants/games';
-import { fetchDiceConfig, fetchGameBySlug, fetchGamesByCategory } from '@/services/games.server';
+import { fetchDiceConfig, fetchGameBySlug, fetchShelfList } from '@/services/games.server';
 import type { DiceConfig, Game } from '@/types';
 
 interface Props {
@@ -56,15 +57,17 @@ const SECONDARY =
 const PlayActions: FC<{ game: Game }> = ({ game }) => {
   const { token } = useAuth();
   const { t } = useTranslation();
+  const { openLogin } = useAuthModal();
 
   if (!game.launchable) {
     return (
-      <span
-        aria-disabled="true"
-        className="inline-flex items-center justify-center rounded-lg bg-slate-800/60 border border-slate-800 px-6 py-2.5 text-sm font-semibold text-slate-400 cursor-not-allowed"
+      <button
+        type="button"
+        onClick={() => openLogin()}
+        className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 text-sm font-bold transition-colors"
       >
-        {t('game.unavailable')}
-      </span>
+        {t('game.loginToPlay')}
+      </button>
     );
   }
 
@@ -240,7 +243,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
   const [shelf, dice] = await Promise.all([
     // Eleven, so there are still ten once the current title is dropped. A
     // synced game on no shelf has nothing to be related to.
-    category ? fetchGamesByCategory(category, 1, 11) : Promise.resolve(null),
+    category ? fetchShelfList({ category }, 1, 11) : Promise.resolve(null),
     lookup.game.slug === DICE_SLUG ? fetchDiceConfig() : Promise.resolve(null),
   ]);
   const related = shelf ? shelf.data.filter((g) => g.slug !== lookup.game.slug).slice(0, 10) : [];

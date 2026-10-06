@@ -1,36 +1,35 @@
-import { useState, type FC, type FormEvent, type ReactNode } from 'react';
+import { useState, type CSSProperties, type FC, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/router';
+import Image, { type StaticImageData } from 'next/image';
 import { toast } from 'react-toastify';
 
-import homeBg from '@/assets/home-bg.png';
-import casinoArt from '@/assets/casino-home.png';
-import sportsArt from '@/assets/sports-home.png';
+import backdrop from '@/assets/home-backdrop.webp';
+import backdropMobile from '@/assets/home-backdrop-mobile.webp';
+import casinoRoulette from '@/assets/casino-roulette.webp';
+import casinoDice from '@/assets/casino-dice.webp';
+import sportsFootball from '@/assets/sports-football.webp';
+import sportsTrophy from '@/assets/sports-trophy.webp';
+import casinoChip from '@/assets/casino-chip-mobile.webp';
+import sportsBall from '@/assets/sports-ball-mobile.webp';
+import gmailIcon from '@/assets/lobby/gmail.svg';
+import mailIcon from '@/assets/lobby/mail.svg';
+import telegramIcon from '@/assets/lobby/telegram.svg';
+import facebookIcon from '@/assets/lobby/facebook.svg';
+import whatsappIcon from '@/assets/lobby/whatsapp.svg';
+import chevronDown from '@/assets/lobby/chevron-down.svg';
+import starIcon from '@/assets/lobby/star.svg';
+import trustPrivacy from '@/assets/lobby/trust-privacy.svg';
+import trustFair from '@/assets/lobby/trust-fair.svg';
+import trustBolt from '@/assets/lobby/trust-bolt.svg';
 
 import { useTranslation } from '@/context/I18nContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
-import { FacebookMark, GmailMark, TelegramMark, WhatsappMark } from '@/components/brand';
-import { MailIcon, ScaleIcon, ShieldIcon, SparklesIcon, ZapIcon } from '@/components/icons';
-
-/**
- * Headline figures on the hero.
- *
- * There is no stats endpoint yet — no live player count, no house totals — so
- * these are illustrative, in the same spirit as the winners strip in the bar.
- * Every number the hero prints comes from this one object, so swapping it for
- * a real payload is the whole of the change once an endpoint exists.
- */
-const STATS = {
-  online: '1,625',
-  registeredToday: '1.2K',
-  todaysWinnings: '$3.8M',
-  biggestWin: '$250K',
-};
-
-/** Dial codes offered by the teaser form. The full list lives on /auth/register. */
-const DIAL_CODES = ['+1', '+44', '+91', '+61', '+49', '+33', '+55', '+971'];
+import BonusBanner from '@/components/player/BonusBanner';
+import { WinnersStrip } from '@/components/player/TopWinnersTicker';
+import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
+import { LOBBY_STATS } from '@/constants/stats';
 
 /* ==================================================================== */
 /* Backdrop                                                              */
@@ -40,46 +39,67 @@ const DIAL_CODES = ['+1', '+44', '+91', '+61', '+49', '+33', '+55', '+971'];
  * The lobby artwork, painted behind the whole top of the page.
  *
  * Handed to PlayerLayout rather than drawn inside the hero, so the bar and the
- * rail float over it too. On desktop it starts just inside the rail's right
- * edge — reading `--rail`, which the layout sets, so it follows a collapse —
- * which is where the design puts the ROLLUCK sign: fully in view beside the
- * rail, with the slot wall running off the right. Its left edge fades out under
- * the rail and its foot fades into the stage, so neither shows as a seam.
- *
- * Two nested masks rather than one element with two mask layers: compositing
- * mask layers needs `mask-composite`, whose WebKit spelling takes different
- * keywords, and nesting sidesteps that entirely.
+ * rail float over it too. Both are the design's own renders, fade to the stage
+ * colour included: the desktop one full-bleed from the top edge, the phone one
+ * — a faint wash, as the design keeps it — starting just above it.
  */
 export const LandingBackdrop: FC = () => (
-  <div className="relative h-[760px] overflow-hidden lg:h-[770px]">
-    <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,#000_60%,transparent)]">
-      <div className="absolute inset-y-0 left-0 right-0 lg:[mask-image:linear-gradient(to_right,transparent,#000_40px)]">
-        <Image
-          src={homeBg}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-contain object-top lg:object-left-top"
-        />
-        {/* Knock the art back so the chrome and copy over it stay the brightest
-            things on the page, then deepen the middle where the form sits. */}
-        <div className="absolute inset-0 bg-[#06070a]/35" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_34%_46%_at_50%_42%,rgba(6,7,10,0.72),transparent_72%)]" />
-      </div>
-    </div>
+  <div className="relative">
+    {/* The design's ambient glows: soft grey light pooling behind the left of
+        the hero and off the top-right corner, which is what lifts the glass
+        cards there off the stage. Measured from the design at 1920px, so
+        placed in vw to keep their spot at any desktop width. */}
+    <div
+      className="absolute inset-x-0 top-0 hidden h-[95vw] lg:block"
+      style={{
+        background:
+          'radial-gradient(circle 47vw at 18vw 41.8vw, rgba(217,217,217,0.13), rgba(217,217,217,0.07) 40%, rgba(217,217,217,0.02) 72%, transparent), radial-gradient(circle 40vw at 94vw 8vw, rgba(217,217,217,0.06), transparent 70%)',
+      }}
+    />
+    <Image src={backdrop} alt="" priority sizes="100vw" className="hidden h-auto w-full lg:block" />
+    <Image
+      src={backdropMobile}
+      alt=""
+      priority
+      sizes="100vw"
+      className="-mt-[11.2vw] h-auto w-full lg:hidden"
+    />
   </div>
+);
+
+/* ==================================================================== */
+/* Live figures                                                          */
+/* ==================================================================== */
+
+/** The pulsing-dot "N Online" pill, top-left of the desktop hero. */
+const OnlinePill: FC<{ label: string }> = ({ label }) => (
+  <span className="inline-flex h-[calc(var(--u)*35)] items-center gap-[calc(var(--u)*6)] rounded-full border border-[#252937] bg-[#1b1f29] pl-[calc(var(--u)*13)] pr-[calc(var(--u)*10)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-white">
+    <span
+      className="relative flex h-[calc(var(--u)*18)] w-[calc(var(--u)*18)] items-center justify-center"
+      aria-hidden="true"
+    >
+      <span className="absolute inset-0 animate-ping rounded-full bg-[#f0f1f5]/20" />
+      <span className="absolute inset-0 rounded-full bg-[#f0f1f5]/20" />
+      <span className="h-[calc(var(--u)*10)] w-[calc(var(--u)*10)] rounded-full bg-[#f0f1f5]" />
+    </span>
+    {label}
+  </span>
+);
+
+/** One of the phone's three figure pills. */
+const StatPill: FC<{ children: ReactNode }> = ({ children }) => (
+  <span className="inline-flex h-[calc(var(--u)*28)] items-center whitespace-nowrap rounded-full bg-white/10 px-[calc(var(--u)*8)] text-[length:max(min(11px,10px),calc(var(--u)*10))] leading-[calc(var(--u)*13)] text-white">
+    {children}
+  </span>
 );
 
 /* ==================================================================== */
 /* Sign-up teaser                                                        */
 /* ==================================================================== */
 
-/**
- * One of the two big provider buttons: mark on top, label beneath.
- */
+/** One of the two big provider buttons: mark on top, label beneath. */
 const ProviderButton: FC<{
-  icon: ReactNode;
+  icon: StaticImageData;
   label: string;
   onClick: () => void;
   disabled?: boolean;
@@ -88,35 +108,35 @@ const ProviderButton: FC<{
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className="rl-glass-dark flex h-[76px] flex-col items-center justify-center gap-2 rounded-2xl transition-colors hover:border-white/20 hover:bg-[#16181e]/80 disabled:opacity-60"
+    className="flex h-[calc(var(--u)*76)] flex-col items-center justify-center gap-[calc(var(--u)*8)] rounded-[calc(var(--u)*24)] bg-[#13171f] px-[calc(var(--u)*8)] transition-colors hover:bg-[#1a1f29] disabled:opacity-60 lg:h-[calc(var(--u)*99)] lg:rounded-[calc(var(--u)*34)]"
   >
-    <span className="flex h-[22px] items-center">{icon}</span>
-    <span className="text-[13px] text-white">{label}</span>
+    <img src={icon.src} alt="" className="h-[calc(var(--u)*30)] w-[calc(var(--u)*30)]" />
+    <span className="text-[length:max(min(11px,12px),calc(var(--u)*12))] font-medium leading-[calc(var(--u)*20)] text-[#f0f1f5] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)] lg:text-white">
+      {label}
+    </span>
   </button>
 );
 
 /**
- * One disc in the overlapping stack of provider shortcuts. The stack is drawn
- * with a negative margin on every disc but the first, so each ring sits over
- * the previous one's edge.
+ * A disc in the overlapping row of quick sign-in marks: the design's small
+ * dark glass, each one tucked 12px under the one before it.
  */
-const SocialDot: FC<{
+const SocialDisc: FC<{
+  icon: StaticImageData;
   label: string;
-  colour: string;
   onClick: () => void;
   first?: boolean;
-  children: ReactNode;
-}> = ({ label, colour, onClick, first, children }) => (
+}> = ({ icon, label, onClick, first }) => (
   <button
     type="button"
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`relative flex h-[37px] w-[37px] items-center justify-center rounded-full border border-white/10 bg-[#121317] transition-transform hover:z-10 hover:scale-110 ${colour} ${
-      first ? '' : '-ml-[9px]'
+    className={`relative flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rounded-full border border-white/10 bg-[#1e1f22]/80 backdrop-blur-md transition-transform hover:z-10 hover:-translate-y-0.5 ${
+      first ? '' : '-ms-[calc(var(--u)*12)]'
     }`}
   >
-    {children}
+    <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
   </button>
 );
 
@@ -124,28 +144,27 @@ const SocialDot: FC<{
  * The signed-out call to action: a mobile number straight into signup, with
  * the provider shortcuts beneath it.
  *
- * The form does not register anybody here — it hands the number to
- * /auth/register through the query string, which that page already reads and
- * prefills. Doing the signup inline would mean duplicating its validation,
- * OTP step and terms consent in the lobby.
+ * The form does not register anybody here — it opens the register modal on
+ * its mobile form with the number already filled in, so validation, the OTP
+ * step and the rest of signup live in one place.
  */
 const SignupTeaser: FC = () => {
-  const router = useRouter();
+  const { openRegister } = useAuthModal();
   const { t } = useTranslation();
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
 
-  const [dial, setDial] = useState(DIAL_CODES[0]);
+  const [dial, setDial] = useState(DIAL_CODES[0].code);
   const [mobile, setMobile] = useState('');
 
   const submit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     const digits = mobile.replace(/\D/g, '');
-    if (digits.length < 10 || digits.length > 15) {
-      toast.error('Mobile must be 10–15 digits');
+    if (!MOBILE_PATTERN.test(digits)) {
+      toast.error(t('registerModal.errMobile'));
       return;
     }
-    router.push(`/auth/register?mobile=${encodeURIComponent(digits)}`);
+    openRegister({ mobile: digits, dialCode: dial });
   };
 
   const soon = (method: string): void => {
@@ -153,41 +172,39 @@ const SignupTeaser: FC = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center">
-      {/* A tab resting on the field's top edge. `!` because rl-glass-dark's
-          border shorthand is emitted after border-b-0 and would redraw it. */}
-      <span className="rl-glass-dark flex h-7 items-center rounded-t-[10px] !border-b-0 px-3 text-[11px] text-white/85">
-        {STATS.registeredToday} Registered Today
+    <div className="flex w-full max-w-[calc(var(--u)*346)] flex-col items-center lg:max-w-[calc(var(--u)*435)]">
+      {/* A tab resting on the field's top edge, its foot tucked under it. */}
+      <span className="-mb-[calc(var(--u)*4)] flex h-[calc(var(--u)*42)] items-start rounded-t-[calc(var(--u)*10)] border border-b-0 border-[#252937] bg-[#07080a] px-[calc(var(--u)*15)] pt-[calc(var(--u)*9)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#f0f1f5]">
+        {t('registerModal.registeredToday', { count: LOBBY_STATS.registeredToday })}
       </span>
 
-      <form onSubmit={submit} className="w-full max-w-[343px]">
+      <form onSubmit={submit} className="relative w-full">
         <label
-          className="rl-glass-dark flex h-[43px] items-center rounded-[14px] transition-colors focus-within:border-white/25"
+          className="rl-liquid flex h-[calc(var(--u)*56)] items-center rounded-[calc(var(--u)*34)] transition-shadow focus-within:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
           htmlFor="hero-mobile"
         >
-          <span className="relative flex h-full flex-shrink-0 items-center">
+          {/* The visible code and chevron are drawn here, with the native
+              select laid invisibly over them: a bare select is as wide as
+              its longest option, which pushed the field's text away. */}
+          <span className="relative flex h-full flex-shrink-0 items-center gap-[calc(var(--u)*9)] pl-[calc(var(--u)*21)] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-bold leading-[calc(var(--u)*24)] text-[#f0f1f5]">
+            {dial}
+            <img
+              src={chevronDown.src}
+              alt=""
+              className="pointer-events-none h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
+            />
             <select
               value={dial}
               onChange={(e) => setDial(e.target.value)}
               aria-label="Country calling code"
-              className="h-full appearance-none bg-transparent pl-4 pr-7 text-[13.5px] font-medium text-white outline-none [&>option]:bg-[#14161b]"
+              className="absolute inset-0 cursor-pointer appearance-none opacity-0 [&>option]:bg-[#14161b] [&>option]:text-white"
             >
-              {DIAL_CODES.map((code) => (
-                <option key={code} value={code}>
-                  {code}
+              {DIAL_CODES.map((d) => (
+                <option key={d.iso} value={d.code}>
+                  {d.code}
                 </option>
               ))}
             </select>
-            <svg
-              className="pointer-events-none absolute right-2.5 h-3 w-3 text-white/70"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
           </span>
           <input
             id="hero-mobile"
@@ -197,7 +214,7 @@ const SignupTeaser: FC = () => {
             value={mobile}
             onChange={(e) => setMobile(e.target.value)}
             placeholder="Enter mobile number"
-            className="h-full min-w-0 flex-1 bg-transparent pl-2.5 pr-4 text-[14px] text-white outline-none placeholder:text-white/40"
+            className="h-full min-w-0 flex-1 bg-transparent pl-[calc(var(--u)*19)] pr-[calc(var(--u)*20)] text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*24)] text-[#f0f1f5] outline-none placeholder:text-[#9da2b4] lg:placeholder:text-[#464e61]"
           />
           <button type="submit" className="sr-only">
             {t('account.register')}
@@ -205,43 +222,38 @@ const SignupTeaser: FC = () => {
         </label>
       </form>
 
-      <div className="mt-3 grid w-full max-w-[343px] grid-cols-2 gap-[9px]">
+      <div className="mt-[calc(var(--u)*13)] grid w-full grid-cols-2 gap-[calc(var(--u)*8)] lg:gap-[calc(var(--u)*10)]">
         <ProviderButton
-          icon={<GmailMark size={22} />}
+          icon={gmailIcon}
           label={`Continue with ${t('auth.methodGmail')}`}
           onClick={() => google.signIn()}
           disabled={google.loading}
         />
         {/* The design draws an envelope here: the e-mail signup flow, not a
-            second Google button. Labelled for what it actually opens. */}
+            second Google button. */}
         <ProviderButton
-          icon={<MailIcon size={22} strokeWidth={1.6} />}
-          label={`Continue with ${t('auth.methodMail')}`}
-          onClick={() => router.push('/auth/register')}
+          icon={mailIcon}
+          label="Continue with Email"
+          onClick={() => openRegister({ method: 'email' })}
         />
       </div>
 
-      <div className="mt-5 flex items-center">
-        <SocialDot
+      <div className="mt-[calc(var(--u)*15)] flex items-center lg:mt-[calc(var(--u)*22)]">
+        <SocialDisc
+          icon={telegramIcon}
           label={t('auth.methodTelegram')}
-          colour="text-[#2aabee]"
           onClick={() => telegram.signIn()}
           first
-        >
-          <TelegramMark size={16} />
-        </SocialDot>
-        <SocialDot label="Facebook" colour="text-[#1877f2]" onClick={() => soon('Facebook')}>
-          <FacebookMark size={16} />
-        </SocialDot>
-        <SocialDot label="WhatsApp" colour="text-[#25d366]" onClick={() => soon('WhatsApp')}>
-          <WhatsappMark size={17} />
-        </SocialDot>
-        <Link
-          href="/auth/register"
-          className="ms-3 text-[13px] text-white/55 transition-colors hover:text-white"
+        />
+        <SocialDisc icon={facebookIcon} label="Facebook" onClick={() => soon('Facebook')} />
+        <SocialDisc icon={whatsappIcon} label="WhatsApp" onClick={() => soon('WhatsApp')} />
+        <button
+          type="button"
+          onClick={() => openRegister()}
+          className="ms-[calc(var(--u)*15)] text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-[#9da2b4] transition-colors hover:text-white lg:text-[#6a7287]"
         >
           more option
-        </Link>
+        </button>
       </div>
     </div>
   );
@@ -251,67 +263,92 @@ const SignupTeaser: FC = () => {
 /* Section cards                                                         */
 /* ==================================================================== */
 
-/** The white line-art die cut off by the Casino card's top edge. */
-const DieArt: FC = () => (
-  <svg
-    viewBox="0 0 64 64"
-    className="pointer-events-none absolute -top-[26px] right-[80px] h-[74px] w-[74px] rotate-[-22deg] text-white/90"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="3"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <rect x="8" y="8" width="48" height="48" rx="11" />
-    <circle cx="22" cy="42" r="3.6" fill="currentColor" stroke="none" />
-    <circle cx="32" cy="32" r="3.6" fill="currentColor" stroke="none" />
-    <circle cx="42" cy="22" r="3.6" fill="currentColor" stroke="none" />
-    <circle cx="42" cy="42" r="3.6" fill="currentColor" stroke="none" />
-  </svg>
-);
+interface CardArt {
+  /** Desktop: the two 3D renders, placed as the design places them on its 764×152 card. */
+  hero: { src: StaticImageData; box: [x: number, y: number, w: number] };
+  accent: { src: StaticImageData; box: [x: number, y: number, w: number] };
+  /** Phone: the neon line-art mark, its glow baked in, hung off the right edge. */
+  mark: { src: StaticImageData; className: string };
+}
 
-/** The white line-art trophy cut off by the Sports card's top edge. */
-const TrophyArt: FC = () => (
-  <svg
-    viewBox="0 0 64 64"
-    className="pointer-events-none absolute -top-[22px] right-[92px] h-[72px] w-[72px] rotate-[28deg] text-white/90"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="3"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M20 8h24v14a12 12 0 0 1-24 0z" />
-    <path d="M20 13h-7a7 7 0 0 0 7 11M44 13h7a7 7 0 0 1-7 11" />
-    <path d="M32 34v12M22 56h20M25 56l2-10h10l2 10" />
-  </svg>
-);
+const CASINO_ART: CardArt = {
+  hero: { src: casinoRoulette, box: [449, -3, 315.5] },
+  accent: { src: casinoDice, box: [372, -52, 171.2] },
+  mark: {
+    src: casinoChip,
+    className: '-right-[calc(var(--u)*48)] -top-[calc(var(--u)*18)] w-[calc(var(--u)*149)]',
+  },
+};
 
+const SPORTS_ART: CardArt = {
+  hero: { src: sportsFootball, box: [510, 1, 252.5] },
+  accent: { src: sportsTrophy, box: [442, -48, 150.8] },
+  mark: {
+    src: sportsBall,
+    className: '-right-[calc(var(--u)*45)] -top-[calc(var(--u)*26)] w-[calc(var(--u)*152)]',
+  },
+};
+
+/** A render placed in `cqw` of the design's 764px card, so it scales with the card. */
+const placed = ([x, y, w]: [number, number, number]): CSSProperties => ({
+  left: `${(x / 764) * 100}cqw`,
+  top: `${(y / 764) * 100}cqw`,
+  width: `${(w / 764) * 100}cqw`,
+});
+
+/**
+ * A section shortcut. On a phone it is the design's small 72px tile with the
+ * neon mark; from lg up it is the design's 764×152 glass card with the 3D
+ * renders. That card keeps its shape and is laid out entirely in units of its
+ * own width — height, padding, type and art together — so on a narrower
+ * column it is the same card scaled down rather than a taller one with the
+ * art crowding the copy.
+ */
 const SectionCard: FC<{
   href: string;
   title: string;
   subtitle: string;
-  art: typeof casinoArt;
-  lineArt: ReactNode;
-}> = ({ href, title, subtitle, art, lineArt }) => (
+  art: CardArt;
+}> = ({ href, title, subtitle, art }) => (
   <Link
     href={href}
-    className="rl-glass-dark group relative flex h-[118px] items-start overflow-hidden rounded-[20px] px-6 pt-[18px] transition-colors hover:border-white/15"
+    className="group @container relative block h-[calc(var(--u)*72)] overflow-hidden rounded-[calc(var(--u)*16)] bg-white/[0.07] backdrop-blur-md transition-colors hover:bg-white/[0.1] lg:rl-liquid lg:aspect-[764/152] lg:h-auto lg:rounded-[calc(var(--u)*34)]"
   >
-    {/* Drawn at its natural size and hung off the top-right corner, so the
-        wheel's crown shows and the rest runs off the card's lower edge. */}
+    {/* Phone */}
     <Image
-      src={art}
+      src={art.mark.src}
       alt=""
-      aria-hidden="true"
-      className="pointer-events-none absolute -right-3 -top-2.5 transition-transform duration-300 group-hover:scale-105"
+      sizes="150px"
+      className={`pointer-events-none absolute h-auto max-w-none lg:hidden ${art.mark.className}`}
     />
-    {lineArt}
+    {/* Desktop */}
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 hidden transition-transform duration-300 group-hover:scale-[1.02] lg:block"
+    >
+      <Image
+        src={art.accent.src}
+        alt=""
+        sizes="180px"
+        className="absolute h-auto max-w-none"
+        style={placed(art.accent.box)}
+      />
+      <Image
+        src={art.hero.src}
+        alt=""
+        sizes="320px"
+        className="absolute h-auto max-w-none"
+        style={placed(art.hero.box)}
+      />
+    </span>
 
-    <span className="relative min-w-0">
-      <span className="block text-[22px] font-semibold leading-tight text-white">{title}</span>
-      <span className="mt-1.5 block text-[13px] text-white/55">{subtitle}</span>
+    <span className="relative block px-[calc(var(--u)*16)] pt-[calc(var(--u)*10)] lg:px-[4.06cqw] lg:pt-[2.49cqw]">
+      <span className="block text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*24)] text-white lg:text-[max(20px,4.19cqw)] lg:font-bold lg:leading-[1.25] lg:tracking-[-0.02em] lg:text-[#f2f5f9]">
+        {title}
+      </span>
+      <span className="mt-[0.4cqw] hidden text-[max(12px,2.09cqw)] leading-[1.5] text-[#7c8799] lg:block">
+        {subtitle}
+      </span>
     </span>
   </Link>
 );
@@ -320,10 +357,10 @@ const SectionCard: FC<{
 /* The hero                                                              */
 /* ==================================================================== */
 
-const TRUST: { Icon: FC<{ size?: number; strokeWidth?: number }>; label: string }[] = [
-  { Icon: ShieldIcon, label: 'Complete Privacy' },
-  { Icon: ScaleIcon, label: 'Provably Fair' },
-  { Icon: ZapIcon, label: 'Instant Withdrawals' },
+const TRUST: { icon: StaticImageData; label: string }[] = [
+  { icon: trustPrivacy, label: 'Complete Privacy' },
+  { icon: trustFair, label: 'Provably Fair' },
+  { icon: trustBolt, label: 'Instant Withdrawals' },
 ];
 
 /**
@@ -331,9 +368,13 @@ const TRUST: { Icon: FC<{ size?: number; strokeWidth?: number }>; label: string 
  *
  * Transparent: the artwork behind it is the page's backdrop (LandingBackdrop,
  * passed to PlayerLayout), so this section is only the content that floats on
- * it — the live figures in the top corners, the sign-up teaser on the
- * midline, and the two section shortcuts along the foot. Signed-in players get
- * the dashboard panel and promo slider instead — see HomeHero.
+ * it — the live figures, the sign-up teaser on the midline, the two section
+ * shortcuts and the welcome offer. Signed-in players get the dashboard panel
+ * and promo slider instead — see HomeHero.
+ *
+ * The phone and desktop designs order the foot differently: the offer comes
+ * before the shortcuts on a phone and after them on desktop, so the two swap
+ * with `order` rather than being rendered twice.
  *
  * Vertical rhythm is set with explicit margins rather than centring in a
  * fixed height, so each gap can match the design independently.
@@ -342,61 +383,66 @@ const LandingHero: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="px-1 pt-[15px]">
+    <section className="lg:pt-[calc(var(--u)*22)]">
       {/* --- Live figures --------------------------------------------- */}
-      <div className="flex flex-wrap items-center justify-between gap-3 sm:px-5">
-        <span className="rl-glass-dark inline-flex h-[27px] items-center gap-1.5 rounded-full px-2.5 text-[11px] text-white/85">
-          <span className="h-[7px] w-[7px] rounded-full bg-white" aria-hidden="true" />
-          {t('dash.online', { count: STATS.online })}
-        </span>
+      <WinnersStrip />
 
-        <span className="inline-flex items-center gap-2 text-[12px] text-white/90 sm:text-[13px]">
-          <span>{STATS.todaysWinnings} Today&apos;s Winnings</span>
-          <SparklesIcon size={13} />
-          <span>{STATS.biggestWin} Biggest Win</span>
+      <div className="mt-[calc(var(--u)*12)] flex flex-wrap items-center justify-center gap-[calc(var(--u)*5)] lg:hidden">
+        <StatPill>{LOBBY_STATS.todaysWinnings} Today&apos;s Winnings</StatPill>
+        <StatPill>{t('dash.online', { count: LOBBY_STATS.online })}</StatPill>
+        <StatPill>{LOBBY_STATS.biggestWin} Biggest Win</StatPill>
+      </div>
+
+      <div className="hidden items-center justify-between gap-[calc(var(--u)*12)] lg:flex">
+        <OnlinePill label={t('dash.online', { count: LOBBY_STATS.online })} />
+        <span className="inline-flex items-center gap-[calc(var(--u)*9)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#f0f1f5]">
+          <span>{LOBBY_STATS.todaysWinnings} Today&apos;s Winnings</span>
+          <img src={starIcon.src} alt="" className="h-[calc(var(--u)*18)] w-[calc(var(--u)*18)]" />
+          <span>{LOBBY_STATS.biggestWin} Biggest Win</span>
         </span>
       </div>
 
       {/* --- Headline and sign-up -------------------------------------- */}
-      <div className="flex flex-col items-center text-center sm:px-5">
-        <h1 className="mt-6 text-[28px] font-semibold leading-[1.1] tracking-[-0.01em] text-white sm:mt-[15px] sm:text-[34px] sm:leading-[1.05] lg:text-[40px]">
+      <div className="flex flex-col items-center text-center">
+        <h1 className="mt-[calc(var(--u)*13)] max-w-[calc(var(--u)*355)] text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*21)] lg:max-w-none lg:text-[length:max(min(11px,48px),calc(var(--u)*48))] lg:font-semibold lg:leading-[calc(var(--u)*52)]">
           Rolluck — Where Trust Meets
-          <br className="hidden sm:block" /> Premium Gaming
+          <br className="hidden lg:block" /> Premium Gaming
         </h1>
 
-        <div className="mt-[21px] w-full">
+        <div className="mt-[calc(var(--u)*12)] flex w-full justify-center lg:mt-[calc(var(--u)*25)]">
           <SignupTeaser />
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-[22px] gap-y-2">
-          {TRUST.map(({ Icon, label }) => (
+        <div className="mt-[calc(var(--u)*40)] hidden items-center justify-center gap-[calc(var(--u)*24)] lg:flex">
+          {TRUST.map(({ icon, label }) => (
             <span
               key={label}
-              className="inline-flex items-center gap-1.5 text-[11.5px] text-white/55"
+              className="inline-flex items-center gap-[calc(var(--u)*6)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#6a7287]"
             >
-              <Icon size={14} strokeWidth={1.8} />
+              <img src={icon.src} alt="" className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)]" />
               {label}
             </span>
           ))}
         </div>
       </div>
 
-      {/* --- Section shortcuts ------------------------------------------ */}
-      <div className="mt-9 grid gap-3 sm:grid-cols-2 sm:gap-[17px]">
-        <SectionCard
-          href="/casino"
-          title={t('nav.casino')}
-          subtitle="Slots, live tables and 12 Rolluck Originals"
-          art={casinoArt}
-          lineArt={<DieArt />}
-        />
-        <SectionCard
-          href="/sports"
-          title={t('nav.sports')}
-          subtitle="Football, Tennis, Basketball and 12 other sports"
-          art={sportsArt}
-          lineArt={<TrophyArt />}
-        />
+      {/* --- Shortcuts and the welcome offer ---------------------------- */}
+      <div className="mt-[calc(var(--u)*20)] flex flex-col gap-[calc(var(--u)*12)] lg:mt-[calc(var(--u)*46)] lg:gap-[calc(var(--u)*80)]">
+        <div className="order-2 grid grid-cols-2 gap-[calc(var(--u)*12)] lg:order-1 lg:gap-[calc(var(--u)*20)]">
+          <SectionCard
+            href="/casino"
+            title={t('nav.casino')}
+            subtitle="Slots, live tables and 12 Rolluck Originals"
+            art={CASINO_ART}
+          />
+          <SectionCard
+            href="/sports"
+            title={t('nav.sports')}
+            subtitle="Football, Tennis, Basketball and 12 other sports"
+            art={SPORTS_ART}
+          />
+        </div>
+        <BonusBanner className="order-1 lg:order-2" />
       </div>
     </section>
   );

@@ -6,15 +6,7 @@ import type { FC } from 'react';
  * Kept apart from `icons.tsx` because these are not line icons: they carry
  * their own fills and cannot take `currentColor`, so they do not belong in a
  * set whose whole contract is "inherits the text colour".
- *
- * The payment marks are deliberately simplified renderings — a recognisable
- * shape and the right colours at badge size — rather than traced copies of
- * the issuers' artwork, which is trademarked and not ours to redistribute.
  */
-
-interface MarkProps {
-  className?: string;
-}
 
 /* ==================================================================== */
 /* Sign-in providers                                                     */
@@ -96,100 +88,8 @@ export const WhatsappMark: FC<{ size?: number }> = ({ size = 16 }) => (
   </svg>
 );
 
-/* ==================================================================== */
-/* Payment marks                                                         */
-/* ==================================================================== */
-
-/** The white plate every payment mark sits on in the footer. */
-const Plate: FC<{ label: string; className?: string; children: React.ReactNode }> = ({
-  label,
-  className = '',
-  children,
-}) => (
-  <span
-    role="img"
-    aria-label={label}
-    title={label}
-    className={`inline-flex h-7 w-[46px] flex-shrink-0 items-center justify-center rounded-[6px] bg-white ${className}`}
-  >
-    {children}
-  </span>
-);
-
-export const VisaMark: FC<MarkProps> = ({ className }) => (
-  <Plate label="Visa" className={className}>
-    <span className="text-[11px] font-extrabold italic tracking-tight text-[#1A1F71]">VISA</span>
-  </Plate>
-);
-
-export const ApplePayMark: FC<MarkProps> = ({ className }) => (
-  <Plate label="Apple Pay" className={className}>
-    <svg width="34" height="14" viewBox="0 0 34 14" fill="#000" aria-hidden="true">
-      <path d="M6.9 2.2c.4-.5.7-1.2.6-1.9-.6 0-1.3.4-1.7.9-.4.4-.7 1.1-.6 1.8.7.05 1.3-.33 1.7-.8zM7.5 3.2c-.95-.06-1.75.53-2.2.53s-1.14-.5-1.88-.49c-.97.01-1.86.56-2.36 1.43-1 1.75-.26 4.34.72 5.76.48.7 1.05 1.48 1.8 1.45.72-.03 1-.47 1.87-.47s1.11.47 1.87.45c.78-.01 1.27-.7 1.74-1.4.55-.8.78-1.58.79-1.62-.02-.01-1.52-.59-1.53-2.32-.01-1.45 1.18-2.14 1.24-2.18-.68-1-1.73-1.11-2.1-1.14z" />
-      <text x="11" y="11" fontSize="10" fontWeight="600" fontFamily="sans-serif">
-        Pay
-      </text>
-    </svg>
-  </Plate>
-);
-
-export const GPayMark: FC<MarkProps> = ({ className }) => (
-  <Plate label="Google Pay" className={className}>
-    <svg width="36" height="14" viewBox="0 0 36 14" aria-hidden="true">
-      <text x="0" y="11" fontSize="11" fontWeight="700" fontFamily="sans-serif" fill="#4285F4">
-        G
-      </text>
-      <text x="9" y="11" fontSize="10" fontWeight="600" fontFamily="sans-serif" fill="#5F6368">
-        Pay
-      </text>
-    </svg>
-  </Plate>
-);
-
-export const PaypalMark: FC<MarkProps> = ({ className }) => (
-  <Plate label="PayPal" className={className}>
-    <svg width="38" height="14" viewBox="0 0 38 14" aria-hidden="true">
-      <text x="0" y="11" fontSize="10" fontWeight="800" fontFamily="sans-serif" fill="#003087">
-        Pay
-      </text>
-      <text x="17" y="11" fontSize="10" fontWeight="800" fontFamily="sans-serif" fill="#009CDE">
-        Pal
-      </text>
-    </svg>
-  </Plate>
-);
-
-export const MastercardMark: FC<MarkProps> = ({ className }) => (
-  <Plate label="Mastercard" className={className}>
-    <svg width="34" height="20" viewBox="0 0 34 20" aria-hidden="true">
-      <circle cx="13" cy="10" r="6.5" fill="#EB001B" />
-      <circle cx="21" cy="10" r="6.5" fill="#F79E1B" />
-      <path d="M17 5.1a6.5 6.5 0 0 0 0 9.8 6.5 6.5 0 0 0 0-9.8z" fill="#FF5F00" />
-    </svg>
-  </Plate>
-);
-
-export const AmexMark: FC<MarkProps> = ({ className }) => (
-  <Plate label="American Express" className={`!bg-[#1F72CD] ${className ?? ''}`}>
-    <span className="text-[8px] font-extrabold leading-none tracking-tight text-white">AMEX</span>
-  </Plate>
-);
-
-export const SkrillMark: FC<MarkProps> = ({ className }) => (
-  <Plate label="Skrill" className={className}>
-    <span className="text-[10px] font-extrabold lowercase tracking-tight text-[#862165]">
-      skrill
-    </span>
-  </Plate>
-);
-
-/** Every payment mark the footer shows, in design order. */
-export const PAYMENT_MARKS: FC<MarkProps>[] = [
-  VisaMark,
-  ApplePayMark,
-  GPayMark,
-  PaypalMark,
-  SkrillMark,
-  MastercardMark,
-  AmexMark,
-];
+/* The payment marks used to live here, drawn by hand because the issuers'
+   artwork is trademarked. The footer now carries the real exports from the
+   design instead — see `player/footer/FooterPaymentBar.tsx` — so the
+   approximations are gone rather than left lying around for someone to reach
+   for by mistake. */

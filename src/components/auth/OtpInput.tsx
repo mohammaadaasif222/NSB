@@ -15,11 +15,24 @@ interface Props {
   /** Fired when the last box is filled, so the form can submit itself. */
   onComplete?: (code: string) => void;
   disabled?: boolean;
+  /** Replaces the default box sizing and surface, e.g. the register modal's larger boxes. */
+  boxClassName?: string;
+  /** Shown in every empty box (the register modal shows a grey "0"). */
+  placeholder?: string;
 }
+
+const DEFAULT_BOX = 'glass-field h-14 w-11 sm:h-16 sm:w-13';
 
 export const OTP_LENGTH = 6;
 
-const OtpInput: FC<Props> = ({ value, onChange, onComplete, disabled = false }) => {
+const OtpInput: FC<Props> = ({
+  value,
+  onChange,
+  onComplete,
+  disabled = false,
+  boxClassName = DEFAULT_BOX,
+  placeholder,
+}) => {
   const boxes = useRef<Array<HTMLInputElement | null>>([]);
 
   const focus = (index: number): void => {
@@ -110,7 +123,8 @@ const OtpInput: FC<Props> = ({ value, onChange, onComplete, disabled = false }) 
           autoComplete={i === 0 ? 'one-time-code' : 'off'}
           maxLength={1}
           aria-label={`Digit ${i + 1}`}
-          className="glass-field h-14 w-11 sm:h-16 sm:w-13 text-center text-2xl font-semibold tabular-nums"
+          placeholder={placeholder}
+          className={`${boxClassName} text-center text-2xl font-semibold tabular-nums`}
         />
       ))}
     </div>
