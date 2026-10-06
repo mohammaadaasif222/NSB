@@ -192,14 +192,21 @@ const SiteFooter: FC = () => {
     { label: 'Counter-Strike' },
   ];
 
+  /* Promotions and Bonuses are in the rail too; Blogs is reachable from
+     nowhere else, so the footer is its only way in until it gets a rail entry
+     of its own. None of the three are in the design's own footer — they are
+     here so the pages are not orphaned. */
   const earn: FooterLink[] = [
     { label: 'Rolluck Drops', href: '/rewards' },
+    { label: 'Promotions', href: '/promotions' },
+    { label: 'Bonuses', href: '/bonuses' },
     { label: 'Referral System', href: '/profile' },
     { label: 'Affiliate System' },
     { label: 'Swap Crypto' },
   ];
 
   const help: FooterLink[] = [
+    { label: 'Blogs', href: '/blogs' },
     { label: 'Report Bug', href: 'mailto:bugbounty@rolluck.com' },
     { label: 'Privacy Policy', href: '/privacy-policy' },
     { label: 'Terms of Service', href: '/terms-of-service' },
