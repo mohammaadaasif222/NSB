@@ -22,6 +22,16 @@ const FIAT_CURRENCIES = [
   { code: 'TRY', name: 'Turkish Lira', symbol: '₺' },
 ];
 
+// US States for country-specific requirements
+const US_STATES = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
+  'DC', 'AS', 'GU', 'MP', 'PR', 'VI'
+];
+
 // Available buy crypto providers
 const BUY_CRYPTO_PROVIDERS = [
   {
@@ -62,6 +72,8 @@ const BuyCryptoTab: FC = () => {
   const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
   const [showFiatDropdown, setShowFiatDropdown] = useState(false);
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+  const [selectedState, setSelectedState] = useState<string>('CA'); // Default to CA for US
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
 
   // Fetch cryptos on mount
   useEffect(() => {
@@ -74,8 +86,19 @@ const BuyCryptoTab: FC = () => {
       return;
     }
 
-    fetchOffers(Number(amount), fiatCurrency, selectedCrypto.code, country);
-  }, [selectedCrypto, amount, fiatCurrency, country, fetchOffers]);
+    // For US requests, state is required
+    if (country === 'US' && !selectedState) {
+      return;
+    }
+
+    fetchOffers(
+      Number(amount),
+      fiatCurrency,
+      selectedCrypto.code,
+      country,
+      country === 'US' ? selectedState : undefined,
+    );
+  }, [selectedCrypto, amount, fiatCurrency, country, selectedState, fetchOffers]);
 
   // Handle crypto selection
   const handleSelectCrypto = (crypto: Cryptocurrency) => {
@@ -109,6 +132,7 @@ const BuyCryptoTab: FC = () => {
         bestOffer.provider,
         country,
         toAddress,
+        country === 'US' ? selectedState : undefined,
       );
 
       if (order) {
@@ -299,6 +323,44 @@ const BuyCryptoTab: FC = () => {
               )}
             </div>
           </div>
+
+          {/* State Selector (US only) */}
+          {country === 'US' && (
+            <div>
+              <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
+                State <span className="text-orange-500">*</span>
+              </label>
+              <div className="relative">
+                <button
+                  onClick={() => setShowStateDropdown(!showStateDropdown)}
+                  className="w-full px-4 py-3 border border-white/10 rounded-lg hover:bg-white/5 hover:border-white/20 transition-colors text-left flex items-center justify-between"
+                >
+                  <span className="text-white font-medium">{selectedState}</span>
+                  <span className="text-white/60 text-xs">▼</span>
+                </button>
+
+                {showStateDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1b2e] border border-white/20 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                    {US_STATES.map((state) => (
+                      <button
+                        key={state}
+                        onClick={() => {
+                          setSelectedState(state);
+                          setShowStateDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0 ${
+                          selectedState === state ? 'bg-white/10 border-l-2 border-orange-500' : ''
+                        }`}
+                      >
+                        <span className="font-semibold text-white">{state}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-white/40 mt-1">Required for US transactions</p>
+            </div>
+          )}
 
           {/* Error Display */}
           {errorOffers && (

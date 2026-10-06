@@ -94,6 +94,7 @@ export const useChangellyBuyCrypto = () => {
       fiatCurrency: string,
       cryptoCode: string,
       country: string,
+      state?: string,
     ): Promise<Offer[]> => {
       try {
         if (!fiatAmount || fiatAmount <= 0) {
@@ -113,6 +114,7 @@ export const useChangellyBuyCrypto = () => {
           fiatCurrency,
           cryptoCode,
           country,
+          ...(state ? { state } : {}),
         });
 
         const offerList = response?.data?.data || [];
@@ -144,6 +146,7 @@ export const useChangellyBuyCrypto = () => {
       providerId: string,
       country: string,
       toAddress: string,
+      state?: string,
     ): Promise<CreateOrderResponse | null> => {
       try {
         if (!token) {
@@ -164,6 +167,7 @@ export const useChangellyBuyCrypto = () => {
           providerId,
           country,
           toAddress,
+          ...(state ? { state } : {}),
         });
 
         return response?.data?.data || null;
