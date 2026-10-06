@@ -2,6 +2,7 @@ import { useEffect, useState, type FC } from 'react';
 import { useWallet } from '@/context/WalletContext';
 import DepositTab from './tabs/DepositTab';
 import WithdrawTab from './tabs/WithdrawTab';
+import BuyCryptoTab from './tabs/BuyCryptoTab';
 import ComingSoonTab from './tabs/ComingSoonTab';
 
 /**
@@ -125,7 +126,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
         <div className="p-4">
           {active === 'deposit' && <DepositTab onLeave={onClose} />}
           {active === 'withdraw' && <WithdrawTab />}
-          {active === 'buy' && <ComingSoonTab title="Buy Crypto" />}
+          {active === 'buy' && <BuyCryptoTab />}
           {active === 'tip' && <ComingSoonTab title="Tip" />}
           {active === 'redeem' && <ComingSoonTab title="Redeem" />}
         </div>

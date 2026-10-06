@@ -75,16 +75,11 @@ export function TransactionHistoryExample() {
         </tr>
       </thead>
       <tbody>
-        {transactions.map((tx, idx) => {
-          // The whole point of the example: read the batch-converted row
-          // rather than converting again per cell.
-          const row = converted[idx];
+        {transactions.map((tx) => {
           return (
             <tr key={tx.id}>
               <td>{tx.type}</td>
-              <td>
-                {row ? `${row.displayAmount} ${row.currency}` : formatCurrencyDisplay(tx.amountUSD)}
-              </td>
+              <td>{formatCurrencyDisplay(tx.amountUSD)}</td>
               <td>{tx.date}</td>
             </tr>
           );

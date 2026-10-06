@@ -34,11 +34,11 @@ const LocalCurrencyTab: FC = () => {
         currency,
       });
 
-      if (res?.success && res.data?.data?.address) {
+      if (res?.data?.address) {
         // Redirect to D24 hosted checkout page
-        window.location.href = res.data.data.address;
+        window.location.href = res.data.address;
       } else {
-        toast.error(res?.message || 'Could not initiate deposit');
+        toast.error('Could not initiate deposit');
       }
     } catch (err: unknown) {
       const message =
