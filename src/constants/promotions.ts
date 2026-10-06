@@ -6,7 +6,7 @@ import type { PromoCategory, PromoStatus } from '@/components/promotions/Promoti
 import avatarJohn from '@/assets/lobby/avatar-john.webp';
 import avatarTony from '@/assets/lobby/avatar-tony.webp';
 import avatarWinner from '@/assets/lobby/winner-avatar.webp';
-import promoArt from '@/assets/promotions/promo-horse-racing.png';
+import promoArt from '@/assets/promotions/promo-horse-racing.webp';
 
 /** A row in the list, and what the detail page needs to pick its state. */
 export interface PromotionRow extends Promotion {

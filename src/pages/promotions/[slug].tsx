@@ -19,7 +19,7 @@ import { fetchShelfList } from '@/services/games.server';
 import type { Game } from '@/types';
 import { DETAIL_COPY, REVIEWS, findPromotion } from '@/constants/promotions';
 
-import promoArt from '@/assets/promotions/promo-horse-racing.png';
+import promoArt from '@/assets/promotions/promo-horse-racing.webp';
 
 interface Props {
   /** Which of the design's two states to draw. */
