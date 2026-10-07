@@ -1,6 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { useMe } from '@/context/UserContext';
-import { useChangellyBuyCrypto, type Cryptocurrency, type PaymentMethod } from '@/hooks/useChangellyBuyCrypto';
+import { useChangellyBuyCrypto, type Cryptocurrency } from '@/hooks/useChangellyBuyCrypto';
 import api from '@/services/api';
 
 type BuyCryptoStep = 'step1' | 'step2';
@@ -199,6 +199,7 @@ const BuyCryptoTab: FC = () => {
     if (!selectedCrypto || !selectedProvider || !toAddress) return;
 
     try {
+      console.log('[Changelly] Creating order...');
       // Create order with selected provider
       const order = await createOrder(
         Number(amount),
@@ -211,9 +212,13 @@ const BuyCryptoTab: FC = () => {
       );
 
       if (order) {
+        console.log('[Changelly] Order created, received URL:', order.iframeUrl);
         setIframeUrl(order.iframeUrl);
         setExpectedAmount(order.expectedAmount);
-        setStep('step2');
+
+        // Redirect to Changelly payment URL
+        console.log('[Changelly] Redirecting to payment URL');
+        window.location.href = order.iframeUrl;
       }
     } catch (error: any) {
       console.error('[Changelly] Error creating order:', error);
@@ -513,15 +518,27 @@ const BuyCryptoTab: FC = () => {
             </div>
           </div>
 
-          {/* Iframe Container */}
-          <div className="border-2 border-dashed border-white/20 rounded-lg overflow-hidden bg-white/5 aspect-video">
-            <iframe
-              src={iframeUrl}
-              title="Changelly Payment"
-              className="w-full h-full"
-              allow="payment"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            />
+          {/* URL Display - No Iframe */}
+          <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
+                Changelly Payment URL:
+              </label>
+              <div className="bg-black/50 border border-white/20 rounded p-3 break-all text-white/80 text-sm font-mono max-h-40 overflow-y-auto">
+                {iframeUrl}
+              </div>
+            </div>
+
+            {/* Copy URL Button */}
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(iframeUrl);
+                console.log('[Changelly] URL copied to clipboard');
+              }}
+              className="w-full px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] rounded-lg text-white hover:opacity-90 transition-opacity text-sm font-semibold"
+            >
+              Copy URL to Clipboard
+            </button>
           </div>
 
           {/* Info */}
