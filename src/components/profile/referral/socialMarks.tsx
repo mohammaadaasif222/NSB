@@ -17,7 +17,10 @@ import type { FC } from 'react';
 
 /** Centres a mark in the 24px box every social button gives it. */
 const Box: FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span className="flex h-6 w-6 items-center justify-center" aria-hidden="true">
+  <span
+    className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] items-center justify-center"
+    aria-hidden="true"
+  >
     {children}
   </span>
 );

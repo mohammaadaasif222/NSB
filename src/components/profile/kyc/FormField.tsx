@@ -9,9 +9,12 @@ import type { FC, ReactNode } from 'react';
  * is worth a component.
  */
 
-/** Text inputs and selects. Sized to the account area's other controls. */
+/**
+ * Text inputs and selects. Sized to the account area's other controls, in
+ * `--u` with them — see the note at the head of `SectionShell`.
+ */
 export const FIELD_INPUT =
-  'rl-field w-full rounded-full px-5 py-4 text-base leading-6 disabled:cursor-not-allowed disabled:opacity-55';
+  'rl-field w-full rounded-full px-[calc(var(--u)*20)] py-[calc(var(--u)*16)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] disabled:cursor-not-allowed disabled:opacity-55';
 
 /** Options inside a native select, which paints them on its own surface. */
 export const FIELD_OPTION = 'bg-[#14161b] text-white';
@@ -29,8 +32,11 @@ interface Props {
 /** A labelled control. */
 const FormField: FC<Props> = ({ label, htmlFor, hint, required, children }) => (
   <div>
-    <div className="mb-1.5 flex items-baseline justify-between gap-2 px-1">
-      <label htmlFor={htmlFor} className="text-sm leading-5 text-[#9da2b4]">
+    <div className="mb-[calc(var(--u)*6)] flex items-baseline justify-between gap-[calc(var(--u)*8)] px-[calc(var(--u)*4)]">
+      <label
+        htmlFor={htmlFor}
+        className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]"
+      >
         {label}
         {required && <span className="text-[#ef4462]"> *</span>}
       </label>

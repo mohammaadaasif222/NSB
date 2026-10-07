@@ -33,10 +33,29 @@ export const isAccountSection = (value: unknown): value is AccountSection =>
   typeof value === 'string' && ACCOUNT_SECTIONS.some((s) => s.key === value);
 
 /* Every row in the rail is this pill; only the surface and the ink change.
-   48px tall on 24px of side padding with a 10px gap to the label, per the
-   design — the icon is drawn at its full 24px rather than shrunk to sit
-   closer. */
-const PILL = 'relative flex w-full items-center gap-2.5 whitespace-nowrap px-6 text-base leading-6';
+   48 tall on 24 of side padding with a 10 gap to the label, per the design.
+
+   Sized in `--u`, the design pixel the shell sets on `PlayerLayout`: from `lg`
+   up it is the viewport's share of the design's 1920 frame, capped at 1px.
+   That matters here more than anywhere else in the app, because this rail sits
+   directly beside the shell's own — and the shell is already drawn in `--u`.
+   At fixed sizes the two fell apart on a laptop: at 1270 the shell's rail came
+   down to 172 while this column stayed at 180, so the inner nav rendered WIDER
+   than the outer one and its labels stayed at 16px next to the shell's 11.
+   One multiplier for both and the pair holds its proportions at every width.
+
+   Every size below is written out in full rather than built from a helper:
+   Tailwind generates a class only when it can see the whole string in the
+   source, so a calc assembled at runtime produces markup with no CSS behind
+   it. The type carries an 11px floor, the same one the shell uses — below that
+   a label is present rather than readable, and `min` keeps the floor from
+   enlarging anything the design drew smaller than 11. */
+const PILL =
+  'relative flex w-full items-center gap-[calc(var(--u)*10)] px-[calc(var(--u)*24)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] whitespace-nowrap';
+
+/** The pill's own height, and the glyph inside it. */
+const PILL_H = 'h-[calc(var(--u)*48)]';
+const ICON = 'h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] shrink-0';
 
 /* The rail's three inks. The resting grey and the selected gold are the
    design's own tokens (Gray 4 and Primary 2); Log out leaves the area rather
@@ -66,12 +85,15 @@ const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
   // the grid column grows to match, and the whole account page scrolls sideways
   // by a few hundred pixels instead of the tab strip scrolling inside itself.
   return (
-    <nav className="flex min-w-0 flex-col gap-[14px] lg:h-full" aria-label={t('profile.account')}>
-      <h2 className="hidden px-1 text-lg font-normal text-white/80 lg:block">
+    <nav
+      className="flex min-w-0 flex-col gap-[calc(var(--u)*14)] lg:h-full"
+      aria-label={t('profile.account')}
+    >
+      <h2 className="hidden px-1 text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[1.4] font-normal text-white/80 lg:block">
         {t('profile.account')}
       </h2>
 
-      <ul className="scrollbar-none flex gap-[14px] overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+      <ul className="scrollbar-none flex gap-[calc(var(--u)*14)] overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
         {ACCOUNT_SECTIONS.map(({ key, labelKey, icon: Icon }) => {
           const selected = key === active;
           return (
@@ -80,13 +102,15 @@ const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
                 type="button"
                 onClick={() => onSelect(key)}
                 aria-current={selected ? 'page' : undefined}
-                className={`${PILL} h-12 ${
+                className={`${PILL} ${PILL_H} ${
                   selected
                     ? `rl-rail-row-active font-medium ${INK_SELECTED}`
                     : `rl-rail-row hover:rl-rail-row-active font-normal ${INK_RESTING} hover:font-medium hover:text-[#ffe779]`
                 }`}
               >
-                <Icon size={24} className="shrink-0" />
+                {/* The `size` prop still writes width/height attributes; the
+                    class overrides them, which is what lets the glyph scale. */}
+                <Icon size={24} className={ICON} />
                 {t(labelKey)}
               </button>
             </li>
@@ -99,13 +123,16 @@ const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
       <button
         type="button"
         onClick={onLogout}
-        className={`${PILL} rl-rail-row hover:rl-rail-row-active hidden h-12 font-normal ${INK_LEAVING} hover:font-medium hover:text-[#ffe779] lg:flex`}
+        className={`${PILL} ${PILL_H} rl-rail-row hover:rl-rail-row-active hidden font-normal ${INK_LEAVING} hover:font-medium hover:text-[#ffe779] lg:flex`}
       >
-        <RailLogOutIcon size={24} className="shrink-0" />
+        <RailLogOutIcon size={24} className={ICON} />
         {t('account.logout')}
-        {/* Pinned rather than pushed by `ms-auto`: the design hangs it 12px off
-            the right edge, inside the 24px the label is padded to. */}
-        <RailArrowUpRightIcon size={24} className="absolute end-3 top-1/2 -translate-y-1/2" />
+        {/* Pinned rather than pushed by `ms-auto`: the design hangs it 12 off
+            the right edge, inside the 24 the label is padded to. */}
+        <RailArrowUpRightIcon
+          size={24}
+          className={`${ICON} absolute end-[calc(var(--u)*12)] top-1/2 -translate-y-1/2`}
+        />
       </button>
     </nav>
   );

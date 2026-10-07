@@ -1,5 +1,6 @@
 import { useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import RangeFilter from '@/components/profile/statistic/RangeFilter';
 import StatCard from '@/components/profile/statistic/StatCard';
 import RequestStatsRow from '@/components/profile/statistic/RequestStatsRow';
@@ -39,32 +40,36 @@ const StatisticSection: FC = () => {
           the title takes its own line and the chips keep the pill company on
           the next. The grouping the design cares about survives; only the
           title moves. */}
-      <div className="flex flex-col items-start gap-3 @panel:flex-row @panel:items-center @panel:gap-4.5">
-        {/* Sized by the viewport like every other section title rather than by
-            the panel it sits in. The panel rule was here because a 44px title
-            and the range filter together need 908 and a laptop's panel has
-            806; at 36 the pair fits, so the general rule covers the case the
-            special one was written for. */}
-        <h2 className="rl-h-section">{t('profile.statistic')}</h2>
+      {/* `lg:`, not the `@panel` container query this used to carry.
+          That rule existed because a fixed 44px title and a fixed-size range
+          filter together needed 908 while a laptop's panel has ~860, so the
+          pair had to stack. Both are sized in `--u` now: at 1251 the title is
+          44 × 0.651 and the chips shrink by the same factor, so the pair needs
+          ~592 of the same 860 and cannot collide at any desktop width. The
+          query was holding a laptop at the phone's stacked layout for a
+          collision that can no longer happen — which is what put the chips on
+          their own row instead of beside the title, as the design draws them. */}
+      <div className="flex flex-col items-start gap-[calc(var(--u)*12)] lg:flex-row lg:items-center lg:gap-[calc(var(--u)*18)]">
+        <h2 className={SECTION_HEADING}>{t('profile.statistic')}</h2>
         <RangeFilter active={range} onSelect={setRange} />
       </div>
 
       {/* Two wide tiles, then three narrower ones — as the design splits them.
           The gaps differ because the tile widths do: 2×593 and 3×392 each
           leave a different remainder across the same 1208. */}
-      <div className="mt-7.25 grid gap-5.5 sm:grid-cols-2">
+      <div className="mt-[calc(var(--u)*29)] grid gap-[calc(var(--u)*22)] sm:grid-cols-2">
         {HEADLINE_TILES.map((tile) => (
           <StatCard key={tile.key} tile={tile} />
         ))}
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+      <div className="mt-[calc(var(--u)*20)] grid gap-[calc(var(--u)*16)] sm:grid-cols-3">
         {AMOUNT_TILES.map((tile) => (
           <StatCard key={tile.key} tile={tile} />
         ))}
       </div>
 
-      <div className="mt-11.25">
+      <div className="mt-[calc(var(--u)*45)]">
         <RequestStatsRow onOpen={() => setRequestOpen(true)} />
       </div>
 

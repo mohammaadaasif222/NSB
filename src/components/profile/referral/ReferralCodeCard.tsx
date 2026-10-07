@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import { REFERRAL_CODE } from '@/components/profile/referral/mockReferral';
 import {
   FacebookMark,
@@ -58,23 +59,27 @@ const ReferralCodeCard: FC = () => {
   };
 
   return (
-    <div className="rl-panel flex flex-col items-center px-6 pt-6.75 pb-5 text-center">
-      <p className="text-sm leading-5 text-[#9da2b4]">{t('ref.referralCode')}</p>
+    <div className="rl-panel flex flex-col items-center px-[calc(var(--u)*24)] pt-[calc(var(--u)*27)] pb-[calc(var(--u)*20)] text-center">
+      <p className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
+        {t('ref.referralCode')}
+      </p>
 
-      <p className="rl-h-section mt-3.75">{REFERRAL_CODE}</p>
+      <p className={`${SECTION_HEADING} mt-[calc(var(--u)*15)]`}>{REFERRAL_CODE}</p>
 
       <button
         type="button"
         onClick={copy}
-        className="rl-field-card mt-2.75 flex h-14 w-full max-w-[434px] items-center justify-center gap-1.25 rounded-[34px] text-base leading-6 font-medium text-[#f0f1f5] hover:bg-white/8"
+        className="rl-field-card mt-[calc(var(--u)*11)] flex h-[calc(var(--u)*56)] w-full max-w-[calc(var(--u)*434)] items-center justify-center gap-[calc(var(--u)*5)] rounded-[calc(var(--u)*34)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] hover:bg-white/8"
       >
         {copied ? t('ref.copied') : t('ref.copyCode')}
         <CopyIcon />
       </button>
 
-      <p className="mt-5.5 text-sm leading-5 text-[#9da2b4]">{t('ref.orShare')}</p>
+      <p className="mt-[calc(var(--u)*22)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
+        {t('ref.orShare')}
+      </p>
 
-      <div className="mt-3 flex items-center gap-3">
+      <div className="mt-[calc(var(--u)*12)] flex items-center gap-[calc(var(--u)*12)]">
         {SOCIALS.map(({ Mark, name, href }) => (
           <a
             key={name}
@@ -82,7 +87,7 @@ const ReferralCodeCard: FC = () => {
             target="_blank"
             rel="noreferrer"
             aria-label={t('ref.shareOn', { name })}
-            className="rl-chip flex h-12 w-12 items-center justify-center"
+            className="rl-chip flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center"
           >
             <Mark />
           </a>

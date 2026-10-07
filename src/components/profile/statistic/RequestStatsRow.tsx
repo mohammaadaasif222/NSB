@@ -20,13 +20,13 @@ const RequestStatsRow: FC<{ onOpen: () => void }> = ({ onOpen }) => {
     <button
       type="button"
       onClick={onOpen}
-      className="rl-field-card flex h-18.5 w-full items-center gap-4 rounded-[44px] px-4 text-start hover:bg-white/8"
+      className="rl-field-card flex h-[calc(var(--u)*74)] w-full items-center gap-[calc(var(--u)*16)] rounded-[calc(var(--u)*44)] px-[calc(var(--u)*16)] text-start hover:bg-white/8"
     >
       <span className="flex shrink-0 items-center justify-center text-[#f0f1f5]">
         <RequestStatsIcon />
       </span>
 
-      <span className="min-w-0 flex-1 truncate text-base leading-6 font-medium text-[#f0f1f5]">
+      <span className="min-w-0 flex-1 truncate text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
         {t('stats.requestStatistics')}
       </span>
 

@@ -19,12 +19,14 @@ const SessionsGroup: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="space-y-1.5">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-base leading-6 font-normal text-[#9da2b4]">{t('sec.sessions')}</h3>
+    <section className="space-y-[calc(var(--u)*6)]">
+      <div className="flex items-center justify-between gap-[calc(var(--u)*12)]">
+        <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
+          {t('sec.sessions')}
+        </h3>
         <span
           title={t('common.soon')}
-          className="cursor-default pe-4 text-base leading-6 text-[#e33827]"
+          className="cursor-default pe-[calc(var(--u)*16)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] text-[#e33827]"
         >
           {t('sec.endAllSessions')}
         </span>
@@ -38,22 +40,22 @@ const SessionsGroup: FC = () => {
           The button drops to its own line below `sm`. Held beside the text it
           takes 147 of a phone's ~296, which left the device name truncated to
           "Wind…" and the address line to nothing. */}
-      <div className="rl-field-card overflow-hidden rounded-[44px]">
+      <div className="rl-field-card overflow-hidden rounded-[calc(var(--u)*44)]">
         {MOCK_SESSIONS.map((s) => (
           <div
             key={s.id}
-            className="flex flex-col gap-3 px-4.5 py-3.25 sm:flex-row sm:items-center"
+            className="flex flex-col gap-[calc(var(--u)*12)] px-[calc(var(--u)*18)] py-[calc(var(--u)*13)] sm:flex-row sm:items-center"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-[calc(var(--u)*12)]">
               <SessionDeviceIcon />
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base leading-6 font-medium text-[#f0f1f5]">
+                <p className="truncate text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
                   {s.device}
                 </p>
                 {/* The design separates these with bullets rather than middots,
                     and sets the line a size below the row's label. */}
-                <p className="truncate text-xs leading-5 text-[#9da2b4]">
+                <p className="truncate text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
                   {[s.current ? t('sec.currentSession') : null, s.ip, s.location, s.lastSeen]
                     .filter(Boolean)
                     .join(' • ')}
@@ -63,7 +65,7 @@ const SessionsGroup: FC = () => {
 
             <span
               title={t('common.soon')}
-              className="rl-chip-danger flex h-12 w-fit shrink-0 cursor-default items-center px-5.5 text-base leading-6 font-medium text-[#e33827] ms-12.5 sm:ms-0"
+              className="rl-chip-danger ms-[calc(var(--u)*50)] flex h-[calc(var(--u)*48)] w-fit shrink-0 cursor-default items-center px-[calc(var(--u)*22)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#e33827] sm:ms-0"
             >
               {t('sec.endSession')}
             </span>

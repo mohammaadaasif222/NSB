@@ -14,7 +14,9 @@ const ReferralTable: FC<{ rows: readonly ReferralRow[] }> = ({ rows }) => {
         header: t('ref.colId'),
         width: 225,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 font-medium text-white">{r.id}</span>
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white">
+            {r.id}
+          </span>
         ),
       },
       {
@@ -22,7 +24,9 @@ const ReferralTable: FC<{ rows: readonly ReferralRow[] }> = ({ rows }) => {
         header: t('ref.colDate'),
         width: 232,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 text-[#8c8c8c]">{r.date}</span>
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#8c8c8c]">
+            {r.date}
+          </span>
         ),
       },
       {
@@ -30,7 +34,9 @@ const ReferralTable: FC<{ rows: readonly ReferralRow[] }> = ({ rows }) => {
         header: t('ref.colUser'),
         width: 296,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 font-medium text-white">{r.user}</span>
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white">
+            {r.user}
+          </span>
         ),
       },
       {
@@ -45,7 +51,7 @@ const ReferralTable: FC<{ rows: readonly ReferralRow[] }> = ({ rows }) => {
         width: 203,
         end: true,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 font-medium text-white">
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white">
             {r.reward ?? t('ref.noChange')}
           </span>
         ),

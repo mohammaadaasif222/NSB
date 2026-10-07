@@ -1,0 +1,188 @@
+import type { FC } from 'react';
+import Image, { type StaticImageData } from 'next/image';
+
+import { useTranslation } from '@/context/I18nContext';
+
+export interface PodiumPlace {
+  rank: 1 | 2 | 3;
+  /** Already masked where the player asked to stay anonymous. */
+  name: string;
+  /** Already formatted — "$87,742.90". */
+  wagered: string;
+  /** Already formatted — "2,350". */
+  points: string;
+  avatar: StaticImageData;
+}
+
+export interface LeaderboardRow {
+  rank: number;
+  name: string;
+  /** Already formatted — "$87,742.9". */
+  wager: string;
+  /** Already formatted — "$1,200", or "—" where none was won. */
+  prize: string;
+  /** A withheld name, which the design greys out. */
+  masked?: boolean;
+}
+
+/* The design raises first place out of the row and gives it the larger
+   portrait and badge; second and third are identical to each other. */
+const PLACES = {
+  1: {
+    card: 'lg:order-2 lg:mb-[calc(var(--u)*41)]',
+    avatar: 'h-20 w-20 lg:h-[calc(var(--u)*96)] lg:w-[calc(var(--u)*96)]',
+    badge:
+      '-top-5 h-8 w-8 bg-[#f9d028] text-[14px] text-[#030407] drop-shadow-[0_4px_5px_rgba(248,166,49,0.4)] lg:-top-[calc(var(--u)*25)] lg:h-[calc(var(--u)*38)] lg:w-[calc(var(--u)*38)] lg:text-[max(12px,calc(var(--u)*16))]',
+    pts: 'mt-2 lg:mt-[calc(var(--u)*8)]',
+  },
+  2: {
+    card: 'lg:order-1',
+    avatar: 'h-[72px] w-[72px] lg:h-[calc(var(--u)*84)] lg:w-[calc(var(--u)*84)]',
+    badge:
+      '-top-3.5 h-7 w-7 bg-[#f0f1f5] text-[13px] text-[#07080a] lg:-top-[calc(var(--u)*13)] lg:h-[calc(var(--u)*26)] lg:w-[calc(var(--u)*26)] lg:text-[max(11px,calc(var(--u)*14))]',
+    pts: 'mt-1 lg:mt-[calc(var(--u)*4)]',
+  },
+  3: {
+    card: 'lg:order-3',
+    avatar: 'h-[72px] w-[72px] lg:h-[calc(var(--u)*84)] lg:w-[calc(var(--u)*84)]',
+    badge:
+      '-top-3.5 h-7 w-7 bg-[#f0f1f5] text-[13px] text-[#07080a] lg:-top-[calc(var(--u)*13)] lg:h-[calc(var(--u)*26)] lg:w-[calc(var(--u)*26)] lg:text-[max(11px,calc(var(--u)*14))]',
+    pts: 'mt-1 lg:mt-[calc(var(--u)*4)]',
+  },
+} as const;
+
+const Podium: FC<{ place: PodiumPlace }> = ({ place }) => {
+  const { t } = useTranslation();
+  const s = PLACES[place.rank];
+
+  return (
+    <div
+      className={`rl-glass-deep flex flex-col items-center rounded-[24px] px-4 pb-8 pt-9 lg:h-[calc(var(--u)*289)] lg:w-[calc(var(--u)*272)] lg:rounded-[calc(var(--u)*34)] lg:px-0 lg:pb-0 lg:pt-[calc(var(--u)*61)] ${s.card}`}
+    >
+      <div className="relative">
+        <Image
+          src={place.avatar}
+          alt=""
+          className={`rounded-full object-cover ${s.avatar}`}
+          sizes="(min-width: 1024px) 6vw, 80px"
+        />
+        <span
+          className={`absolute left-1/2 flex -translate-x-1/2 items-center justify-center rounded-full font-['Roboto',sans-serif] font-black ${s.badge}`}
+        >
+          {place.rank}
+        </span>
+      </div>
+
+      <p className="mt-2 text-[18px] leading-7 tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*8)] lg:text-[max(14px,calc(var(--u)*20))] lg:leading-[calc(var(--u)*28)]">
+        {place.name}
+      </p>
+      <p className="mt-0.5 text-[13px] leading-5 text-[#6a7287] lg:mt-[calc(var(--u)*4)] lg:text-[max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
+        {place.wagered}
+      </p>
+      <p
+        className={`text-[20px] font-semibold leading-8 tracking-[-0.02em] text-[#f0f1f5] lg:text-[max(16px,calc(var(--u)*24))] lg:leading-[calc(var(--u)*32)] ${s.pts}`}
+      >
+        {t('tournament.pts', { value: place.points })}
+      </p>
+    </div>
+  );
+};
+
+/* The design sets the two groups apart rather than spreading four even
+   columns, so the header and the rows share these.
+
+   Note the rank slot differs on purpose: the header reserves 60 for the word
+   RANK, a row only the 32 of its badge, which leaves the NAME heading sitting
+   28 to the right of the names under it. That is what the frame draws. */
+const LEFT_GROUP = 'flex shrink-0 gap-6 lg:gap-[calc(var(--u)*48)]';
+const RIGHT_GROUP = 'flex shrink-0 gap-10 text-right lg:gap-[calc(var(--u)*80)]';
+const RANK_COL = 'w-[60px] lg:w-[calc(var(--u)*60)]';
+const NAME_COL = 'w-[180px] lg:w-[calc(var(--u)*180)]';
+const WAGER_COL = 'w-[120px] lg:w-[calc(var(--u)*160)]';
+const PRIZE_COL = 'w-[90px] lg:w-[calc(var(--u)*120)]';
+
+interface Props {
+  podium: readonly PodiumPlace[];
+  rows: readonly LeaderboardRow[];
+}
+
+/**
+ * The ended tournament's leaderboard: the top three on a podium over the full
+ * standings table.
+ *
+ * Ranks four and below drop the row tint, the badge disc and the lilac prize —
+ * the design reserves all three for the places that were actually paid.
+ */
+const TournamentLeaderboard: FC<Props> = ({ podium, rows }) => {
+  const { t } = useTranslation();
+
+  return (
+    <section className="rl-glass-deep rounded-[24px] px-4 py-8 lg:rounded-[calc(var(--u)*34)] lg:px-0 lg:pb-[calc(var(--u)*110)] lg:pt-[calc(var(--u)*46)]">
+      <h2 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.02em] text-[#f0f1f5] lg:text-[max(18px,calc(var(--u)*36))] lg:leading-[calc(var(--u)*44)]">
+        {t('tournament.leaderboard')}
+      </h2>
+
+      {/* Ranked order in the markup, podium order on screen — a screen reader
+          and a narrow viewport both want first place first. */}
+      <div className="mt-8 flex flex-col items-center gap-4 lg:mt-[calc(var(--u)*46)] lg:flex-row lg:items-end lg:justify-center lg:gap-[calc(var(--u)*22)]">
+        {podium.map((place) => (
+          <Podium key={place.rank} place={place} />
+        ))}
+      </div>
+
+      {/* 1100 wide in the design and four columns deep, so it scrolls sideways
+          rather than reflowing on a phone. */}
+      <div className="mt-8 overflow-x-auto lg:mt-[calc(var(--u)*37)]">
+        <div className="mx-auto min-w-[640px] overflow-hidden rounded-[24px] lg:w-[calc(var(--u)*1100)] lg:min-w-0 lg:rounded-[calc(var(--u)*24)]">
+          <div className="flex items-start justify-between border-b border-white/5 bg-white/10 px-5 py-4 text-[13px] font-medium uppercase leading-5 text-[#9da2b4] lg:px-[calc(var(--u)*32)] lg:py-[calc(var(--u)*20)] lg:text-[max(11px,calc(var(--u)*14))]">
+            <div className={LEFT_GROUP}>
+              <span className={RANK_COL}>{t('tournament.rank')}</span>
+              <span className={NAME_COL}>{t('tournament.name')}</span>
+            </div>
+            <div className={RIGHT_GROUP}>
+              <span className={WAGER_COL}>{t('tournament.wager')}</span>
+              <span className={PRIZE_COL}>{t('tournament.prize')}</span>
+            </div>
+          </div>
+
+          {rows.map((row) => {
+            const paid = row.rank <= 3;
+            return (
+              <div
+                key={row.rank}
+                className={`flex items-center justify-between border-b border-[#252937] px-5 py-1 text-[13px] leading-5 last:border-b-0 lg:px-[calc(var(--u)*32)] lg:py-[calc(var(--u)*8)] lg:text-[max(11px,calc(var(--u)*14))] ${
+                  paid ? 'bg-white/5' : ''
+                }`}
+              >
+                <div className={`${LEFT_GROUP} items-center`}>
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#f0f1f5] lg:h-[calc(var(--u)*32)] lg:w-[calc(var(--u)*32)] ${
+                      paid ? 'bg-[#333849]' : ''
+                    }`}
+                  >
+                    {row.rank}
+                  </span>
+                  <span
+                    className={`${NAME_COL} ${
+                      row.masked ? 'text-[#696969] opacity-60' : 'text-[#f0f1f5]'
+                    }`}
+                  >
+                    {row.name}
+                  </span>
+                </div>
+                <div className={`${RIGHT_GROUP} items-center`}>
+                  <span className={`${WAGER_COL} text-[#f0f1f5]`}>{row.wager}</span>
+                  <span className={`${PRIZE_COL} ${paid ? 'text-[#ede0ff]' : 'text-[#f0f1f5]'}`}>
+                    {row.prize}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default TournamentLeaderboard;

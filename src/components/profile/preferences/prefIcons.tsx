@@ -1,6 +1,12 @@
 import type { FC } from 'react';
 
-/** The two marks the Preferences rows carry, traced from the Figma node. */
+/**
+ * The two marks the Preferences rows carry, traced from the Figma node.
+ *
+ * Both are 16 in the design. The class overrides the SVG's own width/height
+ * attributes, which is what lets a fixed-size glyph come down with the row.
+ */
+const GLYPH = 'h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] shrink-0';
 
 /**
  * The coin beside the selected currency — a slate disc with the symbol cut out
@@ -10,7 +16,7 @@ import type { FC } from 'react';
  * row's ink is only one of those tones.
  */
 export const CurrencyCoinIcon: FC = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+  <svg className={GLYPH} width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
     <path
       opacity="0.1"
       d="M0.40678 8C0.40678 3.80638 3.80638 0.40678 8 0.40678C12.1936 0.40678 15.5932 3.80638 15.5932 8C15.5932 12.1936 12.1936 15.5932 8 15.5932C3.80638 15.5932 0.40678 12.1936 0.40678 8Z"
@@ -36,6 +42,7 @@ export const CurrencyCoinIcon: FC = () => (
  */
 export const PrefChevronIcon: FC = () => (
   <svg
+    className={GLYPH}
     width="16"
     height="16"
     viewBox="0 0 16 16"

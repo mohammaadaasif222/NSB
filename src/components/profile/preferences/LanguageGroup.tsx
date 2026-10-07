@@ -15,8 +15,10 @@ const LanguageGroup: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="space-y-1.5">
-      <h3 className="text-base leading-6 font-normal text-[#9da2b4]">{t('profile.language')}</h3>
+    <section className="space-y-[calc(var(--u)*6)]">
+      <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
+        {t('profile.language')}
+      </h3>
 
       <PrefCard rows={1}>
         <PrefRowShell label={t('pref.selectLanguage')}>

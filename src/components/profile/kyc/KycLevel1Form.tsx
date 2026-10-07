@@ -211,17 +211,17 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
     ];
 
     return (
-      <div className="space-y-3.5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full bg-[#35d07f]/15 text-[#35d07f]">
+      <div className="space-y-[calc(var(--u)*14)]">
+        <div className="flex flex-wrap items-center justify-between gap-[calc(var(--u)*8)]">
+          <div className="flex items-center gap-[calc(var(--u)*10)]">
+            <span className="flex h-[calc(var(--u)*38)] w-[calc(var(--u)*38)] shrink-0 items-center justify-center rounded-full bg-[#35d07f]/15 text-[#35d07f]">
               <CheckIcon size={16} />
             </span>
             <div>
-              <span className="block text-base leading-6 font-medium text-[#35d07f]">
+              <span className="block text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#35d07f]">
                 Personal Details Confirmed
               </span>
-              <p className="text-xs leading-5 text-[#9da2b4]">
+              <p className="text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
                 Identity information ready for Level 2 verification
               </p>
             </div>
@@ -230,21 +230,26 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
           <button
             type="button"
             onClick={() => setIsEditing(true)}
-            className="rl-chip inline-flex h-8 items-center gap-1.5 px-3.75 text-xs leading-5 font-medium text-[#f0f1f5]"
+            className="rl-chip inline-flex h-[calc(var(--u)*32)] items-center gap-[calc(var(--u)*6)] px-[calc(var(--u)*15)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] font-medium text-[#f0f1f5]"
           >
             <EditIcon size={12} />
             <span>{identityLocked ? 'Update Address' : 'Edit Details'}</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-[calc(var(--u)*12)] sm:grid-cols-2">
           {summary.map((item) => (
-            <div key={item.key} className="rl-field-card flex items-start gap-2.5 rounded-3xl p-4">
-              <span className="mt-0.5 shrink-0 text-[#35d07f]">{item.icon}</span>
+            <div
+              key={item.key}
+              className="rl-field-card flex items-start gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*24)] p-[calc(var(--u)*16)]"
+            >
+              <span className="mt-[calc(var(--u)*2)] shrink-0 text-[#35d07f]">{item.icon}</span>
               <div className="min-w-0 flex-1">
-                <span className="block text-xs leading-5 text-[#9da2b4]">{item.label}</span>
+                <span className="block text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
+                  {item.label}
+                </span>
                 <span
-                  className="block truncate text-base leading-6 font-medium text-[#f0f1f5]"
+                  className="block truncate text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]"
                   title={item.value ?? undefined}
                 >
                   {item.value}
@@ -258,36 +263,38 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+    <form onSubmit={handleSubmit} className="space-y-[calc(var(--u)*20)] pt-[calc(var(--u)*8)]">
       {/* Form header if editing */}
       {isAlreadyDone && (
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-[calc(var(--u)*8)]">
           <div>
-            <h4 className="text-base leading-6 font-medium text-[#f0f1f5]">
+            <h4 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
               Edit Personal Information
             </h4>
-            <p className="text-xs leading-5 text-[#9da2b4]">
+            <p className="text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
               Ensure names and date of birth match your government-issued ID card exactly.
             </p>
           </div>
-          <span className="inline-flex h-6 shrink-0 items-center rounded-full bg-[#35d07f]/15 px-2.5 text-xs leading-5 font-medium text-[#35d07f]">
+          <span className="inline-flex h-[calc(var(--u)*24)] shrink-0 items-center rounded-full bg-[#35d07f]/15 px-[calc(var(--u)*10)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] font-medium text-[#35d07f]">
             Editing Mode
           </span>
         </div>
       )}
 
       {/* 1. Identity Section */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-          <span className="text-base leading-6 font-medium text-[#f0f1f5]">Legal Identity</span>
+      <div className="space-y-[calc(var(--u)*12)]">
+        <div className="flex flex-wrap items-center justify-between gap-[calc(var(--u)*8)] px-[calc(var(--u)*4)]">
+          <span className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
+            Legal Identity
+          </span>
           {identityLocked && (
-            <span className="text-xs leading-5 text-[#9da2b4]">
+            <span className="text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
               Locked after verification — contact support to correct
             </span>
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-[calc(var(--u)*12)] sm:grid-cols-2">
           <FormField label="First Name" htmlFor="kyc-first-name" required>
             <input
               type="text"
@@ -367,8 +374,8 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
       </div>
 
       {/* 2. Residential Address Section */}
-      <div className="space-y-3 border-t border-white/8 pt-4">
-        <span className="block px-1 text-base leading-6 font-medium text-[#f0f1f5]">
+      <div className="space-y-[calc(var(--u)*12)] border-t border-white/8 pt-[calc(var(--u)*16)]">
+        <span className="block px-[calc(var(--u)*4)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
           Residential Address
         </span>
 
@@ -384,7 +391,7 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
           />
         </FormField>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-[calc(var(--u)*12)] sm:grid-cols-2">
           <FormField label="City" htmlFor="kyc-city" required>
             <input
               type="text"
@@ -423,12 +430,12 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2.5 border-t border-white/8 pt-4">
+      <div className="flex items-center justify-end gap-[calc(var(--u)*10)] border-t border-white/8 pt-[calc(var(--u)*16)]">
         {isAlreadyDone && (
           <button
             type="button"
             onClick={handleCancelEdit}
-            className="rl-chip inline-flex h-12 items-center rounded-full px-5.5 text-base leading-6 font-medium text-[#f0f1f5]"
+            className="rl-chip inline-flex h-[calc(var(--u)*48)] items-center rounded-full px-[calc(var(--u)*22)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]"
           >
             Cancel
           </button>
@@ -436,7 +443,7 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
         <button
           type="submit"
           disabled={loading}
-          className="rl-chip-active inline-flex h-12 items-center gap-2 rounded-full px-5.5 text-base leading-6 font-medium text-[#ffe779] disabled:opacity-55"
+          className="rl-chip-active inline-flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*8)] rounded-full px-[calc(var(--u)*22)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#ffe779] disabled:opacity-55"
         >
           {loading && <RefreshCwIcon size={16} className="animate-spin" />}
           <span>{isAlreadyDone ? 'Update & Save Details' : 'Save & Unlock Level 2'}</span>
