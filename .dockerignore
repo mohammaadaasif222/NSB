@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+
+# Next.js build
+.next
+out
+
+# Git
+.git
+.gitignore
+.github
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Testing / coverage
+coverage
+.nyc_output
+
+# Husky
+.husky
+
+# Documentation
+README.md
+README
