@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState, type FC, type ReactNode } from 'react';
 import type { StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
-import type { GameShelfKey } from '@/types';
+import { gameMatches } from '@/services/catalogue';
+import type { Game, GameShelfKey } from '@/types';
 import type { TranslationKey } from '@/i18n/locales';
 import searchIcon from '@/assets/lobby/player/tool-search.svg';
+import sortIcon from '@/assets/lobby/player/tool-sort.svg';
+import filterIcon from '@/assets/lobby/player/tool-filter.svg';
+import providerIcon from '@/assets/lobby/player/tool-provider.svg';
 import chevronIcon from '@/assets/lobby/player/tool-chevron.svg';
 import chipLobby from '@/assets/lobby/player/chip-lobby.svg';
 import chipOriginals from '@/assets/lobby/player/chip-originals.svg';
@@ -14,6 +18,7 @@ import chipBaccarat from '@/assets/lobby/player/chip-baccarat.svg';
 import chipGameShows from '@/assets/lobby/player/chip-gameshows.svg';
 import chipNewArrivals from '@/assets/lobby/player/chip-newarrivals.svg';
 import chipBonusBuys from '@/assets/lobby/player/chip-bonusbuys.svg';
+import Glyph from '@/components/player/Glyph';
 
 /*
  * The catalogue browser's controls — search, the three dropdowns and the
@@ -149,6 +154,161 @@ export const Option: FC<{ selected: boolean; onSelect: () => void; children: Rea
 );
 
 /* ==================================================================== */
+/* Toolbar: search, sort, filter, provider                               */
+/* ==================================================================== */
+
+export type SortKey = 'az' | 'za' | 'rtp' | 'new';
+export type FilterKey = 'all' | 'new';
+
+export const SORTS: { key: SortKey; labelKey: TranslationKey }[] = [
+  { key: 'az', labelKey: 'browse.sortAZ' },
+  { key: 'za', labelKey: 'browse.sortZA' },
+  { key: 'rtp', labelKey: 'browse.sortRtp' },
+  { key: 'new', labelKey: 'browse.sortNewest' },
+];
+
+export const FILTERS: { key: FilterKey; labelKey: TranslationKey }[] = [
+  { key: 'all', labelKey: 'browse.filterAll' },
+  { key: 'new', labelKey: 'browse.filterNew' },
+];
+
+/** What the toolbar is set to. */
+export interface BrowseState {
+  search: string;
+  sort: SortKey;
+  filter: FilterKey;
+  /** A studio's name; empty for every studio. */
+  provider: string;
+}
+
+export const BROWSE_DEFAULTS: BrowseState = { search: '', sort: 'az', filter: 'all', provider: '' };
+
+const sortGames = (games: Game[], key: SortKey): Game[] => {
+  const out = [...games];
+  switch (key) {
+    case 'az':
+      return out.sort((a, b) => a.title.localeCompare(b.title));
+    case 'za':
+      return out.sort((a, b) => b.title.localeCompare(a.title));
+    case 'rtp':
+      // Games without a published RTP sort last.
+      return out.sort((a, b) => (b.rtp ?? -1) - (a.rtp ?? -1));
+    case 'new':
+      return out.sort((a, b) => Number(b.is_new) - Number(a.is_new));
+  }
+};
+
+/**
+ * A list narrowed and ordered as the toolbar asks. `keepOrder` leaves the
+ * list's own order while the sort is untouched — a player's recents and
+ * favourites are newest first, which "A–Z" would throw away.
+ */
+export const browseGames = (
+  games: Game[],
+  { search, sort, filter, provider }: BrowseState,
+  keepOrder = false
+): Game[] => {
+  const term = search.trim().toLowerCase();
+  const out = games.filter(
+    (g) =>
+      (!term || gameMatches(g, term)) &&
+      (filter !== 'new' || g.is_new) &&
+      (!provider || g.provider === provider)
+  );
+  return keepOrder && sort === BROWSE_DEFAULTS.sort ? out : sortGames(out, sort);
+};
+
+/**
+ * The design's toolbar: the search field with the three dropdowns beside it
+ * on desktop, and under it, three across, on a phone.
+ */
+export const BrowseToolbar: FC<{
+  state: BrowseState;
+  onChange: (patch: Partial<BrowseState>) => void;
+  /** Studios to offer in the provider picker. */
+  providers: string[];
+}> = ({ state, onChange, providers }) => {
+  const { t } = useTranslation();
+  const sortLabel = t(SORTS.find((s) => s.key === state.sort)?.labelKey ?? 'browse.sort');
+  const filterLabel = t(FILTERS.find((f) => f.key === state.filter)?.labelKey ?? 'browse.filter');
+
+  return (
+    <div className="flex flex-col gap-[14px] lg:flex-row lg:gap-[calc(var(--u)*20)]">
+      <SearchField
+        value={state.search}
+        onChange={(search) => onChange({ search })}
+        placeholder={t('search.placeholder')}
+        label={t('search.title')}
+      />
+
+      <div className="grid grid-cols-[1fr_1fr_1.53fr] gap-[7px] lg:flex lg:gap-[calc(var(--u)*10)]">
+        <Dropdown icon={sortIcon} label={sortLabel}>
+          {(close) =>
+            SORTS.map((s) => (
+              <Option
+                key={s.key}
+                selected={state.sort === s.key}
+                onSelect={() => {
+                  onChange({ sort: s.key });
+                  close();
+                }}
+              >
+                {t(s.labelKey)}
+              </Option>
+            ))
+          }
+        </Dropdown>
+
+        <Dropdown icon={filterIcon} label={filterLabel}>
+          {(close) =>
+            FILTERS.map((f) => (
+              <Option
+                key={f.key}
+                selected={state.filter === f.key}
+                onSelect={() => {
+                  onChange({ filter: f.key });
+                  close();
+                }}
+              >
+                {t(f.labelKey)}
+              </Option>
+            ))
+          }
+        </Dropdown>
+
+        <Dropdown icon={providerIcon} label={state.provider || t('browse.provider')}>
+          {(close) => (
+            <>
+              <Option
+                selected={state.provider === ''}
+                onSelect={() => {
+                  onChange({ provider: '' });
+                  close();
+                }}
+              >
+                {t('browse.allProviders')}
+              </Option>
+              {providers.map((name) => (
+                <Option
+                  key={name}
+                  selected={state.provider === name}
+                  onSelect={() => {
+                    onChange({ provider: name });
+                    close();
+                  }}
+                >
+                  {name}
+                </Option>
+              ))}
+            </>
+          )}
+        </Dropdown>
+      </div>
+    </div>
+  );
+};
+
+/* ==================================================================== */
 /* Category chips                                                        */
 /* ==================================================================== */
 
@@ -156,9 +316,9 @@ export type ChipKey = GameShelfKey | 'lobby';
 
 /**
  * The chip row, in the design's order. A chip with a `key` filters the
- * browser to that shelf; the rest are in the design with no games behind them
- * yet, so they render dimmed and tagged "Soon" rather than filtering to an
- * empty grid.
+ * browser to that shelf (an empty shelf filters to an honest empty grid); the
+ * rest are in the design with nothing behind them yet, so they render dimmed
+ * and tagged "Soon".
  */
 interface Chip {
   /** The shelf it filters to; absent for a chip with nothing behind it yet. */
@@ -178,14 +338,47 @@ const CHIPS: Chip[] = [
   { label: 'Roulette', icon: chipRoulette },
   { label: 'Baccarat', icon: chipBaccarat },
   { label: 'Game Shows', icon: chipGameShows },
-  { label: 'Table Games', icon: chipOriginals },
+  { key: 'table', labelKey: 'dash.tableGames', icon: chipOriginals },
   { label: 'Boosted RTP', icon: chipOriginals },
   { key: 'new', label: 'New Arrivals', icon: chipNewArrivals },
-  { label: 'Bonus Buys', icon: chipBonusBuys },
+  { key: 'bonus-buys', labelKey: 'dash.bonusBuys', icon: chipBonusBuys },
 ];
 
+/** A chip: 34px with 12px type on a phone, the design's 48px pill on desktop. */
 const CHIP =
-  'inline-flex h-[calc(var(--u)*48)] flex-shrink-0 items-center gap-[calc(var(--u)*10)] rounded-full px-[calc(var(--u)*24)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)]';
+  'inline-flex h-[34px] flex-shrink-0 items-center gap-[5px] rounded-full px-3 text-[12px] font-medium leading-5 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+
+/** The active chip's gold glow — stronger on the phone's smaller chip, as drawn. */
+const CHIP_ON =
+  'text-[#ffe779] shadow-[0_0_12px_rgba(255,231,121,0.5)] lg:shadow-[0_0_calc(var(--u)*17.6)_rgba(255,231,121,0.2)]';
+
+const CHIP_ICON = 'h-[18px] w-[18px] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
+
+/**
+ * One selectable chip — the casino's category chips and the sportsbook's
+ * sport chips alike: glass at rest, gold and glowing when on.
+ */
+export const ChipButton: FC<{
+  active: boolean;
+  onClick: () => void;
+  /** An icon, tinted with the label. */
+  icon?: StaticImageData;
+  children: ReactNode;
+}> = ({ active, onClick, icon, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={active}
+    className={`${CHIP} ${GLASS} ${active ? CHIP_ON : 'text-[#9da2b4] hover:text-[#f0f1f5]'}`}
+  >
+    {icon && <Glyph src={icon.src} className={CHIP_ICON} />}
+    {children}
+  </button>
+);
+
+/** The chip row's scroller, bleeding to the screen edge on a phone. */
+export const CHIP_ROW =
+  'rl-shelf -mx-4 flex gap-[7px] px-4 py-3 -my-3 lg:mx-0 lg:gap-[calc(var(--u)*15)] lg:px-0';
 
 export const CategoryChips: FC<{
   active: ChipKey;
@@ -194,16 +387,10 @@ export const CategoryChips: FC<{
   const { t } = useTranslation();
 
   return (
-    <div className="rl-shelf flex gap-[calc(var(--u)*15)]">
+    <div className={CHIP_ROW}>
       {CHIPS.map((chip) => {
         const text = chip.labelKey ? t(chip.labelKey) : (chip.label ?? '');
-        const icon = (
-          <img
-            src={chip.icon.src}
-            alt=""
-            className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0"
-          />
-        );
+        const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
 
         if (!chip.key) {
           return (
@@ -211,7 +398,7 @@ export const CategoryChips: FC<{
               key={text}
               title={`${text} — ${t('common.soon')}`}
               aria-disabled="true"
-              className={`${CHIP} cursor-default border border-white/10 bg-black/40 text-[#9da2b4]/50 backdrop-blur-md [&>img]:opacity-50`}
+              className={`${CHIP} cursor-default border border-white/10 bg-black/40 text-[#9da2b4]/50 backdrop-blur-md`}
             >
               {icon}
               {text}
@@ -220,18 +407,15 @@ export const CategoryChips: FC<{
         }
 
         const key = chip.key;
-        const on = active === key;
         return (
-          <button
+          <ChipButton
             key={key}
-            type="button"
+            active={active === key}
             onClick={() => onChange(key)}
-            aria-pressed={on}
-            className={`${CHIP} ${GLASS} ${on ? 'font-medium text-[#ffe779]' : 'text-[#9da2b4] hover:text-[#f0f1f5]'}`}
+            icon={chip.icon}
           >
-            {icon}
             {text}
-          </button>
+          </ChipButton>
         );
       })}
     </div>

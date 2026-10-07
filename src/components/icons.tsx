@@ -660,6 +660,9 @@ export const CATEGORY_ICONS: Record<GameShelfKey, FC<IconProps>> = {
   slots: DiceIcon,
   live: ActivityIcon,
   popular: TrophyIcon,
+  trending: ArrowUpRightIcon,
+  table: LayersIcon,
+  'bonus-buys': GiftIcon,
 };
 
 export const ShieldCheckIcon: FC<IconProps> = (p) => (

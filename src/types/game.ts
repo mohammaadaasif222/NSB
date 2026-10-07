@@ -10,7 +10,16 @@ export type GameCategory = 'ORIGINALS' | 'NEW_RELEASE' | 'FEATURED' | 'SLOTS';
  * live-dealer games and `popular` the most played — shelves that are not a
  * category.
  */
-export type GameShelfKey = 'originals' | 'new' | 'featured' | 'slots' | 'live' | 'popular';
+export type GameShelfKey =
+  | 'originals'
+  | 'new'
+  | 'featured'
+  | 'slots'
+  | 'live'
+  | 'popular'
+  | 'trending'
+  | 'table'
+  | 'bonus-buys';
 
 export type GameType = 'STANDARD' | 'LIVE' | 'LOBBY';
 
@@ -46,6 +55,8 @@ export interface Game {
   /** Height as a percentage of width (56.25 = 16:9); sizes the game frame. */
   display_ratio: number | null;
   demo_available: boolean;
+  /** Whether the bonus round can be bought outright (the Bonus Buys shelf). */
+  buy_feature: boolean;
   /** Whether the game can be opened right now. */
   launchable: boolean;
 }

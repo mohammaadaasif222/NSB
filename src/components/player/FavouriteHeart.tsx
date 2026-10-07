@@ -12,6 +12,12 @@ interface Props {
   label: string;
   /** Gold for games, red for studios — as the design colours them. */
   tone?: 'gold' | 'red';
+  /**
+   * The choice is saved to the account (games). Without it the heart is
+   * session-only (studios, which have no favourites endpoint yet) and its
+   * tooltip says so.
+   */
+  saved?: boolean;
   /** Size and position; the heart fills whatever box this gives it. */
   className: string;
 }
@@ -19,20 +25,27 @@ interface Props {
 /**
  * The lobby's favourite toggle, drawn with the design's own heart: a grey
  * outline at rest, a gold outline under the pointer, and solid once liked.
- *
- * Local-only: there is no favourites endpoint yet, so the choice lasts for
- * the session and the tooltip says so rather than pretending it was saved.
  */
-const FavouriteHeart: FC<Props> = ({ liked, onToggle, label, tone = 'gold', className }) => {
+const FavouriteHeart: FC<Props> = ({
+  liked,
+  onToggle,
+  label,
+  tone = 'gold',
+  saved = false,
+  className,
+}) => {
   const { t } = useTranslation();
   const filled = tone === 'red' ? heartRed : heartGold;
+  const title = saved
+    ? t(liked ? 'favourites.remove' : 'favourites.add')
+    : `${t('nav.favourites')} — ${t('common.soon')}`;
 
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={liked}
-      title={`${t('nav.favourites')} — ${t('common.soon')}`}
+      title={title}
       aria-label={`${label} — ${t('nav.favourites')}`}
       className={`group/heart absolute rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${className}`}
     >

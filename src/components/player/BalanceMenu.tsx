@@ -82,10 +82,6 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
     return formatCurrencyDisplay(balance.real_amount);
   }, [balance, loading, formatCurrencyDisplay]);
 
-  // A code-prefixed amount ("USDT 1,550.00") drops its code on a phone, where
-  // the bar has no room for it; the menu still names the currency.
-  const [, code, amount] = /^([A-Z]{2,5})\s+(.+)$/.exec(chipLabel) ?? [null, null, chipLabel];
-
   return (
     <div className="relative min-w-0" ref={ref}>
       <button
@@ -95,11 +91,10 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
         aria-expanded={open}
         aria-label="Wallet balance"
         title={chipLabel}
-        className="flex h-10 max-w-full items-center gap-1 rounded-full border border-white/10 bg-black/40 px-2.5 backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*9)] lg:px-[calc(var(--u)*14)]"
+        className="flex h-10 max-w-full items-center gap-2.5 rounded-full border border-white/10 bg-black/40 px-[18px] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*9)] lg:px-[calc(var(--u)*14)]"
       >
         <span className="min-w-0 truncate text-[16px] font-medium leading-6 tabular-nums text-[#f0f1f5] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
-          {code && <span className="hidden sm:inline">{code} </span>}
-          {amount}
+          {chipLabel}
         </span>
         <img
           src={chevronIcon.src}

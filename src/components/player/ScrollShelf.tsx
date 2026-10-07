@@ -29,6 +29,12 @@ interface Props {
    * dissolve and the items run in the ordinary single row.
    */
   paged?: boolean;
+  /** A row between the heading and the track — the sportsbook's sport chips. */
+  toolbar?: ReactNode;
+  /** Classes for the heading's end cluster, e.g. to drop it on desktop. */
+  endClassName?: string;
+  /** The heading 14px over the track on desktop rather than 20 — the match shelves. */
+  tight?: boolean;
   children: ReactNode;
 }
 
@@ -65,6 +71,9 @@ const ScrollShelf: FC<Props> = ({
   id,
   track = SHELF_TRACK,
   paged = false,
+  toolbar,
+  endClassName,
+  tight = false,
   children,
 }) => {
   const { t } = useTranslation();
@@ -121,11 +130,12 @@ const ScrollShelf: FC<Props> = ({
   return (
     <section
       id={id}
-      className="scroll-mt-28 space-y-[calc(var(--u)*14)] lg:space-y-[calc(var(--u)*20)]"
+      className={`scroll-mt-28 space-y-[calc(var(--u)*14)] ${tight ? '' : 'lg:space-y-[calc(var(--u)*20)]'}`}
     >
       <ShelfHeading
         title={title}
         href={href}
+        endClassName={endClassName}
         controls={
           <div className="flex items-center gap-[calc(var(--u)*8)] lg:gap-[calc(var(--u)*14)]">
             {arrow(-1, canLeft)}
@@ -133,6 +143,7 @@ const ScrollShelf: FC<Props> = ({
           </div>
         }
       />
+      {toolbar}
       {/* Room above and below for the tiles' drop shadows, which the
           scroller would otherwise clip. */}
       <div ref={ref} className={`${paged ? PAGED_TRACK : track} -my-4 py-[calc(var(--u)*16)]`}>

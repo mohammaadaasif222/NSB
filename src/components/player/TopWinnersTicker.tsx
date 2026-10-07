@@ -82,24 +82,22 @@ const TopWinnersTicker: FC = () => (
 );
 
 /**
- * A full-width row of winners: the phone's small chips running edge to edge
- * under the bar, and — with `desktop` — the signed-in lobby's 42px row across
- * the content column.
+ * The signed-in pages' full-width row of winners: the phone's small chips
+ * running edge to edge under the bar, the desktop's 42px chips across the
+ * content column.
  */
-export const WinnersStrip: FC<{ desktop?: boolean }> = ({ desktop = false }) => (
-  <div className={desktop ? '' : 'lg:hidden'} aria-hidden="true">
+export const WinnersStrip: FC = () => (
+  <div aria-hidden="true">
     <div className="rl-shelf -mx-4 flex gap-[3px] px-4 lg:hidden">
       {ROW.map((w) => (
         <Chip key={w.id} {...w} size="strip" />
       ))}
     </div>
-    {desktop && (
-      <div className="rl-shelf hidden gap-[calc(var(--u)*10)] lg:flex">
-        {ROW.map((w) => (
-          <Chip key={w.id} {...w} size="bar" />
-        ))}
-      </div>
-    )}
+    <div className="rl-shelf hidden gap-[calc(var(--u)*10)] lg:flex">
+      {ROW.map((w) => (
+        <Chip key={w.id} {...w} size="bar" />
+      ))}
+    </div>
   </div>
 );
 
