@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: frontend-route
+  namespace: rolluck-staging
+spec:
+  hostnames:
+    - staging.xyzlife.top
+  parentRefs:
+    - name: rolluck-gateway
+  rules:
+    - backendRefs:
+        - name: frontend
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
