@@ -11,9 +11,13 @@ export interface Countdown {
 }
 
 /**
- * The design draws this bar twice at two sizes: 330×70 on a promotion card,
- * 478×90 under the detail page's banner. Same shape, same glass, so one
- * component with the two sets of figures rather than two near-copies.
+ * The design draws this bar at three sizes: 330×70 on a promotion or
+ * tournament card, 615×91 inside the tournament hero, and 478×90 under the
+ * promotion detail banner. Same shape, same glass, so one component with the
+ * three sets of figures rather than three near-copies.
+ *
+ * `wide` carries `sm`'s type on a longer bar — the design keeps the 28px
+ * figures and only opens up the padding and the gaps between the cells.
  */
 const SIZES = {
   sm: {
@@ -27,6 +31,18 @@ const SIZES = {
       'text-[11px] leading-4 lg:text-[length:max(9px,calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]',
     sep: 'text-[20px] lg:text-[length:max(14px,calc(var(--u)*28))]',
     cell: 'py-1.5',
+  },
+  wide: {
+    shell: 'rounded-[16px] p-[4px] lg:rounded-[calc(var(--u)*22)] lg:p-[calc(var(--u)*6.5)]',
+    cellRadius: 'rounded-l-[13px] lg:rounded-l-[calc(var(--u)*22)]',
+    cellRadiusEnd: 'rounded-r-[13px] lg:rounded-r-[calc(var(--u)*22)]',
+    gap: 'w-[9px] lg:w-[calc(var(--u)*18)]',
+    value:
+      'text-[20px] leading-7 lg:text-[length:max(14px,calc(var(--u)*28))] lg:leading-[calc(var(--u)*36)]',
+    label:
+      'text-[11px] leading-4 lg:text-[length:max(9px,calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]',
+    sep: 'text-[20px] lg:text-[length:max(14px,calc(var(--u)*28))]',
+    cell: 'py-1.5 lg:py-[calc(var(--u)*11)]',
   },
   lg: {
     shell: 'rounded-[20px] p-[5px] lg:rounded-[calc(var(--u)*32)] lg:p-[calc(var(--u)*6)]',
