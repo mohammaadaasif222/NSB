@@ -53,7 +53,7 @@ const MobileTabBar: FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
 
   // The home page belongs to neither section; its designs light no tab.
   const casino = pathname === '/casino' || pathname.startsWith('/game');
-  const sports = pathname === '/sports';
+  const sports = pathname.startsWith('/sports');
   const profile = pathname.startsWith('/profile');
 
   return (

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState, type FC } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import ScrollShelf from '@/components/player/ScrollShelf';
+import { text } from '@/components/player/typeScale';
 import { useTranslation } from '@/context/I18nContext';
 import raceArt from '@/assets/lobby/casino/tournament-race.webp';
 import trophyArt from '@/assets/lobby/casino/tournament-trophy.webp';
@@ -63,9 +64,6 @@ const SAMPLE: Tournament[] = [
 const TRACK =
   'rl-shelf rl-track flex [--cols:1] [--gap:calc(var(--u)*11)] md:[--cols:2] lg:[--cols:3.5] lg:[--gap:calc(var(--u)*26)]';
 
-/** Text sized in design pixels, never below 11px. */
-const px = (n: number): string => `text-[length:max(min(11px,${n}px),calc(var(--u)*${n}))]`;
-
 /**
  * Seconds left, ticking down once a second from mount — the same on the
  * server and the first paint, which a countdown to a timestamp (see
@@ -106,7 +104,7 @@ const Countdown: FC<{ seconds: number }> = ({ seconds }) => {
         <Fragment key={part.label}>
           {i > 0 && (
             <span
-              className={`${px(28)} w-[calc(var(--u)*11)] flex-shrink-0 text-center font-light leading-[calc(var(--u)*36)] text-[#f0f1f5]`}
+              className={`${text(28)} w-[calc(var(--u)*11)] flex-shrink-0 text-center font-light leading-[calc(var(--u)*36)] text-[#f0f1f5]`}
               aria-hidden="true"
             >
               :
@@ -119,12 +117,12 @@ const Countdown: FC<{ seconds: number }> = ({ seconds }) => {
             aria-hidden="true"
           >
             <span
-              className={`${px(28)} font-medium leading-[calc(var(--u)*36)] tabular-nums text-[#f0f1f5]`}
+              className={`${text(28)} font-medium leading-[calc(var(--u)*36)] tabular-nums text-[#f0f1f5]`}
             >
               {String(part.value).padStart(2, '0')}
             </span>
             <span
-              className={`${px(12)} -mt-[calc(var(--u)*4)] font-light leading-[calc(var(--u)*20)] text-[#9da2b4]`}
+              className={`${text(12)} -mt-[calc(var(--u)*4)] font-light leading-[calc(var(--u)*20)] text-[#9da2b4]`}
             >
               {part.label}
             </span>
@@ -150,7 +148,7 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
           className="object-cover object-left lg:object-center"
         />
         <span
-          className={`${px(14)} absolute left-[calc(var(--u)*20)] top-[calc(var(--u)*20)] inline-flex h-[calc(var(--u)*31)] items-center rounded-full bg-white/[0.07] px-[calc(var(--u)*12)] leading-[calc(var(--u)*20)] text-[#03b739] shadow-[0_0_17px_rgba(3,183,57,0.2)] backdrop-blur-md`}
+          className={`${text(14)} absolute left-[calc(var(--u)*20)] top-[calc(var(--u)*20)] inline-flex h-[calc(var(--u)*31)] items-center rounded-full bg-white/[0.07] px-[calc(var(--u)*12)] leading-[calc(var(--u)*20)] text-[#03b739] shadow-[0_0_17px_rgba(3,183,57,0.2)] backdrop-blur-md`}
         >
           {t('tournament.active')}
         </span>
@@ -158,22 +156,22 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
 
       <div className="flex flex-1 flex-col px-[calc(var(--u)*20)] pb-[calc(var(--u)*15)] pt-[calc(var(--u)*14)]">
         <h3
-          className={`${px(24)} truncate font-semibold leading-[calc(var(--u)*32)] text-[#f0f1f5]`}
+          className={`${text(24)} truncate font-semibold leading-[calc(var(--u)*32)] text-[#f0f1f5]`}
         >
           {tournament.name}
         </h3>
 
         <div className="mt-[calc(var(--u)*14)] flex items-start justify-between gap-[calc(var(--u)*12)]">
           <span className="flex flex-col">
-            <span className={`${px(14)} leading-[calc(var(--u)*20)] text-[#9da2b4]`}>
+            <span className={`${text(14)} leading-[calc(var(--u)*20)] text-[#9da2b4]`}>
               {t('tournament.prizePool')}
             </span>
-            <span className={`${px(24)} font-bold leading-[calc(var(--u)*32)] text-[#f0f1f5]`}>
+            <span className={`${text(24)} font-bold leading-[calc(var(--u)*32)] text-[#f0f1f5]`}>
               {tournament.prizePool}
             </span>
           </span>
           <span
-            className={`${px(16)} inline-flex items-center gap-[calc(var(--u)*4)] font-medium leading-[calc(var(--u)*24)] text-[#f0f1f5]`}
+            className={`${text(16)} inline-flex items-center gap-[calc(var(--u)*4)] font-medium leading-[calc(var(--u)*24)] text-[#f0f1f5]`}
           >
             <svg
               viewBox="0 0 20 20"
@@ -196,7 +194,7 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
 
         <Link
           href="/tournaments"
-          className={`${px(18)} mt-auto flex h-[calc(var(--u)*48)] items-center justify-center rounded-full bg-[#07080a] font-medium leading-[calc(var(--u)*28)] text-[#f0f1f5] transition-colors hover:bg-white/15 lg:bg-white/10`}
+          className={`${text(18)} mt-auto flex h-[calc(var(--u)*48)] items-center justify-center rounded-full bg-[#07080a] font-medium leading-[calc(var(--u)*28)] text-[#f0f1f5] transition-colors hover:bg-white/15 lg:bg-white/10`}
         >
           {t('tournament.viewDetail')}
         </Link>

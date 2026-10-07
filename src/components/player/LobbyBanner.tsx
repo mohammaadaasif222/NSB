@@ -4,14 +4,15 @@ import Image from 'next/image';
 import banner from '@/assets/lobby/casino/banner.webp';
 
 /**
- * The casino page's banner: the lobby artwork, opening the promotions page.
+ * The casino and sportsbook pages' banner: the lobby artwork, opening the
+ * promotions page.
  *
  * One image, cropped as each design crops it. Desktop covers the 1548×416
  * frame. The phone's 388×236 frame shows a centred window 55.9% of the image
  * wide, so the image is drawn at 1/0.559 = 178.86% of the frame's width and
  * centred — the same crop at any phone width.
  */
-const CasinoBanner: FC = () => (
+const LobbyBanner: FC = () => (
   <Link
     href="/promotions"
     aria-label="Promotions"
@@ -27,4 +28,4 @@ const CasinoBanner: FC = () => (
   </Link>
 );
 
-export default CasinoBanner;
+export default LobbyBanner;

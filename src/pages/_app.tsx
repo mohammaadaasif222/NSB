@@ -11,6 +11,7 @@ import { SupportChatProvider } from '@/context/SupportChatContext';
 import { CurrencyConversionProvider } from '@/context/CurrencyConversionContext';
 import { AuthModalProvider } from '@/context/AuthModalContext';
 import { FavouritesProvider } from '@/context/FavouritesContext';
+import { BetslipProvider } from '@/context/BetslipContext';
 import RouteLoader from '@/components/RouteLoader';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import Analytics from '@/components/analytics/Analytics';
@@ -64,8 +65,11 @@ export default function App({ Component, pageProps }: AppProps) {
                       <SeonGuardProvider>
                         {/* Inside AuthModalProvider: hearting signed out opens login. */}
                         <FavouritesProvider>
-                          <EventListeners />
-                          <Component {...pageProps} />
+                          {/* Above the pages, so sportsbook picks survive moving between them. */}
+                          <BetslipProvider>
+                            <EventListeners />
+                            <Component {...pageProps} />
+                          </BetslipProvider>
                         </FavouritesProvider>
                       </SeonGuardProvider>
                       <SeonAgentWarmup />

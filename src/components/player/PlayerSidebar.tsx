@@ -270,7 +270,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             href="/sports"
             art={sportsArt.src}
             label={t('nav.sports')}
-            active={pathname === '/sports'}
+            active={pathname.startsWith('/sports')}
             collapsed={collapsed}
             onClick={onClose}
           />

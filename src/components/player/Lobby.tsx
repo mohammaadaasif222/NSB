@@ -5,7 +5,7 @@ import PlayerLayout from '@/layout/PlayerLayout';
 import HomeHero from '@/components/player/HomeHero';
 import LandingHero, { LandingBackdrop } from '@/components/player/LandingHero';
 import GameBrowser, { type ShelfInsert } from '@/components/player/GameBrowser';
-import CasinoBanner from '@/components/player/CasinoBanner';
+import LobbyBanner from '@/components/player/LobbyBanner';
 import CrashPreview from '@/components/player/CrashPreview';
 import ProviderRow from '@/components/player/ProviderRow';
 import SportsRow, { SportsShelf } from '@/components/player/SportsRow';
@@ -140,7 +140,7 @@ const Lobby: FC<Props> = ({
           // and 26px on desktop — the browser's own rhythm.
           <div className="space-y-[30px] pt-1 lg:space-y-[calc(var(--u)*26)] lg:pt-0">
             {player && <WinnersStrip />}
-            <CasinoBanner />
+            <LobbyBanner />
             {unavailable}
             {browser}
           </div>

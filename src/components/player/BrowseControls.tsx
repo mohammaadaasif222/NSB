@@ -354,6 +354,32 @@ const CHIP_ON =
 
 const CHIP_ICON = 'h-[18px] w-[18px] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
 
+/**
+ * One selectable chip — the casino's category chips and the sportsbook's
+ * sport chips alike: glass at rest, gold and glowing when on.
+ */
+export const ChipButton: FC<{
+  active: boolean;
+  onClick: () => void;
+  /** An icon, tinted with the label. */
+  icon?: StaticImageData;
+  children: ReactNode;
+}> = ({ active, onClick, icon, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={active}
+    className={`${CHIP} ${GLASS} ${active ? CHIP_ON : 'text-[#9da2b4] hover:text-[#f0f1f5]'}`}
+  >
+    {icon && <Glyph src={icon.src} className={CHIP_ICON} />}
+    {children}
+  </button>
+);
+
+/** The chip row's scroller, bleeding to the screen edge on a phone. */
+export const CHIP_ROW =
+  'rl-shelf -mx-4 flex gap-[7px] px-4 py-3 -my-3 lg:mx-0 lg:gap-[calc(var(--u)*15)] lg:px-0';
+
 export const CategoryChips: FC<{
   active: ChipKey;
   onChange: (key: ChipKey) => void;
@@ -361,7 +387,7 @@ export const CategoryChips: FC<{
   const { t } = useTranslation();
 
   return (
-    <div className="rl-shelf -mx-4 flex gap-[7px] px-4 py-3 -my-3 lg:mx-0 lg:gap-[calc(var(--u)*15)] lg:px-0">
+    <div className={CHIP_ROW}>
       {CHIPS.map((chip) => {
         const text = chip.labelKey ? t(chip.labelKey) : (chip.label ?? '');
         const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
@@ -381,18 +407,15 @@ export const CategoryChips: FC<{
         }
 
         const key = chip.key;
-        const on = active === key;
         return (
-          <button
+          <ChipButton
             key={key}
-            type="button"
+            active={active === key}
             onClick={() => onChange(key)}
-            aria-pressed={on}
-            className={`${CHIP} ${GLASS} ${on ? CHIP_ON : 'text-[#9da2b4] hover:text-[#f0f1f5]'}`}
+            icon={chip.icon}
           >
-            {icon}
             {text}
-          </button>
+          </ChipButton>
         );
       })}
     </div>

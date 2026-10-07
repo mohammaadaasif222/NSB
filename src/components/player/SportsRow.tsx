@@ -28,13 +28,7 @@ import volleyball from '@/assets/lobby/sports/volleyball.webp';
 import wrestling from '@/assets/lobby/sports/wrestling.webp';
 import sportsbook from '@/assets/lobby/sports/sportsbook.webp';
 import mma from '@/assets/lobby/sports/mma.webp';
-import lineFootball from '@/assets/lobby/player/sport-football.svg';
-import lineBasketball from '@/assets/lobby/player/sport-basketball.svg';
-import lineTennis from '@/assets/lobby/player/sport-tennis.svg';
-import lineCricket from '@/assets/lobby/player/sport-cricket.svg';
-import lineHorse from '@/assets/lobby/player/sport-horse.svg';
-import lineBaseball from '@/assets/lobby/player/sport-baseball.svg';
-import lineHockey from '@/assets/lobby/player/sport-hockey.svg';
+import { SPORTS, sportHref } from '@/constants/sportsbook';
 
 /**
  * The sportsbook teasers.
@@ -92,31 +86,19 @@ const DISCIPLINES: Discipline[] = [
  * the tile, so it holds its spot at either size — and the label at the foot.
  */
 /**
- * The signed-in lobby's disciplines: the same tiles drawn with the design's
- * line icons instead of the 3D renders, and its own shorter list.
- */
-const LINE_DISCIPLINES: { label: string; icon: StaticImageData }[] = [
-  { label: 'Football', icon: lineFootball },
-  { label: 'Basketball', icon: lineBasketball },
-  { label: 'Tennis', icon: lineTennis },
-  { label: 'Cricket', icon: lineCricket },
-  { label: 'Horse Racing', icon: lineHorse },
-  { label: 'Baseball', icon: lineBaseball },
-  { label: 'Hockey', icon: lineHockey },
-];
-
-/**
  * A discipline's glass tile — 198×192 on desktop, 122×150 on a phone — with
  * its label at the foot. What sits above the label is the caller's: a 3D
  * render or a line icon.
  */
-const TileShell: FC<{ label: string; children: ReactNode }> = ({ label, children }) => {
-  const { t } = useTranslation();
-
+const TileShell: FC<{ label: string; href?: string; children: ReactNode }> = ({
+  label,
+  href = '/sports',
+  children,
+}) => {
   return (
     <Link
-      href="/sports"
-      title={`${label} — ${t('common.soon')}`}
+      href={href}
+      title={label}
       className="rl-liquid group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
     >
       {children}
@@ -148,11 +130,14 @@ const DisciplineTile: FC<{ sport: Discipline }> = ({ sport }) => {
   );
 };
 
-/** A tile with the discipline's 82px line icon, centred above the label. */
-const LineTile: FC<{ label: string; icon: StaticImageData }> = ({ label, icon }) => (
-  <TileShell label={label}>
+/**
+ * A tile with the discipline's 82px line icon, centred above the label —
+ * the signed-in lobby's version, opening that sport's page.
+ */
+const LineTile: FC<{ sport: (typeof SPORTS)[number] }> = ({ sport }) => (
+  <TileShell label={sport.label} href={sportHref(sport.key)}>
     <img
-      src={icon.src}
+      src={sport.icon.src}
       alt=""
       className="absolute left-1/2 top-[calc(var(--u)*11)] h-[calc(var(--u)*82)] w-[calc(var(--u)*82)] -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-1 lg:top-[calc(var(--u)*34)]"
     />
@@ -289,7 +274,7 @@ export const SportsShelf: FC<ShelfProps & { variant?: '3d' | 'line' }> = ({
   return (
     <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll} paged>
       {variant === 'line'
-        ? LINE_DISCIPLINES.map((sport) => <LineTile key={sport.label} {...sport} />)
+        ? SPORTS.map((sport) => <LineTile key={sport.key} sport={sport} />)
         : DISCIPLINES.map((sport) => <DisciplineTile key={sport.label} sport={sport} />)}
     </ScrollShelf>
   );
@@ -304,24 +289,12 @@ export const LiveGamesShelf: FC<ShelfProps> = ({ viewAll }) => (
   </ScrollShelf>
 );
 
-interface Props {
-  /**
-   * Rendered on /sports itself. Drops the "View all" links, which would only
-   * point back at the page they are on.
-   */
-  standalone?: boolean;
-}
-
-/** Both sportsbook teasers together, as the signed-out lobby and /sports show them. */
-const SportsRow: FC<Props> = ({ standalone = false }) => {
-  const viewAll = standalone ? undefined : '/sports';
-
-  return (
-    <>
-      <SportsShelf viewAll={viewAll} />
-      <LiveGamesShelf viewAll={viewAll} />
-    </>
-  );
-};
+/** Both sportsbook teasers together, as the signed-out lobby shows them. */
+const SportsRow: FC = () => (
+  <>
+    <SportsShelf viewAll="/sports" />
+    <LiveGamesShelf viewAll="/sports" />
+  </>
+);
 
 export default SportsRow;
