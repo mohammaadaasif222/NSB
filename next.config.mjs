@@ -1,3 +1,14 @@
+/**
+ * Every CDN host game artwork is served from. Each aggregator's catalogue
+ * sync stores its own CDN's URLs, so integrating a new aggregator means
+ * adding its image host here — otherwise its tiles fail to load.
+ */
+const GAME_IMAGE_HOSTS = [
+  'mediumrare.imgix.net',
+  // Alea Play
+  'thumbs.alea.com',
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -12,13 +23,11 @@ const nextConfig = {
     // Game tile artwork is CDN-hosted. next/image refuses any remote host that
     // is not listed here: an allowlist, so a compromised API cannot turn the
     // image optimiser into an open proxy for arbitrary URLs.
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'mediumrare.imgix.net',
-        pathname: '/**',
-      },
-    ],
+    remotePatterns: GAME_IMAGE_HOSTS.map((hostname) => ({
+      protocol: 'https',
+      hostname,
+      pathname: '/**',
+    })),
   },
 
   // The auth pages live under /auth and the lobby at / is the dashboard.
