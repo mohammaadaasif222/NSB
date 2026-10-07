@@ -50,6 +50,8 @@ interface HeadingProps {
   /** The arrow pair, or whatever stands in for it. */
   controls?: ReactNode;
   className?: string;
+  /** Classes for the end cluster ("View All" and the controls) — to hide it at a breakpoint. */
+  endClassName?: string;
 }
 
 /**
@@ -60,7 +62,13 @@ interface HeadingProps {
  * catalogue games and so cannot use `GameRow`, but must line up with it to the
  * pixel.
  */
-export const ShelfHeading: FC<HeadingProps> = ({ title, href, controls, className = '' }) => {
+export const ShelfHeading: FC<HeadingProps> = ({
+  title,
+  href,
+  controls,
+  className = '',
+  endClassName = '',
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -69,7 +77,9 @@ export const ShelfHeading: FC<HeadingProps> = ({ title, href, controls, classNam
         {title}
       </h2>
 
-      <div className="flex flex-shrink-0 items-center gap-[calc(var(--u)*15)] lg:gap-[calc(var(--u)*27)]">
+      <div
+        className={`flex flex-shrink-0 items-center gap-[calc(var(--u)*15)] lg:gap-[calc(var(--u)*27)] ${endClassName}`}
+      >
         {href && (
           <Link
             href={href}
@@ -160,8 +170,10 @@ const GameRow: FC<Props> = ({
       <ShelfHeading
         title={title}
         href={categoryHref(shelfKey)}
+        // The arrows are part of every shelf heading in the design; on a
+        // shelf with one page both simply stay disabled.
         controls={
-          paged && totalPages > 1 ? (
+          paged ? (
             <div className="flex items-center gap-[calc(var(--u)*8)] lg:gap-[calc(var(--u)*14)]">
               {arrow('prev')}
               {arrow('next')}

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import {
   CheckIcon,
   ShieldCheckIcon,
@@ -59,28 +60,30 @@ const UPPER_TIERS = [
  * flattening those into the house grey would cost a player the one thing this
  * page is for.
  */
-const LEVEL_CARD = 'rl-field-card overflow-hidden rounded-[34px]';
+const LEVEL_CARD = 'rl-field-card overflow-hidden rounded-[calc(var(--u)*34)]';
 const LEVEL_HEAD =
-  'flex w-full flex-col gap-2 px-4.5 py-4 text-start sm:flex-row sm:items-center sm:justify-between sm:gap-3';
+  'flex w-full flex-col gap-[calc(var(--u)*8)] px-[calc(var(--u)*18)] py-[calc(var(--u)*16)] text-start sm:flex-row sm:items-center sm:justify-between sm:gap-[calc(var(--u)*12)]';
 /* The status and the chevron drop under the title below `sm`, indented to
    clear the mark. Held beside it they took enough of a phone's ~296 that
    "Personal Information" truncated to "Personal Inf…". */
 const LEVEL_META =
-  'flex shrink-0 items-center justify-between gap-3 ps-12.5 sm:ps-0 sm:justify-start';
-const LEVEL_TITLE = 'text-base leading-6 font-medium text-[#f0f1f5]';
-const LEVEL_HINT = 'text-xs leading-5 text-[#9da2b4]';
+  'flex shrink-0 items-center justify-between gap-[calc(var(--u)*12)] ps-[calc(var(--u)*50)] sm:ps-0 sm:justify-start';
+const LEVEL_TITLE =
+  'text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]';
+const LEVEL_HINT =
+  'text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]';
 /** The numbered tile, on the 38px slot every row in the account area uses. */
 const LEVEL_MARK =
-  'flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full text-sm leading-5 font-medium';
+  'flex h-[calc(var(--u)*38)] w-[calc(var(--u)*38)] shrink-0 items-center justify-center rounded-full text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium';
 /** One shape for every status, whatever it is saying. */
 const BADGE =
-  'inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs leading-5 font-medium';
+  'inline-flex h-[calc(var(--u)*24)] shrink-0 items-center gap-[calc(var(--u)*4)] rounded-full px-[calc(var(--u)*10)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] font-medium';
 /** A panel nested inside a level card — a step quieter, a step tighter. */
-const PANEL = 'rounded-3xl p-4.5';
-const BODY = 'text-sm leading-5 text-[#9da2b4]';
+const PANEL = 'rounded-3xl p-[calc(var(--u)*18)]';
+const BODY = 'text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]';
 /** The pill every action in the account area is shaped like. */
 const ACTION =
-  'inline-flex h-12 items-center gap-2 rounded-full px-5.5 text-base leading-6 font-medium';
+  'inline-flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*8)] rounded-full px-[calc(var(--u)*22)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium';
 
 const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
   const { t } = useTranslation();
@@ -209,13 +212,15 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
     }
   };
 
-  const heading = <h2 className="rl-h-section">{t('profile.verification')}</h2>;
+  const heading = <h2 className={SECTION_HEADING}>{t('profile.verification')}</h2>;
 
   if (loading) {
     return (
       <div>
         {heading}
-        <div className={`${LEVEL_CARD} mt-8 flex items-center justify-center gap-2 p-6 ${BODY}`}>
+        <div
+          className={`${LEVEL_CARD} mt-[calc(var(--u)*32)] flex items-center justify-center gap-[calc(var(--u)*8)] p-[calc(var(--u)*24)] ${BODY}`}
+        >
           <RefreshCwIcon size={16} className="animate-spin text-[#35d07f]" />
           <span>{t('kyc.loading')}</span>
         </div>
@@ -227,15 +232,17 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
     <div>
       {heading}
 
-      <div className="mt-8 space-y-7.5">
+      <div className="mt-[calc(var(--u)*32)] space-y-[calc(var(--u)*30)]">
         {/* Tiered Verification Section.
 
             A plain labelled section rather than `FieldGroup`: each level is
             already a card, and nesting them inside another would stack two
             tints for no visual gain. */}
-        <section className="space-y-1.5">
-          <h3 className="text-base leading-6 font-normal text-[#9da2b4]">{t('kyc.title')}</h3>
-          <div className="space-y-3">
+        <section className="space-y-[calc(var(--u)*6)]">
+          <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
+            {t('kyc.title')}
+          </h3>
+          <div className="space-y-[calc(var(--u)*12)]">
             {/* LEVEL 1: Personal Information */}
             <div className={LEVEL_CARD}>
               <button
@@ -243,7 +250,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                 onClick={() => setLevel1Open(!level1Open)}
                 className={`${LEVEL_HEAD} transition-colors hover:bg-white/5`}
               >
-                <span className="flex min-w-0 items-center gap-3">
+                <span className="flex min-w-0 items-center gap-[calc(var(--u)*12)]">
                   <span className={`${LEVEL_MARK} bg-[#35d07f]/15 text-[#35d07f]`}>1</span>
                   <span className="min-w-0">
                     <span className={`block truncate ${LEVEL_TITLE}`}>{t('kyc.level1Title')}</span>
@@ -269,7 +276,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
               </button>
 
               {level1Open && (
-                <div className="border-t border-white/8 px-4.5 pt-4 pb-4.5">
+                <div className="border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)]">
                   <KycLevel1Form
                     profile={kycProfile}
                     onSuccess={(updated) => {
@@ -298,7 +305,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                     : 'cursor-pointer hover:bg-white/5'
                 }`}
               >
-                <span className="flex min-w-0 items-center gap-3">
+                <span className="flex min-w-0 items-center gap-[calc(var(--u)*12)]">
                   <span
                     className={`${LEVEL_MARK} ${
                       !isLevel1Complete
@@ -309,7 +316,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                     {!isLevel1Complete ? <LockIcon size={15} /> : '2'}
                   </span>
                   <span className="min-w-0">
-                    <span className="flex items-baseline gap-2">
+                    <span className="flex items-baseline gap-[calc(var(--u)*8)]">
                       <span className={`truncate ${LEVEL_TITLE}`}>{t('kyc.level2Title')}</span>
                       {!isLevel1Complete && (
                         <span className={`shrink-0 ${LEVEL_HINT}`}>(Unlock after Level 1)</span>
@@ -371,14 +378,16 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
               </button>
 
               {level2Open && isLevel1Complete && (
-                <div className="space-y-4 border-t border-white/8 px-4.5 pt-4 pb-4.5">
+                <div className="space-y-[calc(var(--u)*16)] border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)]">
                   {gateState === 'APPROVED' ? (
-                    <div className={`${PANEL} flex items-center gap-3 bg-[#35d07f]/8`}>
-                      <span className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full bg-[#35d07f]/20 text-[#35d07f]">
+                    <div
+                      className={`${PANEL} flex items-center gap-[calc(var(--u)*12)] bg-[#35d07f]/8`}
+                    >
+                      <span className="flex h-[calc(var(--u)*38)] w-[calc(var(--u)*38)] shrink-0 items-center justify-center rounded-full bg-[#35d07f]/20 text-[#35d07f]">
                         <ShieldCheckIcon size={20} />
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-base leading-6 font-medium text-[#35d07f]">
+                        <span className="block text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#35d07f]">
                           {t('kyc.approvedHeading')}
                         </span>
                         <span className={`block ${BODY}`}>
@@ -389,9 +398,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                       </span>
                     </div>
                   ) : gateState === 'IN_REVIEW' ? (
-                    <div className={`${PANEL} space-y-3 bg-[#fcd535]/8`}>
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <span className="flex items-center gap-2 text-base leading-6 font-medium text-[#fcd535]">
+                    <div className={`${PANEL} space-y-[calc(var(--u)*12)] bg-[#fcd535]/8`}>
+                      <div className="flex flex-wrap items-center justify-between gap-[calc(var(--u)*12)]">
+                        <span className="flex items-center gap-[calc(var(--u)*8)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#fcd535]">
                           <ClockIcon size={16} />
                           {t('kyc.inReview')}
                         </span>
@@ -399,7 +408,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                           type="button"
                           onClick={handleSync}
                           disabled={syncing}
-                          className="rl-chip-active inline-flex h-8 items-center gap-1.5 px-3.75 text-xs leading-5 font-medium text-[#fcd535] disabled:opacity-50"
+                          className="rl-chip-active inline-flex h-[calc(var(--u)*32)] items-center gap-[calc(var(--u)*6)] px-[calc(var(--u)*15)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] font-medium text-[#fcd535] disabled:opacity-50"
                         >
                           <RefreshCwIcon size={12} className={syncing ? 'animate-spin' : ''} />
                           {syncing ? t('kyc.syncChecking') : t('kyc.syncStatus')}
@@ -411,14 +420,14 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                           showing "under review", would leave the player
                           waiting on an update that was never coming. */}
                       {pollingStopped && (
-                        <p className="text-xs leading-5 text-[#fcd535]/70">
+                        <p className="text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#fcd535]/70">
                           {t('kyc.pollingStopped')}
                         </p>
                       )}
                     </div>
                   ) : gateState === 'COMPLIANCE_HOLD' ? (
-                    <div className={`${PANEL} space-y-2 bg-[#fcd535]/8`}>
-                      <span className="flex items-center gap-2 text-base leading-6 font-medium text-[#fcd535]">
+                    <div className={`${PANEL} space-y-[calc(var(--u)*8)] bg-[#fcd535]/8`}>
+                      <span className="flex items-center gap-[calc(var(--u)*8)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#fcd535]">
                         <ClockIcon size={16} />
                         {kycProfile?.holdReason === 'IDENTITY_MISMATCH'
                           ? 'Your details do not match your document'
@@ -441,13 +450,13 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                             you uploaded, so a member of our team is reviewing it. These are the
                             details you gave us:
                           </p>
-                          <div className="space-y-0.5 rounded-2xl bg-white/6 px-4 py-3">
-                            <p className="text-base leading-6 font-medium text-[#f0f1f5]">
+                          <div className="space-y-[calc(var(--u)*2)] rounded-2xl bg-white/6 px-[calc(var(--u)*16)] py-[calc(var(--u)*12)]">
+                            <p className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
                               {[kycProfile?.firstName, kycProfile?.lastName]
                                 .filter(Boolean)
                                 .join(' ') || '—'}
                             </p>
-                            <p className="text-xs leading-5 text-[#9da2b4]">
+                            <p className="text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
                               Date of birth: {kycProfile?.dob || '—'}
                             </p>
                           </div>
@@ -468,8 +477,8 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                       )}
                     </div>
                   ) : gateState === 'REJECTED_RETRY' ? (
-                    <div className={`${PANEL} space-y-3 bg-[#ef4462]/8`}>
-                      <span className="flex items-center gap-2 text-base leading-6 font-medium text-[#ef4462]">
+                    <div className={`${PANEL} space-y-[calc(var(--u)*12)] bg-[#ef4462]/8`}>
+                      <span className="flex items-center gap-[calc(var(--u)*8)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#ef4462]">
                         <AlertTriangleIcon size={16} />
                         {getKycRejectReason(kycProfile) || t('kyc.rejectedRetry')}
                       </span>
@@ -482,8 +491,8 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                       </button>
                     </div>
                   ) : gateState === 'REJECTED_FINAL' ? (
-                    <div className={`${PANEL} space-y-2 bg-[#ef4462]/12`}>
-                      <span className="flex items-center gap-2 text-base leading-6 font-medium text-[#ef4462]">
+                    <div className={`${PANEL} space-y-[calc(var(--u)*8)] bg-[#ef4462]/12`}>
+                      <span className="flex items-center gap-[calc(var(--u)*8)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#ef4462]">
                         <AlertTriangleIcon size={16} />
                         Verification permanently declined
                       </span>
@@ -495,7 +504,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                       </p>
                     </div>
                   ) : (
-                    <div className={`${PANEL} space-y-3 bg-white/6`}>
+                    <div className={`${PANEL} space-y-[calc(var(--u)*12)] bg-white/6`}>
                       <p className={BODY}>
                         Please have your official Government ID (Passport, National ID card, or
                         Driver's License) ready. You will also be asked to take a quick interactive
@@ -537,7 +546,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                     onClick={() => setOpen(!isOpen)}
                     className={`${LEVEL_HEAD} transition-colors hover:bg-white/5`}
                   >
-                    <span className="flex min-w-0 items-center gap-3">
+                    <span className="flex min-w-0 items-center gap-[calc(var(--u)*12)]">
                       <span
                         className={`${LEVEL_MARK} ${
                           verified
@@ -590,7 +599,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                   </button>
 
                   {isOpen && (
-                    <div className={`space-y-2 border-t border-white/8 px-4.5 pt-4 pb-4.5 ${BODY}`}>
+                    <div
+                      className={`space-y-[calc(var(--u)*8)] border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)] ${BODY}`}
+                    >
                       <p>{meta.body}</p>
 
                       {required && state?.requiredReason && (
@@ -608,7 +619,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                         <button
                           type="button"
                           onClick={() => setTierModal(meta.tier)}
-                          className={`${ACTION} mt-1 ${
+                          className={`${ACTION} mt-[calc(var(--u)*4)] ${
                             rejected
                               ? 'rl-chip-danger text-[#ef4462]'
                               : 'rl-chip-success text-[#35d07f]'

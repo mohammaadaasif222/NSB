@@ -26,10 +26,13 @@ const TablePager: FC<Props> = ({ page, totalPages, onPage }) => {
   }
 
   const step =
-    'rl-pager-step h-12 w-26 shrink-0 text-base leading-6 font-medium text-[#f0f1f5] disabled:cursor-not-allowed disabled:opacity-40';
+    'rl-pager-step h-[calc(var(--u)*48)] w-[calc(var(--u)*104)] shrink-0 text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] disabled:cursor-not-allowed disabled:opacity-40';
 
   return (
-    <nav className="flex flex-wrap items-center justify-center gap-5" aria-label={t('tx.next')}>
+    <nav
+      className="flex flex-wrap items-center justify-center gap-[calc(var(--u)*20)]"
+      aria-label={t('tx.next')}
+    >
       <button type="button" onClick={() => onPage(page - 1)} disabled={page === 1} className={step}>
         {t('tx.prev')}
       </button>
@@ -42,7 +45,7 @@ const TablePager: FC<Props> = ({ page, totalPages, onPage }) => {
             type="button"
             onClick={() => onPage(n)}
             aria-current={current ? 'page' : undefined}
-            className={`h-12 w-12 shrink-0 text-base leading-6 font-medium tabular-nums text-[#f0f1f5] ${
+            className={`h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] shrink-0 text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium tabular-nums text-[#f0f1f5] ${
               current ? 'rl-pager-page-on' : 'rl-pager-page'
             }`}
           >

@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { RowButton } from '@/components/profile/ProfileInfoRow';
+import { RowButton } from '@/components/profile/SectionShell';
 import { mailHostOf } from '@/components/profile/providers';
 import { CheckIcon, ContactPhoneIcon } from '@/components/icons';
 import type { ApiUser } from '@/types/profile';
@@ -17,11 +17,11 @@ import type { ApiUser } from '@/types/profile';
 /** The green tick the design gives a confirmed contact. */
 const VerifiedTick: FC<{ label: string }> = ({ label }) => (
   <span
-    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#35d07f] text-[#07080a]"
+    className="flex h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] shrink-0 items-center justify-center rounded-full bg-[#35d07f] text-[#07080a]"
     aria-label={label}
     title={label}
   >
-    <CheckIcon size={11} strokeWidth={3.5} />
+    <CheckIcon size={11} strokeWidth={3.5} className="h-[55%] w-[55%]" />
   </span>
 );
 
@@ -35,13 +35,17 @@ const Card: FC<{
   value: ReactNode;
   action?: ReactNode;
 }> = ({ label, mark, title, value, action }) => (
-  <section className="space-y-1.5">
-    <h3 className="text-base leading-6 font-normal text-[#9da2b4]">{label}</h3>
-    <div className="rl-field-card flex items-center gap-3 rounded-[34px] px-4.5 py-3.25">
+  <section className="space-y-[calc(var(--u)*6)]">
+    <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
+      {label}
+    </h3>
+    <div className="rl-field-card flex items-center gap-[calc(var(--u)*12)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*18)] py-[calc(var(--u)*13)]">
       {mark}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base leading-6 font-medium text-[#f0f1f5]">{title}</p>
-        <div className="flex min-w-0 items-center gap-1.5 text-xs leading-5 text-[#9da2b4]">
+        <p className="truncate text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
+          {title}
+        </p>
+        <div className="flex min-w-0 items-center gap-[calc(var(--u)*6)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
           {value}
         </div>
       </div>
@@ -60,7 +64,7 @@ const ContactCards: FC<Props> = ({ me, onChangeEmail }) => {
   const host = mailHostOf(me.email);
 
   return (
-    <div className="grid gap-5.5 sm:grid-cols-2">
+    <div className="grid gap-[calc(var(--u)*22)] sm:grid-cols-2">
       <Card
         label={t('profile.emailAccount')}
         mark={host.mark}
@@ -81,8 +85,8 @@ const ContactCards: FC<Props> = ({ me, onChangeEmail }) => {
       <Card
         label={t('verify.contactInfo')}
         mark={
-          <span className="flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full bg-white/7 text-[#f0f1f5]">
-            <ContactPhoneIcon size={20} strokeWidth={1.5} />
+          <span className="flex h-[calc(var(--u)*38)] w-[calc(var(--u)*38)] shrink-0 items-center justify-center rounded-full bg-white/7 text-[#f0f1f5]">
+            <ContactPhoneIcon size={20} strokeWidth={1.5} className="h-[53%] w-[53%]" />
           </span>
         }
         title={t('verify.phoneNumber')}

@@ -10,6 +10,8 @@ import { SeonGuardProvider } from '@/context/SeonGuardContext';
 import { SupportChatProvider } from '@/context/SupportChatContext';
 import { CurrencyConversionProvider } from '@/context/CurrencyConversionContext';
 import { AuthModalProvider } from '@/context/AuthModalContext';
+import { FavouritesProvider } from '@/context/FavouritesContext';
+import { BetslipProvider } from '@/context/BetslipContext';
 import RouteLoader from '@/components/RouteLoader';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import Analytics from '@/components/analytics/Analytics';
@@ -61,8 +63,14 @@ export default function App({ Component, pageProps }: AppProps) {
                       {/* Innermost, so the step-up prompt renders above every page
                           and any component can reach it through useSeonGuard(). */}
                       <SeonGuardProvider>
-                        <EventListeners />
-                        <Component {...pageProps} />
+                        {/* Inside AuthModalProvider: hearting signed out opens login. */}
+                        <FavouritesProvider>
+                          {/* Above the pages, so sportsbook picks survive moving between them. */}
+                          <BetslipProvider>
+                            <EventListeners />
+                            <Component {...pageProps} />
+                          </BetslipProvider>
+                        </FavouritesProvider>
                       </SeonGuardProvider>
                       <SeonAgentWarmup />
                       <RouteLoader />

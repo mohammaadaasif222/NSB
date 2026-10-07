@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { RowButton } from '@/components/profile/ProfileInfoRow';
+import { RowButton } from '@/components/profile/SectionShell';
 import { PrefCard, PrefRowShell } from '@/components/profile/preferences/PrefGroupView';
 import { DEFAULT_TIMEZONE, type ApiUser } from '@/types/profile';
 
@@ -36,14 +36,16 @@ const PersonalGroup: FC<Props> = ({ me, onChangeUsername, onChangeTimezone }) =>
   ];
 
   return (
-    <section className="space-y-1.5">
-      <h3 className="text-base leading-6 font-normal text-[#9da2b4]">{t('profile.personal')}</h3>
+    <section className="space-y-[calc(var(--u)*6)]">
+      <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
+        {t('profile.personal')}
+      </h3>
 
       <PrefCard rows={rows.length}>
         {rows.map((row) => (
           <PrefRowShell key={row.key} label={row.label}>
-            <span className="flex items-center gap-2.5">
-              <span className="max-w-36 truncate text-sm leading-5 text-[#9da2b4]">
+            <span className="flex items-center gap-[calc(var(--u)*10)]">
+              <span className="max-w-[calc(var(--u)*144)] truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
                 {row.value}
               </span>
               <RowButton onClick={row.onChange}>{t('profile.change')}</RowButton>

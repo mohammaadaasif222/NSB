@@ -24,12 +24,12 @@ const TransactionFilters: FC<Props> = ({ query, onQuery, filter, onFilter }) => 
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-[calc(var(--u)*16)]">
       {/* `flex-1` rather than `w-full`: at the design's panel width the cap is
           what sets the field's size, but on a laptop's narrower panel `w-full`
           claimed the whole row and pushed the chips onto a second line. It
           shrinks now instead, down to a floor that still fits a search term. */}
-      <label className="rl-chip flex h-12 min-w-50 flex-1 items-center gap-2.5 ps-3 pe-5 @panel:max-w-108.5">
+      <label className="rl-chip flex h-[calc(var(--u)*48)] min-w-[calc(var(--u)*200)] flex-1 items-center gap-[calc(var(--u)*10)] ps-[calc(var(--u)*12)] pe-[calc(var(--u)*20)] lg:max-w-[calc(var(--u)*434)]">
         <SearchIcon size={24} strokeWidth={1.5} className="shrink-0 text-[#f0f1f5]" />
         <input
           type="search"
@@ -37,11 +37,11 @@ const TransactionFilters: FC<Props> = ({ query, onQuery, filter, onFilter }) => 
           placeholder={t('tx.search')}
           onChange={(e) => onQuery(e.target.value)}
           aria-label={t('tx.search')}
-          className="min-w-0 flex-1 bg-transparent text-base leading-6 text-[#f0f1f5] outline-none placeholder:text-[#f0f1f5]"
+          className="min-w-0 flex-1 bg-transparent text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] text-[#f0f1f5] outline-none placeholder:text-[#f0f1f5]"
         />
       </label>
 
-      <div className="flex flex-wrap items-center gap-2.75">
+      <div className="flex flex-wrap items-center gap-[calc(var(--u)*11)]">
         {TX_FILTERS.map(({ key, labelKey }) => {
           const selected = key === filter;
           return (
@@ -50,7 +50,7 @@ const TransactionFilters: FC<Props> = ({ query, onQuery, filter, onFilter }) => 
               type="button"
               onClick={() => onFilter(key)}
               aria-pressed={selected}
-              className={`flex h-8 shrink-0 items-center justify-center rounded-full px-3.75 text-xs leading-5 whitespace-nowrap ${
+              className={`flex h-[calc(var(--u)*32)] shrink-0 items-center justify-center rounded-full px-[calc(var(--u)*15)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] whitespace-nowrap ${
                 selected
                   ? 'rl-chip-active font-medium text-[#ffe779]'
                   : 'rl-chip font-normal text-[#9da2b4] hover:rl-chip-active hover:font-medium hover:text-[#ffe779]'

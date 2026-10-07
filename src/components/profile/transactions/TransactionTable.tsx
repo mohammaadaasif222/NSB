@@ -45,7 +45,9 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         header: t('tx.id'),
         width: 225,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 font-medium text-white">{r.id}</span>
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white">
+            {r.id}
+          </span>
         ),
       },
       {
@@ -53,7 +55,9 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         header: t('tx.date'),
         width: 175,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 text-[#8c8c8c]">{r.date}</span>
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#8c8c8c]">
+            {r.date}
+          </span>
         ),
       },
       {
@@ -61,7 +65,7 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         header: t('tx.valueUsd'),
         width: 172,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 font-medium tabular-nums text-white">
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium tabular-nums text-white">
             {r.usd}
           </span>
         ),
@@ -71,7 +75,7 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         header: t('tx.valueCrypto'),
         width: 233,
         cell: (r) => (
-          <span className="flex min-w-0 items-center gap-1.5 text-sm leading-5 font-medium tabular-nums text-white">
+          <span className="flex min-w-0 items-center gap-[calc(var(--u)*6)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium tabular-nums text-white">
             <BitcoinMark />
             <span className="truncate">{r.crypto}</span>
           </span>
@@ -89,7 +93,7 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         width: 150,
         end: true,
         cell: (r) => (
-          <span className="block truncate text-sm leading-5 font-medium tabular-nums text-white">
+          <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium tabular-nums text-white">
             {r.effect}
           </span>
         ),

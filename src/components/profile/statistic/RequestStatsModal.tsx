@@ -53,12 +53,12 @@ const RequestStatsModal: FC<Props> = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-[calc(var(--u)*16)]"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="rl-menu relative w-full max-w-md rounded-3xl p-6 sm:p-7"
+        className="rl-menu relative w-full max-w-md rounded-[calc(var(--u)*24)] p-[calc(var(--u)*24)] sm:p-[calc(var(--u)*28)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -68,19 +68,22 @@ const RequestStatsModal: FC<Props> = ({ onClose }) => {
           type="button"
           onClick={onClose}
           aria-label={t('stats.close')}
-          className="rl-glass rl-glass-hover absolute end-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-white/70"
+          className="rl-glass rl-glass-hover absolute end-[calc(var(--u)*20)] top-[calc(var(--u)*20)] flex h-[calc(var(--u)*36)] w-[calc(var(--u)*36)] items-center justify-center rounded-full text-white/70"
         >
           <CloseIcon size={15} strokeWidth={2} />
         </button>
 
-        <h2 className="pe-12 text-xl font-bold text-white sm:text-[22px]">
+        <h2 className="pe-[calc(var(--u)*48)] text-[length:max(min(11px,20px),calc(var(--u)*20))] font-bold text-white sm:text-[length:max(min(11px,22px),calc(var(--u)*22))]">
           {t('stats.requestStatistics')}
         </h2>
-        <p className="mt-2 pe-8 text-[13px] leading-relaxed text-white/45">
+        <p className="mt-[calc(var(--u)*8)] pe-[calc(var(--u)*32)] text-[length:max(min(11px,13px),calc(var(--u)*13))] leading-[1.6] text-white/45">
           {t('stats.requestBody')}
         </p>
 
-        <label className="mt-6 block text-xs text-white/50" htmlFor="stats-email">
+        <label
+          className="mt-[calc(var(--u)*24)] block text-[length:max(min(11px,12px),calc(var(--u)*12))] text-white/50"
+          htmlFor="stats-email"
+        >
           {t('stats.emailLabel')}
         </label>
         <input
@@ -90,16 +93,24 @@ const RequestStatsModal: FC<Props> = ({ onClose }) => {
           value={email}
           placeholder={t('stats.emailLabel')}
           onChange={(e) => setEmail(e.target.value)}
-          className="rl-field mt-2 w-full rounded-full px-5 py-3.5 text-sm font-semibold placeholder:font-normal"
+          className="rl-field mt-[calc(var(--u)*8)] w-full rounded-full px-[calc(var(--u)*20)] py-[calc(var(--u)*14)] text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold placeholder:font-normal"
         />
 
-        {error && <p className="mt-2 px-1 text-xs text-[#ef4462]">{error}</p>}
-        {notice && <p className="mt-2 px-1 text-xs text-[#fcd535]">{notice}</p>}
+        {error && (
+          <p className="mt-[calc(var(--u)*8)] px-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] text-[#ef4462]">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p className="mt-[calc(var(--u)*8)] px-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] text-[#fcd535]">
+            {notice}
+          </p>
+        )}
 
         <button
           type="button"
           onClick={handleSubmit}
-          className="rl-btn-gold mt-5 w-full rounded-full py-3.5 text-sm font-bold"
+          className="rl-btn-gold mt-[calc(var(--u)*20)] w-full rounded-full py-[calc(var(--u)*14)] text-[length:max(min(11px,14px),calc(var(--u)*14))] font-bold"
         >
           {t('stats.submit')}
         </button>

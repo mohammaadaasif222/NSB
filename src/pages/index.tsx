@@ -10,7 +10,7 @@ import { getLobbyProps, type LobbyProps } from '@/services/lobby.server';
  * carry one half.
  */
 const Home: FC<LobbyProps> = (props) => (
-  <Lobby {...props} title="ROLLUCK" basePath="/" withSports />
+  <Lobby {...props} title="ROLLUCK" basePath="/" variant="home" />
 );
 
 export const getServerSideProps: GetServerSideProps<LobbyProps> = getLobbyProps;

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import ReferralCodeCard from '@/components/profile/referral/ReferralCodeCard';
 import ReferralTable from '@/components/profile/referral/ReferralTable';
 import { fetchReferrals, type ReferralRow } from '@/components/profile/referral/mockReferral';
@@ -38,13 +39,13 @@ const ReferralSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('profile.referral')}</h2>
+      <h2 className={SECTION_HEADING}>{t('profile.referral')}</h2>
 
-      <div className="mt-7.25 grid gap-5.5 lg:grid-cols-2">
+      <div className="mt-[calc(var(--u)*29)] grid gap-[calc(var(--u)*22)] lg:grid-cols-2">
         <ReferralCodeCard />
       </div>
 
-      <div className="mt-5.5">
+      <div className="mt-[calc(var(--u)*22)]">
         <ReferralTable rows={rows} />
       </div>
     </div>

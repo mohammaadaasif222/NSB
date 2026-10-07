@@ -1,6 +1,11 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { FieldGroup, SettingRow, SoonToggle } from '@/components/profile/SectionShell';
+import {
+  SECTION_HEADING,
+  FieldGroup,
+  SettingRow,
+  SoonToggle,
+} from '@/components/profile/SectionShell';
 import SessionsGroup from '@/components/profile/security/SessionsGroup';
 import ToggleSwitch from '@/components/profile/ToggleSwitch';
 import { TwoFactorIcon } from '@/components/profile/profileIcons';
@@ -20,19 +25,19 @@ const SecuritySection: FC<Props> = ({ email, twoFactorEnabled, onChangePassword,
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('profile.security')}</h2>
+      <h2 className={SECTION_HEADING}>{t('profile.security')}</h2>
 
-      <div className="mt-8 space-y-7.5">
+      <div className="mt-[calc(var(--u)*32)] space-y-[calc(var(--u)*30)]">
         {/* The whole row is the control — the design gives it neither a button
             nor a chevron, so the hover is all that says it is one. */}
         <FieldGroup label={t('profile.password')}>
           <button
             type="button"
             onClick={onChangePassword}
-            className="flex w-full items-center gap-3 px-4.5 py-2.25 text-start transition-colors hover:bg-white/5"
+            className="flex w-full items-center gap-[calc(var(--u)*12)] px-[calc(var(--u)*18)] py-[calc(var(--u)*9)] text-start transition-colors hover:bg-white/5"
           >
             {mailHostOf(email).mark}
-            <span className="min-w-0 flex-1 truncate text-base leading-6 font-medium text-[#f0f1f5]">
+            <span className="min-w-0 flex-1 truncate text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
               {t('sec.changePassword')}
             </span>
           </button>

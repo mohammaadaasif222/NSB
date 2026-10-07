@@ -33,7 +33,7 @@ const EmailAccountRow: FC<Props> = ({ email, verified }) => {
           !email ? null : verified ? (
             <VerifiedCheck title={t('profile.emailVerified')} />
           ) : (
-            <span className="rounded-full border border-[#fcd535]/30 bg-[#fcd535]/10 px-2.5 py-1 text-[11px] font-semibold text-[#fcd535]">
+            <span className="rounded-full border border-[#fcd535]/30 bg-[#fcd535]/10 px-[calc(var(--u)*10)] py-[calc(var(--u)*4)] text-[length:max(min(11px,11px),calc(var(--u)*11))] leading-[1.45] font-semibold text-[#fcd535]">
               {t('profile.emailUnverified')}
             </span>
           )

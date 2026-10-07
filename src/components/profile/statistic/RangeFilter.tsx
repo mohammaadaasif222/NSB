@@ -10,7 +10,8 @@ interface Props {
 
 /* Chip and date pill share a height and a radius; only the ink and the
    surface change between them. */
-const PILL = 'flex h-8 shrink-0 items-center rounded-full text-xs leading-5 whitespace-nowrap';
+const PILL =
+  'flex h-[calc(var(--u)*32)] shrink-0 items-center rounded-full text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] whitespace-nowrap';
 
 /**
  * The period chips and the explicit date range beside them.
@@ -28,7 +29,7 @@ const RangeFilter: FC<Props> = ({ active, onSelect }) => {
   return (
     /* Full width on its own line, so `ms-auto` still carries the pill to the
        panel's edge once the title has moved above it. */
-    <div className="flex w-full flex-wrap items-center gap-2 @panel:w-auto @panel:flex-1 @panel:gap-2.75">
+    <div className="flex w-full flex-wrap items-center gap-[calc(var(--u)*8)] lg:w-auto lg:flex-1 lg:gap-[calc(var(--u)*11)]">
       {STAT_RANGES.map(({ key, labelKey }) => {
         const selected = key === active;
         return (
@@ -37,7 +38,9 @@ const RangeFilter: FC<Props> = ({ active, onSelect }) => {
             type="button"
             onClick={() => onSelect(key)}
             aria-pressed={selected}
-            className={`${PILL} justify-center px-3 @panel:px-3.75 ${
+            /* 15 of side padding, the design's own. This one escaped the
+               sweep to `--u` because the class sits in a template literal. */
+            className={`${PILL} justify-center px-[calc(var(--u)*15)] ${
               selected
                 ? 'rl-chip-active font-medium text-[#ffe779]'
                 : 'rl-chip font-normal text-[#9da2b4] hover:rl-chip-active hover:font-medium hover:text-[#ffe779]'
@@ -51,10 +54,10 @@ const RangeFilter: FC<Props> = ({ active, onSelect }) => {
       {/* Tighter on its closing edge than its opening one — the clear button
           is a disc that carries its own margin, the calendar is not. */}
       <span
-        className={`${PILL} rl-chip ms-auto gap-2.5 ps-3.75 pe-1.25`}
+        className={`${PILL} rl-chip ms-auto gap-[calc(var(--u)*10)] ps-[calc(var(--u)*15)] pe-[calc(var(--u)*5)]`}
         aria-label={t('stats.range')}
       >
-        <span className="flex h-4 w-4 shrink-0 items-center justify-center text-[#f0f1f5]">
+        <span className="flex h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] shrink-0 items-center justify-center text-[#f0f1f5]">
           <RangeCalendarIcon />
         </span>
 
@@ -63,7 +66,7 @@ const RangeFilter: FC<Props> = ({ active, onSelect }) => {
         <span
           title={t('common.soon')}
           aria-label={`${t('stats.clearRange')} — ${t('common.soon')}`}
-          className="flex h-5.5 w-5.5 shrink-0 cursor-default items-center justify-center rounded-full bg-[#252937] text-[#f0f1f5]"
+          className="flex h-[calc(var(--u)*22)] w-[calc(var(--u)*22)] shrink-0 cursor-default items-center justify-center rounded-full bg-[#252937] text-[#f0f1f5]"
         >
           <RangeCloseIcon />
         </span>

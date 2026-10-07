@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import TransactionFilters from '@/components/profile/transactions/TransactionFilters';
 import TransactionTable from '@/components/profile/transactions/TransactionTable';
 import TablePager from '@/components/profile/transactions/TablePager';
@@ -69,9 +70,9 @@ const TransactionsSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('profile.transactions')}</h2>
+      <h2 className={SECTION_HEADING}>{t('profile.transactions')}</h2>
 
-      <div className="mt-4.5">
+      <div className="mt-[calc(var(--u)*18)]">
         <TransactionFilters
           query={query}
           onQuery={reset(setQuery)}
@@ -82,11 +83,11 @@ const TransactionsSection: FC = () => {
 
       {/* Held at the table's height while a page is in flight, so the pager
           below does not jump up and back down on every keystroke. */}
-      <div className={`mt-3.5 transition-opacity ${loading ? 'opacity-60' : ''}`}>
+      <div className={`mt-[calc(var(--u)*14)] transition-opacity ${loading ? 'opacity-60' : ''}`}>
         <TransactionTable rows={rows} />
       </div>
 
-      <div className="mt-8.25">
+      <div className="mt-[calc(var(--u)*33)]">
         <TablePager page={Math.min(page, totalPages)} totalPages={totalPages} onPage={setPage} />
       </div>
     </div>

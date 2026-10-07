@@ -13,10 +13,11 @@ import type { FC } from 'react';
  */
 export const SessionDeviceIcon: FC = () => (
   <span
-    className="flex h-9.5 w-9.5 shrink-0 items-center justify-center text-[#f0f1f5]"
+    className="flex h-[calc(var(--u)*38)] w-[calc(var(--u)*38)] shrink-0 items-center justify-center text-[#f0f1f5]"
     aria-hidden="true"
   >
     <svg
+      className="-scale-y-100 h-[58%] w-[79%]"
       width="30.1836"
       height="21.9989"
       viewBox="0 0 30.1836 21.9989"
@@ -25,7 +26,6 @@ export const SessionDeviceIcon: FC = () => (
       strokeWidth="1"
       strokeMiterlimit="10"
       strokeLinejoin="round"
-      className="-scale-y-100"
     >
       <path d="M26.7177 4.15212H3.46586V20.0601C3.46586 20.8547 4.11002 21.4989 4.90463 21.4989H25.279C26.0736 21.4989 26.7177 20.8547 26.7177 20.0601V4.15212Z" />
       <path d="M20.307 12.148C20.307 10.4376 18.9204 9.05105 17.2094 9.05105C15.499 9.05105 14.1124 10.4376 14.1124 12.148H17.2094V15.2457C18.9204 15.2457 20.307 13.8584 20.307 12.148Z" />

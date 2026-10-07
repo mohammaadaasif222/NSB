@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import wordmark from '@/assets/lobby/footer/logo.webp';
-import mobileLogo from '@/assets/lobby/rail/mobile-logo.svg';
 import menuGlyph from '@/assets/lobby/rail/bar-menu.svg';
 import searchGlyph from '@/assets/lobby/rail/bar-search.svg';
 import walletGlyph from '@/assets/lobby/rail/bar-wallet.svg';
@@ -151,10 +150,12 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
   return (
     <>
-      {/* Phone: the full-width bar along the top. Desktop: the design's 80px
-          glass bar, floating beside the rail. Sized in `--u` (PlayerLayout). */}
+      {/* Phone: the full-width bar along the top — one 66px row signed out;
+          signed in, a second row under it for the balance and wallet.
+          Desktop: the design's 80px glass bar, floating beside the rail.
+          Sized in `--u` (PlayerLayout). */}
       <header className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]">
-        <div className="relative flex h-[66px] items-center gap-2 border-b border-white/[0.06] bg-black/40 px-4 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:gap-[calc(var(--u)*20)] lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.09)]">
+        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.09)]">
           {/* --- Brand, search, language --------------------------------- */}
           {/* Collapses the rail to icons. The phone opens its drawer from the
               tab bar instead, so this is desktop only. */}
@@ -171,26 +172,27 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             />
           </IconButton>
 
+          {/* The wordmark: 157px on a phone, 228 on desktop. On a signed-in
+              phone it takes the slack, pushing the icons to the far end. */}
           <Link
             href="/"
-            className="flex flex-shrink-0 items-center"
+            className="me-auto flex flex-shrink-0 items-center lg:me-0"
             aria-label="ROLLUCK"
             title="ROLLUCK"
           >
-            <img src={mobileLogo.src} alt="ROLLUCK" className="h-[39px] w-[34px] lg:hidden" />
             <Image
               src={wordmark}
               alt="ROLLUCK"
               sizes="230px"
               priority
-              className="hidden h-auto w-[calc(var(--u)*228)] lg:block"
+              className="h-auto w-[157px] lg:w-[calc(var(--u)*228)]"
             />
           </Link>
 
           <IconButton
             label={t('search.title')}
             onClick={() => setSearchOpen(true)}
-            className={`inline-flex lg:order-none ${token ? 'order-2' : 'order-last'}`}
+            className="inline-flex"
           >
             <img
               src={searchGlyph.src}
@@ -203,15 +205,18 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             <LanguagePicker iconOnly />
           </div>
 
-          {/* --- Centre: winners, and the wallet once signed in ----------- */}
+          {/* --- Centre: winners, and the wallet once signed in -----------
+              Signed in on a phone it is the bar's second row. */}
           <div
-            className={`order-1 flex min-w-0 flex-1 items-center gap-2 lg:order-none ${
-              token ? 'justify-start lg:justify-center' : 'justify-center'
+            className={`flex min-w-0 flex-1 items-center gap-2 lg:justify-center ${
+              token
+                ? 'order-last basis-full justify-center lg:order-none lg:basis-auto'
+                : 'justify-end'
             }`}
           >
             {/* Signed in: the balance and the wallet, centred in the bar. */}
             {token && (
-              <div className="flex min-w-0 items-center gap-1.5 lg:gap-[calc(var(--u)*16)]">
+              <div className="flex min-w-0 items-center gap-2.5 lg:gap-[calc(var(--u)*16)]">
                 <BalanceMenu onOpenWallet={() => setSettingsOpen(true)} />
                 <button
                   type="button"
@@ -241,7 +246,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
               </div>
             )}
 
-            {/* Phone, signed out: the design centres Login and Register. */}
+            {/* Phone, signed out: Login and Register at the end of the bar. */}
             {!token && (
               <div className="flex items-center gap-1.5 lg:hidden">
                 <button
@@ -263,11 +268,11 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
           </div>
 
           {/* --- Player controls ----------------------------------------- */}
-          <div className="order-3 flex flex-shrink-0 items-center gap-1.5 min-[400px]:gap-2.5 lg:order-none lg:gap-[calc(var(--u)*20)]">
+          <div className="flex flex-shrink-0 items-center gap-2.5 lg:gap-[calc(var(--u)*20)]">
             {token && (
               <>
                 {/* Desktop: the design's black "Reward" pill. Phone: a gift
-                    disc at the end of the bar (after search and the bell). */}
+                    disc at the end of the bar, after the bell. */}
                 <HeaderPopover
                   open={panel === 'rewards'}
                   onClose={closePanel}
