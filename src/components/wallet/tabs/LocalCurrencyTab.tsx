@@ -34,11 +34,20 @@ const LocalCurrencyTab: FC = () => {
         currency,
       });
 
-      if (res?.data?.address) {
+      console.log('[D24] Response received:', res);
+      console.log('[D24] Full data:', JSON.stringify(res?.data));
+
+      // Backend response structure: { success: true, data: { address: "..." } }
+      // After response interceptor unwrapping: res = { success, message, data: { address: "..." }, timestamp }
+      const redirectUrl = res?.data?.data?.address || res?.data?.address;
+
+      if (redirectUrl) {
+        console.log('[D24] Redirecting to:', redirectUrl);
         // Redirect to D24 hosted checkout page
-        window.location.href = res.data.address;
+        window.location.href = redirectUrl;
       } else {
-        toast.error('Could not initiate deposit');
+        console.error('[D24] No redirect URL in response. Data:', res?.data);
+        toast.error('Could not initiate deposit - no URL returned');
       }
     } catch (err: unknown) {
       const message =
