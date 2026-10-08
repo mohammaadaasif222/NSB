@@ -24,6 +24,7 @@ import xSocial from '@/assets/lobby/footer/social-x.svg';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
@@ -212,6 +213,7 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { pathname } = useRouter();
   const { t } = useTranslation();
+  const { rewards: rewardsOn } = usePlatformFeatures();
   const { openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
@@ -407,20 +409,24 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           </RailLink>
 
           {/* A built feature the design's list leaves out: kept at the end,
-              below the fold of the list, so nothing becomes unreachable. */}
-          <RailLink
-            href="/rewards"
-            active={pathname === '/rewards'}
-            icon={
-              <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
-                <CoinIcon size={18} strokeWidth={1.6} />
-              </span>
-            }
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.rewards')}
-          </RailLink>
+              below the fold of the list, so nothing becomes unreachable.
+              Hidden while rewards are switched off platform-wide — the page
+              it points at renders nothing in that state. */}
+          {rewardsOn && (
+            <RailLink
+              href="/rewards"
+              active={pathname === '/rewards'}
+              icon={
+                <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
+                  <CoinIcon size={18} strokeWidth={1.6} />
+                </span>
+              }
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.rewards')}
+            </RailLink>
+          )}
         </nav>
 
         {/* --- Socials and contact pills --------------------------------- */}
