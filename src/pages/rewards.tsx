@@ -11,6 +11,7 @@ import apiService from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useRewards } from '@/hooks/useRewards';
 import { REWARD_DESCRIPTION_KEYS, REWARD_TITLE_KEYS, REWARD_TYPES } from '@/constants/rewards';
 import type { VipTier } from '@/types';
@@ -54,6 +55,7 @@ const RewardsPage: FC = () => {
   const { token, hydrated } = useAuth();
   const { t } = useTranslation();
   const { openLogin, openRegister } = useAuthModal();
+  const { rewards: rewardsOn } = usePlatformFeatures();
   const { summary, error, claiming, clockOffset, refresh, claim } = useRewards();
 
   const [tiers, setTiers] = useState<VipTier[]>([]);
@@ -126,6 +128,33 @@ const RewardsPage: FC = () => {
       </>
     );
   };
+
+  /**
+   * Switched off platform-wide: say so and stop.
+   *
+   * Every link to this page is hidden in that state, so the only way here is a
+   * bookmark or a typed address — which is exactly why this is a sentence
+   * rather than a 404. A player who earned a balance last week should be told
+   * it is still theirs, not shown a dead end. The API refuses the underlying
+   * calls anyway, so there is nothing to render below even if we tried.
+   */
+  if (!rewardsOn) {
+    return (
+      <PlayerLayout>
+        <Head>
+          <title>{`${t('rewards.title')} · ROLLUCK`}</title>
+        </Head>
+        <div className="mx-auto max-w-[1600px] pb-2">
+          <section className="rounded-3xl bg-slate-900 border border-slate-800 px-6 py-16 text-center">
+            <h1 className="text-lg font-bold text-white">{t('rewards.switchedOff')}</h1>
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-slate-400">
+              {t('rewards.switchedOffNote')}
+            </p>
+          </section>
+        </div>
+      </PlayerLayout>
+    );
+  }
 
   return (
     <PlayerLayout>

@@ -2,6 +2,7 @@ import { useState, type FC } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { categoryHref } from '@/constants/games';
 import LanguagePicker from '@/components/LanguagePicker';
 
@@ -166,6 +167,7 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  */
 const SiteFooter: FC = () => {
   const { t } = useTranslation();
+  const { rewards: rewardsOn } = usePlatformFeatures();
   const soon = t('common.soon');
 
   const toTop = (): void =>
@@ -197,7 +199,9 @@ const SiteFooter: FC = () => {
      of its own. None of the three are in the design's own footer — they are
      here so the pages are not orphaned. */
   const earn: FooterLink[] = [
-    { label: 'Rolluck Drops', href: '/rewards' },
+    // Rolluck Drops is the rewards page; dropped from the list entirely while
+    // rewards are switched off rather than left as a link to a dead end.
+    ...(rewardsOn ? [{ label: 'Rolluck Drops', href: '/rewards' }] : []),
     { label: 'Promotions', href: '/promotions' },
     { label: 'Bonuses', href: '/bonuses' },
     { label: 'Referral System', href: '/profile' },

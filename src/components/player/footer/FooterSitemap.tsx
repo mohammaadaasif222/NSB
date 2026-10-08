@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import FooterPaymentBar from '@/components/player/footer/FooterPaymentBar';
 import {
   CASINO_LINKS,
@@ -90,7 +91,12 @@ const Column: FC<{
  */
 const FooterSitemap: FC = () => {
   const { t } = useTranslation();
+  const { rewards: rewardsOn } = usePlatformFeatures();
   const soon = t('common.soon');
+
+  // "Rolluck Drops" is the rewards page. Dropped from the column while
+  // rewards are switched off, rather than left pointing at a dead end.
+  const earn = rewardsOn ? EARN_LINKS : EARN_LINKS.filter((link) => link.href !== '/rewards');
 
   return (
     <div className="rl-panel overflow-hidden">
@@ -101,7 +107,7 @@ const FooterSitemap: FC = () => {
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 @xl:grid-cols-3 @foot:rl-foot-cols @foot:gap-x-0 @foot:gap-y-0">
           <Column title={t('nav.casino')} items={CASINO_LINKS} soon={soon} />
           <Column title={t('nav.sports')} items={SPORTS_LINKS} soon={soon} />
-          <Column title="Earn" items={EARN_LINKS} soon={soon} />
+          <Column title="Earn" items={earn} soon={soon} />
           <Column title="Help" items={HELP_LINKS} soon={soon} inset />
           {/* Pinned to the second track at two columns, where the natural flow
               would otherwise drop it under Earn and leave it looking like a
