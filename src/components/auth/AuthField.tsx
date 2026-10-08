@@ -3,7 +3,7 @@ import { useState, type FC, type ReactNode } from 'react';
 interface AuthFieldProps {
   id: string;
   label: string;
-  type?: 'text' | 'email' | 'password' | 'tel';
+  type?: 'text' | 'email' | 'password' | 'tel' | 'date';
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -12,6 +12,8 @@ interface AuthFieldProps {
   icon?: ReactNode;
   hint?: string;
   inputMode?: 'text' | 'email' | 'numeric' | 'tel';
+  /** Mark field as optional */
+  optional?: boolean;
   /**
    * The glass design carries the field name in the placeholder rather than a
    * standing label. The label is still rendered for screen readers unless a
@@ -47,6 +49,7 @@ const AuthField: FC<AuthFieldProps> = ({
   icon,
   hint,
   inputMode,
+  optional = false,
   showLabel = false,
 }) => {
   const [reveal, setReveal] = useState(false);
@@ -60,6 +63,7 @@ const AuthField: FC<AuthFieldProps> = ({
         className={showLabel ? 'block text-[13px] font-medium text-white/75 mb-1.5' : 'sr-only'}
       >
         {label}
+        {optional && <span className="text-white/50 text-[11px] ms-1">(Optional)</span>}
       </label>
 
       <div className="relative">

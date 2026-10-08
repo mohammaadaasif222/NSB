@@ -99,6 +99,7 @@ const Register: FC = () => {
   const [email, setEmail] = useState(initialEmail);
   const [mobile, setMobile] = useState(initialMobile);
   const [password, setPassword] = useState('');
+  const [dob, setDob] = useState('');
   const [agreed, setAgreed] = useState<Record<Check['id'], boolean>>({
     marketing: false,
     terms: false,
@@ -163,7 +164,7 @@ const Register: FC = () => {
       setLoading(true);
 
       // Registration always creates a USER (player) account server-side.
-      // The endpoint rejects unknown keys, so only these five are sent.
+      // The endpoint rejects unknown keys, so only these are sent.
       const res = await apiService.post('/auth/register', {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
@@ -172,6 +173,7 @@ const Register: FC = () => {
         ...(via === 'mail' ? { email: email.trim() } : {}),
         mobile,
         password,
+        ...(dob ? { dob } : {}),
       });
 
       if (res?.success) {
@@ -445,6 +447,17 @@ const Register: FC = () => {
           value={password}
           onChange={setPassword}
           hint={`• ${t('register.passwordHint', { min: MIN_PASSWORD })}`}
+        />
+
+        <AuthField
+          id="reg-dob"
+          label={t('kyc.level1Hint')}
+          type="date"
+          autoComplete="bday"
+          placeholder="YYYY-MM-DD"
+          value={dob}
+          onChange={setDob}
+          optional
         />
 
         <div className="space-y-2.5 pt-1.5">
