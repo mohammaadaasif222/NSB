@@ -149,6 +149,10 @@ export interface DepositAddress {
   min_deposit: string;
   deposit_confirmations: number;
   is_new: boolean;
+  // D24 response can have nested data structure
+  data?: {
+    address: string;
+  };
 }
 
 export interface DepositHistoryItem {

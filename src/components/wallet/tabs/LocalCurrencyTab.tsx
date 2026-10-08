@@ -37,8 +37,7 @@ const LocalCurrencyTab: FC = () => {
       console.log('[D24] Response received:', res);
       console.log('[D24] Full data:', JSON.stringify(res?.data));
 
-      // Backend response structure: { success: true, data: { address: "..." } }
-      // After response interceptor unwrapping: res = { success, message, data: { address: "..." }, timestamp }
+      // D24 API response can have nested data structure: res.data.data.address or res.data.address
       const redirectUrl = res?.data?.data?.address || res?.data?.address;
 
       if (redirectUrl) {
