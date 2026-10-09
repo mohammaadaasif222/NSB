@@ -59,6 +59,9 @@ const PlayerLayout: FC<Props> = ({ children, backdrop }) => {
 
   return (
     <div
+      // The target for overlays that must layer among the bar and the rail —
+      // inside the stage's isolation, not over the whole of it (HeaderPopover).
+      data-player-stage=""
       className="rl-stage isolate min-h-screen text-white [--u:1px] lg:[--u:min(1px,calc(100vw/1920))]"
       style={rail}
     >

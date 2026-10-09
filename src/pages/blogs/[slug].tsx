@@ -6,7 +6,7 @@ import Image, { type StaticImageData } from 'next/image';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
-import { ARROW_CLASS } from '@/components/player/GameRow';
+import { ARROW_CLASS } from '@/components/player/ShelfHeading';
 import { ChevronLeftIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
 import { ARTICLE, findPost } from '@/constants/blogs';

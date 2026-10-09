@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Game } from '@/types';
 import { gameHref } from '@/constants/games';
-import { SHELF_TRACK } from '@/components/player/GameRow';
+import { SHELF_TRACK } from '@/components/player/ShelfHeading';
 import avatar from '@/assets/lobby/winner-avatar.webp';
 
 /**

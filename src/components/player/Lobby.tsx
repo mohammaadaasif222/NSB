@@ -105,7 +105,6 @@ const Lobby: FC<Props> = ({
   const browser = (
     <GameBrowser
       shelves={shelves}
-      query={query}
       basePath={basePath}
       controls={controls}
       {...(casino
