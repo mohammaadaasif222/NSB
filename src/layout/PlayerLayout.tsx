@@ -63,7 +63,10 @@ const PlayerLayout: FC<Props> = ({ children, backdrop }) => {
       style={rail}
     >
       {backdrop && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10" aria-hidden="true">
+        <div
+          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+          aria-hidden="true"
+        >
           {backdrop}
         </div>
       )}
