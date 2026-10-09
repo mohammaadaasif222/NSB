@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: registry.digitalocean.com/staging-rolluck/frontend:staging-07d3fc41
+          image: registry.digitalocean.com/staging-rolluck/frontend:staging-9fd4df68
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5173
