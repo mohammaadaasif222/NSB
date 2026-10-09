@@ -24,11 +24,12 @@ import xSocial from '@/assets/lobby/footer/social-x.svg';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
-import { CoinIcon } from '@/components/icons';
+import { CoinIcon, HandshakeIcon } from '@/components/icons';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -212,6 +213,7 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { pathname } = useRouter();
   const { t } = useTranslation();
+  const { rewards: rewardsOn } = usePlatformFeatures();
   const { openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
@@ -406,20 +408,41 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             {t('nav.bonuses')}
           </RailLink>
 
-          {/* A built feature the design's list leaves out: kept at the end,
-              below the fold of the list, so nothing becomes unreachable. */}
+          {/* Built features the design's list leaves out, kept at the end and
+              below its fold so nothing becomes unreachable. Neither has a
+              `nav-*.svg` beside the rows above, because the design never drew
+              them a row — they take a line icon at the same 24 box instead.
+
+              Rewards is hidden while it is switched off platform-wide, since
+              the page it points at renders nothing in that state. Affiliate is
+              always on: it is open to signed-out visitors by design. */}
+          {rewardsOn && (
+            <RailLink
+              href="/rewards"
+              active={pathname === '/rewards'}
+              icon={
+                <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
+                  <CoinIcon size={18} strokeWidth={1.6} />
+                </span>
+              }
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.rewards')}
+            </RailLink>
+          )}
           <RailLink
-            href="/rewards"
-            active={pathname === '/rewards'}
+            href="/affiliate"
+            active={pathname === '/affiliate'}
             icon={
               <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
-                <CoinIcon size={18} strokeWidth={1.6} />
+                <HandshakeIcon size={18} strokeWidth={1.6} />
               </span>
             }
             onClick={onClose}
             collapsed={collapsed}
           >
-            {t('nav.rewards')}
+            {t('aff.title')}
           </RailLink>
         </nav>
 

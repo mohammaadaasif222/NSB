@@ -6,6 +6,7 @@ import DiceField from '@/components/dice/DiceField';
 import DiceTrack from '@/components/dice/DiceTrack';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useDiceGame } from '@/hooks/useDiceGame';
 import { formatAmount, formatRewardAmount, withCurrency } from '@/utils/money';
 import type { DiceConfig, DiceRoll, Game } from '@/types';
@@ -101,6 +102,7 @@ const DiceGame: FC<Props> = ({ game, config }) => {
 
   const { currency } = config;
   const { session, rewards } = dice;
+  const { rewards: rewardsOn } = usePlatformFeatures();
   const last = dice.history[0] ?? null;
   const conditionLabel = dice.condition === 'OVER' ? t('dice.rollOver') : t('dice.rollUnder');
 
@@ -227,45 +229,50 @@ const DiceGame: FC<Props> = ({ game, config }) => {
           </dl>
         </section>
 
-        <section
-          className="rounded-2xl border border-slate-800 bg-slate-900 p-4"
-          aria-labelledby="dice-rewards"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <h2 id="dice-rewards" className="text-sm font-bold text-white">
-              {t('dice.rewards')}
-            </h2>
-            <Link
-              href="/rewards"
-              className="text-xs font-semibold text-blue-400 transition-colors hover:text-blue-300"
-            >
-              {t('dice.viewRewards')}
-            </Link>
-          </div>
-          {rewards ? (
-            <dl className="mt-3 grid grid-cols-3 gap-2">
-              <Stat label={t('dice.tier')} value={rewards.tier ?? t('dice.noTier')} />
-              <Stat
-                label={t('dice.rakeback')}
-                value={
-                  rewards.rakeback
-                    ? formatRewardAmount(rewards.rakeback.pending_amount, currency)
-                    : '—'
-                }
-              />
-              <Stat
-                label={t('dice.cashback')}
-                value={
-                  rewards.cashback
-                    ? formatRewardAmount(rewards.cashback.pending_amount, currency)
-                    : '—'
-                }
-              />
-            </dl>
-          ) : (
-            <p className="mt-3 text-xs text-slate-500">{t('dice.rewardsHint')}</p>
-          )}
-        </section>
+        {/* The whole block goes while rewards are switched off: it is a tier
+            and two accrual figures that would all read zero, over a link to a
+            page that no longer renders. */}
+        {rewardsOn && (
+          <section
+            className="rounded-2xl border border-slate-800 bg-slate-900 p-4"
+            aria-labelledby="dice-rewards"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <h2 id="dice-rewards" className="text-sm font-bold text-white">
+                {t('dice.rewards')}
+              </h2>
+              <Link
+                href="/rewards"
+                className="text-xs font-semibold text-blue-400 transition-colors hover:text-blue-300"
+              >
+                {t('dice.viewRewards')}
+              </Link>
+            </div>
+            {rewards ? (
+              <dl className="mt-3 grid grid-cols-3 gap-2">
+                <Stat label={t('dice.tier')} value={rewards.tier ?? t('dice.noTier')} />
+                <Stat
+                  label={t('dice.rakeback')}
+                  value={
+                    rewards.rakeback
+                      ? formatRewardAmount(rewards.rakeback.pending_amount, currency)
+                      : '—'
+                  }
+                />
+                <Stat
+                  label={t('dice.cashback')}
+                  value={
+                    rewards.cashback
+                      ? formatRewardAmount(rewards.cashback.pending_amount, currency)
+                      : '—'
+                  }
+                />
+              </dl>
+            ) : (
+              <p className="mt-3 text-xs text-slate-500">{t('dice.rewardsHint')}</p>
+            )}
+          </section>
+        )}
       </div>
     </section>
   );

@@ -12,6 +12,7 @@ import chatGlyph from '@/assets/lobby/rail/bar-chat.svg';
 import profileChevron from '@/assets/lobby/rail/bar-chevron-profile.svg';
 import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import { useAuth } from '@/context/AuthContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
@@ -102,6 +103,7 @@ const IconButton: FC<IconButtonProps> = ({
  */
 const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const { token, logout } = useAuth();
+  const { rewards: rewardsOn } = usePlatformFeatures();
   const { me, updateMe } = useMe();
   const { theme, applyTheme } = useTheme();
   const router = useRouter();
@@ -272,34 +274,38 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             {token && (
               <>
                 {/* Desktop: the design's black "Reward" pill. Phone: a gift
-                    disc at the end of the bar, after the bell. */}
-                <HeaderPopover
-                  open={panel === 'rewards'}
-                  onClose={closePanel}
-                  label={t('nav.rewards')}
-                  className="order-2 lg:order-none"
-                  trigger={
-                    <button
-                      type="button"
-                      onClick={() => togglePanel('rewards')}
-                      aria-haspopup="dialog"
-                      aria-expanded={panel === 'rewards'}
-                      aria-label={t('nav.rewards')}
-                      className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rounded-full border border-white/10 bg-black/40 text-[#f0f1f5] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-auto lg:border-0 lg:bg-[#07080a] lg:px-[calc(var(--u)*19)]"
-                    >
-                      <img
-                        src={giftGlyph.src}
-                        alt=""
-                        className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
-                      />
-                      <span className="hidden text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*28)] lg:block">
-                        {t('nav.rewards')}
-                      </span>
-                    </button>
-                  }
-                >
-                  <RewardPanel />
-                </HeaderPopover>
+                    disc at the end of the bar, after the bell. Gone entirely
+                    while rewards are switched off platform-wide — a tray that
+                    opens on five zeroes is worse than no tray. */}
+                {rewardsOn && (
+                  <HeaderPopover
+                    open={panel === 'rewards'}
+                    onClose={closePanel}
+                    label={t('nav.rewards')}
+                    className="order-2 lg:order-none"
+                    trigger={
+                      <button
+                        type="button"
+                        onClick={() => togglePanel('rewards')}
+                        aria-haspopup="dialog"
+                        aria-expanded={panel === 'rewards'}
+                        aria-label={t('nav.rewards')}
+                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rounded-full border border-white/10 bg-black/40 text-[#f0f1f5] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-auto lg:border-0 lg:bg-[#07080a] lg:px-[calc(var(--u)*19)]"
+                      >
+                        <img
+                          src={giftGlyph.src}
+                          alt=""
+                          className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+                        />
+                        <span className="hidden text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*28)] lg:block">
+                          {t('nav.rewards')}
+                        </span>
+                      </button>
+                    }
+                  >
+                    <RewardPanel />
+                  </HeaderPopover>
+                )}
 
                 <HeaderPopover
                   open={panel === 'notifications'}

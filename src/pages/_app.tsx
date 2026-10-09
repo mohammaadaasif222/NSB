@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { I18nProvider } from '@/context/I18nContext';
+import { PlatformFeaturesProvider } from '@/context/PlatformFeaturesContext';
 import { UserProvider } from '@/context/UserContext';
 import { WalletProvider } from '@/context/WalletContext';
 import { SeonGuardProvider } from '@/context/SeonGuardContext';
@@ -13,6 +14,7 @@ import { AuthModalProvider } from '@/context/AuthModalContext';
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { BetslipProvider } from '@/context/BetslipContext';
 import RouteLoader from '@/components/RouteLoader';
+import AuthGate from '@/components/AuthGate';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import Analytics from '@/components/analytics/Analytics';
 import IntercomLauncher from '@/components/support/IntercomLauncher';
@@ -45,56 +47,64 @@ export default function App({ Component, pageProps }: AppProps) {
         />
       </Head>
 
-      <I18nProvider>
-        <AuthProvider>
-          {/* Inside AuthProvider: it reads the account id to tie the session to. */}
-          <Analytics />
+      {/* Outermost of the data providers, and unauthenticated: which features
+          are switched on decides what the nav and the signed-out pages even
+          render, so it must not wait on a session. */}
+      <PlatformFeaturesProvider>
+        <I18nProvider>
+          <AuthProvider>
+            {/* Inside AuthProvider: it reads the account id to tie the session to. */}
+            <Analytics />
 
-          <ThemeProvider>
-            <UserProvider>
-              <WalletProvider>
-                {/* Inside WalletProvider: it reads the summary's snapshot
+            <ThemeProvider>
+              <UserProvider>
+                <WalletProvider>
+                  {/* Inside WalletProvider: it reads the summary's snapshot
                     rates to convert crypto amounts for display. */}
-                <CurrencyConversionProvider>
-                  {/* Outside AuthModalProvider so the auth modals' "Need help?"
+                  <CurrencyConversionProvider>
+                    {/* Outside AuthModalProvider so the auth modals' "Need help?"
                       can open the support messenger. */}
-                  <SupportChatProvider>
-                    <AuthModalProvider>
-                      {/* Innermost, so the step-up prompt renders above every page
+                    <SupportChatProvider>
+                      <AuthModalProvider>
+                        {/* Innermost, so the step-up prompt renders above every page
                           and any component can reach it through useSeonGuard(). */}
-                      <SeonGuardProvider>
-                        {/* Inside AuthModalProvider: hearting signed out opens login. */}
-                        <FavouritesProvider>
-                          {/* Above the pages, so sportsbook picks survive moving between them. */}
-                          <BetslipProvider>
-                            <EventListeners />
-                            <Component {...pageProps} />
-                          </BetslipProvider>
-                        </FavouritesProvider>
-                      </SeonGuardProvider>
-                      <SeonAgentWarmup />
-                      <RouteLoader />
-                      {/* Outside the page so the bubble survives route changes,
+                        <SeonGuardProvider>
+                          {/* Inside AuthModalProvider: hearting signed out opens login. */}
+                          <FavouritesProvider>
+                            {/* Above the pages, so sportsbook picks survive moving between them. */}
+                            <BetslipProvider>
+                              <EventListeners />
+                              <Component {...pageProps} />
+                            </BetslipProvider>
+                          </FavouritesProvider>
+                        </SeonGuardProvider>
+                        <SeonAgentWarmup />
+                        <RouteLoader />
+                        {/* After RouteLoader so that on a first load, where
+                          both could be showing, this one wins the overlap. */}
+                        <AuthGate />
+                        {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching
                           Intercom off removes it without a deploy. */}
-                      <IntercomLauncher />
-                      <ToastContainer
-                        position="top-right"
-                        autoClose={3000}
-                        newestOnTop
-                        closeOnClick
-                        pauseOnHover
-                        draggable
-                        theme="dark"
-                      />
-                    </AuthModalProvider>
-                  </SupportChatProvider>
-                </CurrencyConversionProvider>
-              </WalletProvider>
-            </UserProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </I18nProvider>
+                        <IntercomLauncher />
+                        <ToastContainer
+                          position="top-right"
+                          autoClose={3000}
+                          newestOnTop
+                          closeOnClick
+                          pauseOnHover
+                          draggable
+                          theme="dark"
+                        />
+                      </AuthModalProvider>
+                    </SupportChatProvider>
+                  </CurrencyConversionProvider>
+                </WalletProvider>
+              </UserProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </I18nProvider>
+      </PlatformFeaturesProvider>
     </>
   );
 }

@@ -125,7 +125,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
         {/* Tab content */}
         <div className="p-4">
           {active === 'deposit' && <DepositTab onLeave={onClose} />}
-          {active === 'withdraw' && <WithdrawTab />}
+          {active === 'withdraw' && <WithdrawTab onLeave={onClose} />}
           {active === 'buy' && <BuyCryptoTab />}
           {active === 'tip' && <ComingSoonTab title="Tip" />}
           {active === 'redeem' && <ComingSoonTab title="Redeem" />}

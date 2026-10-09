@@ -45,13 +45,9 @@ const en = {
   'auth.show': 'Show',
   'auth.hide': 'Hide',
 
-  // KYC â€” the player-facing verification journey.
-  //
-  // English only, deliberately. The catalogue's other eight locales are
-  // human-translated; machine-translating compliance copy into eight
-  // languages and presenting it as done would be worse than the honest
-  // fallback, which renders English and is what happens today. These keys
-  // exist so a translator has something to work from.
+  'errors.unreachable': 'Could not reach the server. Check your connection and try again.',
+  'errors.timeout': 'The server took too long to respond. Please try again.',
+
   'kyc.title': 'Identity Verification (KYC)',
   'kyc.loading': 'Loading verification detailsâ€¦',
   'kyc.level1Title': 'Level 1 - Personal Information',
@@ -168,7 +164,11 @@ const en = {
   'registerModal.errMobile': 'Enter a valid mobile number',
   'registerModal.errPassword': "Your password doesn't meet all the requirements",
   'registerModal.errCaptcha': 'Please confirm you are human',
+  'registerModal.errPromoCode': 'A promo code is 3-50 letters, numbers, hyphens or underscores',
+  'registerModal.errReferralCode':
+    'A referral code is 3-50 letters, numbers, hyphens or underscores',
   'registerModal.failed': 'Registration failed. Please try again.',
+  'registerModal.created': 'Your account is ready. Please sign in.',
   'registerModal.otpTitle': 'Enter OTP',
   'registerModal.otpSentMobile':
     'Enter the 6-digit verification code sent to your Mobile number. {target}',
@@ -177,7 +177,6 @@ const en = {
   'registerModal.needHelp': 'Need help?',
   'registerModal.close': 'Close',
 
-  // Login modal
   'loginModal.title': 'Login',
   'loginModal.suggestion': 'Give us suggestion for us',
   'loginModal.username': 'Username',
@@ -336,9 +335,9 @@ const en = {
   'favourites.empty': 'No favourites yet. Tap the heart on any game to keep it here.',
   'favourites.add': 'Add to favourites',
   'favourites.remove': 'Remove from favourites',
-  'favourites.failed': 'Couldn\'t update your favourites. Please try again.',
+  'favourites.failed': "Couldn't update your favourites. Please try again.",
   'myGames.signedOut': 'Log in to see your games here.',
-  'myGames.failed': 'Couldn\'t load your games. Please try again in a moment.',
+  'myGames.failed': "Couldn't load your games. Please try again in a moment.",
   'sports.highlights': 'Highlights',
   'sports.topSports': 'Top Sports',
   'sports.topEvents': 'Top Events',
@@ -346,7 +345,7 @@ const en = {
   'sports.featuredMatches': 'Featured Matches',
   'sports.liveLeagues': 'Live & Upcoming Leagues',
   'sports.allSports': 'All Sports',
-  'sports.live': 'LIVE {minute}\'',
+  'sports.live': "LIVE {minute}'",
   'sports.markets': '+{count} Markets',
   'sports.home': 'Home',
   'sports.draw': 'Draw',
@@ -365,11 +364,13 @@ const en = {
   'sports.totalFouls': 'Total Fouls',
   'sports.timeoutsLeft': 'Time Outs Left',
   'sports.safeTitle': 'Keep it Fun. Keep it Safe.',
-  'sports.safeBody': 'Need assistance? Access our full array of limits, cooldown options, and educational materials.',
+  'sports.safeBody':
+    'Need assistance? Access our full array of limits, cooldown options, and educational materials.',
   'sports.safeCta': 'Configure Self Limits',
   'sports.offerEyebrow': 'New season offer',
   'sports.offerTitle': '100% Risk Free First Bet Up to $500',
-  'sports.offerBody': 'Experience high-octane prematch and live betting with the fastest original payout service.',
+  'sports.offerBody':
+    'Experience high-octane prematch and live betting with the fastest original payout service.',
   'sports.offerCta': 'Claim Bonus Now',
   'sports.sortKickoff': 'Kick-off time',
   'sports.sortLeague': 'League',
@@ -713,6 +714,11 @@ const en = {
   'rewards.subtitle':
     'Rakeback, cashback and bonuses earned from your play. Claim them before they expire.',
   'rewards.allRewards': 'All Rewards',
+  // Shown when the rewards engine is switched off platform-wide. Reached only
+  // by a bookmark or a typed URL — every link to it is hidden in that state.
+  'rewards.switchedOff': 'Rewards are currently unavailable',
+  'rewards.switchedOffNote':
+    'Rakeback, cashback and the daily, weekly and monthly bonuses are switched off at the moment. Nothing you have already earned has been lost — it will be here when rewards return.',
   'rewards.type.rakeback': 'Rakeback',
   'rewards.type.cashback': 'Cashback',
   'rewards.type.daily': 'Daily Bonus',
@@ -1331,7 +1337,7 @@ const ar: PartialDictionary = {
   'sports.featuredMatches': 'Ù…Ø¨Ø§Ø±ÙŠØ§Øª Ù…Ù…ÙŠØ²Ø©',
   'sports.liveLeagues': 'Ø§Ù„Ø¯ÙˆØ±ÙŠØ§Øª Ø§Ù„Ù…Ø¨Ø§Ø´Ø±Ø© ÙˆØ§Ù„Ù‚Ø§Ø¯Ù…Ø©',
   'sports.allSports': 'ÙƒÙ„ Ø§Ù„Ø±ÙŠØ§Ø¶Ø§Øª',
-  'sports.live': 'Ù…Ø¨Ø§Ø´Ø± {minute}\'',
+  'sports.live': "Ù…Ø¨Ø§Ø´Ø± {minute}'",
   'sports.markets': '+{count} Ø³ÙˆÙ‚',
   'sports.home': 'Ø§Ù„Ù…Ø¶ÙŠÙ',
   'sports.draw': 'ØªØ¹Ø§Ø¯Ù„',
@@ -1350,7 +1356,8 @@ const ar: PartialDictionary = {
   'sports.totalFouls': 'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£Ø®Ø·Ø§Ø¡',
   'sports.timeoutsLeft': 'Ø§Ù„ÙˆÙ‚Øª Ø§Ù„Ù…Ø³ØªÙ‚Ø·Ø¹ Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ',
   'sports.safeTitle': 'Ø§Ù„Ø¹Ø¨ Ø¨Ù…ØªØ¹Ø©. Ø§Ù„Ø¹Ø¨ Ø¨Ø£Ù…Ø§Ù†.',
-  'sports.safeBody': 'ØªØ­ØªØ§Ø¬ Ù…Ø³Ø§Ø¹Ø¯Ø©ØŸ Ø§Ø³ØªØ®Ø¯Ù… Ù…Ø¬Ù…ÙˆØ¹ØªÙ†Ø§ Ø§Ù„ÙƒØ§Ù…Ù„Ø© Ù…Ù† Ø§Ù„Ø­Ø¯ÙˆØ¯ ÙˆØ®ÙŠØ§Ø±Ø§Øª Ø§Ù„ØªÙ‡Ø¯Ø¦Ø© ÙˆØ§Ù„Ù…ÙˆØ§Ø¯ Ø§Ù„ØªØ«Ù‚ÙŠÙÙŠØ©.',
+  'sports.safeBody':
+    'ØªØ­ØªØ§Ø¬ Ù…Ø³Ø§Ø¹Ø¯Ø©ØŸ Ø§Ø³ØªØ®Ø¯Ù… Ù…Ø¬Ù…ÙˆØ¹ØªÙ†Ø§ Ø§Ù„ÙƒØ§Ù…Ù„Ø© Ù…Ù† Ø§Ù„Ø­Ø¯ÙˆØ¯ ÙˆØ®ÙŠØ§Ø±Ø§Øª Ø§Ù„ØªÙ‡Ø¯Ø¦Ø© ÙˆØ§Ù„Ù…ÙˆØ§Ø¯ Ø§Ù„ØªØ«Ù‚ÙŠÙÙŠØ©.',
   'sports.safeCta': 'Ø§Ø¶Ø¨Ø· Ø­Ø¯ÙˆØ¯Ùƒ',
   'sports.offerEyebrow': 'Ø¹Ø±Ø¶ Ø§Ù„Ù…ÙˆØ³Ù… Ø§Ù„Ø¬Ø¯ÙŠØ¯',
   'sports.offerTitle': 'Ø£ÙˆÙ„ Ø±Ù‡Ø§Ù† Ø¨Ø¯ÙˆÙ† Ù…Ø®Ø§Ø·Ø±Ø© 100% Ø­ØªÙ‰ 500$',
@@ -1975,7 +1982,7 @@ const tr: PartialDictionary = {
   'sports.featuredMatches': 'Ã–ne Ã‡Ä±kan MaÃ§lar',
   'sports.liveLeagues': 'CanlÄ± ve YaklaÅŸan Ligler',
   'sports.allSports': 'TÃ¼m Sporlar',
-  'sports.live': 'CANLI {minute}\'',
+  'sports.live': "CANLI {minute}'",
   'sports.markets': '+{count} Market',
   'sports.home': 'Ev',
   'sports.draw': 'Beraberlik',
@@ -1994,10 +2001,11 @@ const tr: PartialDictionary = {
   'sports.totalFouls': 'Toplam Faul',
   'sports.timeoutsLeft': 'Kalan Mola',
   'sports.safeTitle': 'EÄŸlenceli Oyna. GÃ¼venli Oyna.',
-  'sports.safeBody': 'YardÄ±m mÄ± lazÄ±m? Limitler, ara verme seÃ§enekleri ve eÄŸitim materyallerinin tamamÄ±na ulaÅŸ.',
+  'sports.safeBody':
+    'YardÄ±m mÄ± lazÄ±m? Limitler, ara verme seÃ§enekleri ve eÄŸitim materyallerinin tamamÄ±na ulaÅŸ.',
   'sports.safeCta': 'Limitlerini Ayarla',
   'sports.offerEyebrow': 'Yeni sezon fÄ±rsatÄ±',
-  'sports.offerTitle': '500$\'a Kadar %100 Risksiz Ä°lk Bahis',
+  'sports.offerTitle': "500$'a Kadar %100 Risksiz Ä°lk Bahis",
   'sports.offerBody': 'En hÄ±zlÄ± Ã¶deme hizmetiyle maÃ§ Ã¶ncesi ve canlÄ± bahsin heyecanÄ±nÄ± yaÅŸa.',
   'sports.offerCta': 'Bonusu Al',
   'sports.sortKickoff': 'BaÅŸlama saati',
@@ -2619,7 +2627,7 @@ const hi: PartialDictionary = {
   'sports.featuredMatches': 'à¤«à¤¼à¥€à¤šà¤°à¥à¤¡ à¤®à¥ˆà¤š',
   'sports.liveLeagues': 'à¤²à¤¾à¤‡à¤µ à¤”à¤° à¤†à¤¨à¥‡ à¤µà¤¾à¤²à¥€ à¤²à¥€à¤—',
   'sports.allSports': 'à¤¸à¤­à¥€ à¤¸à¥à¤ªà¥‹à¤°à¥à¤Ÿà¥à¤¸',
-  'sports.live': 'à¤²à¤¾à¤‡à¤µ {minute}\'',
+  'sports.live': "à¤²à¤¾à¤‡à¤µ {minute}'",
   'sports.markets': '+{count} à¤®à¤¾à¤°à¥à¤•à¥‡à¤Ÿ',
   'sports.home': 'à¤¹à¥‹à¤®',
   'sports.draw': 'à¤¡à¥à¤°à¥‰',
@@ -3250,8 +3258,9 @@ const fr: PartialDictionary = {
   'tournament.min': 'Min',
   'tournament.sec': 'Sec',
   'recents.title': 'RÃ©cents',
-  'recents.empty': 'Rien pour l\'instant. Les jeux auxquels vous jouez en argent rÃ©el apparaÃ®tront ici.',
-  'favourites.empty': 'Pas encore de favoris. Touchez le cÅ“ur d\'un jeu pour le garder ici.',
+  'recents.empty':
+    "Rien pour l'instant. Les jeux auxquels vous jouez en argent rÃ©el apparaÃ®tront ici.",
+  'favourites.empty': "Pas encore de favoris. Touchez le cÅ“ur d'un jeu pour le garder ici.",
   'favourites.add': 'Ajouter aux favoris',
   'favourites.remove': 'Retirer des favoris',
   'favourites.failed': 'Impossible de mettre Ã  jour vos favoris. Veuillez rÃ©essayer.',
@@ -3264,7 +3273,7 @@ const fr: PartialDictionary = {
   'sports.featuredMatches': 'Matchs Ã  la une',
   'sports.liveLeagues': 'Ligues en direct et Ã  venir',
   'sports.allSports': 'Tous les sports',
-  'sports.live': 'EN DIRECT {minute}\'',
+  'sports.live': "EN DIRECT {minute}'",
   'sports.markets': '+{count} marchÃ©s',
   'sports.home': 'Domicile',
   'sports.draw': 'Nul',
@@ -3283,11 +3292,13 @@ const fr: PartialDictionary = {
   'sports.totalFouls': 'Fautes',
   'sports.timeoutsLeft': 'Temps morts restants',
   'sports.safeTitle': 'Jouez pour le plaisir. Jouez prudemment.',
-  'sports.safeBody': 'Besoin d\'aide ? AccÃ©dez Ã  toutes nos limites, pauses et ressources Ã©ducatives.',
+  'sports.safeBody':
+    "Besoin d'aide ? AccÃ©dez Ã  toutes nos limites, pauses et ressources Ã©ducatives.",
   'sports.safeCta': 'DÃ©finir mes limites',
   'sports.offerEyebrow': 'Offre nouvelle saison',
   'sports.offerTitle': 'Premier pari 100 % sans risque jusquâ€™Ã  500 $',
-  'sports.offerBody': 'Vivez les paris d\'avant-match et en direct avec le service de paiement le plus rapide.',
+  'sports.offerBody':
+    "Vivez les paris d'avant-match et en direct avec le service de paiement le plus rapide.",
   'sports.offerCta': 'RÃ©clamer le bonus',
   'sports.sortKickoff': 'Heure du coup dâ€™envoi',
   'sports.sortLeague': 'Ligue',
@@ -3904,8 +3915,10 @@ const ru: PartialDictionary = {
   'tournament.min': 'ÐœÐ¸Ð½',
   'tournament.sec': 'Ð¡ÐµÐº',
   'recents.title': 'ÐÐµÐ´Ð°Ð²Ð½Ð¸Ðµ',
-  'recents.empty': 'Ð—Ð´ÐµÑÑŒ Ð¿Ð¾ÐºÐ° Ð¿ÑƒÑÑ‚Ð¾. Ð—Ð´ÐµÑÑŒ Ð¿Ð¾ÑÐ²ÑÑ‚ÑÑ Ð¸Ð³Ñ€Ñ‹, Ð² ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð²Ñ‹ Ð¸Ð³Ñ€Ð°ÐµÑ‚Ðµ Ð½Ð° Ñ€ÐµÐ°Ð»ÑŒÐ½Ñ‹Ðµ Ð´ÐµÐ½ÑŒÐ³Ð¸.',
-  'favourites.empty': 'Ð˜Ð·Ð±Ñ€Ð°Ð½Ð½Ð¾Ð³Ð¾ Ð¿Ð¾ÐºÐ° Ð½ÐµÑ‚. ÐÐ°Ð¶Ð¼Ð¸Ñ‚Ðµ Ð½Ð° ÑÐµÑ€Ð´ÐµÑ‡ÐºÐ¾ Ñƒ Ð»ÑŽÐ±Ð¾Ð¹ Ð¸Ð³Ñ€Ñ‹, Ñ‡Ñ‚Ð¾Ð±Ñ‹ ÑÐ¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ ÐµÑ‘ Ð·Ð´ÐµÑÑŒ.',
+  'recents.empty':
+    'Ð—Ð´ÐµÑÑŒ Ð¿Ð¾ÐºÐ° Ð¿ÑƒÑÑ‚Ð¾. Ð—Ð´ÐµÑÑŒ Ð¿Ð¾ÑÐ²ÑÑ‚ÑÑ Ð¸Ð³Ñ€Ñ‹, Ð² ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð²Ñ‹ Ð¸Ð³Ñ€Ð°ÐµÑ‚Ðµ Ð½Ð° Ñ€ÐµÐ°Ð»ÑŒÐ½Ñ‹Ðµ Ð´ÐµÐ½ÑŒÐ³Ð¸.',
+  'favourites.empty':
+    'Ð˜Ð·Ð±Ñ€Ð°Ð½Ð½Ð¾Ð³Ð¾ Ð¿Ð¾ÐºÐ° Ð½ÐµÑ‚. ÐÐ°Ð¶Ð¼Ð¸Ñ‚Ðµ Ð½Ð° ÑÐµÑ€Ð´ÐµÑ‡ÐºÐ¾ Ñƒ Ð»ÑŽÐ±Ð¾Ð¹ Ð¸Ð³Ñ€Ñ‹, Ñ‡Ñ‚Ð¾Ð±Ñ‹ ÑÐ¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ ÐµÑ‘ Ð·Ð´ÐµÑÑŒ.',
   'favourites.add': 'Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð² Ð¸Ð·Ð±Ñ€Ð°Ð½Ð½Ð¾Ðµ',
   'favourites.remove': 'Ð£Ð±Ñ€Ð°Ñ‚ÑŒ Ð¸Ð· Ð¸Ð·Ð±Ñ€Ð°Ð½Ð½Ð¾Ð³Ð¾',
   'favourites.failed': 'ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¾Ð±Ð½Ð¾Ð²Ð¸Ñ‚ÑŒ Ð¸Ð·Ð±Ñ€Ð°Ð½Ð½Ð¾Ðµ. ÐŸÐ¾Ð¿Ñ€Ð¾Ð±ÑƒÐ¹Ñ‚Ðµ ÐµÑ‰Ñ‘ Ñ€Ð°Ð·.',
@@ -3918,7 +3931,7 @@ const ru: PartialDictionary = {
   'sports.featuredMatches': 'Ð˜Ð·Ð±Ñ€Ð°Ð½Ð½Ñ‹Ðµ Ð¼Ð°Ñ‚Ñ‡Ð¸',
   'sports.liveLeagues': 'Ð›Ð¸Ð³Ð¸: Ð»Ð°Ð¹Ð² Ð¸ ÑÐºÐ¾Ñ€Ð¾',
   'sports.allSports': 'Ð’ÑÐµ Ð²Ð¸Ð´Ñ‹ ÑÐ¿Ð¾Ñ€Ñ‚Ð°',
-  'sports.live': 'LIVE {minute}\'',
+  'sports.live': "LIVE {minute}'",
   'sports.markets': '+{count} Ñ€Ñ‹Ð½ÐºÐ¾Ð²',
   'sports.home': 'ÐŸ1',
   'sports.draw': 'ÐÐ¸Ñ‡ÑŒÑ',
@@ -4550,7 +4563,8 @@ const pt: PartialDictionary = {
   'tournament.sec': 'Seg',
   'recents.title': 'Recentes',
   'recents.empty': 'Nada por aqui ainda. Os jogos que vocÃª joga com dinheiro real aparecerÃ£o aqui.',
-  'favourites.empty': 'Nenhum favorito ainda. Toque no coraÃ§Ã£o de qualquer jogo para guardÃ¡-lo aqui.',
+  'favourites.empty':
+    'Nenhum favorito ainda. Toque no coraÃ§Ã£o de qualquer jogo para guardÃ¡-lo aqui.',
   'favourites.add': 'Adicionar aos favoritos',
   'favourites.remove': 'Remover dos favoritos',
   'favourites.failed': 'NÃ£o foi possÃ­vel atualizar seus favoritos. Tente novamente.',
@@ -4563,7 +4577,7 @@ const pt: PartialDictionary = {
   'sports.featuredMatches': 'Jogos em destaque',
   'sports.liveLeagues': 'Ligas ao vivo e prÃ³ximas',
   'sports.allSports': 'Todos os esportes',
-  'sports.live': 'AO VIVO {minute}\'',
+  'sports.live': "AO VIVO {minute}'",
   'sports.markets': '+{count} mercados',
   'sports.home': 'Casa',
   'sports.draw': 'Empate',
@@ -5202,7 +5216,8 @@ const es: PartialDictionary = {
   'tournament.sec': 'Seg',
   'recents.title': 'Recientes',
   'recents.empty': 'AÃºn no hay nada. Los juegos a los que juegues con dinero real aparecerÃ¡n aquÃ­.',
-  'favourites.empty': 'AÃºn no tienes favoritos. Toca el corazÃ³n de cualquier juego para guardarlo aquÃ­.',
+  'favourites.empty':
+    'AÃºn no tienes favoritos. Toca el corazÃ³n de cualquier juego para guardarlo aquÃ­.',
   'favourites.add': 'AÃ±adir a favoritos',
   'favourites.remove': 'Quitar de favoritos',
   'favourites.failed': 'No se pudieron actualizar tus favoritos. IntÃ©ntalo de nuevo.',
@@ -5215,7 +5230,7 @@ const es: PartialDictionary = {
   'sports.featuredMatches': 'Partidos destacados',
   'sports.liveLeagues': 'Ligas en vivo y prÃ³ximas',
   'sports.allSports': 'Todos los deportes',
-  'sports.live': 'EN VIVO {minute}\'',
+  'sports.live': "EN VIVO {minute}'",
   'sports.markets': '+{count} mercados',
   'sports.home': 'Local',
   'sports.draw': 'Empate',
@@ -5234,7 +5249,8 @@ const es: PartialDictionary = {
   'sports.totalFouls': 'Faltas',
   'sports.timeoutsLeft': 'Tiempos muertos restantes',
   'sports.safeTitle': 'DiviÃ©rtete. Juega seguro.',
-  'sports.safeBody': 'Â¿Necesitas ayuda? Accede a todos los lÃ­mites, pausas y materiales educativos.',
+  'sports.safeBody':
+    'Â¿Necesitas ayuda? Accede a todos los lÃ­mites, pausas y materiales educativos.',
   'sports.safeCta': 'Configurar lÃ­mites',
   'sports.offerEyebrow': 'Oferta de nueva temporada',
   'sports.offerTitle': 'Primera apuesta 100 % sin riesgo hasta 500 $',
@@ -5865,7 +5881,7 @@ const it: PartialDictionary = {
   'sports.featuredMatches': 'Partite in evidenza',
   'sports.liveLeagues': 'Campionati live e in arrivo',
   'sports.allSports': 'Tutti gli sport',
-  'sports.live': 'LIVE {minute}\'',
+  'sports.live': "LIVE {minute}'",
   'sports.markets': '+{count} mercati',
   'sports.home': 'Casa',
   'sports.draw': 'Pareggio',
@@ -5888,7 +5904,8 @@ const it: PartialDictionary = {
   'sports.safeCta': 'Imposta i limiti',
   'sports.offerEyebrow': 'Offerta nuova stagione',
   'sports.offerTitle': 'Prima scommessa 100% senza rischi fino a 500 $',
-  'sports.offerBody': 'Vivi le scommesse pre-partita e live con il servizio di pagamento piÃ¹ veloce.',
+  'sports.offerBody':
+    'Vivi le scommesse pre-partita e live con il servizio di pagamento piÃ¹ veloce.',
   'sports.offerCta': 'Richiedi il bonus',
   'sports.sortKickoff': 'Orario di inizio',
   'sports.sortLeague': 'Campionato',
