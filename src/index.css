@@ -1399,6 +1399,35 @@ html:not([data-theme='dark']) .border-blue-600 {
     color 0.18s ease;
 }
 
+/* The Affiliate card's share discs, which overlap each other.
+ *
+ * `rl-chip` is wrong for these and the grade above is exactly why: a fill that
+ * lands level with its surface at the foot leaves nothing to cover the disc
+ * behind, so all five rings read through one another and the row turns into a
+ * chain of outlines. These need a flat wash instead.
+ *
+ * Its values are sampled off the design's own render rather than derived from
+ * the export, whose Liquid Glass body comes back as a Code Connect stub with
+ * no fill to read. Against a stage at 8, the disc runs 9 at its crown to 19 at
+ * its foot — so the wash climbs *downwards*, which is the opposite of the chip
+ * above — and its rim peaks at 64, half again as bright.
+ *
+ * The base is the stage's own colour, opaque. Figma hides the ring behind with
+ * a colour-burn pass, which crushes anything bright under it to black; CSS
+ * cannot reach the sibling discs that way, because each one carries a z-index
+ * and so blends only against itself. Painting the stage back in is what is
+ * left, and it is the reason this is the one surface utility here that names a
+ * colour instead of washing over whatever it covers — it is only ever on the
+ * stage.
+ */
+@utility rl-chip-disc {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.045)),
+    #07080b;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1000px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
 /* The selected chip, and the hovered one — the rail's rule applies here too.
    The wash ends on exactly the 0.2 the design's bloom is set to; it starts
    lower because the bloom is weakest where the chip meets its own top edge.

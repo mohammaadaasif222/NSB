@@ -205,7 +205,7 @@ const SiteFooter: FC = () => {
     { label: 'Promotions', href: '/promotions' },
     { label: 'Bonuses', href: '/bonuses' },
     { label: 'Referral System', href: '/profile' },
-    { label: 'Affiliate System' },
+    { label: 'Affiliate System', href: '/affiliate' },
     { label: 'Swap Crypto' },
   ];
 

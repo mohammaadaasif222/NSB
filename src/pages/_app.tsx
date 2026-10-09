@@ -14,6 +14,7 @@ import { AuthModalProvider } from '@/context/AuthModalContext';
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { BetslipProvider } from '@/context/BetslipContext';
 import RouteLoader from '@/components/RouteLoader';
+import AuthGate from '@/components/AuthGate';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import Analytics from '@/components/analytics/Analytics';
 import IntercomLauncher from '@/components/support/IntercomLauncher';
@@ -79,6 +80,9 @@ export default function App({ Component, pageProps }: AppProps) {
                         </SeonGuardProvider>
                         <SeonAgentWarmup />
                         <RouteLoader />
+                        {/* After RouteLoader so that on a first load, where
+                          both could be showing, this one wins the overlap. */}
+                        <AuthGate />
                         {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching
                           Intercom off removes it without a deploy. */}
