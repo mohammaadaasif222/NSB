@@ -9,6 +9,7 @@ import { useTranslation } from '@/context/I18nContext';
 import apiService from '@/services/api';
 import { encryptPassword } from '@/utils/crypto';
 import { isPlatformRole } from '@/constants/roles';
+import { REGISTER_HREF } from '@/constants/auth';
 import { analytics, failureReason, type AuthMethod } from '@/services/analytics';
 
 import PublicRoute from '@/routes/PublicRoute';
@@ -194,7 +195,7 @@ const Login: FC = () => {
     return (
       <AuthShell
         subtitle={t('auth.methodLogin')}
-        action={{ href: '/auth/register', label: t('login.register') }}
+        action={{ href: REGISTER_HREF, label: t('login.register') }}
         legal={t('auth.legal')}
       >
         <AuthMethods
@@ -213,7 +214,7 @@ const Login: FC = () => {
         subtitle={t('auth.methodOther')}
         onBack={() => setStep('choose')}
         backLabel={t('auth.back')}
-        action={{ href: '/auth/register', label: t('login.register') }}
+        action={{ href: REGISTER_HREF, label: t('login.register') }}
         legal={t('auth.legal')}
       >
         <AuthMethods
@@ -230,7 +231,7 @@ const Login: FC = () => {
       caption={t('login.subtitle')}
       onBack={() => setStep('choose')}
       backLabel={t('auth.back')}
-      action={{ href: '/auth/register', label: t('login.register') }}
+      action={{ href: REGISTER_HREF, label: t('login.register') }}
       legal={t('auth.legal')}
     >
       <form className="space-y-3.5" onSubmit={handleLogin}>

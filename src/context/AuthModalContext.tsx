@@ -21,9 +21,9 @@ import LoginModal, { type LoginEntry } from '@/components/auth/login/LoginModal'
  * Opens the auth modals from anywhere: `openLogin()`, `openRegister()`.
  *
  * They are also reachable by URL — `?auth=login`, `?auth=register` (optionally
- * with `&mobile=`) or `?auth=forgot` opens the matching modal on whatever page
- * the link points at. The old /auth/* pages redirect to these, so bookmarks
- * and shared links keep working.
+ * with `&mobile=` or `&method=email`) or `?auth=forgot` opens the matching
+ * modal on whatever page the link points at. The old /auth/* pages redirect to
+ * these, so bookmarks and shared links keep working.
  */
 
 interface AuthModalContextType {
@@ -37,6 +37,20 @@ type ModalState =
 
 const AuthModalContext = createContext<AuthModalContextType | undefined>(undefined);
 
+/**
+ * Read a deep link's signup prefill, ignoring anything it should not be able
+ * to set. A number implies the mobile form; `method=email` opens the email one
+ * directly. Nothing else is honoured — this is query-string input.
+ */
+const registerPrefill = (
+  mobile: string | string[] | undefined,
+  method: string | string[] | undefined
+): RegisterPrefill | undefined => {
+  if (typeof mobile === 'string' && mobile) return { mobile };
+  if (method === 'email' || method === 'mobile') return { method };
+  return undefined;
+};
+
 export const AuthModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const router = useRouter();
   const { token, hydrated } = useAuth();
@@ -45,9 +59,7 @@ export const AuthModalProvider: FC<{ children: ReactNode }> = ({ children }) => 
   const openLogin = useCallback((entry: LoginEntry = 'method'): void => {
     setModal({ view: 'login', entry });
   }, []);
- 
 
-  
   const openRegister = useCallback((prefill?: RegisterPrefill): void => {
     setModal({ view: 'register', prefill });
   }, []);
@@ -57,11 +69,11 @@ export const AuthModalProvider: FC<{ children: ReactNode }> = ({ children }) => 
   // Deep link: open from the query string, then drop it so a refresh or a
   // shared URL copied later does not reopen the modal.
   useEffect(() => {
-    const { auth, mobile, ...rest } = router.query;
+    const { auth, mobile, method, ...rest } = router.query;
     if (!router.isReady || !hydrated || typeof auth !== 'string') return;
 
     if (!token) {
-      if (auth === 'register') openRegister(typeof mobile === 'string' ? { mobile } : undefined);
+      if (auth === 'register') openRegister(registerPrefill(mobile, method));
       if (auth === 'login') openLogin();
       if (auth === 'forgot') openLogin('forgot');
     }
