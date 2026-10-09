@@ -1,10 +1,25 @@
-import { useLayoutEffect, useMemo, useRef, useState, type FC, type FormEvent } from 'react';
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FC,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { useMe } from '@/context/UserContext';
 import { useGroupChat } from '@/hooks/useGroupChat';
 import EmojiPopover from '@/components/player/EmojiPopover';
-import { ArrowUpIcon, ChatIcon, CloseIcon, SmileIcon } from '@/components/icons';
-import type { ChatMessage } from '@/services/chat';
+import {
+  ArrowUpIcon,
+  ChatIcon,
+  CloseIcon,
+  SmileIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+} from '@/components/icons';
+import { NO_REACTIONS, type ChatMessage, type ReactionKind } from '@/services/chat';
 import type { ConnectionState } from '@/services/realtimeService';
 
 /**
@@ -78,12 +93,67 @@ const Avatar: FC<{ message: ChatMessage }> = ({ message }) =>
     </span>
   );
 
+/**
+ * Thumbs up / down, on somebody else's message.
+ *
+ * Never drawn on your own line — the server refuses a self-reaction too, so
+ * this is presentation of a rule rather than the rule itself.
+ *
+ * A count is shown only once it is non-zero. A row of permanent "0"s beside
+ * every message is visual noise that makes the room harder to read, and the
+ * button is just as clickable without one.
+ */
+const ReactionBar: FC<{
+  message: ChatMessage;
+  onReact: (messageId: string, reaction: ReactionKind) => void;
+}> = ({ message, onReact }) => {
+  const { t } = useTranslation();
+  const reactions = message.reactions ?? NO_REACTIONS;
+
+  const button = (kind: ReactionKind, label: string, count: number, icon: ReactNode) => {
+    const active = reactions.mine === kind;
+
+    return (
+      <button
+        type="button"
+        onClick={() => onReact(message.id, kind)}
+        aria-label={label}
+        title={label}
+        // Announces the toggle state, so a screen reader says "pressed"
+        // rather than leaving the fill as the only signal.
+        aria-pressed={active}
+        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] transition-colors ${
+          active
+            ? 'bg-[#4a9eff]/15 text-[#4a9eff]'
+            : 'text-slate-500 hover:bg-white/5 hover:text-slate-300'
+        }`}
+      >
+        {/* Filled once reacted: at this size a fill is far easier to spot
+            than a tint. */}
+        <span className={active ? 'fill-current' : undefined}>{icon}</span>
+        {count > 0 && <span className="tabular-nums">{count}</span>}
+      </button>
+    );
+  };
+
+  return (
+    // -ms-1.5 pulls the first button's padding back so the icons line up with
+    // the message text above rather than sitting indented from it.
+    <div className="-ms-1.5 mt-1 flex items-center gap-0.5">
+      {button('up', t('chat.like'), reactions.up, <ThumbsUpIcon size={13} />)}
+      {button('down', t('chat.dislike'), reactions.down, <ThumbsDownIcon size={13} />)}
+    </div>
+  );
+};
+
 interface RowProps {
   message: ChatMessage;
   /** The viewer's own line. Drawn as a bubble on the end edge. */
   mine: boolean;
   /** Same author as the line above, within a couple of minutes. */
   grouped: boolean;
+  /** Only ever called for somebody else's message. */
+  onReact: (messageId: string, reaction: ReactionKind) => void;
 }
 
 /**
@@ -95,7 +165,7 @@ interface RowProps {
  * end edge with the time underneath, which is the shape every messaging app
  * has trained people to read as "mine".
  */
-const MessageRow: FC<RowProps> = ({ message, mine, grouped }) =>
+const MessageRow: FC<RowProps> = ({ message, mine, grouped, onReact }) =>
   mine ? (
     <li className={`flex flex-col items-end ${grouped ? 'mt-1' : 'mt-3'}`}>
       {/* 85%, not a fixed width: a two-word message should be a two-word
@@ -141,6 +211,8 @@ const MessageRow: FC<RowProps> = ({ message, mine, grouped }) =>
         <p className="mt-0.5 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-slate-200">
           {message.body}
         </p>
+
+        <ReactionBar message={message} onReact={onReact} />
       </div>
     </li>
   );
@@ -177,7 +249,7 @@ const ConnectionNote: FC<{ state: ConnectionState; label: string }> = ({ state, 
 const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation();
   const { me } = useMe();
-  const { messages, loading, error, connection, limits, sending, cooldownMs, send } =
+  const { messages, loading, error, connection, limits, sending, cooldownMs, send, react } =
     useGroupChat();
 
   const [draft, setDraft] = useState('');
@@ -327,6 +399,7 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
                 message={message}
                 mine={message.user_id === me?.id}
                 grouped={grouped}
+                onReact={react}
               />
             ))}
           </ul>

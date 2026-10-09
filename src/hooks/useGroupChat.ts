@@ -2,11 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CHAT_LIMITS_DEFAULT,
   CHAT_MESSAGE_EVENT,
+  CHAT_REACTION_EVENT,
   DEFAULT_CHAT_ROOM,
+  NO_REACTIONS,
   fetchChatHistory,
   sendChatMessage,
+  setChatReaction,
   type ChatLimits,
   type ChatMessage,
+  type ReactionKind,
+  type ReactionSummary,
+  type ReactionUpdate,
 } from '@/services/chat';
 import { realtimeService, type ConnectionState } from '@/services/realtimeService';
 
@@ -63,6 +69,11 @@ interface GroupChat {
   cooldownMs: number;
   /** Returns true when the message was accepted. */
   send: (body: string) => Promise<boolean>;
+  /**
+   * React to somebody else's message. Pass the reaction the player CLICKED —
+   * sending the one already held clears it, and the server decides that.
+   */
+  react: (messageId: string, reaction: ReactionKind) => Promise<void>;
 }
 
 /**
@@ -76,14 +87,42 @@ interface GroupChat {
  * either way, but a list that reshuffles itself on every render is a bug
  * people see.
  */
+/**
+ * Whether two reaction summaries are identical.
+ *
+ * Compared field by field rather than by reference, because every history
+ * fetch builds new objects — without this, the deliberate overlap between the
+ * snapshot and the socket would re-render the whole room on each refetch even
+ * when not a single count had moved.
+ */
+const sameReactions = (a?: ReactionSummary, b?: ReactionSummary): boolean =>
+  a?.up === b?.up && a?.down === b?.down && a?.mine === b?.mine;
+
 const merge = (current: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] => {
   const byId = new Map(current.map((m) => [m.id, m]));
   let changed = false;
 
   for (const message of incoming) {
-    if (byId.has(message.id)) continue;
-    byId.set(message.id, message);
-    changed = true;
+    const existing = byId.get(message.id);
+
+    if (!existing) {
+      byId.set(message.id, message);
+      changed = true;
+      continue;
+    }
+
+    // A message we already have, but the copy may be fresher. The BODY never
+    // changes — a line is immutable once sent — but its reaction counts do,
+    // and a reconnect refetch is the only way to learn about the ones that
+    // moved while the socket was away. Skipping the duplicate outright would
+    // throw exactly the state the refetch exists to recover.
+    //
+    // Guarded on the incoming copy HAVING reactions: a message arriving live
+    // carries none, and must not blank out counts already on screen.
+    if (message.reactions && !sameReactions(existing.reactions, message.reactions)) {
+      byId.set(message.id, { ...existing, reactions: message.reactions });
+      changed = true;
+    }
   }
 
   // Returning the SAME array when nothing is new matters: this runs inside a
@@ -98,6 +137,78 @@ const merge = (current: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] =
   });
 
   return sorted.length > MAX_RENDERED ? sorted.slice(-MAX_RENDERED) : sorted;
+};
+
+/**
+ * Apply broadcast counts to one message, keeping this viewer's own state.
+ *
+ * The event says how many thumbs there are, not who clicked — so `mine` is
+ * carried over rather than taken from the payload. Overwriting it would make
+ * your own button go dark the instant anybody else reacted to the same line.
+ */
+const applyReaction = (current: ChatMessage[], update: ReactionUpdate): ChatMessage[] => {
+  const index = current.findIndex((message) => message.id === update.message_id);
+
+  // A reaction to something not on screen — scrolled past the render cap, or
+  // arriving before the history fetch lands. The next fetch carries the
+  // counts, so there is nothing to do and nothing to re-render.
+  if (index === -1) return current;
+
+  const message = current[index];
+  const next = [...current];
+
+  next[index] = {
+    ...message,
+    reactions: {
+      up: update.up,
+      down: update.down,
+      mine: message.reactions?.mine ?? null,
+    },
+  };
+
+  return next;
+};
+
+/** Replace one message's whole reaction summary — the answer to our own POST. */
+const setReaction = (
+  current: ChatMessage[],
+  messageId: string,
+  reactions: ReactionSummary
+): ChatMessage[] => {
+  const index = current.findIndex((message) => message.id === messageId);
+  if (index === -1) return current;
+
+  const next = [...current];
+  next[index] = { ...next[index], reactions };
+  return next;
+};
+
+/**
+ * What the counts become if this click is accepted.
+ *
+ * Mirrors the server's toggle rules so the button responds on the same frame
+ * it is pressed, rather than after a round trip. The server's answer replaces
+ * this the moment it lands, and a refusal puts the old summary back — so a
+ * drift here is visible for one network round trip at most, never stored.
+ */
+const predict = (held: ReactionSummary, clicked: ReactionKind): ReactionSummary => {
+  const next: ReactionSummary = { ...held };
+
+  // Clicking what you already hold takes it back.
+  if (held.mine === clicked) {
+    next[clicked] = Math.max(0, held[clicked] - 1);
+    next.mine = null;
+    return next;
+  }
+
+  // Switching sides moves the one vote across rather than adding a second.
+  if (held.mine) next[held.mine] = Math.max(0, held[held.mine] - 1);
+
+  // Past the early return, `held.mine` is null or the other kind, so this
+  // is always an addition of one.
+  next[clicked] = held[clicked] + 1;
+  next.mine = clicked;
+  return next;
 };
 
 export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
@@ -139,6 +250,16 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
    */
   const loadingRef = useRef(false);
   const pendingRef = useRef(false);
+
+  /**
+   * The current messages, for `react` to read without depending on them.
+   *
+   * Written during render, the way ui/Modal mirrors its onClose. Depending on
+   * `messages` instead would rebuild `react` on every line that arrives, and
+   * that function is handed to every row in the list.
+   */
+  const messagesRef = useRef<ChatMessage[]>(messages);
+  messagesRef.current = messages;
 
   /* --- socket state ------------------------------------------------------ */
   useEffect(() => realtimeService.onConnectionState(setConnection), []);
@@ -198,6 +319,18 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
       }
     );
 
+    // Somebody reacted. The payload carries the absolute counts, never a
+    // delta, so applying it twice is harmless — and it deliberately omits
+    // `mine`, which is why the merge below preserves whatever this viewer had.
+    const stopReaction = realtimeService.onChannelEvent(
+      channelName,
+      CHAT_REACTION_EVENT,
+      (update: ReactionUpdate) => {
+        if (cancelled) return;
+        setMessages((current) => applyReaction(current, update));
+      }
+    );
+
     // THE load. It runs once the subscription is open — first time and after
     // every reconnect, which is the only way to recover what soketi dropped
     // while the socket was away.
@@ -218,6 +351,7 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
       clearTimeout(fallback);
       stopReady();
       stopEvent();
+      stopReaction();
       realtimeService.leaveChannel(channelName);
     };
   }, [room, channelName]);
@@ -286,5 +420,34 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
     [room, sending, limits.slow_mode_ms, startCooldown]
   );
 
-  return { messages, loading, error, connection, limits, sending, cooldownMs, send };
+  /**
+   * React, optimistically.
+   *
+   * The count moves on the click and is corrected by the server's answer. A
+   * refusal — your own message, a line that has scrolled out of the room —
+   * restores exactly what was there before rather than guessing the inverse,
+   * which would be wrong if two clicks were in flight.
+   */
+  const react = useCallback(
+    async (messageId: string, reaction: ReactionKind): Promise<void> => {
+      const held =
+        messagesRef.current.find((message) => message.id === messageId)?.reactions ?? NO_REACTIONS;
+
+      setMessages((current) => setReaction(current, messageId, predict(held, reaction)));
+
+      try {
+        const summary = await setChatReaction(messageId, reaction, room);
+        if (summary) {
+          setMessages((current) => setReaction(current, messageId, summary));
+        }
+      } catch (err) {
+        setMessages((current) => setReaction(current, messageId, held));
+        const failure = err as { message?: string };
+        setError(failure?.message || 'Could not save your reaction');
+      }
+    },
+    [room]
+  );
+
+  return { messages, loading, error, connection, limits, sending, cooldownMs, send, react };
 };

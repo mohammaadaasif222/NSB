@@ -11,6 +11,20 @@ import apiService from './api';
  * suggestion.
  */
 
+/** The two reactions a message can carry. */
+export type ReactionKind = 'up' | 'down';
+
+/** A message's reactions, as THIS viewer sees them. */
+export interface ReactionSummary {
+  up: number;
+  down: number;
+  /** What this account reacted, or null. Per-viewer, so it never rides the
+   *  socket — only the counts do. */
+  mine: ReactionKind | null;
+}
+
+export const NO_REACTIONS: ReactionSummary = { up: 0, down: 0, mine: null };
+
 /** One line in a room. The same shape from history and from the socket. */
 export interface ChatMessage {
   id: string;
@@ -21,6 +35,15 @@ export interface ChatMessage {
   body: string;
   /** ISO 8601, set by the server. */
   at: string;
+  /** Absent on a message arriving live — a brand-new line has none yet. */
+  reactions?: ReactionSummary;
+}
+
+/** The counts a `chat.reaction` event carries. No `mine`: see ReactionSummary. */
+export interface ReactionUpdate {
+  message_id: string;
+  up: number;
+  down: number;
 }
 
 /** The room's posting rules, so the composer can apply them without a round trip. */
@@ -50,6 +73,9 @@ export const DEFAULT_CHAT_ROOM = 'global';
  * one place to grep when the pair has to change together.
  */
 export const CHAT_MESSAGE_EVENT = 'chat.message';
+
+/** The socket event a reaction count change arrives on. */
+export const CHAT_REACTION_EVENT = 'chat.reaction';
 
 /**
  * What the composer assumes before the first history call answers.
@@ -82,5 +108,25 @@ export const sendChatMessage = async (
   room = DEFAULT_CHAT_ROOM
 ): Promise<ChatMessage | null> => {
   const res = await apiService.post<ChatMessage>(`/chat/${room}/messages`, { body });
+  return res?.success && res.data ? res.data : null;
+};
+
+/**
+ * Set, swap or clear this account's reaction to somebody else's message.
+ *
+ * Send the reaction the player clicked, not the one they should end up with:
+ * sending the one already held clears it. The toggle is decided on the server
+ * so two open tabs cannot disagree about the current state, and the summary
+ * that comes back is what to render.
+ */
+export const setChatReaction = async (
+  messageId: string,
+  reaction: ReactionKind | null,
+  room = DEFAULT_CHAT_ROOM
+): Promise<ReactionSummary | null> => {
+  const res = await apiService.post<ReactionSummary>(
+    `/chat/${room}/messages/${messageId}/reactions`,
+    { reaction }
+  );
   return res?.success && res.data ? res.data : null;
 };
