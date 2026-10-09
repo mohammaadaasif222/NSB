@@ -2,6 +2,9 @@ import { useCallback, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
+import { analytics } from '@/services/analytics';
+import { ANALYTICS_SIGNUP_METHOD } from '@/constants/auth';
+import { trackSignupComplete } from '@/utils/events';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import AuthModalShell from '@/components/auth/AuthModalShell';
@@ -15,17 +18,13 @@ import type { SignupTarget } from '@/hooks/useSignupForm';
 import type { SignupMethod } from '@/types';
 
 export interface RegisterPrefill {
-  /** Skip the picker and open this form directly. */
   method?: SignupMethod;
-  /** Digits typed into the lobby's signup teaser; implies the mobile form. */
   mobile?: string;
-  /** Dial code picked beside that number. */
   dialCode?: string;
 }
 
 interface RegisterModalProps {
   onClose: () => void;
-  /** Swap to the login modal (the footer's Login, and after verification). */
   onSwitchToLogin: () => void;
   prefill?: RegisterPrefill;
 }
@@ -37,13 +36,6 @@ const FORM_TITLE: Record<SignupMethod, TranslationKey> = {
   email: 'registerModal.withEmail',
 };
 
-/**
- * Registration as a modal: method picker → mobile or email form → OTP.
- *
- * Mounted only while open (see AuthModalContext), so every open starts clean.
- * The form stays mounted, hidden, behind the OTP step: Back from the code
- * screen returns to the form exactly as the player left it.
- */
 const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefill }) => {
   const { t } = useTranslation();
   const google = useGoogleAuth();
@@ -55,14 +47,26 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
   const [target, setTarget] = useState<SignupTarget | null>(null);
 
   const chooseMethod = (next: SignupMethod): void => {
+    analytics.auth.signUpStarted(ANALYTICS_SIGNUP_METHOD[next]);
     setMethod(next);
     setStep('form');
   };
 
-  const handleRegistered = useCallback((next: SignupTarget): void => {
-    setTarget(next);
-    setStep('otp');
-  }, []);
+
+  const handleRegistered = useCallback(
+    (next: SignupTarget): void => {
+      if (!next.otpRequired) {
+        trackSignupComplete(ANALYTICS_SIGNUP_METHOD[next.method]);
+        toast.success(t('registerModal.created'));
+        onSwitchToLogin();
+        return;
+      }
+
+      setTarget(next);
+      setStep('otp');
+    },
+    [onSwitchToLogin, t]
+  );
 
   const title =
     step === 'method'

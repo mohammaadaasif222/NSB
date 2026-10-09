@@ -3,17 +3,21 @@ import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
 import { registerAccount } from '@/services/auth';
+import { apiErrorMessage, transportErrorKey } from '@/lib/apiError';
+import { analytics, failureReason } from '@/services/analytics';
+import { ANALYTICS_SIGNUP_METHOD } from '@/constants/auth';
 import { TURNSTILE_ENABLED } from '@/components/auth/TurnstileWidget';
 import {
   DIAL_CODES,
   EMAIL_PATTERN,
   MOBILE_PATTERN,
   PASSWORD_RULES,
+  SIGNUP_CODE_PATTERN,
   USERNAME_PATTERN,
 } from '@/constants/auth';
 
 import type { TranslationKey } from '@/i18n/locales';
-import type { ApiError, RegisterRequest, SignupMethod } from '@/types';
+import type { RegisterRequest, SignupMethod } from '@/types';
 
 export interface SignupValues {
   username: string;
@@ -26,13 +30,13 @@ export interface SignupValues {
   referralCode: string;
 }
 
-type FieldName = 'username' | 'email' | 'mobile' | 'password' | 'captcha';
+type FieldName =
+  'username' | 'email' | 'mobile' | 'password' | 'promoCode' | 'referralCode' | 'captcha';
 
-/** What the OTP step needs once the account exists. */
 export interface SignupTarget {
   method: SignupMethod;
-  /** Sent back to the API with the code: the email, or the mobile digits. */
   identifier: string;
+  otpRequired: boolean;
 }
 
 interface Options {
@@ -60,13 +64,20 @@ const validate = (
   if (!PASSWORD_RULES.every((rule) => rule.test(v.password))) {
     return { field: 'password', message: 'registerModal.errPassword' };
   }
+
+  if (v.hasCodes && v.promoCode.trim() && !SIGNUP_CODE_PATTERN.test(v.promoCode.trim())) {
+    return { field: 'promoCode', message: 'registerModal.errPromoCode' };
+  }
+  if (v.hasCodes && v.referralCode.trim() && !SIGNUP_CODE_PATTERN.test(v.referralCode.trim())) {
+    return { field: 'referralCode', message: 'registerModal.errReferralCode' };
+  }
   if (TURNSTILE_ENABLED && !captchaToken) {
     return { field: 'captcha', message: 'registerModal.errCaptcha' };
   }
   return null;
 };
 
-/** Only the fields the chosen flow uses; optional ones left out when blank. */
+
 const toRequest = (
   method: SignupMethod,
   v: SignupValues,
@@ -124,13 +135,22 @@ export const useSignupForm = ({
     if (key === invalid) setInvalid(null);
   };
 
+
+  const failureMessage = (error: unknown): string => {
+    const transport = transportErrorKey(error);
+    return transport ? t(transport) : apiErrorMessage(error, t('registerModal.failed'));
+  };
+
   const submit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (submitting) return;
 
+    const tracked = ANALYTICS_SIGNUP_METHOD[method];
+
     const error = validate(method, values, captchaToken);
     if (error) {
       setInvalid(error.field);
+      analytics.auth.signUpFailed(tracked, `${error.field}_invalid`);
       toast.error(t(error.message));
       return;
     }
@@ -143,26 +163,34 @@ export const useSignupForm = ({
 
     setInvalid(null);
     setSubmitting(true);
+    analytics.auth.signUpSubmitted(tracked);
     try {
       const body = toRequest(method, values, captchaToken);
       const res = await registerAccount(body);
 
       if (!res?.success) {
         resetCaptcha();
-        toast.error(res?.message || t('registerModal.failed'));
+        analytics.auth.signUpFailed(tracked, failureReason(res?.message));
+        toast.error(failureMessage(res));
         return;
       }
 
+      analytics.auth.signUpCompleted(tracked);
+
+      const otpRequired = res.data?.otp_required !== false;
+      if (otpRequired) analytics.auth.otpSent('sign_up', tracked);
+
       onRegistered({
         method,
-        identifier: method === 'email' ? (body.email as string) : (body.mobile as string),
+        identifier:
+          res.data?.identifier ??
+          (method === 'email' ? (body.email as string) : (body.mobile as string)),
+        otpRequired,
       });
     } catch (err) {
       resetCaptcha();
-      const apiErr = err as ApiError;
-      // A 422 carries field-keyed messages; surface the first one.
-      const fieldError = apiErr?.errors ? Object.values(apiErr.errors)[0] : undefined;
-      toast.error(fieldError || apiErr?.message || t('registerModal.failed'));
+      analytics.auth.signUpFailed(tracked, failureReason(err));
+      toast.error(failureMessage(err));
     } finally {
       setSubmitting(false);
     }

@@ -45,13 +45,9 @@ const en = {
   'auth.show': 'Show',
   'auth.hide': 'Hide',
 
-  // KYC â€” the player-facing verification journey.
-  //
-  // English only, deliberately. The catalogue's other eight locales are
-  // human-translated; machine-translating compliance copy into eight
-  // languages and presenting it as done would be worse than the honest
-  // fallback, which renders English and is what happens today. These keys
-  // exist so a translator has something to work from.
+  'errors.unreachable': 'Could not reach the server. Check your connection and try again.',
+  'errors.timeout': 'The server took too long to respond. Please try again.',
+
   'kyc.title': 'Identity Verification (KYC)',
   'kyc.loading': 'Loading verification detailsâ€¦',
   'kyc.level1Title': 'Level 1 - Personal Information',
@@ -168,7 +164,11 @@ const en = {
   'registerModal.errMobile': 'Enter a valid mobile number',
   'registerModal.errPassword': "Your password doesn't meet all the requirements",
   'registerModal.errCaptcha': 'Please confirm you are human',
+  'registerModal.errPromoCode': 'A promo code is 3-50 letters, numbers, hyphens or underscores',
+  'registerModal.errReferralCode':
+    'A referral code is 3-50 letters, numbers, hyphens or underscores',
   'registerModal.failed': 'Registration failed. Please try again.',
+  'registerModal.created': 'Your account is ready. Please sign in.',
   'registerModal.otpTitle': 'Enter OTP',
   'registerModal.otpSentMobile':
     'Enter the 6-digit verification code sent to your Mobile number. {target}',
@@ -177,7 +177,6 @@ const en = {
   'registerModal.needHelp': 'Need help?',
   'registerModal.close': 'Close',
 
-  // Login modal
   'loginModal.title': 'Login',
   'loginModal.suggestion': 'Give us suggestion for us',
   'loginModal.username': 'Username',
