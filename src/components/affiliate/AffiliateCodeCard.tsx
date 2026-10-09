@@ -98,7 +98,7 @@ const AffiliateCodeCard: FC = () => {
               target="_blank"
               rel="noreferrer"
               aria-label={t('ref.shareOn', { name })}
-              className="rl-chip relative flex h-12 w-12 shrink-0 items-center justify-center -ms-4.5 first:ms-0 hover:z-10"
+              className="rl-chip-disc relative flex h-12 w-12 shrink-0 items-center justify-center -ms-4.5 first:ms-0 hover:z-10"
               style={{ zIndex: i }}
             >
               <Mark />
