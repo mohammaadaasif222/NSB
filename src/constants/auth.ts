@@ -14,6 +14,8 @@ export const SUPPORT_EMAIL = 'support@rolluck.com';
 
 export const PASSWORD_MIN_LENGTH = 10;
 
+export const PASSWORD_MAX_LENGTH = 100;
+
 export interface PasswordRule {
   id: 'length' | 'lower' | 'upper' | 'special';
   labelKey: TranslationKey;
@@ -40,11 +42,16 @@ export const USERNAME_PATTERN = /^(?!\d+$)[A-Za-z0-9_]{3,20}$/;
 
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** National number, without the dial code (E.164 caps the whole at 15). */
 export const MOBILE_PATTERN = /^[0-9]{6,14}$/;
 
-/** Matches OTP_RESEND_COOLDOWN_MS on the backend. */
+export const SIGNUP_CODE_PATTERN = /^[A-Za-z0-9_-]{3,50}$/;
+
 export const OTP_RESEND_SECONDS = 30;
+
+export const ANALYTICS_SIGNUP_METHOD = {
+  mobile: 'phone',
+  email: 'mail',
+} as const;
 
 export interface DialCode {
   /** ISO 3166 alpha-2, used as the React key and for the flag. */

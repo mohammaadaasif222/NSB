@@ -71,6 +71,7 @@ ENV HOSTNAME=0.0.0.0
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy application files
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/.next ./.next
 
