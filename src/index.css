@@ -1738,22 +1738,6 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
-/* The auth modals' language menu: a lighter frosted panel over the card. */
-@utility rl-lang-menu {
-  border-radius: 20px;
-  background: linear-gradient(180deg, rgba(58, 60, 68, 0.78), rgba(26, 27, 32, 0.86));
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  backdrop-filter: blur(24px) saturate(150%);
-  box-shadow:
-    0 24px 60px -20px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
-
-  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    background: rgba(30, 31, 36, 0.98);
-  }
-}
-
 /* Round back / close control in the modal's top corners. */
 @utility rl-circle-btn {
   color: #fff;

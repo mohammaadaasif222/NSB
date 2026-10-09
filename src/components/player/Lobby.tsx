@@ -38,7 +38,7 @@ interface Props extends LobbyProps {
 
 /** The signed-in lobby's sports row, after Live Casino. */
 const PLAYER_INSERTS: readonly ShelfInsert[] = [
-  { id: 'sports', after: 'live', node: <SportsShelf viewAll="/sports" variant="line" /> },
+  { id: 'sports', after: 'live', node: <SportsShelf viewAll="/sports" paged={false} /> },
 ];
 
 /** The casino page's rows among its shelves: providers after Live Casino, tournaments after Recommended. */

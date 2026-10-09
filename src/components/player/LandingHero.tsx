@@ -248,7 +248,7 @@ const SignupTeaser: FC = () => {
         <SocialDisc icon={whatsappIcon} label="WhatsApp" onClick={() => soon('WhatsApp')} />
         <button
           type="button"
-          onClick={() => openRegister()}
+          onClick={() => openRegister({ social: true })}
           className="ms-[calc(var(--u)*15)] text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-[#9da2b4] transition-colors hover:text-white lg:text-[#6a7287]"
         >
           more option

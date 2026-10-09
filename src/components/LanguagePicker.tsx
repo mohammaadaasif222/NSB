@@ -5,6 +5,50 @@ import globeIcon from '@/assets/lobby/footer/lang-globe.svg';
 import chevronIcon from '@/assets/lobby/footer/lang-chevron.svg';
 import barGlobe from '@/assets/lobby/rail/bar-language.svg';
 import { TranslateIcon, FooterChevron } from '@/components/player/footer/footerIcons';
+import { POPUP_SURFACE } from '@/components/player/popupSurface';
+import type { Locale, LocaleMeta } from '@/i18n/locales';
+
+/**
+ * The language list, as every design draws it: a 142px glass panel headed
+ * "Language", then a row per language — its round flag and its own name —
+ * 35px apart, the current one on a faint pill. Every picker opens this.
+ */
+export const LanguageMenu: FC<{
+  locales: readonly LocaleMeta[];
+  current: Locale;
+  onSelect: (code: Locale) => void;
+  title: string;
+  /** Placement classes (absolute position) from the picker. */
+  className?: string;
+}> = ({ locales, current, onSelect, title, className = '' }) => (
+  <div
+    role="listbox"
+    aria-label={title}
+    className={`z-40 w-[142px] rounded-[24px] px-[7px] pb-[9px] pt-[13px] ${POPUP_SURFACE.raised} ${className}`}
+  >
+    <p className="px-1.5 text-[12px] leading-5 text-[#9da2b4]">{title}</p>
+    <div className="mt-2 flex flex-col gap-[3px]">
+      {locales.map((l) => {
+        const active = l.code === current;
+        return (
+          <button
+            key={l.code}
+            type="button"
+            role="option"
+            aria-selected={active}
+            onClick={() => onSelect(l.code)}
+            className={`flex h-8 w-full items-center gap-[7px] rounded-full px-1.5 text-start text-[14px] font-medium leading-5 text-[#f0f1f5] transition-colors ${
+              active ? 'bg-white/10' : 'hover:bg-white/[0.07]'
+            }`}
+          >
+            <CountryFlag country={l.country} size={21} className="ring-0" />
+            <span className="truncate">{l.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
 
 const ChevronDown: FC<{ open: boolean; size?: number }> = ({ open, size = 12 }) => (
   <svg
@@ -113,15 +157,15 @@ const LanguagePicker: FC<Props> = ({
         ? 'flex h-12 items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 text-[16px] font-medium leading-6 text-white backdrop-blur-md transition-colors hover:bg-white/10'
         : 'flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors';
 
-  const frosted = glass || iconOnly || shell;
-
-  // The auth modals' menu is a frosted panel that rises over its own trigger
-  // and lists every language without scrolling, as in the design.
-  const menuClass = glass
-    ? 'rl-lang-menu absolute start-0 z-40 w-[168px] px-2 pb-2 pt-3'
-    : iconOnly || shell
-      ? `rl-menu absolute ${iconOnly ? 'start-0' : 'end-0'} z-40 w-44 rounded-xl overflow-hidden py-1 max-h-72 overflow-y-auto thin-scrollbar`
-      : 'absolute end-0 z-40 w-44 rounded-xl bg-slate-800 border border-slate-700 shadow-2xl overflow-hidden py-1 max-h-72 overflow-y-auto thin-scrollbar';
+  // Where the list opens. The auth card's rises over its own trigger, as the
+  // design draws it; the rest hang off their trigger on the side with room.
+  const placement = glass
+    ? `start-0 ${dropUp ? 'bottom-0' : 'top-0'}`
+    : iconOnly
+      ? 'start-0 top-12 lg:top-[calc(var(--u)*56)]'
+      : dropUp
+        ? `end-0 ${shell ? 'bottom-14' : 'bottom-11'}`
+        : 'end-0 top-11';
 
   return (
     <div className="relative" ref={ref}>
@@ -170,70 +214,16 @@ const LanguagePicker: FC<Props> = ({
       </button>
 
       {open && (
-        <div
-          role="listbox"
-          aria-label={t('common.language')}
-          className={`${menuClass} ${
-            glass
-              ? dropUp
-                ? 'bottom-0'
-                : 'top-0'
-              : dropUp
-                ? shell
-                  ? 'bottom-14'
-                  : 'bottom-11'
-                : iconOnly
-                  ? 'top-12 lg:top-[calc(var(--u)*56)]'
-                  : 'top-11'
-          }`}
-        >
-          {glass && <p className="px-2 pb-2 text-[12px] text-white/60">{t('common.language')}</p>}
-          {locales.map((l) => {
-            const active = l.code === locale;
-            const activeClass = glass
-              ? 'bg-white/10 text-white'
-              : frosted
-                ? 'bg-white/15 text-white'
-                : 'bg-blue-600/15 text-blue-300';
-            const idleClass = glass
-              ? 'text-white hover:bg-white/[0.07]'
-              : frosted
-                ? 'text-white/75 hover:bg-white/10 hover:text-white'
-                : 'text-slate-200 hover:bg-white/5';
-
-            return (
-              <button
-                key={l.code}
-                type="button"
-                role="option"
-                aria-selected={active}
-                onClick={() => {
-                  setLocale(l.code);
-                  setOpen(false);
-                }}
-                className={`flex w-full items-center transition-colors ${
-                  glass ? 'gap-3 rounded-xl px-2 py-1.5 text-[14px]' : 'gap-2.5 px-3 py-2 text-sm'
-                } ${active ? activeClass : idleClass}`}
-              >
-                <CountryFlag country={l.country} size={glass ? 22 : 18} />
-                <span className="flex-1 text-start">{l.label}</span>
-                {active && !glass && (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    aria-hidden="true"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <LanguageMenu
+          locales={locales}
+          current={locale}
+          title={t('common.language')}
+          onSelect={(code) => {
+            setLocale(code);
+            setOpen(false);
+          }}
+          className={`absolute ${placement}`}
+        />
       )}
     </div>
   );

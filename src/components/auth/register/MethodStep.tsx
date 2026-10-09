@@ -14,6 +14,8 @@ interface MethodStepProps {
   onTelegram: () => void;
   /** Providers the backend does not support yet (Facebook, WhatsApp). */
   onUnavailable: (provider: string) => void;
+  /** "more option": every social provider, on a step of its own. */
+  onMore: () => void;
   googleBusy?: boolean;
 }
 
@@ -23,6 +25,7 @@ const MethodStep: FC<MethodStepProps> = ({
   onGoogle,
   onTelegram,
   onUnavailable,
+  onMore,
   googleBusy,
 }) => {
   const { t } = useTranslation();
@@ -83,7 +86,13 @@ const MethodStep: FC<MethodStepProps> = ({
             <WhatsappMark size={19} />
           </SocialDot>
         </div>
-        <span className="text-[15px] text-white/70">{t('registerModal.moreOptions')}</span>
+        <button
+          type="button"
+          onClick={onMore}
+          className="text-[15px] text-white/70 transition-colors hover:text-white"
+        >
+          {t('registerModal.moreOptions')}
+        </button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react';
+import type { CSSProperties, FC, ReactNode } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
@@ -28,7 +28,6 @@ import volleyball from '@/assets/lobby/sports/volleyball.webp';
 import wrestling from '@/assets/lobby/sports/wrestling.webp';
 import sportsbook from '@/assets/lobby/sports/sportsbook.webp';
 import mma from '@/assets/lobby/sports/mma.webp';
-import { SPORTS, sportHref } from '@/constants/sportsbook';
 
 /**
  * The sportsbook teasers.
@@ -90,59 +89,55 @@ const DISCIPLINES: Discipline[] = [
  * its label at the foot. What sits above the label is the caller's: a 3D
  * render or a line icon.
  */
-const TileShell: FC<{ label: string; href?: string; children: ReactNode }> = ({
-  label,
-  href = '/sports',
-  children,
-}) => {
-  return (
-    <Link
-      href={href}
-      title={label}
-      className="rl-liquid group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
-    >
-      {children}
-      <span className="absolute inset-x-1 bottom-[calc(var(--u)*22)] text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white lg:bottom-[calc(var(--u)*28)] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:font-semibold lg:leading-[calc(var(--u)*28)]">
-        {label}
-      </span>
-    </Link>
-  );
-};
+const TileShell: FC<{ label: string; children: ReactNode }> = ({ label, children }) => (
+  <Link
+    href="/sports"
+    title={label}
+    className="rl-liquid group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
+  >
+    {children}
+    <span className="absolute inset-x-1 bottom-[calc(var(--u)*22)] text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white lg:bottom-[calc(var(--u)*28)] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:font-semibold lg:leading-[calc(var(--u)*28)]">
+      {label}
+    </span>
+  </Link>
+);
 
 /** A tile with the discipline's 3D render, placed as the design places it. */
-const DisciplineTile: FC<{ sport: Discipline }> = ({ sport }) => {
+const DisciplineTile: FC<{ sport: Discipline; phoneLarge?: boolean }> = ({
+  sport,
+  phoneLarge = false,
+}) => {
   const [x, y, w] = sport.box;
+  // The signed-in phone design draws the renders bigger on its 122px tile —
+  // a 99px render at 74, 16px from the top, centred — so each box is scaled
+  // by 74/99 from the desktop's, keeping wide renders (CS2, MMA) wide.
+  const phone = { width: w * (74 / 99), top: 16 + (y - 21) * (74 / 99) };
 
   return (
     <TileShell label={sport.label}>
       <Image
         src={sport.art}
         alt=""
-        sizes="(max-width: 1024px) 80px, 150px"
-        className="absolute h-auto transition-transform duration-300 group-hover:-translate-y-1"
-        style={{
-          left: `${(x / 198) * 100}%`,
-          top: `${(y / 192) * 100}%`,
-          width: `${(w / 198) * 100}%`,
-        }}
+        sizes="(max-width: 1024px) 110px, 150px"
+        className={`absolute h-auto transition-transform duration-300 group-hover:-translate-y-1 ${
+          phoneLarge
+            ? 'left-[var(--pl)] top-[var(--pt)] w-[var(--pw)] lg:left-[var(--dl)] lg:top-[var(--dt)] lg:w-[var(--dw)]'
+            : 'left-[var(--dl)] top-[var(--dt)] w-[var(--dw)]'
+        }`}
+        style={
+          {
+            '--dl': `${(x / 198) * 100}%`,
+            '--dt': `${(y / 192) * 100}%`,
+            '--dw': `${(w / 198) * 100}%`,
+            '--pl': `calc(50% - ${phone.width / 2}px)`,
+            '--pt': `${phone.top}px`,
+            '--pw': `${phone.width}px`,
+          } as CSSProperties
+        }
       />
     </TileShell>
   );
 };
-
-/**
- * A tile with the discipline's 82px line icon, centred above the label —
- * the signed-in lobby's version, opening that sport's page.
- */
-const LineTile: FC<{ sport: (typeof SPORTS)[number] }> = ({ sport }) => (
-  <TileShell label={sport.label} href={sportHref(sport.key)}>
-    <img
-      src={sport.icon.src}
-      alt=""
-      className="absolute left-1/2 top-[calc(var(--u)*11)] h-[calc(var(--u)*82)] w-[calc(var(--u)*82)] -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-1 lg:top-[calc(var(--u)*34)]"
-    />
-  </TileShell>
-);
 
 /* ==================================================================== */
 /* Fixtures                                                              */
@@ -262,20 +257,18 @@ interface ShelfProps {
 }
 
 /**
- * The disciplines shelf. `line` is the signed-in lobby's version, with line
- * icons; the default has the 3D renders.
+ * The disciplines shelf: a tile per sport with its 3D render. Signed out, a
+ * phone pages it three by two, as that design does; the signed-in design runs
+ * it as one row of three, like the game shelves (`paged={false}`).
  */
-export const SportsShelf: FC<ShelfProps & { variant?: '3d' | 'line' }> = ({
-  viewAll,
-  variant = '3d',
-}) => {
+export const SportsShelf: FC<ShelfProps & { paged?: boolean }> = ({ viewAll, paged = true }) => {
   const { t } = useTranslation();
 
   return (
-    <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll} paged>
-      {variant === 'line'
-        ? SPORTS.map((sport) => <LineTile key={sport.key} sport={sport} />)
-        : DISCIPLINES.map((sport) => <DisciplineTile key={sport.label} sport={sport} />)}
+    <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll} paged={paged}>
+      {DISCIPLINES.map((sport) => (
+        <DisciplineTile key={sport.label} sport={sport} phoneLarge={!paged} />
+      ))}
     </ScrollShelf>
   );
 };
