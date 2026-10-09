@@ -2,10 +2,11 @@ import { useLayoutEffect, useMemo, useRef, useState, type FC, type FormEvent } f
 import { useTranslation } from '@/context/I18nContext';
 import { useMe } from '@/context/UserContext';
 import { useGroupChat } from '@/hooks/useGroupChat';
-import { PanelHeader, PanelIconButton } from '@/components/player/HeaderPopover';
-import { CloseIcon, SendIcon, ChatIcon } from '@/components/icons';
+import EmojiPopover from '@/components/player/EmojiPopover';
+import { ArrowUpIcon, ChatIcon, CloseIcon, SmileIcon } from '@/components/icons';
 import type { ChatMessage } from '@/services/chat';
 import type { ConnectionState } from '@/services/realtimeService';
+
 /**
  * The lobby's group chat.
  *
@@ -14,10 +15,12 @@ import type { ConnectionState } from '@/services/realtimeService';
  * listens to, by design, so there is no path into the room that skips the
  * API's checks (see services/chat.ts).
  *
- * The panel mounts and unmounts with the header popover, and useGroupChat is
- * tied to that: closing it drops the subscription rather than holding one
- * open behind a shut tray.
+ * This is the panel's contents only; ChatDrawer is the sliding shell around
+ * it. The split matters for the subscription: the drawer unmounts this after
+ * the closing slide, and useGroupChat is tied to that mount, so a shut drawer
+ * holds no socket.
  */
+
 /** A deterministic tint per author, so the same person keeps the same colour. */
 const AVATAR_TONES = [
   'bg-amber-500',
@@ -29,6 +32,7 @@ const AVATAR_TONES = [
   'bg-violet-600',
   'bg-lime-600',
 ];
+
 /**
  * Pick a tone from the author's id.
  *
@@ -43,13 +47,16 @@ const toneFor = (userId: string): string => {
   }
   return AVATAR_TONES[Math.abs(hash) % AVATAR_TONES.length];
 };
+
 const initialOf = (name: string): string => name.trim().charAt(0).toUpperCase() || '?';
+
 /** Wall-clock time, in the viewer's own locale and zone. */
 const timeOf = (iso: string): string => {
   const at = new Date(iso);
   if (Number.isNaN(at.getTime())) return '';
-  return at.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return at.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 };
+
 const Avatar: FC<{ message: ChatMessage }> = ({ message }) =>
   message.avatar_url ? (
     // Not next/image: the URL is whatever a player set, so it is not a
@@ -58,11 +65,11 @@ const Avatar: FC<{ message: ChatMessage }> = ({ message }) =>
     <img
       src={message.avatar_url}
       alt=""
-      className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
+      className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
     />
   ) : (
     <span
-      className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${toneFor(
+      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${toneFor(
         message.user_id
       )}`}
       aria-hidden="true"
@@ -70,47 +77,77 @@ const Avatar: FC<{ message: ChatMessage }> = ({ message }) =>
       {initialOf(message.name)}
     </span>
   );
+
 interface RowProps {
   message: ChatMessage;
-  /** The viewer's own line — highlighted so a room is skimmable. */
+  /** The viewer's own line. Drawn as a bubble on the end edge. */
   mine: boolean;
   /** Same author as the line above, within a couple of minutes. */
   grouped: boolean;
 }
-const MessageRow: FC<RowProps> = ({ message, mine, grouped }) => (
-  <li className={`flex gap-2 ${grouped ? 'mt-0.5' : 'mt-3'}`}>
-    {/* The gutter is held open on a grouped line rather than removed, so the
-        text of consecutive messages stays on one left edge. */}
-    {grouped ? (
-      <span className="h-7 w-7 flex-shrink-0" aria-hidden="true" />
-    ) : (
-      <Avatar message={message} />
-    )}
-    <div className="min-w-0 flex-1">
-      {!grouped && (
-        <div className="flex items-baseline gap-2">
-          <span
-            className={`truncate text-[11px] font-bold ${mine ? 'text-blue-400' : 'text-slate-300'}`}
-          >
-            {message.name}
-          </span>
-          <time dateTime={message.at} className="flex-shrink-0 text-[10px] text-slate-500">
-            {timeOf(message.at)}
-          </time>
-        </div>
+
+/**
+ * One line.
+ *
+ * The two sides are deliberately NOT symmetrical. Someone else's message
+ * needs an avatar and a name, because the question it answers is "who said
+ * this?". Your own needs neither — you know — so it is a bubble pushed to the
+ * end edge with the time underneath, which is the shape every messaging app
+ * has trained people to read as "mine".
+ */
+const MessageRow: FC<RowProps> = ({ message, mine, grouped }) =>
+  mine ? (
+    <li className={`flex flex-col items-end ${grouped ? 'mt-1' : 'mt-3'}`}>
+      {/* 85%, not a fixed width: a two-word message should be a two-word
+          bubble, and a long one still has to leave the left edge visible so
+          the alignment still reads as "mine". */}
+      <div className="max-w-[85%] rounded-2xl rounded-ee-md bg-[#2b3141] px-3.5 py-2">
+        <p className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-slate-100">
+          {message.body}
+        </p>
+      </div>
+      {/* Under the bubble rather than beside the name, because there is no
+          name on this side to put it beside. */}
+      <time dateTime={message.at} className="mt-1 pe-1 text-[10px] text-slate-500">
+        {timeOf(message.at)}
+      </time>
+    </li>
+  ) : (
+    <li className={`flex gap-2.5 ${grouped ? 'mt-1' : 'mt-3'}`}>
+      {/* The gutter is held open on a grouped line rather than removed, so the
+          text of consecutive messages stays on one left edge. */}
+      {grouped ? (
+        <span className="h-8 w-8 flex-shrink-0" aria-hidden="true" />
+      ) : (
+        <Avatar message={message} />
       )}
-      {/* `break-words` and `whitespace-pre-wrap`: the body keeps the newlines
-          the sender typed, and an unbroken 300-character string must wrap
-          instead of widening the panel. Rendered as a text node — React
-          escapes it, which is why the API stores it unescaped. */}
-      <p className="whitespace-pre-wrap break-words text-xs leading-relaxed text-slate-200">
-        {message.body}
-      </p>
-    </div>
-  </li>
-);
+
+      <div className="min-w-0 flex-1">
+        {!grouped && (
+          <div className="flex items-baseline gap-2">
+            <span className="truncate text-[13px] font-semibold text-[#4a9eff]">
+              {message.name}
+            </span>
+            <time dateTime={message.at} className="flex-shrink-0 text-[10px] text-slate-500">
+              {timeOf(message.at)}
+            </time>
+          </div>
+        )}
+
+        {/* `break-words` and `whitespace-pre-wrap`: the body keeps the newlines
+            the sender typed, and an unbroken 300-character string must wrap
+            instead of widening the panel. Rendered as a text node — React
+            escapes it, which is why the API stores it unescaped. */}
+        <p className="mt-0.5 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-slate-200">
+          {message.body}
+        </p>
+      </div>
+    </li>
+  );
+
 /** How close consecutive messages must be to be grouped under one heading. */
 const GROUPING_WINDOW_MS = 120_000;
+
 const Empty: FC<{ message: string }> = ({ message }) => (
   <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-slate-600">
@@ -119,6 +156,7 @@ const Empty: FC<{ message: string }> = ({ message }) => (
     <p className="text-xs text-slate-500">{message}</p>
   </div>
 );
+
 /**
  * The socket's state, shown only when it is not `connected`.
  *
@@ -128,20 +166,26 @@ const Empty: FC<{ message: string }> = ({ message }) => (
  */
 const ConnectionNote: FC<{ state: ConnectionState; label: string }> = ({ state, label }) => {
   if (state === 'connected') return null;
+
   return (
-    <p className="border-t border-slate-700 bg-slate-900/60 px-4 py-1.5 text-center text-[10px] text-amber-400/90">
+    <p className="border-t border-slate-800 bg-slate-900/60 px-4 py-1.5 text-center text-[10px] text-amber-400/90">
       {label}
     </p>
   );
 };
+
 const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation();
   const { me } = useMe();
   const { messages, loading, error, connection, limits, sending, cooldownMs, send } =
     useGroupChat();
+
   const [draft, setDraft] = useState('');
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   /**
    * Whether the player is following the bottom of the room.
    *
@@ -154,13 +198,16 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
    * asked.
    */
   const pinned = useRef(true);
+
   const trackPinned = (): void => {
     const list = listRef.current;
     if (!list) return;
+
     // 48px of slack: a player who has nudged up a line or two is still
     // following the room, and an exact-zero test would fight them.
     pinned.current = list.scrollHeight - list.scrollTop - list.clientHeight < 48;
   };
+
   /**
    * Follow the room, but only for someone who was already at the bottom.
    * Scrolling up to read something is a deliberate act, and the next message
@@ -175,9 +222,11 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
       endRef.current?.scrollIntoView({ block: 'end' });
     }
   }, [messages]);
+
   const cooling = cooldownMs > 0;
   const tooLong = draft.trim().length > limits.max_length;
   const canSend = draft.trim().length > 0 && !tooLong && !sending && !cooling;
+
   /**
    * Group consecutive lines from one author.
    *
@@ -198,29 +247,69 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
       }),
     [messages]
   );
+
+  /**
+   * Drop an emoji in at the caret, not at the end.
+   *
+   * Someone who clicks back into the middle of a sentence to add a face means
+   * it to go there. Appending would quietly move it, and is the thing that
+   * makes a picker feel bolted on.
+   */
+  const insertEmoji = (emoji: string): void => {
+    const input = inputRef.current;
+
+    if (!input) {
+      setDraft((current) => current + emoji);
+      return;
+    }
+
+    const start = input.selectionStart ?? draft.length;
+    const end = input.selectionEnd ?? start;
+
+    setDraft(draft.slice(0, start) + emoji + draft.slice(end));
+
+    // After React has written the new value back, or the caret would be set
+    // against the old one and jump as soon as it re-renders.
+    requestAnimationFrame(() => {
+      input.focus();
+      const caret = start + emoji.length;
+      input.setSelectionRange(caret, caret);
+    });
+  };
+
   const submit = (e: FormEvent): void => {
     e.preventDefault();
     if (!canSend) return;
+
     const body = draft;
     // Cleared optimistically so typing the next message is never blocked on
     // the round trip; restored below if the send is refused, so nothing a
     // player typed is lost to a failure.
     setDraft('');
+    setEmojiOpen(false);
+
     void send(body).then((accepted) => {
       if (!accepted) setDraft((current) => (current.length === 0 ? body : current));
     });
   };
+
   const remaining = limits.max_length - draft.trim().length;
+
   return (
-    <div className="flex h-[30rem] flex-col">
-      <PanelHeader
-        title={t('chat.title')}
-        action={
-          <PanelIconButton label={t('nav.closeMenu')} onClick={onClose}>
-            <CloseIcon size={17} />
-          </PanelIconButton>
-        }
-      />
+    <>
+      <header className="flex items-center justify-between gap-2 border-b border-slate-800 px-4 py-3.5">
+        <h2 className="text-base font-bold text-white">{t('chat.title')}</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('nav.closeMenu')}
+          title={t('nav.closeMenu')}
+          className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <CloseIcon size={18} />
+        </button>
+      </header>
+
       {loading && messages.length === 0 ? (
         <Empty message={t('chat.loading')} />
       ) : messages.length === 0 ? (
@@ -246,53 +335,83 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
           <div ref={endRef} />
         </div>
       )}
+
       {error && (
         <p role="alert" className="px-4 pb-1 text-[10px] text-rose-400">
           {error}
         </p>
       )}
+
       <ConnectionNote state={connection} label={t('chat.reconnecting')} />
-      <form onSubmit={submit} className="flex items-center gap-2 border-t border-slate-700 p-3">
-        <div className="relative min-w-0 flex-1">
-          <input
-            type="text"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            // A generous ceiling rather than the exact cap: typing should stop
-            // at a counter the player can see, not at a field that silently
-            // swallows keystrokes. The real limit is the counter and the
-            // disabled button, and the API enforces it regardless.
-            maxLength={limits.max_length * 2}
-            placeholder={cooling ? t('chat.slowMode') : t('chat.placeholder')}
-            aria-label={t('chat.placeholder')}
-            aria-invalid={tooLong}
-            className={`w-full rounded-xl border bg-slate-900 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500/60 ${
-              tooLong ? 'border-rose-500/60' : 'border-slate-700'
-            }`}
-          />
-          {/* Shown only once it is nearly relevant — a counter sitting at 300
-              from the first keystroke is just clutter. */}
-          {remaining <= 60 && (
-            <span
-              className={`pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 text-[10px] ${
-                remaining < 0 ? 'text-rose-400' : 'text-slate-500'
+
+      {/* `relative` so the emoji popover can anchor to the composer. */}
+      <form onSubmit={submit} className="relative border-t border-slate-800 p-3">
+        <EmojiPopover
+          open={emojiOpen}
+          onClose={() => setEmojiOpen(false)}
+          onPick={insertEmoji}
+          label={t('chat.emoji')}
+        />
+
+        <div className="flex items-center gap-2">
+          <div className="relative flex min-w-0 flex-1 items-center rounded-full border border-slate-700 bg-slate-900 ps-4 pe-1 transition-colors focus-within:border-blue-500/60">
+            <input
+              ref={inputRef}
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              // A generous ceiling rather than the exact cap: typing should
+              // stop at a counter the player can see, not at a field that
+              // silently swallows keystrokes. The real limit is the counter
+              // and the disabled button, and the API enforces it regardless.
+              maxLength={limits.max_length * 2}
+              placeholder={cooling ? t('chat.slowMode') : t('chat.placeholder')}
+              aria-label={t('chat.placeholder')}
+              aria-invalid={tooLong}
+              className="min-w-0 flex-1 bg-transparent py-2.5 text-[13px] text-slate-100 placeholder:text-slate-500 outline-none"
+            />
+
+            {/* Shown only once it is nearly relevant — a counter sitting at
+                300 from the first keystroke is just clutter. */}
+            {remaining <= 60 && (
+              <span
+                className={`pointer-events-none px-1 text-[10px] ${
+                  remaining < 0 ? 'text-rose-400' : 'text-slate-500'
+                }`}
+              >
+                {remaining}
+              </span>
+            )}
+
+            <button
+              type="button"
+              data-emoji-toggle
+              onClick={() => setEmojiOpen((v) => !v)}
+              aria-label={t('chat.emoji')}
+              title={t('chat.emoji')}
+              aria-expanded={emojiOpen}
+              aria-haspopup="dialog"
+              className={`inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/10 ${
+                emojiOpen ? 'text-[#4a9eff]' : 'text-slate-400 hover:text-white'
               }`}
             >
-              {remaining}
-            </span>
-          )}
+              <SmileIcon size={18} />
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={!canSend}
+            aria-label={t('chat.send')}
+            title={cooling ? t('chat.slowMode') : t('chat.send')}
+            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#2b3141] text-white transition-colors hover:bg-[#363d50] disabled:text-slate-500 disabled:hover:bg-[#2b3141]"
+          >
+            <ArrowUpIcon size={18} />
+          </button>
         </div>
-        <button
-          type="submit"
-          disabled={!canSend}
-          aria-label={t('chat.send')}
-          title={cooling ? t('chat.slowMode') : t('chat.send')}
-          className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition-colors hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-400"
-        >
-          <SendIcon size={16} />
-        </button>
       </form>
-    </div>
+    </>
   );
 };
+
 export default ChatPanel;

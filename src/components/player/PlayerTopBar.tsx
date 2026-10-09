@@ -28,6 +28,7 @@ import LanguagePicker from '@/components/LanguagePicker';
 import HeaderPopover from '@/components/player/HeaderPopover';
 import NotificationPanel from '@/components/player/NotificationPanel';
 import ChatPanel from '@/components/player/ChatPanel';
+import ChatDrawer from '@/components/player/ChatDrawer';
 import RewardPanel from '@/components/player/RewardPanel';
 import GameSearchModal from '@/components/player/GameSearchModal';
 import { fullNameOf } from '@/types/profile';
@@ -335,30 +336,26 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
                 {/* The platform's own chat. Independent of the Intercom
                     bubble: an operator can run either, both, or neither from
-                    System config. */}
+                    System config.
+
+                    Just the button here — unlike the trays beside it, chat is
+                    a full-height drawer rather than a dropdown, so it is
+                    rendered outside the bar (and portalled out of it; see
+                    ChatDrawer) instead of hanging off this trigger. */}
                 {internalChatEnabled && (
-                  <HeaderPopover
-                    open={panel === 'chat'}
-                    onClose={closePanel}
+                  <IconButton
                     label={t('nav.liveChat')}
-                    className="hidden lg:block"
-                    trigger={
-                      <IconButton
-                        label={t('nav.liveChat')}
-                        onClick={() => togglePanel('chat')}
-                        aria-expanded={panel === 'chat'}
-                        className="inline-flex"
-                      >
-                        <img
-                          src={chatGlyph.src}
-                          alt=""
-                          className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
-                        />
-                      </IconButton>
-                    }
+                    onClick={() => togglePanel('chat')}
+                    aria-expanded={panel === 'chat'}
+                    aria-haspopup="dialog"
+                    className="hidden lg:inline-flex"
                   >
-                    <ChatPanel onClose={closePanel} />
-                  </HeaderPopover>
+                    <img
+                      src={chatGlyph.src}
+                      alt=""
+                      className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
+                    />
+                  </IconButton>
                 )}
               </>
             )}
@@ -475,6 +472,15 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
       <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
       <WalletSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {/* Out here rather than beside the button: the drawer is full-height and
+          portals to the body, and the bar is a bad place to read that from.
+          It is NOT gated on `internalChatEnabled && token` as a separate
+          condition — `panel` can only become 'chat' from the button above,
+          which already is. */}
+      <ChatDrawer open={panel === 'chat'} onClose={closePanel} label={t('nav.liveChat')}>
+        <ChatPanel onClose={closePanel} />
+      </ChatDrawer>
     </>
   );
 };
