@@ -13,6 +13,7 @@ import type { AuthContextType, AuthUser, JwtPayload } from '@/types';
 import { isVip } from '@/constants/roles';
 import apiService from '@/services/api';
 import { analytics } from '@/services/analytics';
+import { forgetAllSignedUrls } from '@/lib/signedAssets';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -107,6 +108,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       .catch(() => undefined)
       .finally(() => {
         sessionStorage.clear();
+        forgetAllSignedUrls();
         setToken(null);
         toast.success('Logged out successfully');
       });

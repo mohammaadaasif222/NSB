@@ -29,6 +29,7 @@ import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
 import { CoinIcon, HandshakeIcon } from '@/components/icons';
+import { inlineAssetUrl } from '@/lib/publicAssets';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -76,6 +77,14 @@ const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onC
       }`}
     >
       <img src={art} alt="" className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none" />
+      {/* <img
+        src={inlineAssetUrl('private/ebay.jpeg')}
+        alt=""
+        className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none"
+        onError={(e) => {
+          e.currentTarget.src = art;
+        }}
+      /> */}
     </span>
     <span
       className={`text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] ${
