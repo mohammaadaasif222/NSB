@@ -20,6 +20,6 @@ export const LEGAL = {
   supportEmail: 'support@rolluck.com',
   /** Where privacy requests go. Point at a dedicated mailbox if one exists. */
   privacyEmail: 'support@rolluck.com',
-  /** Shown as "Last updated" on both documents. */
-  updated: '19 September 2026',
+  /** Shown as "Last updated" on both documents (ISO date; formatted per locale). */
+  updated: '2026-09-19',
 } as const;

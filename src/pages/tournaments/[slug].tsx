@@ -15,6 +15,7 @@ import PromoTextPanel from '@/components/promotions/PromoTextPanel';
 import type { Countdown } from '@/components/promotions/CountdownBar';
 import { ChevronLeftIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 import { fetchShelfList } from '@/services/games.server';
 import type { Game } from '@/types';
 import {
@@ -26,7 +27,8 @@ import {
 } from '@/constants/tournaments';
 
 interface Props {
-  title: string;
+  /** An i18n key while the copy is the design's placeholder. */
+  title: TranslationKey;
   image: StaticImageData;
   active: boolean;
   prizePool: string;
@@ -65,14 +67,23 @@ const TournamentDetailPage: FC<Props> = ({
   endsIn,
   games,
 }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const heading = t(title);
+
+  const day = (iso: string): string =>
+    new Date(iso).toLocaleDateString(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
 
   const rows = [games.slice(0, PER_ROW), games.slice(PER_ROW)].filter((row) => row.length > 0);
 
   return (
     <PlayerLayout>
       <Head>
-        <title>{`${title} · ROLLUCK`}</title>
+        <title>{`${heading} · ROLLUCK`}</title>
       </Head>
 
       {/* Explicit margins rather than `space-y`: the design's gaps down this
@@ -90,7 +101,7 @@ const TournamentDetailPage: FC<Props> = ({
             </Link>
 
             <h1 className="min-w-0 truncate text-[22px] font-semibold leading-8 tracking-[-0.02em] text-[#f4fffb] lg:text-[length:max(16px,calc(var(--u)*44))] lg:leading-[calc(var(--u)*52)]">
-              {title}
+              {heading}
             </h1>
 
             {/* The same pill either way — green and counting, or red and
@@ -119,8 +130,8 @@ const TournamentDetailPage: FC<Props> = ({
               <TournamentSummaryHero
                 image={image}
                 prizePool={prizePool}
-                startDate={TOURNAMENT_SUMMARY.startDate}
-                endDate={TOURNAMENT_SUMMARY.endDate}
+                startDate={day(TOURNAMENT_SUMMARY.startDate)}
+                endDate={day(TOURNAMENT_SUMMARY.endDate)}
                 joined={joined}
                 capacity={capacity}
                 record={TOURNAMENT_SUMMARY.record}

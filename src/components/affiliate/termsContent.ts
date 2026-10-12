@@ -1,3 +1,5 @@
+import type { TranslationKey } from '@/i18n/locales';
+
 /**
  * The summary terms the Affiliate page prints.
  *
@@ -11,86 +13,69 @@
  * genuine summary that is reviewed alongside the full document, or the panel
  * links to `/terms-of-service` instead of restating it. Counsel's call, not
  * this file's — but it is kept in one place so it is a single edit either way.
+ *
+ * The words are the full document's own — the first nine Terms sections,
+ * verbatim — so this reuses the `legal.terms.*` translation keys rather than
+ * keeping a second copy of the same text in eight languages.
  */
 
 export interface TermsSection {
-  /** Numbered exactly as the design prints them. */
-  heading: string;
-  points: readonly string[];
+  /** Numbered exactly as the design prints them. Translation key. */
+  heading: TranslationKey;
+  points: readonly TranslationKey[];
 }
 
-export const TERMS_INTRO =
-  'Welcome to Rolluck. By creating an account or using our website, games, promotions, and services, you agree to these Terms & Conditions.';
+export const TERMS_INTRO: TranslationKey = 'legal.terms.intro';
 
 export const TERMS_SECTIONS: readonly TermsSection[] = [
   {
-    heading: '1. About Rolluck',
+    heading: 'legal.terms.about.title',
+    points: ['legal.terms.about.p1'],
+  },
+  {
+    heading: 'legal.terms.eligibility.title',
     points: [
-      'Rolluck provides online gaming and entertainment services through its website and related platforms. These Terms explain the rules that apply when you use our services.',
+      'legal.terms.eligibility.p1',
+      'legal.terms.eligibility.p2',
+      'legal.terms.eligibility.p3',
     ],
   },
   {
-    heading: '2. Eligibility',
+    heading: 'legal.terms.account.title',
     points: [
-      'You must meet the minimum legal age and all other eligibility requirements applicable in your location to use Rolluck.',
-      'You are responsible for ensuring that online gaming is legally permitted in your jurisdiction.',
-      'Rolluck reserves the right to verify your age, identity, and eligibility at any time.',
+      'legal.terms.account.p1',
+      'legal.terms.account.p2',
+      'legal.terms.account.p3',
+      'legal.terms.account.p4',
     ],
   },
   {
-    heading: '3. Your Account',
+    heading: 'legal.terms.deposits.title',
     points: [
-      'You are responsible for providing accurate and up-to-date information when creating your account.',
-      'You must keep your login details confidential and must not allow another person to use your account.',
-      'One person may only maintain accounts as permitted by Rolluck.',
-      'If we identify suspicious, fraudulent, or unauthorized activity, we may restrict, suspend, or close an account.',
+      'legal.terms.deposits.p1',
+      'legal.terms.deposits.p2',
+      'legal.terms.deposits.p3',
+      'legal.terms.deposits.p4',
     ],
   },
   {
-    heading: '4. Deposits & Withdrawals',
-    points: [
-      'All deposits must come from a payment method that you are authorized to use.',
-      'You are responsible for checking your balance and transaction information.',
-      'Withdrawals may require identity verification and additional checks before being processed.',
-      'Processing times may vary depending on the payment method and verification requirements.',
-    ],
+    heading: 'legal.terms.games.title',
+    points: ['legal.terms.games.p1', 'legal.terms.games.p2', 'legal.terms.games.p3'],
   },
   {
-    heading: '5. Games & Results',
-    points: [
-      'All games are subject to their individual rules and conditions.',
-      'Game results are determined by the applicable game systems and technologies used by Rolluck.',
-      'In the event of a technical issue, system error, or malfunction, Rolluck may take appropriate action, including voiding affected transactions or games where permitted by applicable law.',
-    ],
+    heading: 'legal.terms.bonuses.title',
+    points: ['legal.terms.bonuses.p1', 'legal.terms.bonuses.p2', 'legal.terms.bonuses.p3'],
   },
   {
-    heading: '6. Bonuses & Promotions',
-    points: [
-      'Promotions, bonuses, rewards, and campaigns may have their own specific terms.',
-      'You must read and understand the applicable promotional conditions before participating.',
-      'Rolluck reserves the right to cancel, modify, or withdraw a promotion where permitted by applicable law.',
-    ],
+    heading: 'legal.terms.rg.title',
+    points: ['legal.terms.rg.p1', 'legal.terms.rg.p2', 'legal.terms.rg.p3'],
   },
   {
-    heading: '7. Responsible Gaming',
-    points: [
-      'We want gaming to remain entertainment.',
-      'Set limits, understand your spending, and only play with money you can afford to lose.',
-      'If gaming stops feeling like entertainment, take a break and use the responsible gaming tools available through Rolluck.',
-    ],
+    heading: 'legal.terms.prohibited.title',
+    points: ['legal.terms.prohibited.p1', 'legal.terms.prohibited.p2'],
   },
   {
-    heading: '8. Prohibited Activities',
-    points: [
-      'You must not use Rolluck for fraud, money laundering, unauthorized transactions, cheating, manipulation, or any other unlawful activity.',
-      'You must not attempt to interfere with our website, games, systems, or security measures.',
-    ],
-  },
-  {
-    heading: '9. Account Suspension & Closure',
-    points: [
-      'Rolluck may suspend or close an account where there is a breach of these Terms, suspected fraud, security concerns, legal requirements, or other legitimate reasons.',
-      'Where required by law, applicable balances will be handled according to the relevant procedures.',
-    ],
+    heading: 'legal.terms.suspension.title',
+    points: ['legal.terms.suspension.p1', 'legal.terms.suspension.p2'],
   },
 ];

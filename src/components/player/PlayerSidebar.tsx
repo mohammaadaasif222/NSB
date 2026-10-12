@@ -285,7 +285,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             onClose();
             openRegister();
           }}
-          title="Welcome package — $1,500 + 100 free spins"
+          title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
           className={`mt-[calc(var(--u)*24)] flex flex-shrink-0 flex-col gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*16.25)] bg-[#1b1f29] px-[calc(var(--u)*16.25)] py-[calc(var(--u)*17.5)] text-start transition-colors hover:bg-[#222735] ${
             collapsed ? 'lg:items-center lg:px-[calc(var(--u)*8)] lg:text-center' : ''
           }`}
@@ -295,7 +295,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               collapsed ? 'lg:hidden' : ''
             }`}
           >
-            Welcome package
+            {t('lobby.rail.welcomePackage')}
           </span>
           <span
             className={`block font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
@@ -311,7 +311,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               collapsed ? 'lg:hidden' : ''
             }`}
           >
-            + 100 free spins
+            {t('lobby.rail.freeSpins', { count: 100 })}
           </span>
         </button>
 
@@ -471,13 +471,13 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <div className="mt-[calc(var(--u)*11)] space-y-[calc(var(--u)*7)]">
             <RailButton
               icon={telegramIcon}
-              label="Join Telegram"
+              label={t('lobby.rail.joinTelegram')}
               href="https://t.me/"
               collapsed={collapsed}
             />
             <RailButton
               icon={suggestionIcon}
-              label="Suggestion Box"
+              label={t('lobby.rail.suggestionBox')}
               href="mailto:support@rolluck.com?subject=Suggestion"
               collapsed={collapsed}
             />

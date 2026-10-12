@@ -12,7 +12,7 @@ import promoArt from '@/assets/promotions/promo-horse-racing.webp';
 export interface PromotionRow extends Promotion {
   category: Exclude<PromoCategory, 'all'>;
   status: PromoStatus;
-  /** Shown on the ended detail page in place of the countdown. */
+  /** Shown on the ended detail page in place of the countdown. ISO dates, formatted per locale. */
   runs?: { from: string; to: string };
 }
 
@@ -33,8 +33,8 @@ const LIVE: PromotionRow[] = Array.from({ length: 8 }, (_, i) => ({
   image: promoArt,
   live: true,
   rating: '4.5',
-  title: '$20,000 - Clutch Up!',
-  body: 'Get your selections settled early if the team you back goes 2 goals up',
+  title: 'content.promo.clutchTitle',
+  body: 'content.promo.clutchBody',
   endsIn: { day: '05', hr: '12', min: '50', sec: '24' },
   category: i % 2 === 0 ? 'sports' : 'casino',
   status: 'live',
@@ -45,12 +45,12 @@ const ENDED: PromotionRow[] = Array.from({ length: 4 }, (_, i) => ({
   image: promoArt,
   live: false,
   rating: '4.5',
-  title: '$20,000 - Clutch Up!',
-  body: 'Get your selections settled early if the team you back goes 2 goals up',
+  title: 'content.promo.clutchTitle',
+  body: 'content.promo.clutchBody',
   endsIn: { day: '00', hr: '00', min: '00', sec: '00' },
   category: i % 2 === 0 ? 'sports' : 'casino',
   status: 'expired',
-  runs: { from: '31/07/2026', to: '07/08/2026' },
+  runs: { from: '2026-07-31', to: '2026-08-07' },
 }));
 
 export const PROMOTIONS: readonly PromotionRow[] = [...LIVE, ...ENDED];
@@ -67,15 +67,12 @@ export const findPromotion = (id: string): PromotionRow | undefined =>
  * feed when there is one; the components already take the shapes they need.
  */
 export const DETAIL_COPY = {
-  title: 'Endorphina Wager Race',
+  title: 'content.sample.wagerRace',
   rating: '4.5',
   endsIn: { day: '05', hr: '12', min: '50', sec: '24' } satisfies Countdown,
 
-  details: [
-    "Discover our exclusive casino promotion designed to bring you unbeatable value and thrilling rewards like never before. Enjoy a generous welcome bonus of up to 200% on your first deposit, plus 50 free spins on our most popular slot games. Loyal members unlock VIP perks including cashback offers, priority withdrawals, and access to high-stakes tournament events every weekend. Whether you're spinning the reels, hitting the blackjack tables, or trying your luck at live dealer games — this limited-time offer is crafted to maximize your winnings and elevate every moment of play.",
-    "Discover our exclusive casino promotion designed to bring you unbeatable value and thrilling rewards like never before. Enjoy a generous welcome bonus of up to 200% on your first deposit, plus 50 free spins on our most popular slot games. Loyal members unlock VIP perks including cashback offers, priority withdrawals, and access to high-stakes tournament events every weekend. Whether you're spinning the reels, hitting the blackjack tables, or trying your luck at live dealer games — this limited-time offer is crafted to maximize your winnings and elevate every moment of play.",
-    "Discover our exclusive casino promotion designed to bring you unbeatable value and thrilling rewards like never before. Enjoy a generous welcome bonus of up to 200% on your first deposit, plus 50 free spins on our most popular slot games. Loyal members unlock VIP perks including cashback offers, priority withdrawals, and access to high-stakes tournament events every weekend. Whether you're spinning the reels, hitting the blackjack tables, or trying your luck at live dealer games — this limited-time offer is crafted to maximize your winnings and elevate every moment of play.",
-  ],
+  /* The frame repeats the one paragraph three times. */
+  details: ['content.promo.detailsBody', 'content.promo.detailsBody', 'content.promo.detailsBody'],
 
   /* Lorem, exactly as the frame leaves it — there is no signed-off promotion
      wording to put here, and inventing terms that read as real would be worse
@@ -98,59 +95,65 @@ export const DETAIL_COPY = {
  */
 const FACES = [avatarJohn, avatarTony, avatarWinner];
 
-export const REVIEWS: readonly Review[] = [
+const REVIEW_ROWS: Omit<Review, 'id' | 'avatar'>[] = [
   {
     username: 'johnmathew_154',
-    when: '1 day ago',
+    when: { value: 1, unit: 'day' },
     stars: 4,
-    body: 'The promotion was easy to join and the bonus was credited instantly. Ended up winning more than I expected.',
+    body: 'content.promo.review1',
   },
   {
     username: 'saralynn_23',
-    when: '3 hours ago',
+    when: { value: 3, unit: 'hour' },
     stars: 4,
-    body: 'Super smooth sign-up process. The bonus made my week! Highly recommend.',
+    body: 'content.promo.review2',
   },
   {
     username: 'mark_taylor_89',
-    when: '2 days ago',
+    when: { value: 2, unit: 'day' },
     stars: 4,
-    body: "Didn't expect to win, but this promotion really paid off. Instant credit too.",
+    body: 'content.promo.review3',
   },
   {
     username: 'emily_rose77',
-    when: '5 hours ago',
+    when: { value: 5, unit: 'hour' },
     stars: 4,
-    body: 'Joining was straightforward and I appreciated how quickly the bonus showed up.',
+    body: 'content.promo.review4',
   },
   {
     username: 'kevin_liu_2020',
-    when: '1 week ago',
+    when: { value: 1, unit: 'week' },
     stars: 4,
-    body: 'Great promotion with instant rewards. It boosted my experience significantly.',
+    body: 'content.promo.review5',
   },
   {
     username: 'olivia_perez',
-    when: '12 hours ago',
+    when: { value: 12, unit: 'hour' },
     stars: 4,
-    body: 'The ease of entry and quick bonus credit made this my favorite promotion yet.',
+    body: 'content.promo.review6',
   },
   {
     username: 'david_chen_45',
-    when: '4 days ago',
+    when: { value: 4, unit: 'day' },
     stars: 4,
-    body: 'Fast and reliable! The bonus was credited right away and helped me win big.',
+    body: 'content.promo.review7',
   },
   {
     username: 'natalie_kim',
-    when: '6 hours ago',
+    when: { value: 6, unit: 'hour' },
     stars: 4,
-    body: 'A hassle-free promotion with instant bonuses. I ended up winning more than expected.',
+    body: 'content.promo.review8',
   },
   {
     username: 'ryan_smith_101',
-    when: '3 days ago',
+    when: { value: 3, unit: 'day' },
     stars: 4,
-    body: 'Smooth process and quick bonus credit. Definitely participating again next time.',
+    body: 'content.promo.review9',
   },
-].map((r, i) => ({ ...r, id: `review-${i + 1}`, avatar: FACES[i % FACES.length] }));
+];
+
+export const REVIEWS: readonly Review[] = REVIEW_ROWS.map((r, i) => ({
+  ...r,
+  id: `review-${i + 1}`,
+  avatar: FACES[i % FACES.length],
+}));

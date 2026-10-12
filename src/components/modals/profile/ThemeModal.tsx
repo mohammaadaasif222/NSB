@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { Check } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { THEME_OPTIONS, type ThemeName } from '@/types/profile';
+import { useTranslation } from '@/context/I18nContext';
 import ProfileModalShell from './ProfileModalShell';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 
 const ThemeModal: FC<Props> = ({ currentTheme, onClose, onSaved }) => {
   const { saveTheme } = useTheme();
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<ThemeName>(currentTheme);
   const [loading, setLoading] = useState(false);
 
@@ -25,21 +27,21 @@ const ThemeModal: FC<Props> = ({ currentTheme, onClose, onSaved }) => {
     const ok = await saveTheme(selected);
     setLoading(false);
     if (ok) {
-      toast.success('Theme updated successfully');
+      toast.success(t('acct.theme.updated'));
       onSaved(selected);
       onClose();
     } else {
-      toast.error('Failed to update theme');
+      toast.error(t('acct.theme.failed'));
     }
   };
 
   return (
     <ProfileModalShell
-      title="Appearance Theme"
+      title={t('acct.theme.title')}
       onClose={onClose}
       onSubmit={handleSubmit}
       loading={loading}
-      submitLabel="Apply Theme"
+      submitLabel={t('acct.theme.apply')}
     >
       {/* The dialog's own field, one per theme — same 34 radius and white-5%
           fill, so the grid reads as a row of controls rather than a second
@@ -63,7 +65,7 @@ const ThemeModal: FC<Props> = ({ currentTheme, onClose, onSaved }) => {
                 style={{ background: opt.swatch }}
               />
               <span className="flex-1 truncate text-base leading-6 font-medium text-[#f0f1f5]">
-                {opt.label}
+                {t(opt.label)}
               </span>
               {active && <Check size={16} className="shrink-0 text-(--rl-gold)" />}
             </button>

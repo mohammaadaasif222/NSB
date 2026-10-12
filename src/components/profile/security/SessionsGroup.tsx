@@ -16,7 +16,19 @@ import { MOCK_SESSIONS } from './mockSessions';
  * for.
  */
 const SessionsGroup: FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+
+  /** "2 days ago" in the player's language. */
+  const ago = (days: number): string => {
+    try {
+      return new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' }).format(
+        -days,
+        'day'
+      );
+    } catch {
+      return t('acct.sessions.daysAgo', { count: days });
+    }
+  };
 
   return (
     <section className="space-y-[calc(var(--u)*6)]">
@@ -56,7 +68,12 @@ const SessionsGroup: FC = () => {
                 {/* The design separates these with bullets rather than middots,
                     and sets the line a size below the row's label. */}
                 <p className="truncate text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
-                  {[s.current ? t('sec.currentSession') : null, s.ip, s.location, s.lastSeen]
+                  {[
+                    s.current ? t('sec.currentSession') : null,
+                    s.ip,
+                    s.location,
+                    ago(s.lastSeenDaysAgo),
+                  ]
                     .filter(Boolean)
                     .join(' • ')}
                 </p>

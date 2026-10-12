@@ -20,11 +20,13 @@ const ROW = 'block py-2 text-sm leading-5 text-[#9da2b4] transition-colors';
  * anchor that lands on a 404.
  */
 const Item: FC<{ item: FooterLink; soon: string }> = ({ item, soon }) => {
+  const { t } = useTranslation();
+
   if (!item.href) {
     return (
       <li>
         <span className={`${ROW} cursor-default hover:text-[#c3c7d4]`} title={soon}>
-          {item.label}
+          {t(item.label)}
         </span>
       </li>
     );
@@ -35,11 +37,11 @@ const Item: FC<{ item: FooterLink; soon: string }> = ({ item, soon }) => {
     <li>
       {item.href.startsWith('/') ? (
         <Link href={item.href} className={`${ROW} hover:text-white`}>
-          {item.label}
+          {t(item.label)}
         </Link>
       ) : (
         <a href={item.href} className={`${ROW} hover:text-white`}>
-          {item.label}
+          {t(item.label)}
         </a>
       )}
     </li>
@@ -107,8 +109,8 @@ const FooterSitemap: FC = () => {
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 @xl:grid-cols-3 @foot:rl-foot-cols @foot:gap-x-0 @foot:gap-y-0">
           <Column title={t('nav.casino')} items={CASINO_LINKS} soon={soon} />
           <Column title={t('nav.sports')} items={SPORTS_LINKS} soon={soon} />
-          <Column title="Earn" items={earn} soon={soon} />
-          <Column title="Help" items={HELP_LINKS} soon={soon} inset />
+          <Column title={t('lobby.footer.earn')} items={earn} soon={soon} />
+          <Column title={t('lobby.footer.help')} items={HELP_LINKS} soon={soon} inset />
           {/* Pinned to the second track at two columns, where the natural flow
               would otherwise drop it under Earn and leave it looking like a
               list nobody headed. From three columns up it falls beside Help on

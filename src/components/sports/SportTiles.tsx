@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useTranslation } from '@/context/I18nContext';
 import { SPORTS, sportHref } from '@/constants/sportsbook';
 
 /**
@@ -10,10 +11,11 @@ import { SPORTS, sportHref } from '@/constants/sportsbook';
  */
 const SportTiles: FC = () => {
   const { query } = useRouter();
+  const { t } = useTranslation();
 
   return (
     <nav
-      aria-label="Sports"
+      aria-label={t('nav.sports')}
       className="rl-shelf -mx-4 -my-3 flex gap-[15px] px-4 py-3 lg:mx-0 lg:gap-[calc(var(--u)*22.5)] lg:px-0"
     >
       {SPORTS.map((sport) => {
@@ -33,7 +35,7 @@ const SportTiles: FC = () => {
               className="h-9 w-9 lg:h-[calc(var(--u)*59)] lg:w-[calc(var(--u)*59)]"
             />
             <span className="mt-[5px] whitespace-nowrap text-[12px] leading-5 text-white lg:mt-[calc(var(--u)*14)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))] lg:font-medium lg:leading-[calc(var(--u)*20)]">
-              {sport.label}
+              {t(sport.label)}
             </span>
           </Link>
         );

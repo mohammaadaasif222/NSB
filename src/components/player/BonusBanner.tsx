@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import bonusArt from '@/assets/bonus-art.webp';
 import bonusArtMobile from '@/assets/bonus-art-mobile.webp';
 import { CheckIcon } from '@/components/icons';
+import { useTranslation } from '@/context/I18nContext';
 
 /**
  * The welcome-offer strip: copy on the left, artwork fading in from the
@@ -26,6 +27,7 @@ const ART =
   'pointer-events-none absolute inset-y-0 right-0 -z-10 h-full w-[56.3%] object-cover [mask-image:linear-gradient(to_right,transparent,#000)]';
 
 const BonusBanner: FC<{ className?: string }> = ({ className = '' }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const copy = async (): Promise<void> => {
@@ -34,7 +36,7 @@ const BonusBanner: FC<{ className?: string }> = ({ className = '' }) => {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      toast.info(`Promo code: ${PROMO_CODE}`);
+      toast.info(t('lobby.bonus.promoCode', { code: PROMO_CODE }));
     }
   };
 
@@ -47,16 +49,16 @@ const BonusBanner: FC<{ className?: string }> = ({ className = '' }) => {
 
       <div className="relative px-[21px] pt-[13px] lg:px-[1.87cqw] lg:pt-[1.94cqw]">
         <p className="text-[12px] leading-5 text-[#7c8799] lg:text-[max(13px,1.03cqw)] lg:leading-[1.5]">
-          Limited-time offer
+          {t('lobby.bonus.eyebrow')}
         </p>
         <h2 className="mt-0.5 max-w-[150px] text-[20px] font-medium leading-7 tracking-[-0.02em] text-[#f2f5f9] lg:mt-[0.9cqw] lg:max-w-none lg:text-[max(20px,2.07cqw)] lg:font-bold lg:leading-[1.25]">
-          Unlock your welcome bonus
+          {t('dash.unlockBonus')}
         </h2>
 
         <button
           type="button"
           onClick={copy}
-          title={`Copy ${PROMO_CODE}`}
+          title={t('lobby.bonus.copy', { code: PROMO_CODE })}
           className="mt-[13px] inline-flex h-9 items-center gap-2.5 rounded-[20px] border border-dashed border-[#ffe779] bg-[#13171f] px-[17px] text-[12px] font-medium leading-5 text-[#ffe779] transition-colors hover:bg-[#ffe779]/10 lg:mt-[1.74cqw] lg:h-[max(32px,2.91cqw)] lg:rounded-[12px] lg:px-[max(12px,1.1cqw)] lg:text-[max(12px,1.03cqw)] lg:font-normal lg:leading-[1.5]"
         >
           {copied && <CheckIcon size={14} />}

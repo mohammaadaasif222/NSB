@@ -1,6 +1,7 @@
 import { useId, useState, type FC, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { categoryHref } from '@/constants/games';
+import { useTranslation } from '@/context/I18nContext';
 import chevronSmall from '@/assets/lobby/chevron-small.svg';
 import clearIcon from '@/assets/lobby/clear-x.svg';
 
@@ -11,8 +12,8 @@ import clearIcon from '@/assets/lobby/clear-x.svg';
  * multiplier and the "playing" count are illustrative, and the panel is a
  * mock-up of the real betting UI rather than a working one. Placing a bet
  * routes through to the Originals shelf, where the real game lives once it
- * ships. English-only copy on purpose: this widget will be replaced wholesale
- * once the real game is wired up, so it isn't worth translating yet.
+ * ships. This widget will be replaced wholesale once the real game is wired
+ * up.
  */
 
 /** Stands in for a price feed so the ≈USD line tracks the bet the user types. */
@@ -73,16 +74,20 @@ const Curve: FC<{ viewBox: string; line: [number, number, number, number]; class
 const GRID =
   'pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(#252937_1px,transparent_1px),linear-gradient(90deg,#252937_1px,transparent_1px)] [background-size:calc(var(--u)*20.4)_calc(var(--u)*20.4)]';
 
-const Payout: FC<{ className: string }> = ({ className }) => (
-  <div className={`pointer-events-none absolute ${className}`}>
-    <p className="text-[length:max(min(11px,36px),calc(var(--u)*36))] font-bold leading-[calc(var(--u)*44)] tracking-[-0.02em] tabular-nums text-[#f0f1f5]">
-      1.34x
-    </p>
-    <p className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4]">
-      CURRENT PAYOUT
-    </p>
-  </div>
-);
+const Payout: FC<{ className: string }> = ({ className }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className={`pointer-events-none absolute ${className}`}>
+      <p className="text-[length:max(min(11px,36px),calc(var(--u)*36))] font-bold leading-[calc(var(--u)*44)] tracking-[-0.02em] tabular-nums text-[#f0f1f5]">
+        1.34x
+      </p>
+      <p className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4]">
+        {t('lobby.crash.currentPayout')}
+      </p>
+    </div>
+  );
+};
 
 /* --- Bet slip pieces ----------------------------------------------------- */
 
@@ -136,6 +141,7 @@ const Summary: FC<{ label: string; value: string }> = ({ label, value }) => (
  */
 const CrashPreview: FC = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [betAmount, setBetAmount] = useState('0.00100000');
   const [autoCashout, setAutoCashout] = useState('2.00');
@@ -171,7 +177,7 @@ const CrashPreview: FC = () => {
               className="h-[calc(var(--u)*9)] w-[calc(var(--u)*9)] rounded-full bg-[#2ed573] shadow-[0_0_0_3.8px_rgba(46,213,115,0.18)]"
               aria-hidden="true"
             />
-            1,284 playing
+            {t('lobby.crash.playing', { count: '1,284' })}
           </span>
 
           <div className="rl-shelf flex w-full gap-[calc(var(--u)*8.8)] lg:ms-auto lg:w-auto">
@@ -226,13 +232,17 @@ const CrashPreview: FC = () => {
                   : 'text-[#9da2b4] hover:text-[#f0f1f5]'
               }`}
             >
-              {key}
+              {t(key === 'manual' ? 'dice.manual' : 'dice.auto')}
             </button>
           ))}
         </div>
 
         <div className="mt-[calc(var(--u)*23)]">
-          <FieldLabel label="Bet Amount" hint={`≈ ${usd(bet * USD_PER_BTC)} USD`} strongHint />
+          <FieldLabel
+            label={t('dice.betAmount')}
+            hint={`≈ ${usd(bet * USD_PER_BTC)} USD`}
+            strongHint
+          />
           <Field>
             <span className="flex-shrink-0 font-[Inter,sans-serif] text-[length:max(min(11px,20px),calc(var(--u)*20))] leading-[calc(var(--u)*24)] text-[#f5f6f9] opacity-60">
               ₿
@@ -241,29 +251,32 @@ const CrashPreview: FC = () => {
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
               inputMode="decimal"
-              aria-label="Bet amount"
+              aria-label={t('dice.betAmount')}
               className="min-w-0 flex-1 bg-transparent text-[length:max(min(11px,18px),calc(var(--u)*18))] font-bold leading-[calc(var(--u)*24)] tabular-nums text-[#f5f6f9] outline-none"
             />
-            <Chip title="Halve the bet" onClick={() => scale(0.5)}>
+            <Chip title={t('dice.halve')} onClick={() => scale(0.5)}>
               ½
             </Chip>
-            <Chip title="Double the bet" onClick={() => scale(2)}>
+            <Chip title={t('dice.double')} onClick={() => scale(2)}>
               2×
             </Chip>
           </Field>
         </div>
 
         <div className="mt-[calc(var(--u)*23)]">
-          <FieldLabel label="Auto Cashout" hint="Optional multiplier limit" />
+          <FieldLabel
+            label={t('lobby.crash.autoCashout')}
+            hint={t('lobby.crash.autoCashoutHint')}
+          />
           <Field>
             <input
               value={autoCashout}
               onChange={(e) => setAutoCashout(e.target.value)}
               inputMode="decimal"
-              aria-label="Auto cashout multiplier"
+              aria-label={t('lobby.crash.autoCashoutMultiplier')}
               className="min-w-0 flex-1 bg-transparent text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] tabular-nums text-[#f5f6f9] outline-none"
             />
-            <Chip title="Clear auto cashout" onClick={() => setAutoCashout('')}>
+            <Chip title={t('lobby.crash.clearAutoCashout')} onClick={() => setAutoCashout('')}>
               <img
                 src={clearIcon.src}
                 alt=""
@@ -278,12 +291,12 @@ const CrashPreview: FC = () => {
           onClick={play}
           className="mt-[calc(var(--u)*29)] h-[calc(var(--u)*56)] w-full rounded-[calc(var(--u)*43)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
         >
-          Place bet
+          {t('sports.placeBet')}
         </button>
 
         <div className="mt-[calc(var(--u)*33)] space-y-[calc(var(--u)*15)]">
-          <Summary label="Win on cashout:" value={`${btc(bet * multiplier)} BTC`} />
-          <Summary label="Network fee:" value={`${btc(NETWORK_FEE)} BTC`} />
+          <Summary label={t('lobby.crash.winOnCashout')} value={`${btc(bet * multiplier)} BTC`} />
+          <Summary label={t('lobby.crash.networkFee')} value={`${btc(NETWORK_FEE)} BTC`} />
         </div>
       </div>
     </section>

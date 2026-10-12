@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useRealtimeEvents } from '@/hooks/useRealtimeEvents';
 import { useWallet } from '@/context/WalletContext';
+import { currentLocale, translate } from '@/i18n/translate';
 
 type DepositStatus = 'DEPOSIT_DETECTED' | 'DEPOSIT_CONFIRMED' | 'DEPOSIT_FAILED';
 type WithdrawalStatus = 'WITHDRAW_PENDING_RISK' | 'WITHDRAW_RISK_APPROVED' | 'WITHDRAW_APPROVED' | 'WITHDRAW_PROCESSING' | 'WITHDRAW_COMPLETED' | 'WITHDRAW_REJECTED' | 'WITHDRAW_FAILED';
@@ -414,10 +415,11 @@ export function EventListeners() {
 
       toast.success(
         <div>
-          <div className="font-semibold">✅ Real-time Connection Working!</div>
+          <div className="font-semibold">✅ {translate('misc.realtime.okTitle')}</div>
           <div className="text-sm mt-2">{data.message}</div>
           <div className="text-xs mt-1 opacity-75">
-            Random: {data.randomNumber} • {new Date(data.timestamp).toLocaleTimeString()}
+            {translate('misc.realtime.random', { value: data.randomNumber })} •{' '}
+            {new Date(data.timestamp).toLocaleTimeString(currentLocale())}
           </div>
         </div>,
         { position: 'bottom-right', autoClose: 5000 }
@@ -430,9 +432,9 @@ export function EventListeners() {
         console.error('[DEMO-MESSAGE-TIMEOUT] Demo message not received within 5 seconds');
         toast.error(
           <div>
-            <div className="font-semibold">⚠️ Real-time Connection Issue</div>
-            <div className="text-sm mt-2">Demo message didn't arrive within 5 seconds</div>
-            <div className="text-xs mt-1 opacity-75">Soketi may not be delivering events properly</div>
+            <div className="font-semibold">⚠️ {translate('misc.realtime.issueTitle')}</div>
+            <div className="text-sm mt-2">{translate('misc.realtime.issueBody')}</div>
+            <div className="text-xs mt-1 opacity-75">{translate('misc.realtime.issueHint')}</div>
           </div>,
           { position: 'bottom-right', autoClose: 7000 }
         );

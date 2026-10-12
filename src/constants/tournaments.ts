@@ -39,7 +39,7 @@ const LIVE: TournamentRow[] = Array.from({ length: 6 }, (_, i) => ({
   id: `tournament-${i + 1}`,
   image: tournamentArt,
   active: true,
-  title: 'Endorphina Wager Race',
+  title: 'content.sample.wagerRace',
   prizePool: '$40 000',
   joined: 15,
   capacity: 50,
@@ -52,7 +52,7 @@ const EXPIRED: TournamentRow[] = Array.from({ length: 2 }, (_, i) => ({
   id: `tournament-ended-${i + 1}`,
   image: tournamentArt,
   active: false,
-  title: 'Endorphina Wager Race',
+  title: 'content.sample.wagerRace',
   prizePool: '$40 000',
   joined: 15,
   capacity: 50,
@@ -87,8 +87,9 @@ export const TOURNAMENT_TERMS: readonly string[] = [
  * PLACEHOLDER, like the rest — the frame's own figures.
  */
 export const TOURNAMENT_SUMMARY = {
-  startDate: '31/07/2026',
-  endDate: '07/08/2026',
+  /** ISO dates — the page writes them out per locale. */
+  startDate: '2026-07-31',
+  endDate: '2026-08-07',
   /** How many tournaments the player has entered, as the frame labels it. */
   record: '10',
 } as const;
@@ -106,7 +107,14 @@ export const TOURNAMENT_SUMMARY = {
 export const PODIUM: readonly PodiumPlace[] = [
   { rank: 1, name: 'nwk***', wagered: '$87,742.90', points: '2,350', avatar: avatarWinner },
   { rank: 2, name: 'minhzo', wagered: '$76,688.25', points: '1,200', avatar: avatarJohn },
-  { rank: 3, name: 'Hidden', wagered: '$19,530.40', points: '800', avatar: avatarTony },
+  {
+    rank: 3,
+    name: 'Hidden',
+    wagered: '$19,530.40',
+    points: '800',
+    avatar: avatarTony,
+    masked: true,
+  },
 ];
 
 export const LEADERBOARD: readonly LeaderboardRow[] = [

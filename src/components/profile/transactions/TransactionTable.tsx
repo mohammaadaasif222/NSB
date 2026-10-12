@@ -36,7 +36,7 @@ const BitcoinMark: FC = () => (
  * design starts it, since only the last boundary moves.
  */
 const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const columns = useMemo<readonly DataColumn<Transaction>[]>(
     () => [
@@ -56,7 +56,12 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         width: 175,
         cell: (r) => (
           <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#8c8c8c]">
-            {r.date}
+            {new Date(`${r.date}T00:00:00Z`).toLocaleDateString(locale, {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              timeZone: 'UTC',
+            })}
           </span>
         ),
       },
@@ -99,7 +104,7 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         ),
       },
     ],
-    [t]
+    [t, locale]
   );
 
   return (

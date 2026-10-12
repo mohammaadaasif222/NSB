@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 import { ShieldCheck, X } from 'lucide-react';
 import ButtonLoader from '@/components/ButtonLoader';
+import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 import type { SeonStepUpChallenge } from '@/lib/seon-guard';
 
 interface Props {
@@ -18,13 +20,17 @@ const OTP_LENGTH = 6;
 const BUTTON =
   'flex h-14 w-full items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium transition-colors';
 
-/** Flow names as a player would describe them. */
-const ACTION_LABELS: Record<string, string> = {
-  withdrawal: 'withdrawal',
-  deposit: 'deposit',
-  login: 'sign-in',
-  registration: 'sign-up',
-  account_edit: 'account change',
+/**
+ * Flow names as a player would describe them — each as the whole closing
+ * sentence, since the noun's grammar changes the sentence around it in most
+ * languages.
+ */
+const ACTION_LABELS: Record<string, TranslationKey> = {
+  withdrawal: 'acct.stepup.continueWithdrawal',
+  deposit: 'acct.stepup.continueDeposit',
+  login: 'acct.stepup.continueLogin',
+  registration: 'acct.stepup.continueRegistration',
+  account_edit: 'acct.stepup.continueAccountEdit',
 };
 
 /**
@@ -40,6 +46,7 @@ const ACTION_LABELS: Record<string, string> = {
  * the two would teach players that a six-digit SMS is "verification".
  */
 const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, onCancel }) => {
+  const { t } = useTranslation();
   const [otp, setOtp] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -75,7 +82,11 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
     }
   };
 
-  const action = ACTION_LABELS[challenge.action] ?? 'request';
+  const continueLine = t(ACTION_LABELS[challenge.action] ?? 'acct.stepup.continueRequest');
+  // `{target}` is left unfilled so the address can be set in its own weight.
+  const [sentBefore, sentAfter = ''] = challenge.sentTo
+    ? t('acct.stepup.sentTo', { digits: OTP_LENGTH }).split('{target}')
+    : [t('acct.stepup.sent', { digits: OTP_LENGTH })];
 
   return (
     <div
@@ -98,14 +109,14 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
               <ShieldCheck size={17} className="text-(--rl-gold)" />
             </span>
             <h2 id="stepup-title" className="rl-h-card min-w-0 text-[#f0f1f5]">
-              Confirm it&apos;s you
+              {t('acct.stepup.title')}
             </h2>
           </div>
           <button
             type="button"
             onClick={onCancel}
             disabled={submitting}
-            aria-label="Cancel verification"
+            aria-label={t('acct.stepup.cancelAria')}
             className="rl-chip -mt-1 flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5] disabled:opacity-40"
           >
             <X size={16} />
@@ -113,14 +124,11 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
         </div>
 
         <p className="mt-4 text-sm leading-6 text-[#9da2b4]">
-          For your security we&apos;ve sent a {OTP_LENGTH}-digit code
+          {sentBefore}
           {challenge.sentTo ? (
-            <>
-              {' '}
-              to <span className="font-medium text-[#f0f1f5]">{challenge.sentTo}</span>
-            </>
+            <span className="font-medium text-[#f0f1f5]">{challenge.sentTo}</span>
           ) : null}
-          . Enter it to continue with your {action}.
+          {sentAfter} {continueLine}
         </p>
 
         <input
@@ -131,7 +139,7 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
           inputMode="numeric"
           autoComplete="one-time-code"
           placeholder="000000"
-          aria-label="Verification code"
+          aria-label={t('acct.stepup.codeAria')}
           aria-invalid={Boolean(error)}
           className="rl-modal-field mt-4 h-14 w-full px-6 text-center text-[18px] leading-6 font-bold tracking-[0.5em] text-[#f0f1f5] outline-none transition-colors placeholder:font-normal placeholder:tracking-[0.5em] placeholder:text-[#9ca3af] focus-visible:border-white/30 disabled:opacity-60"
         />
@@ -148,7 +156,7 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
           disabled={submitting || otp.length !== OTP_LENGTH}
           className={`rl-btn-gold mt-6 ${BUTTON} gap-2 disabled:cursor-not-allowed disabled:opacity-50`}
         >
-          {submitting ? <ButtonLoader /> : 'Confirm'}
+          {submitting ? <ButtonLoader /> : t('acct.stepup.confirm')}
         </button>
 
         <button
@@ -157,7 +165,7 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
           disabled={submitting}
           className={`${BUTTON} mt-2.5 bg-white/10 text-[#f0f1f5] hover:bg-white/15 disabled:opacity-40`}
         >
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
     </div>

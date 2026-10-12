@@ -51,7 +51,7 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
   onClose,
   onSubmit,
   loading,
-  submitLabel = 'Save',
+  submitLabel,
   submitDisabled = false,
   destructive = false,
   children,
@@ -115,7 +115,7 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
               : `${BUTTON} rl-btn-gold mt-6 disabled:cursor-not-allowed disabled:opacity-50`
           }
         >
-          {loading ? t('common.saving') : submitLabel}
+          {loading ? t('common.saving') : (submitLabel ?? t('acct.save'))}
         </button>
 
         <button

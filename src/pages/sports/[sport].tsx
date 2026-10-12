@@ -30,7 +30,8 @@ interface Props {
 const SportPage: FC<Props> = ({ sport }) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState<FixtureQuery>(FIXTURE_QUERY_DEFAULTS);
-  const label = SPORTS.find((s) => s.key === sport)?.label ?? '';
+  const labelKey = SPORTS.find((s) => s.key === sport)?.label;
+  const label = labelKey ? t(labelKey) : '';
 
   const view = useMemo(() => {
     const ofSport = <T extends { sport: string }>(list: T[]): T[] =>

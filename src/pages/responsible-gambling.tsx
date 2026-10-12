@@ -84,8 +84,8 @@ const ResponsibleGamblingPage: FC = () => {
   return (
     <PlayerLayout>
       <Head>
-        <title>{`${t('rg.title')} · ROLLUCK`}</title>
-        <meta name="description" content={t('rg.metaDescription')} />
+        <title>{`${t('rgc.title')} · ROLLUCK`}</title>
+        <meta name="description" content={t('rgc.metaDescription')} />
       </Head>
 
       {/* Same 1544 frame as the account area — 228 of rail, a 48px channel and

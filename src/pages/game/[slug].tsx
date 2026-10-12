@@ -128,7 +128,10 @@ const GamePage: FC<Props> = ({ game, related, failed, dice }) => {
 
       <div className="mx-auto max-w-[1600px] space-y-6 pb-2 sm:space-y-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500" aria-label="Breadcrumb">
+        <nav
+          className="flex items-center gap-1.5 text-xs text-slate-500"
+          aria-label={t('lobby.game.breadcrumb')}
+        >
           <Link href="/" className="hover:text-slate-200 transition-colors">
             {t('nav.home')}
           </Link>

@@ -1,4 +1,5 @@
 import apiService from '@/services/api';
+import { translate } from '@/i18n/translate';
 import type { ShelfListQuery } from '@/constants/games';
 import type { ApiError, Game, GameDevice, GameLaunch, GameListResponse, GameMode } from '@/types';
 
@@ -23,7 +24,7 @@ export async function launchGame(
   });
 
   if (!res?.success || !res.data?.url) {
-    throw { message: res?.message || 'Game launch failed' } satisfies ApiError;
+    throw { message: res?.message || translate('game.launchFailed') } satisfies ApiError;
   }
   return res.data;
 }
@@ -48,7 +49,7 @@ export async function fetchShelfPage(
 ): Promise<GameListResponse> {
   const res = await apiService.get<GameListResponse>('/games', { ...list, page, limit });
   if (!res?.success || !Array.isArray(res.data?.data) || !res.data.pagination) {
-    throw { message: res?.message || 'Could not load games' } satisfies ApiError;
+    throw { message: res?.message || translate('myGames.failed') } satisfies ApiError;
   }
   return res.data;
 }
@@ -60,7 +61,7 @@ export async function fetchShelfPage(
 const listOrThrow = async (url: string): Promise<Game[]> => {
   const res = await apiService.get<Game[]>(url);
   if (!res?.success || !Array.isArray(res.data)) {
-    throw { message: res?.message || 'Could not load games' } satisfies ApiError;
+    throw { message: res?.message || translate('myGames.failed') } satisfies ApiError;
   }
   return res.data;
 };
@@ -76,6 +77,6 @@ export async function setFavourite(slug: string, favourite: boolean): Promise<vo
   const url = `/games/${encodeURIComponent(slug)}/favourite`;
   const res = favourite ? await apiService.put(url) : await apiService.delete(url);
   if (!res?.success) {
-    throw { message: res?.message || 'Could not update favourites' } satisfies ApiError;
+    throw { message: res?.message || translate('favourites.failed') } satisfies ApiError;
   }
 }

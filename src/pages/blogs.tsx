@@ -9,6 +9,7 @@ import BlogPagination from '@/components/blogs/BlogPagination';
 import { useTranslation } from '@/context/I18nContext';
 import {
   BLOG_CATEGORIES,
+  BLOG_CATEGORY_LABELS,
   BLOG_POSTS,
   BLOG_TOTAL_PAGES,
   type BlogCategory,
@@ -96,7 +97,7 @@ const BlogsPage: FC = () => {
                     : 'rl-chip text-[#9da2b4] hover:text-[#f0f1f5]'
                 }`}
               >
-                {c}
+                {t(BLOG_CATEGORY_LABELS[c])}
               </button>
             ))}
           </div>

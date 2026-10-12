@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 import type { CurrencyNetwork } from '@/types';
+import { useTranslation } from '@/context/I18nContext';
 
 interface Props {
   label: string;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const NetworkPicker: FC<Props> = ({ label, networks, value, onChange }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const selected = networks.find((n) => n.code === value);
@@ -42,7 +44,7 @@ const NetworkPicker: FC<Props> = ({ label, networks, value, onChange }) => {
               )}
             </>
           ) : (
-            'Select network'
+            t('acct.wallet.selectNetwork')
           )}
         </span>
         <svg
@@ -91,7 +93,9 @@ const NetworkPicker: FC<Props> = ({ label, networks, value, onChange }) => {
                 )}
               </span>
               <span className="block text-[11px] text-slate-400 mt-0.5">
-                {n.deposit_confirmations} confirmation{n.deposit_confirmations === 1 ? '' : 's'}
+                {n.deposit_confirmations === 1
+                  ? t('acct.wallet.confirmationOne')
+                  : t('acct.wallet.confirmationMany', { count: n.deposit_confirmations })}
               </span>
             </button>
           ))}

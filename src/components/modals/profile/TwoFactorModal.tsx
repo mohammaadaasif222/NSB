@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import apiService from '@/services/api';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
+import { useTranslation } from '@/context/I18nContext';
 import ProfileModalShell from './ProfileModalShell';
 import { analytics } from '@/services/analytics';
 
@@ -16,6 +17,7 @@ const TwoFactorModal: FC<Props> = ({ currentlyEnabled, onClose, onSaved }) => {
   // Security-sensitive profile changes are risk-scored: redirecting recovery
   // to a new address is how an account takeover is made permanent.
   const { run } = useSeonGuard();
+  const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
   const target = !currentlyEnabled;
@@ -28,19 +30,17 @@ const TwoFactorModal: FC<Props> = ({ currentlyEnabled, onClose, onSaved }) => {
       );
       if (res?.success) {
         analytics.auth.twoFactorToggled(target);
-        toast.success(
-          target ? 'Two-Factor Authentication enabled' : 'Two-Factor Authentication disabled'
-        );
+        toast.success(t(target ? 'acct.twofa.enabledToast' : 'acct.twofa.disabledToast'));
         onSaved(target);
         onClose();
       } else {
-        toast.error(res?.message || 'Failed to update 2FA');
+        toast.error(res?.message || t('acct.twofa.failed'));
       }
     } catch (err) {
       // Closing the code prompt is a decision, not a failure.
       if (isStepUpCancelled(err)) return;
       const e = err as { message?: string };
-      toast.error(e?.message || 'Failed to update 2FA');
+      toast.error(e?.message || t('acct.twofa.failed'));
     } finally {
       setLoading(false);
     }
@@ -48,16 +48,14 @@ const TwoFactorModal: FC<Props> = ({ currentlyEnabled, onClose, onSaved }) => {
 
   return (
     <ProfileModalShell
-      title={target ? 'Enable Two-Factor Authentication' : 'Disable Two-Factor Authentication'}
+      title={t(target ? 'acct.twofa.enableTitle' : 'acct.twofa.disableTitle')}
       onClose={onClose}
       onSubmit={handleSubmit}
       loading={loading}
-      submitLabel={target ? 'Enable' : 'Disable'}
+      submitLabel={t(target ? 'acct.twofa.enable' : 'acct.twofa.disable')}
     >
       <p className="text-base leading-6 text-[#9da2b4]">
-        {target
-          ? 'Two-Factor Authentication adds an extra layer of security to your account by requiring a verification code in addition to your password.'
-          : 'Disabling Two-Factor Authentication will make your account less secure. Are you sure you want to continue?'}
+        {t(target ? 'acct.twofa.enableBody' : 'acct.twofa.disableBody')}
       </p>
     </ProfileModalShell>
   );

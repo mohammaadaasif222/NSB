@@ -27,93 +27,104 @@ const STATUS_LABELS = {
 
 export const labelKeyOf = (status: ReferralStatus): TranslationKey => STATUS_LABELS[status];
 
+/** What a reward line is for — the row prints it beside the amount. */
+export type ReferralRewardKind = 'bonus' | 'adjustment' | 'penalty';
+
+const REWARD_LABELS = {
+  bonus: 'acct.ref.bonus',
+  adjustment: 'acct.ref.adjustment',
+  penalty: 'acct.ref.penalty',
+} as const satisfies Record<ReferralRewardKind, TranslationKey>;
+
+export const rewardKeyOf = (kind: ReferralRewardKind): TranslationKey => REWARD_LABELS[kind];
+
 export interface ReferralRow {
   id: string;
-  /** Pre-formatted — the API should send an ISO date and the row should format it. */
+  /** ISO date (`YYYY-MM-DD`); the table formats it in the player's language. */
   date: string;
   user: string;
   status: ReferralStatus;
   /** `null` reads as "No Change", which is what the design prints for a row with no reward yet. */
-  reward: string | null;
+  reward: { amount: string; kind: ReferralRewardKind } | null;
 }
 
 const REFERRAL_ROWS: readonly ReferralRow[] = [
   {
     id: 'REF-7B2E4A9C',
-    date: 'Jul 18, 2025',
+    date: '2025-07-18',
     user: 'john.doe@email.com',
     status: 'completed',
-    reward: '+$25.00 Bonus',
+    reward: { amount: '+$25.00', kind: 'bonus' },
   },
   {
     id: 'REF-3C4F1D7B',
-    date: 'Jul 19, 2025',
+    date: '2025-07-19',
     user: 'jane.smith@email.com',
     status: 'pending',
-    reward: '-$10.00 Adjustment',
+    reward: { amount: '-$10.00', kind: 'adjustment' },
   },
   {
     id: 'REF-9D8E2B6F',
-    date: 'Jul 20, 2025',
+    date: '2025-07-20',
     user: 'alex.brown@email.com',
     status: 'completed',
-    reward: '+$40.00 Bonus',
+    reward: { amount: '+$40.00', kind: 'bonus' },
   },
   {
     id: 'REF-5E7A9C0D',
-    date: 'Jul 21, 2025',
+    date: '2025-07-21',
     user: 'emily.jones@email.com',
     status: 'inProgress',
     reward: null,
   },
   {
     id: 'REF-2A1F3E4B',
-    date: 'Jul 22, 2025',
+    date: '2025-07-22',
     user: 'michael.lee@email.com',
     status: 'completed',
-    reward: '+$15.00 Bonus',
+    reward: { amount: '+$15.00', kind: 'bonus' },
   },
   {
     id: 'REF-8C7D5F2A',
-    date: 'Jul 23, 2025',
+    date: '2025-07-23',
     user: 'sarah.wilson@email.com',
     status: 'cancelled',
-    reward: '-$5.00 Penalty',
+    reward: { amount: '-$5.00', kind: 'penalty' },
   },
   {
     id: 'REF-4B9E6D3F',
-    date: 'Jul 24, 2025',
+    date: '2025-07-24',
     user: 'daniel.kim@email.com',
     status: 'completed',
-    reward: '+$30.00 Bonus',
+    reward: { amount: '+$30.00', kind: 'bonus' },
   },
   {
     id: 'REF-1F3C8A7D',
-    date: 'Jul 25, 2025',
+    date: '2025-07-25',
     user: 'laura.evans@email.com',
     status: 'pending',
     reward: null,
   },
   {
     id: 'REF-6D2B7F9E',
-    date: 'Jul 26, 2025',
+    date: '2025-07-26',
     user: 'chris.martin@email.com',
     status: 'completed',
-    reward: '+$20.00 Bonus',
+    reward: { amount: '+$20.00', kind: 'bonus' },
   },
   {
     id: 'REF-0E4A1C5B',
-    date: 'Jul 27, 2025',
+    date: '2025-07-27',
     user: 'nina.rogers@email.com',
     status: 'inProgress',
     reward: null,
   },
   {
     id: 'REF-7F3D9E2C',
-    date: 'Jul 28, 2025',
+    date: '2025-07-28',
     user: 'mark.jordan@email.com',
     status: 'completed',
-    reward: '+$50.00 Bonus',
+    reward: { amount: '+$50.00', kind: 'bonus' },
   },
 ];
 

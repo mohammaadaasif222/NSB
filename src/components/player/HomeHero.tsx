@@ -247,29 +247,33 @@ const PlayerPanel: FC = () => {
  * The promotion artwork beside the panel — each design's own crop — opening
  * the promotions page.
  */
-const PromoBanner: FC = () => (
-  <Link
-    href="/promotions"
-    aria-label="Promotions"
-    className="group relative block h-[168px] overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*416)] lg:rounded-[calc(var(--u)*34)]"
-  >
-    <Image
-      src={promoArtMobile}
-      alt=""
-      fill
-      sizes="100vw"
-      className="object-cover transition-transform duration-500 group-hover:scale-[1.02] lg:hidden"
-    />
-    <Image
-      src={promoArt}
-      alt=""
-      fill
-      priority
-      sizes="(max-width: 1024px) 100vw, 60vw"
-      className="hidden object-cover transition-transform duration-500 group-hover:scale-[1.02] lg:block"
-    />
-  </Link>
-);
+const PromoBanner: FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <Link
+      href="/promotions"
+      aria-label={t('menu.promotions')}
+      className="group relative block h-[168px] overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*416)] lg:rounded-[calc(var(--u)*34)]"
+    >
+      <Image
+        src={promoArtMobile}
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover transition-transform duration-500 group-hover:scale-[1.02] lg:hidden"
+      />
+      <Image
+        src={promoArt}
+        alt=""
+        fill
+        priority
+        sizes="(max-width: 1024px) 100vw, 60vw"
+        className="hidden object-cover transition-transform duration-500 group-hover:scale-[1.02] lg:block"
+      />
+    </Link>
+  );
+};
 
 /* ==================================================================== */
 /* The hero                                                              */

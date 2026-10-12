@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 import type { Currency } from '@/types';
+import { useTranslation } from '@/context/I18nContext';
 
 interface Props {
   label: string;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const CurrencyPicker: FC<Props> = ({ label, currencies, value, onChange }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const selected = currencies.find((c) => c.code === value);
@@ -32,7 +34,7 @@ const CurrencyPicker: FC<Props> = ({ label, currencies, value, onChange }) => {
         className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 flex items-center justify-between text-left hover:border-slate-600 transition-colors"
       >
         <span className="flex items-center gap-2 text-sm text-slate-100 font-semibold">
-          {selected ? selected.code : 'Select currency'}
+          {selected ? selected.code : t('acct.wallet.selectCurrency')}
         </span>
         <svg
           width="12"

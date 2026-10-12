@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, type AxiosError, type AxiosInstance } from '
 import type { ApiResponse } from '@/types';
 import { getDeviceSession } from '@/lib/seon';
 import { TRANSPORT_CODES } from '@/lib/apiError';
+import { translate } from '@/i18n/translate';
 
 /**
  * Main Axios Instance
@@ -61,23 +62,20 @@ const noBodyFailure = (error: AxiosError): { code?: string; message: string } =>
 
   if (status) {
     return {
-      message:
-        status >= 500
-          ? 'The server is having trouble right now. Please try again shortly.'
-          : 'The server rejected the request but gave no reason.',
+      message: status >= 500 ? translate('misc.api.serverError') : translate('misc.api.rejected'),
     };
   }
 
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
     return {
       code: TRANSPORT_CODES.timeout,
-      message: 'The server took too long to respond. Please try again.',
+      message: translate('errors.timeout'),
     };
   }
 
   return {
     code: TRANSPORT_CODES.unreachable,
-    message: 'Could not reach the server. Check your connection and try again.',
+    message: translate('errors.unreachable'),
   };
 };
 

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { jwtDecode } from 'jwt-decode';
 
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/context/I18nContext';
 import { isPlatformRole } from '@/constants/roles';
 import { trackSignupComplete } from '@/utils/events';
 
@@ -40,6 +41,7 @@ const STEAM_MESSAGE_SOURCE = 'rolluck-steam-auth';
 const SteamCallback: FC = () => {
   const router = useRouter();
   const { login } = useAuth();
+  const { t } = useTranslation();
   const ranRef = useRef(false);
 
   useEffect(() => {
@@ -79,13 +81,13 @@ const SteamCallback: FC = () => {
     try {
       role = jwtDecode<JwtPayload>(token).role;
     } catch {
-      toast.error('Received a malformed token');
+      toast.error(t('misc.auth.malformedToken'));
       void router.replace('/auth/login');
       return;
     }
 
     if (!isPlatformRole(role)) {
-      toast.error('This app is for player accounts. Operators sign in on the admin console.');
+      toast.error(t('loginModal.operatorAccount'));
       void router.replace('/auth/login');
       return;
     }
@@ -97,11 +99,11 @@ const SteamCallback: FC = () => {
 
     login(token);
     void router.replace('/');
-  }, [router, login]);
+  }, [router, login, t]);
 
   return (
     <div className="flex min-h-screen items-center justify-center text-white/70">
-      Completing Steam sign-in…
+      {t('misc.steam.completing')}
     </div>
   );
 };

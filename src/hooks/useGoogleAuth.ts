@@ -135,13 +135,13 @@ export function useGoogleAuth(): GoogleAuth {
           role = jwtDecode<JwtPayload>(sessionToken).role;
         } catch {
           analytics.auth.loginFailed('google', 'malformed_token');
-          toast.error('Received a malformed token');
+          toast.error(t('misc.auth.malformedToken'));
           return;
         }
 
         if (!isPlatformRole(role)) {
           analytics.auth.loginFailed('google', 'operator_account');
-          toast.error('This app is for player accounts. Operators sign in on the admin console.');
+          toast.error(t('loginModal.operatorAccount'));
           return;
         }
 

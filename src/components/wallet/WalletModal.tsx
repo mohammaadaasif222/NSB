@@ -1,5 +1,7 @@
 import { useEffect, useState, type FC } from 'react';
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 import DepositTab from './tabs/DepositTab';
 import WithdrawTab from './tabs/WithdrawTab';
 import BuyCryptoTab from './tabs/BuyCryptoTab';
@@ -19,12 +21,12 @@ interface Props {
   initialTab?: WalletTab;
 }
 
-const TABS: Array<{ id: WalletTab; label: string }> = [
-  { id: 'deposit', label: 'Deposit' },
-  { id: 'withdraw', label: 'Withdraw' },
-  { id: 'buy', label: 'Buy Crypto' },
-  { id: 'tip', label: 'Tip' },
-  { id: 'redeem', label: 'Redeem' },
+const TABS: Array<{ id: WalletTab; label: TranslationKey }> = [
+  { id: 'deposit', label: 'acct.wallet.tabDeposit' },
+  { id: 'withdraw', label: 'acct.wallet.tabWithdraw' },
+  { id: 'buy', label: 'acct.wallet.tabBuyCrypto' },
+  { id: 'tip', label: 'acct.wallet.tabTip' },
+  { id: 'redeem', label: 'acct.wallet.tabRedeem' },
 ];
 
 /**
@@ -39,6 +41,7 @@ const TABS: Array<{ id: WalletTab; label: string }> = [
  */
 const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
   const { beginPolling, endPolling } = useWallet();
+  const { t } = useTranslation();
   const [active, setActive] = useState<WalletTab>(initialTab);
 
   useEffect(() => {
@@ -66,7 +69,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Wallet"
+      aria-label={t('profile.wallet')}
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 backdrop-blur-sm pt-16 px-4 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -75,11 +78,11 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
       <div className="rl-modal-glass w-full max-w-lg overflow-hidden">
         {/* Header + close */}
         <div className="flex items-center justify-between gap-3 px-4 pt-4">
-          <h2 className="rl-h-card min-w-0 truncate text-[#f0f1f5]">Wallet Total</h2>
+          <h2 className="rl-h-card min-w-0 truncate text-[#f0f1f5]">{t('acct.wallet.total')}</h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('common.close')}
             className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
             <svg
@@ -112,7 +115,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
                     isActive ? 'text-[#f0f1f5]' : 'text-[#9da2b4] hover:text-[#f0f1f5]'
                   }`}
                 >
-                  {tab.label}
+                  {t(tab.label)}
                   {isActive && (
                     <span className="absolute inset-x-0 -bottom-px h-0.5 bg-white rounded-full" />
                   )}
@@ -127,8 +130,8 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
           {active === 'deposit' && <DepositTab onLeave={onClose} />}
           {active === 'withdraw' && <WithdrawTab onLeave={onClose} />}
           {active === 'buy' && <BuyCryptoTab />}
-          {active === 'tip' && <ComingSoonTab title="Tip" />}
-          {active === 'redeem' && <ComingSoonTab title="Redeem" />}
+          {active === 'tip' && <ComingSoonTab title={t('acct.wallet.tabTip')} />}
+          {active === 'redeem' && <ComingSoonTab title={t('acct.wallet.tabRedeem')} />}
         </div>
       </div>
     </div>

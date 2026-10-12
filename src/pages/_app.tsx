@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { I18nProvider } from '@/context/I18nContext';
+import { I18nProvider, useTranslation } from '@/context/I18nContext';
 import { PlatformFeaturesProvider } from '@/context/PlatformFeaturesContext';
 import { UserProvider } from '@/context/UserContext';
 import { WalletProvider } from '@/context/WalletContext';
@@ -24,6 +24,27 @@ import { useTracking } from '@/hooks/useTracking';
 import '@/index.css';
 import 'react-toastify/dist/ReactToastify.css';
 
+/**
+ * The shell's default <head>. Rendered inside I18nProvider so the description
+ * follows the player's language; pages override both with their own <Head>.
+ */
+function AppHead() {
+  const { t } = useTranslation();
+
+  return (
+    <Head>
+      <title>ROLLUCK</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="description" content={t('misc.meta.description')} />
+      <link
+        rel="icon"
+        type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%232563eb'/><text x='32' y='44' font-family='system-ui,sans-serif' font-size='34' font-weight='800' fill='%23ffffff' text-anchor='middle'>R</text></svg>"
+      />
+    </Head>
+  );
+}
+
 /** App shell: the provider tree and toast host wrapping every page. */
 export default function App({ Component, pageProps }: AppProps) {
   // Page views and page timing. Called at the shell so it survives every
@@ -33,25 +54,12 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <>
-      <Head>
-        <title>ROLLUCK</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta
-          name="description"
-          content="ROLLUCK: originals, new releases, featured games and slots."
-        />
-        <link
-          rel="icon"
-          type="image/svg+xml"
-          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%232563eb'/><text x='32' y='44' font-family='system-ui,sans-serif' font-size='34' font-weight='800' fill='%23ffffff' text-anchor='middle'>R</text></svg>"
-        />
-      </Head>
-
       {/* Outermost of the data providers, and unauthenticated: which features
           are switched on decides what the nav and the signed-out pages even
           render, so it must not wait on a session. */}
       <PlatformFeaturesProvider>
         <I18nProvider>
+          <AppHead />
           <AuthProvider>
             {/* Inside AuthProvider: it reads the account id to tie the session to. */}
             <Analytics />

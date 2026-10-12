@@ -1,9 +1,11 @@
 import { useMemo, type FC } from 'react';
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
 import type { DisplayFiat } from '@/types';
 
 const SettingsTab: FC = () => {
   const { summary, changePreferences, displayCurrencies } = useWallet();
+  const { t, locale } = useTranslation();
 
   const preferences = summary?.preferences;
   const balance = summary?.balance;
@@ -35,7 +37,7 @@ const SettingsTab: FC = () => {
     };
     const symbol = symbolMap[code] ?? '';
     const n = Number(amount);
-    return `${symbol}${n.toLocaleString(undefined, {
+    return `${symbol}${n.toLocaleString(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -46,7 +48,7 @@ const SettingsTab: FC = () => {
       {/* Display Currency Selector */}
       <div>
         <label className="block text-xs font-semibold text-slate-300 mb-2">
-          Display Currency
+          {t('acct.wallet.displayCurrency')}
         </label>
         <select
           value={displayCurrency}
@@ -69,16 +71,14 @@ const SettingsTab: FC = () => {
 
       {/* Info message */}
       <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-        <p className="text-xs text-amber-100">
-          💡 By switching display currency, your balance will be converted to the selected currency using current exchange rates.
-        </p>
+        <p className="text-xs text-amber-100">💡 {t('acct.wallet.displayCurrencyNote')}</p>
       </div>
 
       {/* Balance Display */}
       {balance ? (
         <div>
           <h3 className="text-xs font-semibold text-slate-300 mb-3">
-            Your Balance
+            {t('acct.wallet.yourBalance')}
           </h3>
           <div className="p-3 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -86,9 +86,7 @@ const SettingsTab: FC = () => {
                 className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: currencyDotColour(balance.currency) }}
               />
-              <span className="text-sm font-semibold text-slate-100">
-                {balance.currency}
-              </span>
+              <span className="text-sm font-semibold text-slate-100">{balance.currency}</span>
             </div>
             <span className="text-sm font-semibold text-slate-100">
               {formatFiat(balance.display_amount, displayCurrency)}
@@ -97,9 +95,7 @@ const SettingsTab: FC = () => {
         </div>
       ) : (
         <div className="p-3 bg-slate-900 border border-slate-700 rounded-lg">
-          <p className="text-xs text-slate-400 text-center">
-            No balance yet — make a deposit to start
-          </p>
+          <p className="text-xs text-slate-400 text-center">{t('acct.wallet.noBalance')}</p>
         </div>
       )}
     </div>

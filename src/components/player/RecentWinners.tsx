@@ -5,6 +5,8 @@ import type { Game } from '@/types';
 import { gameHref } from '@/constants/games';
 import { SHELF_TRACK } from '@/components/player/ShelfHeading';
 import avatar from '@/assets/lobby/winner-avatar.webp';
+import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 
 /**
  * Illustrative "Recent Winners" row, running as a live feed the way Rainbet's
@@ -15,8 +17,7 @@ import avatar from '@/assets/lobby/winner-avatar.webp';
  * There is no bets feed yet, so the wins are generated from the design's
  * sample rows, paired with real games from the lobby's own shelves so each
  * card opens a game that exists. The tabs switch state but filter nothing
- * until a feed lands. English-only copy on purpose, like the other
- * illustrative rows.
+ * until a feed lands.
  */
 interface Win {
   id: string;
@@ -36,66 +37,78 @@ const SAMPLE: Win[] = [
 ];
 
 /** Each design's tab set: the landing page's, and the signed-in lobby's. */
-export const WINNER_TABS = {
-  landing: ['Active wins', 'All Bets', 'Casino Wins'],
-  player: ['All bets', 'Casino Bets', 'Sports Bets'],
-} as const;
+export const WINNER_TABS: Record<'landing' | 'player', readonly TranslationKey[]> = {
+  landing: ['lobby.winners.activeWins', 'lobby.winners.allBets', 'lobby.winners.casinoWins'],
+  player: ['lobby.winners.allBets', 'lobby.winners.casinoBets', 'lobby.winners.sportsBets'],
+};
 
 /** The pulsing green "Live Bets" badge. */
-const LiveBadge: FC = () => (
-  <span className="inline-flex h-[calc(var(--u)*36)] flex-shrink-0 items-center gap-[calc(var(--u)*3)] rounded-[calc(var(--u)*34)] bg-[#038f2d]/10 px-[calc(var(--u)*12)] text-[length:max(min(11px,12px),calc(var(--u)*12))] font-medium leading-[calc(var(--u)*20)] text-[#03b739]">
-    <span
-      className="relative flex h-[calc(var(--u)*15)] w-[calc(var(--u)*15)] items-center justify-center"
-      aria-hidden="true"
-    >
-      <span className="absolute inset-0 animate-ping rounded-full bg-[#03b739]/50" />
-      <span className="absolute inset-0 rounded-full bg-[#03b739]/50" />
-      <span className="h-[calc(var(--u)*7.5)] w-[calc(var(--u)*7.5)] rounded-full bg-[#03b739]" />
+const LiveBadge: FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <span className="inline-flex h-[calc(var(--u)*36)] flex-shrink-0 items-center gap-[calc(var(--u)*3)] rounded-[calc(var(--u)*34)] bg-[#038f2d]/10 px-[calc(var(--u)*12)] text-[length:max(min(11px,12px),calc(var(--u)*12))] font-medium leading-[calc(var(--u)*20)] text-[#03b739]">
+      <span
+        className="relative flex h-[calc(var(--u)*15)] w-[calc(var(--u)*15)] items-center justify-center"
+        aria-hidden="true"
+      >
+        <span className="absolute inset-0 animate-ping rounded-full bg-[#03b739]/50" />
+        <span className="absolute inset-0 rounded-full bg-[#03b739]/50" />
+        <span className="h-[calc(var(--u)*7.5)] w-[calc(var(--u)*7.5)] rounded-full bg-[#03b739]" />
+      </span>
+      {t('lobby.winners.liveBets')}
     </span>
-    Live Bets
-  </span>
-);
+  );
+};
 
 /*
  * The card is laid out in `cqw` of the design's 198px card, like the game
  * tiles, so the phone's 122px card is the same card scaled — with floors on
  * the text so it stays readable there.
  */
-const WinnerCard: FC<{ game: Game; win: Win; fresh?: boolean }> = ({ game, win, fresh }) => (
-  // `fresh`: the card that has just arrived, which slides and fades in.
-  <div className={`@container ${fresh ? 'rl-winner-in' : ''}`}>
-    <Link
-      href={gameHref(game.slug)}
-      title={`${win.user} won ${win.payout} on ${game.title}`}
-      className="group relative block aspect-[198/261] overflow-hidden rounded-[11.1cqw] bg-[#333333]"
-    >
-      <Image
-        src={game.image_url || '/images/placeholder.png'}
-        alt={game.title}
-        fill
-        sizes="(max-width: 640px) 33vw, (max-width: 1280px) 20vw, 200px"
-        className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
-      />
+const WinnerCard: FC<{ game: Game; win: Win; fresh?: boolean }> = ({ game, win, fresh }) => {
+  const { t } = useTranslation();
 
-      <span className="rl-glass-deep absolute inset-x-0 bottom-0 flex h-[31.8%] flex-col justify-between rounded-b-[11.1cqw] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw]">
-        <span className="flex min-w-0 items-center gap-[4.04cqw]">
-          <Image
-            src={avatar}
-            alt=""
-            className="h-[18.2cqw] w-[18.2cqw] flex-shrink-0 rounded-full object-cover"
-          />
-          <span className="truncate text-[max(10px,7.07cqw)] font-medium leading-[1.43] text-[#f0f1f5]">
-            {win.user}
+  return (
+    // `fresh`: the card that has just arrived, which slides and fades in.
+    <div className={`@container ${fresh ? 'rl-winner-in' : ''}`}>
+      <Link
+        href={gameHref(game.slug)}
+        title={t('lobby.winners.cardTitle', {
+          user: win.user,
+          payout: win.payout,
+          game: game.title,
+        })}
+        className="group relative block aspect-[198/261] overflow-hidden rounded-[11.1cqw] bg-[#333333]"
+      >
+        <Image
+          src={game.image_url || '/images/placeholder.png'}
+          alt={game.title}
+          fill
+          sizes="(max-width: 640px) 33vw, (max-width: 1280px) 20vw, 200px"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
+        />
+
+        <span className="rl-glass-deep absolute inset-x-0 bottom-0 flex h-[31.8%] flex-col justify-between rounded-b-[11.1cqw] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw]">
+          <span className="flex min-w-0 items-center gap-[4.04cqw]">
+            <Image
+              src={avatar}
+              alt=""
+              className="h-[18.2cqw] w-[18.2cqw] flex-shrink-0 rounded-full object-cover"
+            />
+            <span className="truncate text-[max(10px,7.07cqw)] font-medium leading-[1.43] text-[#f0f1f5]">
+              {win.user}
+            </span>
+          </span>
+          <span className="flex items-center justify-between gap-[calc(var(--u)*4)] text-[max(10px,7.07cqw)] leading-[1.43] tabular-nums">
+            <span className="font-medium text-[#f4fffb]">{win.multiplier}</span>
+            <span className="truncate font-medium text-[#f0f1f5]">{win.payout}</span>
           </span>
         </span>
-        <span className="flex items-center justify-between gap-[calc(var(--u)*4)] text-[max(10px,7.07cqw)] leading-[1.43] tabular-nums">
-          <span className="font-medium text-[#f4fffb]">{win.multiplier}</span>
-          <span className="truncate font-medium text-[#f0f1f5]">{win.payout}</span>
-        </span>
-      </span>
-    </Link>
-  </div>
-);
+      </Link>
+    </div>
+  );
+};
 
 /** A new win every this many milliseconds — Rainbet's pace, measured off its feed. */
 const FEED_INTERVAL = 500;
@@ -165,7 +178,8 @@ interface Props {
 }
 
 const RecentWinners: FC<Props> = ({ games, tabs = 'landing' }) => {
-  const labels: readonly string[] = WINNER_TABS[tabs];
+  const { t } = useTranslation();
+  const labels = WINNER_TABS[tabs];
   const [tab, setTab] = useState(0);
   const [hovered, setHovered] = useState(false);
   const items = useWinnerFeed(games.length, hovered);
@@ -179,7 +193,7 @@ const RecentWinners: FC<Props> = ({ games, tabs = 'landing' }) => {
       <div className="flex flex-wrap items-center justify-between gap-y-[calc(var(--u)*11)] lg:flex-nowrap">
         <div className="flex w-full items-center justify-between gap-[calc(var(--u)*20)] lg:w-auto lg:justify-start">
           <h2 className="text-[length:max(min(11px,20px),calc(var(--u)*20))] font-semibold leading-[calc(var(--u)*28)] tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(min(11px,36px),calc(var(--u)*36))] lg:font-bold lg:leading-[calc(var(--u)*44)] lg:text-white">
-            Recent Winners
+            {t('lobby.winners.title')}
           </h2>
           <LiveBadge />
         </div>
@@ -198,7 +212,7 @@ const RecentWinners: FC<Props> = ({ games, tabs = 'landing' }) => {
                   : 'border border-[#333849] text-[#f0f1f5] hover:border-[#4a5068]'
               }`}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>

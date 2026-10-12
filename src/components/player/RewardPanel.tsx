@@ -35,28 +35,32 @@ const GOLD =
   'text-[16px] font-medium leading-6 text-[#ffe779] tabular-nums lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 
 /** The headline raffle, on a lighter card above the list. */
-const RaffleCard: FC = () => (
-  <div className="flex h-[94px] items-center gap-3 rounded-[34px] bg-white/20 px-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] lg:h-[calc(var(--u)*94)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*16)]">
-    <span
-      className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#666666] lg:h-[calc(var(--u)*36)] lg:w-[calc(var(--u)*36)] lg:rounded-[calc(var(--u)*8)]"
-      aria-hidden="true"
-    >
-      <svg
-        viewBox="0 0 18 18"
-        fill="none"
-        className="h-[18px] w-[18px] lg:h-[calc(var(--u)*18)] lg:w-[calc(var(--u)*18)]"
+const RaffleCard: FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex h-[94px] items-center gap-3 rounded-[34px] bg-white/20 px-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] lg:h-[calc(var(--u)*94)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*16)]">
+      <span
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#666666] lg:h-[calc(var(--u)*36)] lg:w-[calc(var(--u)*36)] lg:rounded-[calc(var(--u)*8)]"
+        aria-hidden="true"
       >
-        <rect x="2" y="2" width="14" height="14" rx="2" stroke="#d0d0d0" strokeWidth="2" />
-        <circle cx="6.5" cy="6.5" r="1.5" fill="#d0d0d0" />
-        <path d="M16 11.5 12 7.5 3 16" stroke="#d0d0d0" strokeWidth="2" strokeLinejoin="round" />
-      </svg>
-    </span>
-    <span className="min-w-0 flex-1">
-      <span className={TITLE}>$20,000 WEEKLY RAFFLE</span>
-      <span className={`${SUBTITLE} mt-0.5`}>Raffle Entry Active</span>
-    </span>
-  </div>
-);
+        <svg
+          viewBox="0 0 18 18"
+          fill="none"
+          className="h-[18px] w-[18px] lg:h-[calc(var(--u)*18)] lg:w-[calc(var(--u)*18)]"
+        >
+          <rect x="2" y="2" width="14" height="14" rx="2" stroke="#d0d0d0" strokeWidth="2" />
+          <circle cx="6.5" cy="6.5" r="1.5" fill="#d0d0d0" />
+          <path d="M16 11.5 12 7.5 3 16" stroke="#d0d0d0" strokeWidth="2" strokeLinejoin="round" />
+        </svg>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={TITLE}>{t('lobby.raffle.title', { amount: '$20,000' })}</span>
+        <span className={`${SUBTITLE} mt-0.5`}>{t('lobby.raffle.active')}</span>
+      </span>
+    </div>
+  );
+};
 
 interface RowProps {
   reward: RewardTypeSummary;

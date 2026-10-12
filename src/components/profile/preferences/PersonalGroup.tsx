@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { RowButton } from '@/components/profile/SectionShell';
 import { PrefCard, PrefRowShell } from '@/components/profile/preferences/PrefGroupView';
-import { DEFAULT_TIMEZONE, type ApiUser } from '@/types/profile';
+import { DEFAULT_TIMEZONE, timezoneLabelKey, type ApiUser } from '@/types/profile';
 
 interface Props {
   me: ApiUser;
@@ -19,6 +19,8 @@ interface Props {
  */
 const PersonalGroup: FC<Props> = ({ me, onChangeUsername, onChangeTimezone }) => {
   const { t } = useTranslation();
+  const timezone = me.timezone || DEFAULT_TIMEZONE;
+  const timezoneKey = timezoneLabelKey(timezone);
 
   const rows = [
     {
@@ -30,7 +32,7 @@ const PersonalGroup: FC<Props> = ({ me, onChangeUsername, onChangeTimezone }) =>
     {
       key: 'timezone',
       label: t('profile.timezone'),
-      value: me.timezone || DEFAULT_TIMEZONE,
+      value: timezoneKey ? t(timezoneKey) : timezone,
       onChange: onChangeTimezone,
     },
   ];

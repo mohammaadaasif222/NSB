@@ -127,12 +127,12 @@ export function useTelegramAuth(): TelegramAuth {
         try {
           role = jwtDecode<JwtPayload>(sessionToken).role;
         } catch {
-          toast.error('Received a malformed token');
+          toast.error(t('misc.auth.malformedToken'));
           return;
         }
 
         if (!isPlatformRole(role)) {
-          toast.error('This app is for player accounts. Operators sign in on the admin console.');
+          toast.error(t('loginModal.operatorAccount'));
           return;
         }
 

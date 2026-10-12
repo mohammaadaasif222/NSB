@@ -5,6 +5,7 @@ import Image, { type StaticImageData } from 'next/image';
 import { StarIcon } from '@/components/icons';
 import CountdownBar, { type Countdown } from '@/components/promotions/CountdownBar';
 import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 
 export interface Promotion {
   id: string;
@@ -13,8 +14,9 @@ export interface Promotion {
   live: boolean;
   /** Already formatted — "4.5". */
   rating: string;
-  title: string;
-  body: string;
+  /** i18n keys while the copy is the design's placeholder. */
+  title: TranslationKey;
+  body: TranslationKey;
   endsIn: Countdown;
 }
 
@@ -51,10 +53,10 @@ const PromotionCard: FC<{ promo: Promotion }> = ({ promo }) => {
 
       <div className="flex flex-1 flex-col px-5 pb-4 lg:px-[calc(var(--u)*20)] lg:pb-[calc(var(--u)*15)]">
         <h3 className="mt-3 text-[20px] font-semibold leading-7 text-[#f0f1f5] lg:mt-[calc(var(--u)*14)] lg:text-[length:max(14px,calc(var(--u)*24))] lg:leading-[calc(var(--u)*32)]">
-          {promo.title}
+          {t(promo.title)}
         </h3>
         <p className="mt-1.5 text-[14px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*9)] lg:text-[length:max(11px,calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
-          {promo.body}
+          {t(promo.body)}
         </p>
 
         {/* Pinned to the foot so a longer headline cannot shunt the controls

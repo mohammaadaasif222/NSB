@@ -1,12 +1,7 @@
 import { useMemo, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { DISPLAY_CURRENCY_SYMBOL } from '@/components/responsible/rgContent';
-import {
-  BUDGET_KEYS,
-  EXPENSE_LINES,
-  INCOME_LINES,
-  type BudgetLine,
-} from '@/components/responsible/budgetCopy';
+import { BUDGET_KEYS, EXPENSE_LINES, INCOME_LINES } from '@/components/responsible/budgetCopy';
 
 /**
  * Budget calculator.
@@ -40,18 +35,20 @@ const FIELD =
 
 /** A label with its running figure, then the box you type in. */
 const Line: FC<{
-  line: BudgetLine;
+  /** The field id, also used for the label's `htmlFor`. */
+  fieldKey: string;
+  label: string;
   value: string;
   onChange?: (v: string) => void;
   readOnly?: boolean;
-}> = ({ line, value, onChange, readOnly = false }) => {
-  const id = `budget-${line.key}`;
+}> = ({ fieldKey, label, value, onChange, readOnly = false }) => {
+  const id = `budget-${fieldKey}`;
 
   return (
     <div className="pt-3.75">
       <div className="flex items-center justify-between gap-4">
         <label htmlFor={id} className="text-[18px] leading-7 text-[#b3bec1]">
-          {line.label}
+          {label}
         </label>
         <span className="shrink-0 text-[18px] leading-7 text-[#b3bec1] tabular-nums">
           {money(num(value))}
@@ -92,48 +89,51 @@ const BudgetCalculatorSection: FC = () => {
   /* The totals are shown in the same box as the entries, as the design draws
      them — but read-only. A total you can type over is a total that can
      disagree with the four lines above it. */
-  const totalLine = (key: string, label: string): BudgetLine => ({ key, label });
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rg.budgetTitle')}</h2>
+      <h2 className="rl-h-section">{t('rgc.budgetTitle')}</h2>
 
       {/* 557 and 598 across 1196 with 41 between — two columns that become one
           when the panel can no longer hold a readable pair. */}
       <div className="mt-2.5 grid gap-x-10.25 gap-y-8 @3xl:grid-cols-2">
         <section>
-          <h3 className="text-2xl leading-8 text-[#f0f1f5]">{t('rg.budgetIncome')}</h3>
+          <h3 className="text-2xl leading-8 text-[#f0f1f5]">{t('rgc.budgetIncome')}</h3>
 
           {INCOME_LINES.map((line) => (
             <Line
               key={line.key}
-              line={line}
+              fieldKey={line.key}
+              label={t(line.labelKey)}
               value={amounts[line.key] ?? ''}
               onChange={(v) => set(line.key, v)}
             />
           ))}
 
           <Line
-            line={totalLine('totalIncome', t('rg.budgetTotalIncome'))}
+            fieldKey="totalIncome"
+            label={t('rgc.budgetTotalIncome')}
             value={totals.income.toFixed(2)}
             readOnly
           />
         </section>
 
         <section>
-          <h3 className="text-2xl leading-8 text-[#f0f1f5]">{t('rg.budgetExpenses')}</h3>
+          <h3 className="text-2xl leading-8 text-[#f0f1f5]">{t('rgc.budgetExpenses')}</h3>
 
           {EXPENSE_LINES.map((line) => (
             <Line
               key={line.key}
-              line={line}
+              fieldKey={line.key}
+              label={t(line.labelKey)}
               value={amounts[line.key] ?? ''}
               onChange={(v) => set(line.key, v)}
             />
           ))}
 
           <Line
-            line={totalLine('totalExpenses', t('rg.budgetTotalExpenses'))}
+            fieldKey="totalExpenses"
+            label={t('rgc.budgetTotalExpenses')}
             value={totals.expenses.toFixed(2)}
             readOnly
           />
@@ -144,7 +144,7 @@ const BudgetCalculatorSection: FC = () => {
 
       <div className="rl-field-card mt-2.75 rounded-[34px] border border-white/20 py-4 ps-6.75 pe-4">
         <p className="text-[18px] leading-6 font-semibold text-[#f0f1f5]">
-          {t('rg.budgetDisposable')}
+          {t('rgc.budgetDisposable')}
         </p>
         <p className="mt-3 text-[32px] leading-10 tracking-[-0.64px] text-[#9da2b4] tabular-nums">
           {totals.left === 0 ? '0' : money(totals.left)}

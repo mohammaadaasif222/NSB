@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
 import { getDepositAddress } from '@/services/wallet';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
@@ -46,6 +47,7 @@ interface Props {
 }
 
 const DepositTab: FC<Props> = ({ onLeave }) => {
+  const { t } = useTranslation();
   const { run } = useSeonGuard();
   const { summary, currencies } = useWallet();
   const [depositType, setDepositType] = useState<DepositType>('crypto');
@@ -160,7 +162,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
         if (res?.success && res.data) {
           setAddress(res.data);
         } else {
-          toast.error(res?.message || 'Could not fetch deposit address');
+          toast.error(res?.message || t('acct.wallet.fetchAddressFailed'));
         }
       })
       .catch((err: unknown) => {
@@ -171,7 +173,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
         // A deposit address is withheld until Level 1 is complete. That is a
         // step the player can take right now, so say so and offer it rather
         // than reporting it as a failure to fetch something.
-        const kycError = readKycError(err);
+        const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
         if (kycError) {
           setAddress(null);
           setKycBlock({
@@ -193,7 +195,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
         const message =
           typeof err === 'object' && err && 'message' in err
             ? String((err as { message: string }).message)
-            : 'Could not fetch deposit address';
+            : t('acct.wallet.fetchAddressFailed');
         toast.error(message);
       })
       .finally(() => {
@@ -207,12 +209,14 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
     // No retry trigger any more: verification now happens on the account page,
     // which means the wallet has been closed and this tab unmounted. Reopening
     // it re-runs this effect and re-asks for the address.
+    // `t` is left out on purpose: switching language must not re-request the address.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currency, network, run]);
 
   if (eligible.length === 0) {
     return (
       <div className="py-8 text-center text-sm text-slate-400">
-        No currencies available for deposit yet. Ask an operator to sync the catalogue.
+        {t('acct.wallet.noDepositCurrencies')}
       </div>
     );
   }
@@ -230,7 +234,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
               : 'text-slate-500 hover:text-slate-400'
           }`}
         >
-          Crypto
+          {t('acct.wallet.crypto')}
         </button>
         <button
           type="button"
@@ -241,7 +245,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
               : 'text-slate-500 hover:text-slate-400'
           }`}
         >
-          Local currency
+          {t('acct.wallet.localCurrency')}
         </button>
       </div>
 
@@ -249,7 +253,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
       {depositType === 'crypto' && (
         <>
           <CurrencyPicker
-            label="Currency"
+            label={t('pref.currency')}
             currencies={eligible}
             value={currency}
             onChange={setCurrency}
@@ -257,20 +261,20 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
 
           {enabledNetworks.length > 0 ? (
             <NetworkPicker
-              label="Network"
+              label={t('acct.wallet.network')}
               networks={enabledNetworks}
               value={network}
               onChange={setNetwork}
             />
           ) : (
             <div className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-[11px] text-slate-500">
-              No enabled network for {currency} — ask an operator to enable one.
+              {t('acct.wallet.noEnabledNetwork', { currency })}
             </div>
           )}
 
           {loading ? (
             <div className="h-64 rounded-xl border border-slate-700 flex items-center justify-center text-xs text-slate-400">
-              Loading address…
+              {t('acct.wallet.loadingAddress')}
             </div>
           ) : kycBlock ? (
             <KycGateNotice
@@ -285,7 +289,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
           ) : null}
 
           <p className="text-center text-[11px] text-slate-400 pt-2">
-            Need help with your deposit?
+            {t('acct.wallet.depositHelp')}
           </p>
         </>
       )}

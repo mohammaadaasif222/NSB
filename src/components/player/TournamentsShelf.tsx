@@ -17,7 +17,8 @@ import trophyArt from '@/assets/lobby/casino/tournament-trophy.webp';
  */
 interface Tournament {
   id: string;
-  name: string;
+  /** The studio the race runs on; the name is built around it. */
+  provider: string;
   prizePool: string;
   seats: string;
   /** Seconds left when the page loads — the design shows 05d 12h 50m 24s. */
@@ -28,7 +29,7 @@ interface Tournament {
 const SAMPLE: Tournament[] = [
   {
     id: 't1',
-    name: 'Endorphina Wager Race',
+    provider: 'Endorphina',
     prizePool: '$40 000',
     seats: '15/50',
     endsIn: 478_224,
@@ -36,7 +37,7 @@ const SAMPLE: Tournament[] = [
   },
   {
     id: 't2',
-    name: 'Endorphina Wager Race',
+    provider: 'Endorphina',
     prizePool: '$40 000',
     seats: '15/50',
     endsIn: 478_224,
@@ -44,7 +45,7 @@ const SAMPLE: Tournament[] = [
   },
   {
     id: 't3',
-    name: 'Endorphina Wager Race',
+    provider: 'Endorphina',
     prizePool: '$40 000',
     seats: '15/50',
     endsIn: 478_224,
@@ -52,7 +53,7 @@ const SAMPLE: Tournament[] = [
   },
   {
     id: 't4',
-    name: 'Endorphina Wager Race',
+    provider: 'Endorphina',
     prizePool: '$40 000',
     seats: '15/50',
     endsIn: 478_224,
@@ -158,7 +159,7 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
         <h3
           className={`${text(24)} truncate font-semibold leading-[calc(var(--u)*32)] text-[#f0f1f5]`}
         >
-          {tournament.name}
+          {t('lobby.tournaments.wagerRace', { provider: tournament.provider })}
         </h3>
 
         <div className="mt-[calc(var(--u)*14)] flex items-start justify-between gap-[calc(var(--u)*12)]">

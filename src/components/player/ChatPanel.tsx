@@ -46,7 +46,7 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <div className="flex h-[30rem] flex-col">
       <PanelHeader
-        title="Chat"
+        title={t('nav.chat')}
         action={
           <PanelIconButton label={t('nav.closeMenu')} onClick={onClose}>
             <CloseIcon size={17} />
@@ -56,7 +56,7 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
 
       <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <AgentCluster />
-        <p className="text-xs text-slate-500">Live chat with our support team is coming soon.</p>
+        <p className="text-xs text-slate-500">{t('lobby.chat.soon')}</p>
       </div>
 
       <form onSubmit={send} className="flex items-center gap-2 border-t border-slate-700 p-3">
@@ -64,8 +64,8 @@ const ChatPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Your message…"
-          aria-label="Your message"
+          placeholder={t('lobby.chat.placeholder')}
+          aria-label={t('lobby.chat.message')}
           className="min-w-0 flex-1 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500/60"
         />
         <button

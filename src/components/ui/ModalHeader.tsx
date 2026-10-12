@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useTranslation } from '@/context/I18nContext';
 import { ChevronLeftIcon, CloseIcon } from '@/components/icons';
 import CircleIconButton from '@/components/ui/CircleIconButton';
 
@@ -29,39 +30,43 @@ const ModalHeader: FC<ModalHeaderProps> = ({
   onClose,
   closeLabel,
   onBack,
-  backLabel = 'Back',
+  backLabel,
   variant = 'compact',
-}) => (
-  <div className="relative z-10 flex items-center gap-3">
-    <div className="flex w-10 shrink-0 sm:w-12">
-      {onBack && (
-        <CircleIconButton label={backLabel} onClick={onBack}>
-          <ChevronLeftIcon size={22} className="rtl:rotate-180" />
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="relative z-10 flex items-center gap-3">
+      <div className="flex w-10 shrink-0 sm:w-12">
+        {onBack && (
+          <CircleIconButton label={backLabel ?? t('auth.back')} onClick={onBack}>
+            <ChevronLeftIcon size={22} className="rtl:rotate-180" />
+          </CircleIconButton>
+        )}
+      </div>
+
+      <h2
+        id={id}
+        className={`min-w-0 flex-1 text-center text-white ${
+          variant === 'hero'
+            ? 'pt-3 text-[32px] font-bold leading-tight sm:pt-5 sm:text-[40px]'
+            : variant === 'section'
+              ? 'text-[24px] font-semibold leading-8 text-[#f0f1f5]'
+              : 'text-base font-medium sm:text-lg'
+        }`}
+      >
+        {title}
+      </h2>
+
+      <div
+        className={`flex w-10 shrink-0 justify-end sm:w-12 ${variant === 'hero' ? 'self-start' : ''}`}
+      >
+        <CircleIconButton label={closeLabel} onClick={onClose}>
+          <CloseIcon size={22} />
         </CircleIconButton>
-      )}
+      </div>
     </div>
-
-    <h2
-      id={id}
-      className={`min-w-0 flex-1 text-center text-white ${
-        variant === 'hero'
-          ? 'pt-3 text-[32px] font-bold leading-tight sm:pt-5 sm:text-[40px]'
-          : variant === 'section'
-            ? 'text-[24px] font-semibold leading-8 text-[#f0f1f5]'
-            : 'text-base font-medium sm:text-lg'
-      }`}
-    >
-      {title}
-    </h2>
-
-    <div
-      className={`flex w-10 shrink-0 justify-end sm:w-12 ${variant === 'hero' ? 'self-start' : ''}`}
-    >
-      <CircleIconButton label={closeLabel} onClick={onClose}>
-        <CloseIcon size={22} />
-      </CircleIconButton>
-    </div>
-  </div>
-);
+  );
+};
 
 export default ModalHeader;

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { BALANCE_REFRESH_EVENT } from '@/utils/balanceEvents';
 import type { DisplayFiat } from '@/types';
@@ -25,6 +26,7 @@ interface Props {
 const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
   const { summary, loading, refresh } = useWallet();
   const { formatCurrencyDisplay } = useCurrencyConversion();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -82,6 +84,12 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
     return formatCurrencyDisplay(balance.real_amount);
   }, [balance, loading, formatCurrencyDisplay]);
 
+  // The sentence is translated whole; the currency code is split back out so
+  // it keeps its emphasis wherever the language puts it.
+  const [currencyBefore, currencyAfter = ''] = t('lobby.balance.displayingIn', {
+    currency: '\u0000',
+  }).split('\u0000');
+
   return (
     <div className="relative min-w-0" ref={ref}>
       <button
@@ -89,7 +97,7 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Wallet balance"
+        aria-label={t('lobby.balance.label')}
         title={chipLabel}
         className="flex h-10 max-w-full items-center gap-2.5 rounded-full border border-white/10 bg-black/40 px-[18px] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*9)] lg:px-[calc(var(--u)*14)]"
       >
@@ -110,13 +118,13 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
         >
           {/* Real Balance Card */}
           <div className="rounded-2xl border-2 border-emerald-500/40 bg-emerald-950/20 px-3 py-2.5 mb-2">
-            <p className="text-[8px] font-semibold text-white/50 mb-1">Real Balance</p>
+            <p className="text-[8px] font-semibold text-white/50 mb-1">{t('wallet.real')}</p>
             <p className="text-sm font-bold text-white">{realBalanceLabel}</p>
           </div>
 
           {/* Bonus Balance Card */}
           <div className="rounded-2xl border-2 border-gray-500/30 bg-gray-950/20 px-3 py-2.5 mb-3">
-            <p className="text-[8px] font-semibold text-white/50 mb-1">Bonus Balance</p>
+            <p className="text-[8px] font-semibold text-white/50 mb-1">{t('wallet.bonus')}</p>
             <p className="text-sm font-bold text-white">
               {balance?.bonus_amount
                 ? formatCurrencyDisplay(balance.bonus_amount)
@@ -127,8 +135,9 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
           {/* Display Currency Info */}
           <div className="flex items-center justify-center gap-2 px-1 py-2 mb-3">
             <span className="text-xs font-medium text-white/70">
-              Displaying currency in{' '}
+              {currencyBefore}
               <span className="font-semibold text-white">{displayCurrency}</span>
+              {currencyAfter}
             </span>
           </div>
 
@@ -141,7 +150,7 @@ const BalanceMenu: FC<Props> = ({ onOpenWallet }) => {
               }}
               className="rl-btn-gold h-10 w-full rounded-lg text-sm font-semibold transition-all hover:opacity-90"
             >
-              Wallet Settings
+              {t('lobby.balance.walletSettings')}
             </button>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { useRef, type ChangeEvent, type ClipboardEvent, type FC, type KeyboardEvent } from 'react';
+import { useTranslation } from '@/context/I18nContext';
 
 /**
  * Six single-character boxes that behave like one field.
@@ -33,6 +34,7 @@ const OtpInput: FC<Props> = ({
   boxClassName = DEFAULT_BOX,
   placeholder,
 }) => {
+  const { t } = useTranslation();
   const boxes = useRef<Array<HTMLInputElement | null>>([]);
 
   const focus = (index: number): void => {
@@ -122,7 +124,7 @@ const OtpInput: FC<Props> = ({
           inputMode="numeric"
           autoComplete={i === 0 ? 'one-time-code' : 'off'}
           maxLength={1}
-          aria-label={`Digit ${i + 1}`}
+          aria-label={t('misc.otp.digit', { n: i + 1 })}
           placeholder={placeholder}
           className={`${boxClassName} text-center text-2xl font-semibold tabular-nums`}
         />

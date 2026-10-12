@@ -16,6 +16,7 @@ import {
   stepUpHeaders,
   type SeonStepUpChallenge,
 } from '@/lib/seon-guard';
+import { translate } from '@/i18n/translate';
 
 /**
  * A request that may need a one-time code part-way through.
@@ -99,7 +100,7 @@ export const SeonGuardProvider: FC<{ children: ReactNode }> = ({ children }) => 
       } catch (firstError) {
         if (!isStepUpRequired(firstError)) throw firstError;
 
-        let current = extractChallenge(firstError);
+        let current = extractChallenge(firstError, translate('misc.seon.confirmDefault'));
         if (!current) throw firstError;
 
         // Loop so a wrong code re-prompts rather than failing the whole
@@ -124,10 +125,10 @@ export const SeonGuardProvider: FC<{ children: ReactNode }> = ({ children }) => 
           } catch (retryError) {
             // A fresh challenge means the server issued a new code (the old
             // one was burned) — carry on with that instead of the stale token.
-            const reissued = extractChallenge(retryError);
+            const reissued = extractChallenge(retryError, translate('misc.seon.confirmDefault'));
             if (reissued) {
               current = reissued;
-              setError('That code was not accepted. We have sent a new one.');
+              setError(translate('misc.seon.codeReissued'));
               setSubmitting(false);
               continue;
             }
@@ -137,7 +138,7 @@ export const SeonGuardProvider: FC<{ children: ReactNode }> = ({ children }) => 
             // already used. Every one of those reads the same to the player
             // on purpose — guessing must not reveal which.
             if (/invalid or has expired/i.test(message)) {
-              setError('That code is not right, or it has expired.');
+              setError(translate('misc.seon.codeInvalid'));
               setSubmitting(false);
               continue;
             }
