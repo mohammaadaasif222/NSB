@@ -1,6 +1,14 @@
 import apiService from '@/services/api';
 import type { ShelfListQuery } from '@/constants/games';
-import type { ApiError, Game, GameDevice, GameLaunch, GameListResponse, GameMode } from '@/types';
+import type {
+  ApiError,
+  Game,
+  GameDevice,
+  GameLaunch,
+  GameListResponse,
+  GameMode,
+  LobbyProvider,
+} from '@/types';
 
 /**
  * Open a game. REAL needs the player's token (attached by apiService); DEMO
@@ -57,25 +65,41 @@ export async function fetchShelfPage(
 /* The player's own games — both need the player's token               */
 /* ------------------------------------------------------------------ */
 
-const listOrThrow = async (url: string): Promise<Game[]> => {
-  const res = await apiService.get<Game[]>(url);
+const listOrThrow = async <T>(url: string, subject: string): Promise<T[]> => {
+  const res = await apiService.get<T[]>(url);
   if (!res?.success || !Array.isArray(res.data)) {
-    throw { message: res?.message || 'Could not load games' } satisfies ApiError;
+    throw { message: res?.message || `Could not load ${subject}` } satisfies ApiError;
   }
   return res.data;
 };
 
-/** The player's favourite games, newest-hearted first. */
-export const fetchFavourites = (): Promise<Game[]> => listOrThrow('/games/favourites');
-
-/** The games the player launched most recently, newest first. */
-export const fetchRecentGames = (): Promise<Game[]> => listOrThrow('/games/recent');
-
-/** Hearts or unhearts a game. Idempotent either way. */
-export async function setFavourite(slug: string, favourite: boolean): Promise<void> {
-  const url = `/games/${encodeURIComponent(slug)}/favourite`;
+/**
+ * Games and studios are hearted the same way — GET `<base>/favourites` and
+ * PUT|DELETE `<base>/:slug/favourite` — so one pair of calls serves both.
+ */
+const setHearted = async (base: string, slug: string, favourite: boolean): Promise<void> => {
+  const url = `${base}/${encodeURIComponent(slug)}/favourite`;
   const res = favourite ? await apiService.put(url) : await apiService.delete(url);
   if (!res?.success) {
     throw { message: res?.message || 'Could not update favourites' } satisfies ApiError;
   }
-}
+};
+
+/** The player's favourite games, newest-hearted first. */
+export const fetchFavourites = (): Promise<Game[]> =>
+  listOrThrow<Game>('/games/favourites', 'games');
+
+/** The games the player launched most recently, newest first. */
+export const fetchRecentGames = (): Promise<Game[]> => listOrThrow<Game>('/games/recent', 'games');
+
+/** The studios the player has hearted, newest-hearted first. */
+export const fetchFavouriteProviders = (): Promise<LobbyProvider[]> =>
+  listOrThrow<LobbyProvider>('/game-providers/favourites', 'providers');
+
+/** Hearts or unhearts a game. Idempotent either way. */
+export const setFavourite = (slug: string, favourite: boolean): Promise<void> =>
+  setHearted('/games', slug, favourite);
+
+/** Hearts or unhearts a studio. Idempotent either way. */
+export const setProviderFavourite = (slug: string, favourite: boolean): Promise<void> =>
+  setHearted('/game-providers', slug, favourite);
