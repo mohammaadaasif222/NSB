@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useFavourites } from '@/context/FavouritesContext';
 import { fetchCatalogue, providersOf } from '@/services/catalogue';
 import { LOBBY_SHELF_KEYS, listMatches, shelfFor } from '@/constants/games';
 import GameRow from '@/components/player/GameRow';
@@ -91,6 +93,17 @@ const GameBrowser: FC<Props> = ({
   const [browse, setBrowse] = useState<Omit<BrowseState, 'provider'>>(BROWSE_DEFAULTS);
   const [provider, setProvider] = useState<string>('');
   const [category, setCategory] = useState<ChipKey>('lobby');
+
+  const { token } = useAuth();
+  const { games: favourites, failed: favouritesFailed } = useFavourites();
+
+  // Signing out takes the Favourites chip away with the list behind it, so
+  // the browser cannot be left showing a category that no longer exists.
+  useEffect(() => {
+    if (!token) {
+      setCategory((current) => (current === 'favourites' ? 'lobby' : current));
+    }
+  }, [token]);
 
   /**
    * The provider lives in the URL as well as in state, so a provider plate
@@ -203,10 +216,22 @@ const GameBrowser: FC<Props> = ({
     placed.get(anchor)?.map((insert) => <Fragment key={insert.id}>{insert.node}</Fragment>);
 
   const results = useMemo(() => {
+    // Favourites come from the player's own list, not the catalogue: that is
+    // capped at PAGE_CAP games, so filtering it would quietly lose a
+    // favourite past the ceiling.
+    if (category === 'favourites') {
+      return browseGames(favourites ?? [], { ...browse, provider });
+    }
     const inCategory =
       category === 'lobby' ? games : games.filter((g) => listMatches(g, shelfFor(category).list));
     return browseGames(inCategory, { ...browse, provider });
-  }, [games, category, browse, provider]);
+  }, [games, favourites, category, browse, provider]);
+
+  // On Favourites the grid waits on that list rather than the catalogue,
+  // which is still being pulled in the background for the provider picker.
+  const onFavourites = category === 'favourites';
+  const busy = onFavourites ? favourites === null : loading;
+  const broke = onFavourites ? favouritesFailed : failed;
 
   const clear = (): void => {
     setBrowse(BROWSE_DEFAULTS);
@@ -264,7 +289,7 @@ const GameBrowser: FC<Props> = ({
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-[17px] font-semibold text-white sm:text-[19px]">
               {t('browse.results')}
-              {!loading && !failed && (
+              {!busy && !broke && (
                 <span className="ms-2 text-xs font-normal text-white/40">
                   {t('dash.gamesCount', { count: results.length })}
                 </span>
@@ -279,25 +304,27 @@ const GameBrowser: FC<Props> = ({
             </button>
           </div>
 
-          {loading && (
+          {busy && (
             <p className="rl-glass rounded-2xl px-4 py-10 text-center text-xs text-white/40">
               {t('search.loading')}
             </p>
           )}
 
-          {!loading && failed && (
+          {!busy && broke && (
             <p className="rl-glass rounded-2xl px-4 py-10 text-center text-xs text-white/40">
               {t('search.failed')}
             </p>
           )}
 
-          {!loading && !failed && results.length === 0 && (
+          {!busy && !broke && results.length === 0 && (
             <p className="rl-glass rounded-2xl px-4 py-10 text-center text-xs text-white/40">
-              {trimmed ? t('search.empty', { query: browse.search }) : t('games.empty')}
+              {trimmed
+                ? t('search.empty', { query: browse.search })
+                : t(onFavourites ? 'favourites.empty' : 'games.empty')}
             </p>
           )}
 
-          {!loading && !failed && results.length > 0 && (
+          {!busy && !broke && results.length > 0 && (
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
               {results.map((game) => (
                 <GameTile key={game.id} game={game} surface="browse" />
