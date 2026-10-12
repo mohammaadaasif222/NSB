@@ -37,6 +37,7 @@ export interface SignupTarget {
   method: SignupMethod;
   identifier: string;
   otpRequired: boolean;
+  token?: string;
 }
 
 interface Options {
@@ -186,6 +187,7 @@ export const useSignupForm = ({
           res.data?.identifier ??
           (method === 'email' ? (body.email as string) : (body.mobile as string)),
         otpRequired,
+        token: res.data?.token,
       });
     } catch (err) {
       resetCaptcha();

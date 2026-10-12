@@ -1,6 +1,11 @@
 import apiService from './api';
 import { encryptPassword } from '@/utils/crypto';
-import type { LoginResponseData, RegisterRequest, RegisterResponseData } from '@/types';
+import type {
+  LoginResponseData,
+  RegisterRequest,
+  RegisterResponseData,
+  VerifyOtpResponseData,
+} from '@/types';
 
 
 export const registerAccount = async (body: RegisterRequest) =>
@@ -10,7 +15,7 @@ export const registerAccount = async (body: RegisterRequest) =>
   });
 
 export const verifySignupOtp = (identifier: string, code: string) =>
-  apiService.post('/auth/verify-otp', { identifier, code });
+  apiService.post<VerifyOtpResponseData>('/auth/verify-otp', { identifier, code });
 
 export const resendSignupOtp = (identifier: string) =>
   apiService.post('/auth/resend-otp', { identifier });

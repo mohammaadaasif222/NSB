@@ -65,4 +65,10 @@ export interface RegisterResponseData {
   username?: string;
   otp_required?: boolean;
   identifier?: string;
+  token?: string;
+}
+
+export interface VerifyOtpResponseData {
+  verified?: boolean;
+  token?: string;
 }
