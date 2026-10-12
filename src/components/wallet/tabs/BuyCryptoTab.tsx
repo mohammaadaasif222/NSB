@@ -35,6 +35,7 @@ const BuyCryptoTab: FC = () => {
     errorOffers,
     fetchOffers,
     creatingOrder,
+    errorCreateOrder,
     createOrder,
   } = useChangellyBuyCrypto();
 
@@ -52,6 +53,7 @@ const BuyCryptoTab: FC = () => {
   const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
   const [showFiatDropdown, setShowFiatDropdown] = useState(false);
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null); // Track selected network
 
   // Fetch cryptos on mount
   useEffect(() => {
@@ -117,8 +119,10 @@ const BuyCryptoTab: FC = () => {
         console.log('[Changelly] Address response:', addressResponse);
 
         const address = addressResponse?.data?.address;
+        const networkCode = addressResponse?.data?.network_code;
         setToAddress(address || null);
-        console.log('[Changelly] Successfully fetched wallet address:', address);
+        setSelectedNetwork(networkCode || null);
+        console.log('[Changelly] Successfully fetched wallet address:', address, 'Network:', networkCode);
       } catch (error: any) {
         console.error('[Changelly] Address fetch error - Full details:', {
           status: error?.status,
@@ -175,7 +179,7 @@ const BuyCryptoTab: FC = () => {
 
   // Handle Buy Now → Create order with selected provider
   const handleBuyNow = async () => {
-    if (!selectedCrypto || !selectedProvider || !toAddress) return;
+    if (!selectedCrypto || !selectedProvider || !toAddress || !selectedNetwork) return;
 
     try {
       console.log('[Changelly] Creating order...');
@@ -189,6 +193,7 @@ const BuyCryptoTab: FC = () => {
         selectedProvider,
         country,
         toAddress,
+        selectedNetwork, // Pass the network code (e.g., 'ETHEREUM', 'SOLANA')
         country === 'US' ? 'CA' : undefined, // Automatically use CA for US, undefined for others
       );
 
@@ -406,6 +411,13 @@ const BuyCryptoTab: FC = () => {
             </div>
           )}
 
+          {/* Error message when order creation fails */}
+          {errorCreateOrder && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
+              <span className="font-semibold">Error creating order:</span> {errorCreateOrder.message}
+            </div>
+          )}
+
           {/* Buy Now Button */}
           <button
             onClick={handleBuyNow}
@@ -418,6 +430,7 @@ const BuyCryptoTab: FC = () => {
               !selectedCrypto ||
               !selectedProvider ||
               !toAddress ||
+              !selectedNetwork ||
               offers.length === 0
             }
             className="w-full px-4 py-3 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] rounded-lg text-white hover:opacity-90 transition-opacity text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"

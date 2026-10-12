@@ -159,6 +159,7 @@ export const useChangellyBuyCrypto = () => {
       providerId: string,
       country: string,
       toAddress: string,
+      network: string,
       state?: string,
     ): Promise<CreateOrderResponse | null> => {
       try {
@@ -180,15 +181,32 @@ export const useChangellyBuyCrypto = () => {
           providerId,
           country,
           toAddress,
+          network,
           ...(state ? { state } : {}),
         });
 
         return response?.data?.data || null;
       } catch (error: any) {
-        const errorMsg = error?.response?.data?.message || 'Failed to create order';
-        const err = { message: errorMsg, code: error?.response?.data?.code };
+        let errorMsg = 'Failed to create order';
+        let errorCode = undefined;
+
+        // Try to extract error message from various response formats
+        if (error?.response?.data?.message) {
+          errorMsg = error.response.data.message;
+          errorCode = error?.response?.data?.code;
+        } else if (error?.response?.data?.error) {
+          errorMsg = error.response.data.error;
+        } else if (error?.message) {
+          errorMsg = error.message;
+        }
+
+        const err = { message: errorMsg, code: errorCode };
         setErrorCreateOrder(err);
-        console.error('[Changelly] Error creating order:', err);
+        console.error('[Changelly] Error creating order:', {
+          fullError: error,
+          extractedMsg: errorMsg,
+          statusCode: error?.response?.status,
+        });
         return null;
       } finally {
         setCreatingOrder(false);

@@ -106,6 +106,8 @@ export const getOffers = async (
  * @param providerId Provider ID from offers list
  * @param country ISO country code (e.g., 'US')
  * @param toAddress User's verified Coinspaid wallet address (LOCKED!)
+ * @param network Network code for multi-chain tokens (e.g., 'ETHEREUM', 'SOLANA')
+ * @param state US state code (optional)
  */
 export const createOrder = async (
   fiatAmount: number,
@@ -114,6 +116,8 @@ export const createOrder = async (
   providerId: string,
   country: string,
   toAddress: string,
+  network: string,
+  state?: string,
 ): Promise<CreateOrderResponse> => {
   try {
     const response = await api.post<CreateOrderResponse>(
@@ -125,6 +129,8 @@ export const createOrder = async (
         providerId,
         country,
         toAddress,
+        network,
+        ...(state && { state }),
       },
     );
     return response?.data || {
