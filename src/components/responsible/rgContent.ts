@@ -1,4 +1,5 @@
 import type { ExclusionPeriod, LimitKind } from '@/types/responsible';
+import type { TranslationKey } from '@/i18n/locales';
 
 /**
  * Everything the Responsible Gambling section says.
@@ -6,6 +7,10 @@ import type { ExclusionPeriod, LimitKind } from '@/types/responsible';
  * Held here rather than inside the sections, on the same principle as
  * `footerContent.ts`: rewording a question, adding a support organisation or
  * changing the exclusion ladder is an edit to this file and touches no markup.
+ *
+ * Every piece of display text is a `TranslationKey` from the `rgc.` module
+ * (`src/i18n/modules/rg.ts`) rather than English, and goes through `t()` where
+ * it is rendered. Ids, values and hrefs are unchanged.
  *
  * ─────────────────────────────────────────────────────────────────────────
  *  BEFORE THIS GOES LIVE — two things need a compliance decision, not a
@@ -34,8 +39,8 @@ export const LIMIT_INCREASE_COOLING_OFF_HOURS = 24;
 
 export interface LimitDefinition {
   kind: LimitKind;
-  label: string;
-  description: string;
+  labelKey: TranslationKey;
+  descriptionKey: TranslationKey;
   /** Currency limits take an amount; `session` takes whole minutes. */
   unit: 'currency' | 'minutes';
 }
@@ -43,26 +48,26 @@ export interface LimitDefinition {
 export const LIMIT_DEFINITIONS: readonly LimitDefinition[] = [
   {
     kind: 'deposit',
-    label: 'Deposit limit',
-    description: 'The most you can add to your balance in the period you choose.',
+    labelKey: 'rgc.limitDepositLabel',
+    descriptionKey: 'rgc.limitDepositDesc',
     unit: 'currency',
   },
   {
     kind: 'loss',
-    label: 'Loss limit',
-    description: 'Caps what you can lose net of any wins, so a bad run has a floor.',
+    labelKey: 'rgc.limitLossLabel',
+    descriptionKey: 'rgc.limitLossDesc',
     unit: 'currency',
   },
   {
     kind: 'wager',
-    label: 'Wager limit',
-    description: 'The total you can stake, counted whether a bet wins or loses.',
+    labelKey: 'rgc.limitWagerLabel',
+    descriptionKey: 'rgc.limitWagerDesc',
     unit: 'currency',
   },
   {
     kind: 'session',
-    label: 'Time limit',
-    description: 'How long you can play in the period, after which you are signed out.',
+    labelKey: 'rgc.limitSessionLabel',
+    descriptionKey: 'rgc.limitSessionDesc',
     unit: 'minutes',
   },
 ];
@@ -77,10 +82,10 @@ export const LIMIT_DEFINITIONS: readonly LimitDefinition[] = [
  */
 export const DISPLAY_CURRENCY_SYMBOL = '$';
 
-export const LIMIT_PERIOD_LABELS: Record<string, string> = {
-  daily: 'Per day',
-  weekly: 'Per week',
-  monthly: 'Per month',
+export const LIMIT_PERIOD_LABELS: Record<string, TranslationKey> = {
+  daily: 'rgc.periodPerDay',
+  weekly: 'rgc.periodPerWeek',
+  monthly: 'rgc.periodPerMonth',
 };
 
 /* ==================================================================== */
@@ -89,9 +94,9 @@ export const LIMIT_PERIOD_LABELS: Record<string, string> = {
 
 export interface ExclusionOption {
   value: ExclusionPeriod;
-  label: string;
+  labelKey: TranslationKey;
   /** Shown under the label so the weight of the choice is legible. */
-  note: string;
+  noteKey: TranslationKey;
   /**
    * Long exclusions ask the player to type a confirmation phrase. A single
    * mis-click should not be able to close an account for five years.
@@ -104,41 +109,43 @@ export const EXCLUSION_OPTIONS: readonly ExclusionOption[] = [
   // "24 Hours Cooldown" is the design's own name for this one — it heads the
   // Step 1 card and the confirm dialog with it, so the label carries it rather
   // than each call site re-wording it.
-  {
-    value: '24h',
-    label: '24 Hours Cooldown',
-    note: 'A short break. Your account reopens automatically.',
-  },
-  { value: '7d', label: '7 days', note: 'A week away. Your account reopens automatically.' },
-  { value: '30d', label: '30 days', note: 'A month away. Your account reopens automatically.' },
-  { value: '3m', label: '3 months', note: 'Your account stays closed for the full period.' },
-  { value: '6m', label: '6 months', note: 'Your account stays closed for the full period.' },
-  { value: '1y', label: '1 year', note: 'Your account stays closed for the full period.' },
+  { value: '24h', labelKey: 'rgc.optCooldown', noteKey: 'rgc.noteCooldown' },
+  { value: '7d', labelKey: 'rgc.opt7d', noteKey: 'rgc.note7d' },
+  { value: '30d', labelKey: 'rgc.opt30d', noteKey: 'rgc.note30d' },
+  { value: '3m', labelKey: 'rgc.opt3m', noteKey: 'rgc.noteFullPeriod' },
+  { value: '6m', labelKey: 'rgc.opt6m', noteKey: 'rgc.noteFullPeriod' },
+  { value: '1y', labelKey: 'rgc.opt1y', noteKey: 'rgc.noteFullPeriod' },
   {
     value: '5y',
-    label: '5 years',
-    note: 'A long exclusion. Please be certain before you confirm.',
+    labelKey: 'rgc.opt5y',
+    noteKey: 'rgc.note5y',
     requiresTypedConfirmation: true,
   },
   {
     value: 'permanent',
-    label: 'Permanent',
-    note: 'Your account is closed for good and cannot be reopened.',
+    labelKey: 'rgc.optPermanent',
+    noteKey: 'rgc.notePermanent',
     requiresTypedConfirmation: true,
   },
 ];
 
-/** What a player types to confirm a long or permanent exclusion. */
-export const EXCLUSION_CONFIRM_PHRASE = 'EXCLUDE ME';
+/**
+ * What a player types to confirm a long or permanent exclusion.
+ *
+ * Shown in the player's language. The English phrase is always accepted too,
+ * so a player who has been reading the English copy is not locked out.
+ */
+export const EXCLUSION_CONFIRM_PHRASE_KEY: TranslationKey = 'rgc.confirmPhrase';
+export const EXCLUSION_CONFIRM_PHRASE_FALLBACK = 'EXCLUDE ME';
 
 /** The facts a player is owed before they confirm. Nothing here is softened. */
-export const EXCLUSION_TERMS: readonly string[] = [
-  'It cannot be undone. Once confirmed, the exclusion runs for the full period you chose — support cannot shorten or lift it, whatever the reason.',
-  'You will be signed out immediately and will not be able to deposit, bet or open a new account.',
-  'Any balance you are holding is returned to you. Open bets are settled as normal.',
-  'All marketing stops. You will not receive promotional email, SMS or push from us for the duration.',
-  'Bonuses, free spins and loyalty progress tied to the account are forfeited and do not return when the period ends.',
-  'When the period ends your account does not reopen on its own unless the period says so above — you have to ask for it back, and there is a waiting period before that takes effect.',
+export const EXCLUSION_TERMS: readonly TranslationKey[] = [
+  'rgc.term1',
+  'rgc.term2',
+  'rgc.term3',
+  'rgc.term4',
+  'rgc.term5',
+  'rgc.term6',
 ];
 
 /* ==================================================================== */
@@ -158,52 +165,43 @@ export const EXCLUSION_TERMS: readonly string[] = [
  */
 export interface AssessmentQuestion {
   id: string;
-  text: string;
+  textKey: TranslationKey;
 }
 
 export const ASSESSMENT_QUESTIONS: readonly AssessmentQuestion[] = [
-  { id: 'q1', text: 'Have you bet more than you could really afford to lose?' },
-  { id: 'q2', text: 'Have you needed to bet larger amounts to get the same excitement?' },
-  { id: 'q3', text: 'Have you gone back another day to win back money you lost?' },
-  { id: 'q4', text: 'Have you borrowed money or sold anything in order to gamble?' },
-  { id: 'q5', text: 'Have you felt that you might have a problem with gambling?' },
-  { id: 'q6', text: 'Has gambling caused you stress, anxiety or other health problems?' },
-  {
-    id: 'q7',
-    text: 'Have other people criticised your gambling, whether or not you thought they were right?',
-  },
-  {
-    id: 'q8',
-    text: 'Has gambling caused money problems for you or the people you live with?',
-  },
-  { id: 'q9', text: 'Have you felt guilty about how you gamble, or what happens when you do?' },
-  {
-    id: 'q10',
-    text: 'Have you hidden your gambling, or played down how much you gamble, from people close to you?',
-  },
+  { id: 'q1', textKey: 'rgc.quizQ1' },
+  { id: 'q2', textKey: 'rgc.quizQ2' },
+  { id: 'q3', textKey: 'rgc.quizQ3' },
+  { id: 'q4', textKey: 'rgc.quizQ4' },
+  { id: 'q5', textKey: 'rgc.quizQ5' },
+  { id: 'q6', textKey: 'rgc.quizQ6' },
+  { id: 'q7', textKey: 'rgc.quizQ7' },
+  { id: 'q8', textKey: 'rgc.quizQ8' },
+  { id: 'q9', textKey: 'rgc.quizQ9' },
+  { id: 'q10', textKey: 'rgc.quizQ10' },
 ];
 
 export interface AssessmentBandCopy {
-  heading: string;
-  body: string;
+  headingKey: TranslationKey;
+  bodyKey: TranslationKey;
   /** Surfaces the support links under the result. */
   urgeSupport: boolean;
 }
 
 export const ASSESSMENT_BANDS: Record<'low' | 'moderate' | 'high', AssessmentBandCopy> = {
   low: {
-    heading: 'No warning signs in your answers',
-    body: 'Nothing you answered points to a problem today. That can change without being obvious, so it is worth coming back to these questions now and then — and setting a deposit limit while you feel in control costs you nothing.',
+    headingKey: 'rgc.bandLowHeading',
+    bodyKey: 'rgc.bandLowBody',
     urgeSupport: false,
   },
   moderate: {
-    heading: 'Some signs worth paying attention to',
-    body: 'A few of your answers are the ones services ask about for a reason. This is not a diagnosis and it does not mean you have a problem — but it is a good moment to set a limit, and to talk to somebody if any of it felt uncomfortably close.',
+    headingKey: 'rgc.bandModerateHeading',
+    bodyKey: 'rgc.bandModerateBody',
     urgeSupport: true,
   },
   high: {
-    heading: 'Several signs you should not ignore',
-    body: 'You answered yes to a number of the questions that matter most. We are not able to tell you what that means for you — but the people below can, they do it free and in confidence, and talking to them is not a commitment to stopping. Please consider setting a limit or taking a break while you think it over.',
+    headingKey: 'rgc.bandHighHeading',
+    bodyKey: 'rgc.bandHighBody',
     urgeSupport: true,
   },
 };
@@ -228,30 +226,31 @@ export const ASSESSMENT_THRESHOLDS = { moderate: 1, high: 4 } as const;
  * routes a visitor to the right local service.
  */
 export interface SupportOrg {
+  /** The organisation's own name — shown as-is in every language. */
   name: string;
-  description: string;
+  descriptionKey: TranslationKey;
   href: string;
 }
 
 export const SUPPORT_ORGS: readonly SupportOrg[] = [
   {
     name: 'Gambling Therapy',
-    description: 'Free online support and live chat, available internationally in many languages.',
+    descriptionKey: 'rgc.orgGamblingTherapy',
     href: 'https://www.gamblingtherapy.org/',
   },
   {
     name: 'Gamblers Anonymous',
-    description: 'A worldwide fellowship of people recovering from a gambling problem.',
+    descriptionKey: 'rgc.orgGamblersAnonymous',
     href: 'https://www.gamblersanonymous.org/',
   },
   {
     name: 'GamCare',
-    description: 'Free information, advice and counselling for anyone affected by gambling.',
+    descriptionKey: 'rgc.orgGamCare',
     href: 'https://www.gamcare.org.uk/',
   },
   {
     name: 'BeGambleAware',
-    description: 'Independent advice, a self-assessment and a directory of local treatment.',
+    descriptionKey: 'rgc.orgBeGambleAware',
     href: 'https://www.begambleaware.org/',
   },
 ];
@@ -261,72 +260,24 @@ export const SUPPORT_ORGS: readonly SupportOrg[] = [
 /* ==================================================================== */
 
 export interface RgFaq {
-  question: string;
-  answer: string;
+  question: TranslationKey;
+  answer: TranslationKey;
 }
 
 export const RG_FAQS: readonly RgFaq[] = [
-  {
-    question: 'How do I create an account on the Casino platform?',
-    // Verbatim from the design — the one answer it actually writes out.
-    answer:
-      'To create an account, click the "Sign Up" button located at the top right corner of the homepage. Fill in the required details, including your email address, username, and a secure password. You will then receive a verification email — click the link to confirm your account. Once verified, you can log in, make your first deposit, and start playing. The entire process takes just a few minutes.',
-  },
-  {
-    question: 'Is my personal and financial information secure?',
-    answer:
-      'Traffic between your device and our servers is encrypted, and card and wallet details are handled by our payment partners rather than stored on our systems. You can add two-factor authentication from Security in your account, and the same screen lists the devices currently signed in so an unfamiliar one is easy to spot and end.',
-  },
-  {
-    question: 'What should I do if I forget my account password?',
-    answer:
-      'Use the "Forgot password" link on the sign-in screen. We email a reset link to the address on the account; opening it lets you set a new password. The link is single-use, and requesting a new one makes any earlier link invalid. If the email does not arrive, check your spam folder before asking for another.',
-  },
-  {
-    question: 'Which games are available on the Casino platform?',
-    answer:
-      'Slots, live casino, table games and our own Rolluck Originals, listed under All Games with a provider filter if you are looking for a particular studio. Originals are provably fair — each round is built from a server seed, your client seed and a nonce, and you can change your seed and check any past round yourself.',
-  },
-  {
-    question: 'What payment methods are accepted for deposits?',
-    answer:
-      'The wallet lists every method your account is eligible for, with the minimum, the maximum and what to expect for each. Crypto deposits credit once the network confirmations shown on the deposit screen have been seen. The methods offered can differ by account and by location, so the wallet is the accurate list rather than anything printed here.',
-  },
-  {
-    question: 'What bonuses and promotions are available for new players?',
-    answer:
-      'The welcome package is shown on the lobby and in Promotions, and it attaches to your account at registration — there is nothing to redeem by hand. Promotions change, so Promotions is the current list; each one carries its own terms, which are worth reading before you opt in.',
-  },
-  {
-    question: 'Are there any wagering requirements on bonus offers?',
-    answer:
-      'Usually yes, and the requirement is stated on the offer itself. Progress against it is shown with your bonus balance. Bonus funds are spent after your real balance, so you are never wagering a bonus while cash is still available, and the bonus converts to withdrawable funds once its requirement is met.',
-  },
-  {
-    question: 'Can I play Casino games on my mobile device?',
-    answer:
-      'Yes. The site runs in a mobile browser with the same account, the same wallet and the same games — there is no separate app to install, and nothing needs to be transferred.',
-  },
-  {
-    question: 'How long do withdrawals take to process?',
-    answer:
-      'A withdrawal is reviewed before it is sent, and how long the money then takes depends on the method you chose — crypto settles once the network confirms it, card and wallet returns on whatever schedule the provider keeps. A first withdrawal can take longer if identity verification has not been completed yet; clearing that once keeps later payouts on the faster path.',
-  },
-  {
-    question: 'How do I verify my identity to comply with KYC requirements?',
-    answer:
-      'Verification lives under Verification in your account. You will be asked for identity details and documents; which ones depends on the checks that apply to you. Some actions — withdrawals in particular — can be held until it is complete, so it is worth doing before you need it rather than at the moment you want to cash out.',
-  },
-  {
-    question: 'How can I set deposit limits or self-exclude for responsible gaming?',
-    answer:
-      'Both are on this page. Gambling Limits sets a cap on what you can deposit, and a reduction takes effect immediately while an increase is held for a cooling-off period, so a limit cannot be lifted in the moment you most want to lift it. Self-exclusion closes play for a period you choose and cannot be reversed early.',
-  },
-  {
-    question: 'How do I contact customer support if I have an issue?',
-    answer:
-      'Email support@rolluck.com and include your username and what you were doing when the problem happened — it is the fastest route to someone who can look at your account. If what you need is independent of us, the organisations listed under Self-exclusion are free and confidential, and talking to them does not commit you to anything.',
-  },
+  // The first answer is verbatim from the design — the one it actually writes out.
+  { question: 'rgc.faqQ1', answer: 'rgc.faqA1' },
+  { question: 'rgc.faqQ2', answer: 'rgc.faqA2' },
+  { question: 'rgc.faqQ3', answer: 'rgc.faqA3' },
+  { question: 'rgc.faqQ4', answer: 'rgc.faqA4' },
+  { question: 'rgc.faqQ5', answer: 'rgc.faqA5' },
+  { question: 'rgc.faqQ6', answer: 'rgc.faqA6' },
+  { question: 'rgc.faqQ7', answer: 'rgc.faqA7' },
+  { question: 'rgc.faqQ8', answer: 'rgc.faqA8' },
+  { question: 'rgc.faqQ9', answer: 'rgc.faqA9' },
+  { question: 'rgc.faqQ10', answer: 'rgc.faqA10' },
+  { question: 'rgc.faqQ11', answer: 'rgc.faqA11' },
+  { question: 'rgc.faqQ12', answer: 'rgc.faqA12' },
 ];
 
 /* ==================================================================== */
@@ -335,8 +286,8 @@ export const RG_FAQS: readonly RgFaq[] = [
 
 export interface BudgetFieldDef {
   key: keyof import('@/types/responsible').BudgetInput;
-  label: string;
-  hint: string;
+  labelKey: TranslationKey;
+  hintKey: TranslationKey;
   /** Income is added; everything else is subtracted. */
   kind: 'income' | 'outgoing';
 }
@@ -344,40 +295,50 @@ export interface BudgetFieldDef {
 export const BUDGET_FIELDS: readonly BudgetFieldDef[] = [
   {
     key: 'income',
-    label: 'Monthly take-home income',
-    hint: 'What actually reaches your account after tax.',
+    labelKey: 'rgc.budgetFieldIncome',
+    hintKey: 'rgc.budgetFieldIncomeHint',
     kind: 'income',
   },
   {
     key: 'housing',
-    label: 'Rent or mortgage',
-    hint: 'Including any service charge.',
+    labelKey: 'rgc.budgetFieldHousing',
+    hintKey: 'rgc.budgetFieldHousingHint',
     kind: 'outgoing',
   },
   {
     key: 'utilities',
-    label: 'Bills and utilities',
-    hint: 'Power, water, internet, phone.',
+    labelKey: 'rgc.budgetFieldUtilities',
+    hintKey: 'rgc.budgetFieldUtilitiesHint',
     kind: 'outgoing',
   },
-  { key: 'food', label: 'Food and household', hint: 'Groceries and essentials.', kind: 'outgoing' },
-  { key: 'transport', label: 'Transport', hint: 'Fuel, fares, insurance.', kind: 'outgoing' },
+  {
+    key: 'food',
+    labelKey: 'rgc.budgetFieldFood',
+    hintKey: 'rgc.budgetFieldFoodHint',
+    kind: 'outgoing',
+  },
+  {
+    key: 'transport',
+    labelKey: 'rgc.budgetFieldTransport',
+    hintKey: 'rgc.budgetFieldTransportHint',
+    kind: 'outgoing',
+  },
   {
     key: 'debts',
-    label: 'Loan and card repayments',
-    hint: 'The minimum you must pay each month.',
+    labelKey: 'rgc.budgetFieldDebts',
+    hintKey: 'rgc.budgetFieldDebtsHint',
     kind: 'outgoing',
   },
   {
     key: 'savings',
-    label: 'Savings and commitments',
-    hint: 'Money already promised elsewhere.',
+    labelKey: 'rgc.budgetFieldSavings',
+    hintKey: 'rgc.budgetFieldSavingsHint',
     kind: 'outgoing',
   },
   {
     key: 'other',
-    label: 'Everything else',
-    hint: 'Childcare, subscriptions, medical.',
+    labelKey: 'rgc.budgetFieldOther',
+    hintKey: 'rgc.budgetFieldOtherHint',
     kind: 'outgoing',
   },
 ];

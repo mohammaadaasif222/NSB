@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { translate } from '@/i18n/translate';
 
 /** Milliseconds from now until `target`, never negative; null without a target. */
 const remainingUntil = (target: string | null, offsetMs: number): number | null =>
@@ -28,7 +29,7 @@ export const useCountdown = (target: string | null, offsetMs = 0): number | null
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 
-/** "2d 04:05:06", "04:05:06" or "05:06". */
+/** "2d 04:05:06", "04:05:06" or "05:06". The days unit follows the active language. */
 export const formatCountdown = (ms: number): string => {
   const total = Math.floor(ms / 1000);
   const days = Math.floor(total / 86_400);
@@ -37,7 +38,7 @@ export const formatCountdown = (ms: number): string => {
   const seconds = total % 60;
 
   if (days > 0) {
-    return `${days}d ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    return `${translate('misc.countdown.days', { days })} ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
   if (hours > 0) {
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;

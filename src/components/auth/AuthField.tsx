@@ -1,4 +1,5 @@
 import { useState, type FC, type ReactNode } from 'react';
+import { useTranslation } from '@/context/I18nContext';
 
 interface AuthFieldProps {
   id: string;
@@ -52,6 +53,7 @@ const AuthField: FC<AuthFieldProps> = ({
   optional = false,
   showLabel = false,
 }) => {
+  const { t } = useTranslation();
   const [reveal, setReveal] = useState(false);
   const isPassword = type === 'password';
   const resolvedType = isPassword && reveal ? 'text' : type;
@@ -63,7 +65,9 @@ const AuthField: FC<AuthFieldProps> = ({
         className={showLabel ? 'block text-[13px] font-medium text-white/75 mb-1.5' : 'sr-only'}
       >
         {label}
-        {optional && <span className="text-white/50 text-[11px] ms-1">(Optional)</span>}
+        {optional && (
+          <span className="text-white/50 text-[11px] ms-1">{t('misc.field.optional')}</span>
+        )}
       </label>
 
       <div className="relative">
@@ -101,7 +105,7 @@ const AuthField: FC<AuthFieldProps> = ({
           <button
             type="button"
             onClick={() => setReveal((v) => !v)}
-            aria-label={reveal ? 'Hide password' : 'Show password'}
+            aria-label={reveal ? t('misc.field.hidePassword') : t('misc.field.showPassword')}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
           >
             <EyeIcon off={reveal} />

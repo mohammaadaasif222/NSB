@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { requestWithdrawal } from '@/services/wallet';
 import { useSeonGuard } from '@/context/SeonGuardContext';
@@ -37,6 +38,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   // Handles a fraud step-up: on a 428 it prompts for the one-time code and
   // resubmits this exact request.
   const { run } = useSeonGuard();
+  const { t } = useTranslation();
   const { summary, currencies, refresh } = useWallet();
   const { convertToDisplayCurrency } = useCurrencyConversion();
 
@@ -215,7 +217,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
         setDisplayAmount('');
         void refresh();
       } else {
-        toast.error(res?.message || 'Withdrawal failed');
+        toast.error(res?.message || t('acct.wallet.withdrawFailed'));
       }
     } catch (err: any) {
       // Closing the code prompt is a decision, not a failure — no error toast.
@@ -224,7 +226,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       // Every KYC refusal — Level 2 missing, compliance hold, or a tier
       // upgrade — arrives with a `requiredLevel`, so one branch opens the
       // right step instead of three.
-      const kycError = readKycError(err);
+      const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
       if (kycError) {
         // Held on screen rather than toasted alone: the toast fades and the
         // player is left looking at a form that refused them for no visible
@@ -239,7 +241,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
         errData?.message ||
         (typeof err === 'object' && err && 'message' in err
           ? String((err as { message: string }).message)
-          : 'Withdrawal failed');
+          : t('acct.wallet.withdrawFailed'));
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -249,7 +251,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   if (eligible.length === 0) {
     return (
       <div className="py-8 text-center text-sm text-slate-400">
-        No currencies available for withdrawal yet.
+        {t('acct.wallet.noWithdrawCurrencies')}
       </div>
     );
   }
@@ -257,7 +259,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-slate-400">
-        Withdraw to any crypto wallet · Available to withdraw:{' '}
+        {t('acct.wallet.withdrawIntro')}{' '}
         <span className="text-slate-200 font-semibold">
           {availableDisplay} {displayCurrency}
         </span>
@@ -273,7 +275,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
            form first and replacing it a moment later made an unverified player
            watch the thing they came for appear and then be taken away. */
         <div className="flex h-40 items-center justify-center rounded-xl border border-slate-700 text-xs text-slate-400">
-          Checking your verification status…
+          {t('acct.wallet.checkingKyc')}
         </div>
       ) : isHardGated ? (
         <>
@@ -285,7 +287,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
             errorCode={kycRefusal?.code}
           />
           <p className="text-center text-[11px] text-slate-400 pt-1">
-            Need help with your Withdraw?
+            {t('acct.wallet.withdrawHelp')}
           </p>
         </>
       ) : (
@@ -302,7 +304,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
           )}
 
           <CurrencyPicker
-            label="Currency"
+            label={t('pref.currency')}
             currencies={eligible}
             value={currency}
             onChange={setCurrency}
@@ -310,26 +312,28 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
 
           {enabledNetworks.length > 0 ? (
             <NetworkPicker
-              label="Network"
+              label={t('acct.wallet.network')}
               networks={enabledNetworks}
               value={network}
               onChange={setNetwork}
             />
           ) : (
             <div className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-[11px] text-slate-500">
-              No enabled network for {currency}.
+              {t('acct.wallet.noNetworkFor', { currency })}
             </div>
           )}
 
           <div>
-            <label className="block text-[11px] text-slate-400 mb-1">{currency} Address</label>
+            <label className="block text-[11px] text-slate-400 mb-1">
+              {t('acct.wallet.addressLabel', { currency })}
+            </label>
             <input
               value={toAddress}
               onChange={(e) => {
                 setToAddress(e.target.value);
                 clearRefusal();
               }}
-              placeholder="Enter Address"
+              placeholder={t('acct.wallet.enterAddress')}
               className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-mono"
             />
           </div>
@@ -337,10 +341,14 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
           {/* Amount Input - Display Currency Only */}
           <div className="space-y-3">
             <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] text-slate-400">Withdrawal Amount</label>
+              <label className="text-[11px] text-slate-400">
+                {t('acct.wallet.withdrawAmount')}
+              </label>
               <div className="flex gap-3 items-center text-[11px]">
                 <span className="text-slate-500">
-                  Balance: {availableDisplay} {displayCurrency}
+                  {t('acct.wallet.balanceValue', {
+                    amount: `${availableDisplay} ${displayCurrency}`,
+                  })}
                 </span>
               </div>
             </div>
@@ -348,14 +356,14 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
             {/* Display Currency Amount Input */}
             <div>
               <label className="block text-[10px] text-slate-500 mb-1">
-                {displayCurrency} Amount
+                {t('acct.wallet.currencyAmount', { currency: displayCurrency })}
               </label>
               <input
                 type="text"
                 inputMode="decimal"
                 value={displayAmount}
                 onChange={(e) => handleDisplayChange(e.target.value)}
-                placeholder={`Enter ${displayCurrency} amount`}
+                placeholder={t('acct.wallet.enterAmount', { currency: displayCurrency })}
                 className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
               />
             </div>
@@ -363,7 +371,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
             {/* Info Text */}
             <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-2.5">
               <p className="text-[10px] text-blue-200 leading-relaxed">
-                ℹ️ Crypto amount will be calculated at approval based on live {currency} rates.
+                ℹ️ {t('acct.wallet.liveRateNote', { currency })}
               </p>
             </div>
 
@@ -376,13 +384,13 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                   onClick={() => setPercent(p as 25 | 50 | 75 | 100)}
                   className="h-8 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 font-semibold hover:bg-slate-700 transition-colors"
                 >
-                  {p === 100 ? 'Max' : `${p}%`}
+                  {p === 100 ? t('acct.wallet.max') : `${p}%`}
                 </button>
               ))}
             </div>
 
             {displayAmount && Number(displayAmount) > Number(availableDisplay) && (
-              <p className="mt-1 text-[11px] text-red-400">Insufficient balance</p>
+              <p className="mt-1 text-[11px] text-red-400">{t('acct.wallet.insufficient')}</p>
             )}
           </div>
 
@@ -394,11 +402,11 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
             disabled={!canSubmit}
             className="w-full h-11 rounded-xl bg-white text-black text-sm font-semibold disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
           >
-            {submitting ? 'Submitting…' : 'Withdraw'}
+            {submitting ? t('acct.wallet.submitting') : t('acct.wallet.tabWithdraw')}
           </button>
 
           <p className="text-center text-[11px] text-slate-400 pt-1">
-            Need help with your Withdraw?
+            {t('acct.wallet.withdrawHelp')}
           </p>
         </>
       )}

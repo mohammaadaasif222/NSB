@@ -12,6 +12,7 @@ import apiService from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { isThemeName, type ApiUser } from '@/types/profile';
+import { translate } from '@/i18n/translate';
 
 interface UserContextType {
   /** The signed-in player, or null while logged out / not yet loaded. */
@@ -59,10 +60,10 @@ export const UserProvider: FC<{ children: ReactNode }> = ({ children }) => {
           applyTheme(res.data.theme);
         }
       } else {
-        setError(res?.message || 'Failed to load profile');
+        setError(res?.message || translate('profile.loadFailed'));
       }
     } catch (err) {
-      setError((err as { message?: string })?.message || 'Failed to load profile');
+      setError((err as { message?: string })?.message || translate('profile.loadFailed'));
     } finally {
       setLoading(false);
     }

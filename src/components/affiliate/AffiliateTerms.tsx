@@ -36,14 +36,14 @@ const AffiliateTerms: FC = () => {
           ascenders of the line below it. Read as the intent — tightly set, not
           overlapping — and given the smallest leading that still clears them. */}
       <div className="mt-5.5 space-y-4 text-base text-[#9da2b4]">
-        <p className="leading-5">{TERMS_INTRO}</p>
+        <p className="leading-5">{t(TERMS_INTRO)}</p>
 
         {TERMS_SECTIONS.map((section) => (
           <section key={section.heading} className="space-y-1">
-            <h3 className="leading-5">{section.heading}</h3>
+            <h3 className="leading-5">{t(section.heading)}</h3>
             {section.points.map((point) => (
               <p key={point} className="leading-5">
-                {point}
+                {t(point)}
               </p>
             ))}
           </section>

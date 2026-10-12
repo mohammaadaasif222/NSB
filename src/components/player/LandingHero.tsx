@@ -28,6 +28,7 @@ import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import BonusBanner from '@/components/player/BonusBanner';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
 import { LOBBY_STATS } from '@/constants/stats';
+import type { TranslationKey } from '@/i18n/locales';
 
 /* ==================================================================== */
 /* Backdrop                                                              */
@@ -194,7 +195,7 @@ const SignupTeaser: FC = () => {
             <select
               value={dial}
               onChange={(e) => setDial(e.target.value)}
-              aria-label="Country calling code"
+              aria-label={t('lobby.hero.dialCode')}
               className="absolute inset-0 cursor-pointer appearance-none opacity-0 [&>option]:bg-[#14161b] [&>option]:text-white"
             >
               {DIAL_CODES.map((d) => (
@@ -211,7 +212,7 @@ const SignupTeaser: FC = () => {
             autoComplete="tel"
             value={mobile}
             onChange={(e) => setMobile(e.target.value)}
-            placeholder="Enter mobile number"
+            placeholder={t('registerModal.mobilePlaceholder')}
             className="h-full min-w-0 flex-1 bg-transparent pl-[calc(var(--u)*19)] pr-[calc(var(--u)*20)] text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*24)] text-[#f0f1f5] outline-none placeholder:text-[#9da2b4] lg:placeholder:text-[#464e61]"
           />
           <button type="submit" className="sr-only">
@@ -223,7 +224,7 @@ const SignupTeaser: FC = () => {
       <div className="mt-[calc(var(--u)*13)] grid w-full grid-cols-2 gap-[calc(var(--u)*8)] lg:gap-[calc(var(--u)*10)]">
         <ProviderButton
           icon={gmailIcon}
-          label={`Continue with ${t('auth.methodGmail')}`}
+          label={t('lobby.hero.continueWith', { method: t('auth.methodGmail') })}
           onClick={() => google.signIn()}
           disabled={google.loading}
         />
@@ -231,7 +232,7 @@ const SignupTeaser: FC = () => {
             second Google button. */}
         <ProviderButton
           icon={mailIcon}
-          label="Continue with Email"
+          label={t('lobby.hero.continueWithEmail')}
           onClick={() => openRegister({ method: 'email' })}
         />
       </div>
@@ -250,7 +251,7 @@ const SignupTeaser: FC = () => {
           onClick={() => openRegister({ social: true })}
           className="ms-[calc(var(--u)*15)] text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-[#9da2b4] transition-colors hover:text-white lg:text-[#6a7287]"
         >
-          more option
+          {t('lobby.hero.moreOptions')}
         </button>
       </div>
     </div>
@@ -365,10 +366,10 @@ const SectionCard: FC<{
 /* The hero                                                              */
 /* ==================================================================== */
 
-const TRUST: { icon: StaticImageData; label: string }[] = [
-  { icon: trustPrivacy, label: 'Complete Privacy' },
-  { icon: trustFair, label: 'Provably Fair' },
-  { icon: trustBolt, label: 'Instant Withdrawals' },
+const TRUST: { icon: StaticImageData; label: TranslationKey }[] = [
+  { icon: trustPrivacy, label: 'lobby.hero.trustPrivacy' },
+  { icon: trustFair, label: 'lobby.hero.trustFair' },
+  { icon: trustBolt, label: 'lobby.hero.trustWithdrawals' },
 ];
 
 /**
@@ -395,25 +396,26 @@ const LandingHero: FC = () => {
       {/* --- Live figures --------------------------------------------- */}
       {/* 8px under the phone bar: the layout's 12px top padding, less 4. */}
       <div className="-mt-1 flex flex-wrap items-center justify-center gap-[calc(var(--u)*5)] lg:hidden">
-        <StatPill>{LOBBY_STATS.todaysWinnings} Today&apos;s Winnings</StatPill>
+        <StatPill>
+          {t('lobby.hero.todaysWinnings', { amount: LOBBY_STATS.todaysWinnings })}
+        </StatPill>
         <StatPill>{t('dash.online', { count: LOBBY_STATS.online })}</StatPill>
-        <StatPill>{LOBBY_STATS.biggestWin} Biggest Win</StatPill>
+        <StatPill>{t('lobby.hero.biggestWin', { amount: LOBBY_STATS.biggestWin })}</StatPill>
       </div>
 
       <div className="hidden items-center justify-between gap-[calc(var(--u)*12)] lg:flex">
         <OnlinePill label={t('dash.online', { count: LOBBY_STATS.online })} />
         <span className="inline-flex items-center gap-[calc(var(--u)*9)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#f0f1f5]">
-          <span>{LOBBY_STATS.todaysWinnings} Today&apos;s Winnings</span>
+          <span>{t('lobby.hero.todaysWinnings', { amount: LOBBY_STATS.todaysWinnings })}</span>
           <img src={starIcon.src} alt="" className="h-[calc(var(--u)*18)] w-[calc(var(--u)*18)]" />
-          <span>{LOBBY_STATS.biggestWin} Biggest Win</span>
+          <span>{t('lobby.hero.biggestWin', { amount: LOBBY_STATS.biggestWin })}</span>
         </span>
       </div>
 
       {/* --- Headline and sign-up -------------------------------------- */}
       <div className="flex flex-col items-center text-center">
         <h1 className="mt-[calc(var(--u)*13)] max-w-[calc(var(--u)*355)] text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*21)] lg:max-w-none lg:text-[length:max(min(11px,48px),calc(var(--u)*48))] lg:font-semibold lg:leading-[calc(var(--u)*52)]">
-          Rolluck — Where Trust Meets
-          <br className="hidden lg:block" /> Premium Gaming
+          {t('lobby.hero.title')}
         </h1>
 
         <div className="mt-[calc(var(--u)*12)] flex w-full justify-center lg:mt-[calc(var(--u)*25)]">
@@ -427,7 +429,7 @@ const LandingHero: FC = () => {
               className="inline-flex items-center gap-[calc(var(--u)*6)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#6a7287]"
             >
               <img src={icon.src} alt="" className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)]" />
-              {label}
+              {t(label)}
             </span>
           ))}
         </div>
@@ -439,13 +441,13 @@ const LandingHero: FC = () => {
           <SectionCard
             href="/casino"
             title={t('nav.casino')}
-            subtitle="Slots, live tables and 12 Rolluck Originals"
+            subtitle={t('lobby.hero.casinoSubtitle')}
             art={CASINO_ART}
           />
           <SectionCard
             href="/sports"
             title={t('nav.sports')}
-            subtitle="Football, Tennis, Basketball and 12 other sports"
+            subtitle={t('lobby.hero.sportsSubtitle')}
             art={SPORTS_ART}
           />
         </div>

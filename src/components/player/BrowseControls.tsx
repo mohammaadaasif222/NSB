@@ -326,9 +326,7 @@ export type ChipKey = GameShelfKey | 'lobby' | 'favourites';
 interface Chip {
   /** The shelf it filters to; absent for a chip with nothing behind it yet. */
   key?: ChipKey;
-  /** Translated label, or `label` for the design's own copy. */
-  labelKey?: TranslationKey;
-  label?: string;
+  labelKey: TranslationKey;
   icon: StaticImageData;
   /**
    * Only drawn for a signed-in player — the list behind it is their own, so
@@ -343,13 +341,13 @@ const CHIPS: Chip[] = [
   { key: 'originals', labelKey: 'nav.originals', icon: chipOriginals },
   { key: 'slots', labelKey: 'dash.slots', icon: chipSlots },
   { key: 'live', labelKey: 'dash.liveCasino', icon: chipLive },
-  { label: 'Blackjack', icon: chipLive },
-  { label: 'Roulette', icon: chipRoulette },
-  { label: 'Baccarat', icon: chipBaccarat },
-  { label: 'Game Shows', icon: chipGameShows },
+  { labelKey: 'lobby.chips.blackjack', icon: chipLive },
+  { labelKey: 'lobby.chips.roulette', icon: chipRoulette },
+  { labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
+  { labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
   { key: 'table', labelKey: 'dash.tableGames', icon: chipOriginals },
-  { label: 'Boosted RTP', icon: chipOriginals },
-  { key: 'new', label: 'New Arrivals', icon: chipNewArrivals },
+  { labelKey: 'lobby.chips.boostedRtp', icon: chipOriginals },
+  { key: 'new', labelKey: 'lobby.chips.newArrivals', icon: chipNewArrivals },
   { key: 'bonus-buys', labelKey: 'dash.bonusBuys', icon: chipBonusBuys },
 ];
 
@@ -399,7 +397,7 @@ export const CategoryChips: FC<{
   return (
     <div className={CHIP_ROW}>
       {CHIPS.filter((chip) => !chip.signedIn || token).map((chip) => {
-        const text = chip.labelKey ? t(chip.labelKey) : (chip.label ?? '');
+        const text = t(chip.labelKey);
         const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
 
         if (!chip.key) {

@@ -57,8 +57,18 @@ export function isStepUpRequired(error: unknown): boolean {
   return body.code === STEP_UP_CODE && typeof body.stepUpToken === 'string';
 }
 
-/** Pull the challenge out of a rejection, or null if it is not one. */
-export function extractChallenge(error: unknown): SeonStepUpChallenge | null {
+/**
+ * Pull the challenge out of a rejection, or null if it is not one.
+ *
+ * `fallbackMessage` is shown when the API sent no wording of its own. It is a
+ * parameter rather than a translate() call so this file stays free of imports
+ * and runs under `node --test` as it is; the provider passes the translated
+ * line.
+ */
+export function extractChallenge(
+  error: unknown,
+  fallbackMessage = 'Please confirm this with the code we just sent you.'
+): SeonStepUpChallenge | null {
   if (!isStepUpRequired(error)) return null;
   const body = error as ApiErrorBody;
 
@@ -67,7 +77,7 @@ export function extractChallenge(error: unknown): SeonStepUpChallenge | null {
     expiresIn: typeof body.stepUpExpiresIn === 'number' ? body.stepUpExpiresIn : 300,
     sentTo: body.sentTo ?? null,
     action: body.action ?? 'request',
-    message: body.message ?? 'Please confirm this with the code we just sent you.',
+    message: body.message ?? fallbackMessage,
   };
 }
 

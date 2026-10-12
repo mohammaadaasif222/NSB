@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
@@ -20,6 +20,16 @@ interface ModalProps {
   ariaLabel?: string;
   /** Classes for the card: width, padding. */
   className?: string;
+  /** The card's glass: the auth dialogs' by default. */
+  surface?: string;
+  /** Inline style for the card — a zoom, a custom property. */
+  style?: CSSProperties;
+  /**
+   * `dim` darkens and blurs the page (the default); `none` leaves it as it
+   * is, for a dialog the design draws straight over the page (Select Game).
+   * Either way a click outside closes.
+   */
+  backdrop?: 'dim' | 'none';
   children: ReactNode;
 }
 
@@ -32,6 +42,9 @@ const Modal: FC<ModalProps> = ({
   labelledBy,
   ariaLabel,
   className = '',
+  surface = 'rl-modal-card',
+  style,
+  backdrop = 'dim',
   children,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -88,7 +101,7 @@ const Modal: FC<ModalProps> = ({
 
   return createPortal(
     <div
-      className="rl-modal-overlay fixed inset-0 z-[70] overflow-y-auto"
+      className={`${backdrop === 'dim' ? 'rl-modal-overlay' : ''} fixed inset-0 z-[70] overflow-y-auto`}
       // mousedown rather than click: a text selection dragged out of the card
       // and released over the backdrop must not close the dialog.
       onMouseDown={(e) => {
@@ -108,7 +121,8 @@ const Modal: FC<ModalProps> = ({
           aria-labelledby={labelledBy}
           aria-label={labelledBy ? undefined : ariaLabel}
           tabIndex={-1}
-          className={`rl-modal-card w-full outline-none ${className}`}
+          className={`${surface} w-full outline-none ${className}`}
+          style={style}
         >
           {children}
         </div>

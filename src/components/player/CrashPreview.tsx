@@ -1,6 +1,8 @@
 import { useId, useState, type FC, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { categoryHref } from '@/constants/games';
+import SelectGameModal from '@/components/player/SelectGameModal';
+import { useTranslation } from '@/context/I18nContext';
 import chevronSmall from '@/assets/lobby/chevron-small.svg';
 import clearIcon from '@/assets/lobby/clear-x.svg';
 
@@ -11,8 +13,8 @@ import clearIcon from '@/assets/lobby/clear-x.svg';
  * multiplier and the "playing" count are illustrative, and the panel is a
  * mock-up of the real betting UI rather than a working one. Placing a bet
  * routes through to the Originals shelf, where the real game lives once it
- * ships. English-only copy on purpose: this widget will be replaced wholesale
- * once the real game is wired up, so it isn't worth translating yet.
+ * ships. This widget will be replaced wholesale once the real game is wired
+ * up.
  */
 
 /** Stands in for a price feed so the ≈USD line tracks the bet the user types. */
@@ -73,16 +75,20 @@ const Curve: FC<{ viewBox: string; line: [number, number, number, number]; class
 const GRID =
   'pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(#252937_1px,transparent_1px),linear-gradient(90deg,#252937_1px,transparent_1px)] [background-size:calc(var(--u)*20.4)_calc(var(--u)*20.4)]';
 
-const Payout: FC<{ className: string }> = ({ className }) => (
-  <div className={`pointer-events-none absolute ${className}`}>
-    <p className="text-[length:max(min(11px,36px),calc(var(--u)*36))] font-bold leading-[calc(var(--u)*44)] tracking-[-0.02em] tabular-nums text-[#f0f1f5]">
-      1.34x
-    </p>
-    <p className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4]">
-      CURRENT PAYOUT
-    </p>
-  </div>
-);
+const Payout: FC<{ className: string }> = ({ className }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className={`pointer-events-none absolute ${className}`}>
+      <p className="text-[length:max(min(var(--tf,11px),36px),calc(var(--u)*36))] font-bold leading-[calc(var(--u)*44)] tracking-[-0.02em] tabular-nums text-[#f0f1f5]">
+        1.34x
+      </p>
+      <p className="text-[length:max(min(var(--tf,11px),14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4]">
+        {t('lobby.crash.currentPayout')}
+      </p>
+    </div>
+  );
+};
 
 /* --- Bet slip pieces ----------------------------------------------------- */
 
@@ -91,7 +97,7 @@ const FieldLabel: FC<{ label: string; hint: string; strongHint?: boolean }> = ({
   hint,
   strongHint,
 }) => (
-  <div className="mb-[calc(var(--u)*7)] flex items-baseline justify-between gap-[calc(var(--u)*8)] text-[length:max(min(11px,14px),calc(var(--u)*14))] font-medium leading-[calc(var(--u)*20)]">
+  <div className="mb-[calc(var(--u)*7)] flex items-baseline justify-between gap-[calc(var(--u)*8)] text-[length:max(min(var(--tf,11px),14px),calc(var(--u)*14))] font-medium leading-[calc(var(--u)*20)]">
     <span className="text-[#6a7287]">{label}</span>
     <span className={strongHint ? 'text-[#f0f1f5]' : 'text-[#6a7287]'}>{hint}</span>
   </div>
@@ -114,14 +120,14 @@ const Chip: FC<{ title: string; onClick: () => void; children: ReactNode }> = ({
     onClick={onClick}
     title={title}
     aria-label={title}
-    className="flex h-[calc(var(--u)*30)] min-w-[calc(var(--u)*30)] flex-shrink-0 items-center justify-center rounded-[calc(var(--u)*7.5)] border border-white/[0.07] px-[calc(var(--u)*9)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#6a7287] transition-colors hover:border-white/20 hover:text-white"
+    className="flex h-[calc(var(--u)*30)] min-w-[calc(var(--u)*30)] flex-shrink-0 items-center justify-center rounded-[calc(var(--u)*7.5)] border border-white/[0.07] px-[calc(var(--u)*9)] text-[length:max(min(var(--tf,11px),14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#6a7287] transition-colors hover:border-white/20 hover:text-white"
   >
     {children}
   </button>
 );
 
 const Summary: FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="flex items-baseline justify-between gap-[calc(var(--u)*8)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)]">
+  <div className="flex items-baseline justify-between gap-[calc(var(--u)*8)] text-[length:max(min(var(--tf,11px),14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)]">
     <span className="text-[#6a7287]">{label}</span>
     <span className="font-medium tabular-nums text-[#f0f1f5]">{value}</span>
   </div>
@@ -136,9 +142,11 @@ const Summary: FC<{ label: string; value: string }> = ({ label, value }) => (
  */
 const CrashPreview: FC = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [betAmount, setBetAmount] = useState('0.00100000');
   const [autoCashout, setAutoCashout] = useState('2.00');
+  const [picking, setPicking] = useState(false);
 
   const bet = Number.parseFloat(betAmount) || 0;
   const multiplier = Number.parseFloat(autoCashout) || 0;
@@ -149,14 +157,17 @@ const CrashPreview: FC = () => {
   };
 
   return (
-    <section className="rl-glass-deep overflow-hidden rounded-[calc(var(--u)*34)] lg:grid lg:min-h-[calc(var(--u)*586)] lg:grid-cols-[minmax(0,1fr)_calc(var(--u)*385)]">
+    <section className="rl-glass-deep overflow-hidden rounded-[calc(var(--u)*34)] lg:grid lg:h-[var(--crash-h,calc(var(--u)*586))] lg:grid-cols-[minmax(0,1fr)_calc(var(--uw,var(--u))*385)]">
       {/* --- Chart side ------------------------------------------------- */}
       <div className="relative flex flex-col">
         <div className="flex flex-wrap items-center justify-between gap-x-[calc(var(--u)*17)] gap-y-[calc(var(--u)*15)] px-[calc(var(--u)*16)] pt-[calc(var(--u)*20)] lg:flex-nowrap lg:justify-start lg:px-[calc(var(--u)*30)] lg:pt-[calc(var(--u)*27)]">
+          {/* The game picker: Select Game, over the page. */}
           <button
             type="button"
-            onClick={play}
-            className="flex h-[calc(var(--u)*50)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*12.5)] border border-white/[0.07] bg-[#1b1d28] px-[calc(var(--u)*15)] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f5f6f9] transition-colors hover:bg-[#232634]"
+            onClick={() => setPicking(true)}
+            aria-haspopup="dialog"
+            aria-expanded={picking}
+            className="flex h-[calc(var(--u)*50)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*12.5)] border border-white/[0.07] bg-[#1b1d28] px-[calc(var(--u)*15)] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f5f6f9] transition-colors hover:bg-[#232634]"
           >
             Crash
             <img
@@ -166,19 +177,19 @@ const CrashPreview: FC = () => {
             />
           </button>
 
-          <span className="inline-flex items-center gap-[calc(var(--u)*7.5)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#5c6178]">
+          <span className="inline-flex items-center gap-[calc(var(--u)*7.5)] text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#5c6178]">
             <span
               className="h-[calc(var(--u)*9)] w-[calc(var(--u)*9)] rounded-full bg-[#2ed573] shadow-[0_0_0_3.8px_rgba(46,213,115,0.18)]"
               aria-hidden="true"
             />
-            1,284 playing
+            {t('lobby.crash.playing', { count: '1,284' })}
           </span>
 
           <div className="rl-shelf flex w-full gap-[calc(var(--u)*8.8)] lg:ms-auto lg:w-auto">
             {HISTORY.map((h) => (
               <span
                 key={h.value}
-                className={`flex h-[calc(var(--u)*50)] min-w-0 flex-1 items-center justify-center rounded-[calc(var(--u)*10)] bg-[#f0f1f5]/10 lg:flex-none lg:px-[calc(var(--u)*12.5)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] tabular-nums ${
+                className={`flex h-[calc(var(--u)*50)] min-w-0 flex-1 items-center justify-center rounded-[calc(var(--u)*10)] bg-[#f0f1f5]/10 lg:flex-none lg:px-[calc(var(--u)*12.5)] text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] tabular-nums ${
                   h.low ? 'text-[#464e61]' : 'text-[#f0f1f5]'
                 }`}
               >
@@ -220,50 +231,57 @@ const CrashPreview: FC = () => {
               type="button"
               onClick={() => setMode(key)}
               aria-pressed={mode === key}
-              className={`rounded-[calc(var(--u)*34)] text-[length:max(min(11px,18px),calc(var(--u)*18))] capitalize leading-[calc(var(--u)*28)] transition-colors ${
+              className={`rounded-[calc(var(--u)*34)] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] capitalize leading-[calc(var(--u)*28)] transition-colors ${
                 mode === key
                   ? 'bg-white/25 font-medium text-[#f0f1f5]'
                   : 'text-[#9da2b4] hover:text-[#f0f1f5]'
               }`}
             >
-              {key}
+              {t(key === 'manual' ? 'dice.manual' : 'dice.auto')}
             </button>
           ))}
         </div>
 
         <div className="mt-[calc(var(--u)*23)]">
-          <FieldLabel label="Bet Amount" hint={`≈ ${usd(bet * USD_PER_BTC)} USD`} strongHint />
+          <FieldLabel
+            label={t('dice.betAmount')}
+            hint={`≈ ${usd(bet * USD_PER_BTC)} USD`}
+            strongHint
+          />
           <Field>
-            <span className="flex-shrink-0 font-[Inter,sans-serif] text-[length:max(min(11px,20px),calc(var(--u)*20))] leading-[calc(var(--u)*24)] text-[#f5f6f9] opacity-60">
+            <span className="flex-shrink-0 font-[Inter,sans-serif] text-[length:max(min(var(--tf,11px),20px),calc(var(--u)*20))] leading-[calc(var(--u)*24)] text-[#f5f6f9] opacity-60">
               ₿
             </span>
             <input
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
               inputMode="decimal"
-              aria-label="Bet amount"
-              className="min-w-0 flex-1 bg-transparent text-[length:max(min(11px,18px),calc(var(--u)*18))] font-bold leading-[calc(var(--u)*24)] tabular-nums text-[#f5f6f9] outline-none"
+              aria-label={t('dice.betAmount')}
+              className="min-w-0 flex-1 bg-transparent text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-bold leading-[calc(var(--u)*24)] tabular-nums text-[#f5f6f9] outline-none"
             />
-            <Chip title="Halve the bet" onClick={() => scale(0.5)}>
+            <Chip title={t('dice.halve')} onClick={() => scale(0.5)}>
               ½
             </Chip>
-            <Chip title="Double the bet" onClick={() => scale(2)}>
+            <Chip title={t('dice.double')} onClick={() => scale(2)}>
               2×
             </Chip>
           </Field>
         </div>
 
         <div className="mt-[calc(var(--u)*23)]">
-          <FieldLabel label="Auto Cashout" hint="Optional multiplier limit" />
+          <FieldLabel
+            label={t('lobby.crash.autoCashout')}
+            hint={t('lobby.crash.autoCashoutHint')}
+          />
           <Field>
             <input
               value={autoCashout}
               onChange={(e) => setAutoCashout(e.target.value)}
               inputMode="decimal"
-              aria-label="Auto cashout multiplier"
-              className="min-w-0 flex-1 bg-transparent text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] tabular-nums text-[#f5f6f9] outline-none"
+              aria-label={t('lobby.crash.autoCashoutMultiplier')}
+              className="min-w-0 flex-1 bg-transparent text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] tabular-nums text-[#f5f6f9] outline-none"
             />
-            <Chip title="Clear auto cashout" onClick={() => setAutoCashout('')}>
+            <Chip title={t('lobby.crash.clearAutoCashout')} onClick={() => setAutoCashout('')}>
               <img
                 src={clearIcon.src}
                 alt=""
@@ -276,16 +294,18 @@ const CrashPreview: FC = () => {
         <button
           type="button"
           onClick={play}
-          className="mt-[calc(var(--u)*29)] h-[calc(var(--u)*56)] w-full rounded-[calc(var(--u)*43)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
+          className="mt-[calc(var(--u)*29)] h-[calc(var(--u)*56)] w-full rounded-[calc(var(--u)*43)] bg-[#f9d028] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
         >
-          Place bet
+          {t('sports.placeBet')}
         </button>
 
         <div className="mt-[calc(var(--u)*33)] space-y-[calc(var(--u)*15)]">
-          <Summary label="Win on cashout:" value={`${btc(bet * multiplier)} BTC`} />
-          <Summary label="Network fee:" value={`${btc(NETWORK_FEE)} BTC`} />
+          <Summary label={t('lobby.crash.winOnCashout')} value={`${btc(bet * multiplier)} BTC`} />
+          <Summary label={t('lobby.crash.networkFee')} value={`${btc(NETWORK_FEE)} BTC`} />
         </div>
       </div>
+
+      <SelectGameModal open={picking} onClose={() => setPicking(false)} />
     </section>
   );
 };

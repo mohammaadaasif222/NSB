@@ -2,6 +2,7 @@ import { useEffect, useState, type FC, type ReactNode } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { DISPLAY_CURRENCY_SYMBOL, LIMIT_DEFINITIONS } from '@/components/responsible/rgContent';
 import type { LimitKind, LimitPeriod, LimitSet } from '@/types/responsible';
+import type { TranslationKey } from '@/i18n/locales';
 import { CloseIcon } from '@/components/icons';
 import RlSelect, { type RlOption } from '@/components/inputs/RlSelect';
 
@@ -33,10 +34,10 @@ interface Props {
  * `LimitPeriod`, so it is not offered here — adding it is a change to the type,
  * the service and whatever enforces limits, not to this dialog.
  */
-const PERIOD_OPTIONS: RlOption<LimitPeriod>[] = [
-  { value: 'daily', label: '24 Hours' },
-  { value: 'weekly', label: '7 Days' },
-  { value: 'monthly', label: '30 Days' },
+const PERIOD_OPTIONS: readonly { value: LimitPeriod; labelKey: TranslationKey }[] = [
+  { value: 'daily', labelKey: 'rgc.duration24h' },
+  { value: 'weekly', labelKey: 'rgc.duration7d' },
+  { value: 'monthly', labelKey: 'rgc.duration30d' },
 ];
 
 /** Label over a control. Onest Medium 14/20 in the design. */
@@ -46,11 +47,6 @@ const FieldLabel: FC<{ htmlFor: string; children: ReactNode }> = ({ htmlFor, chi
   </label>
 );
 
-const KIND_OPTIONS: RlOption<LimitKind>[] = LIMIT_DEFINITIONS.map((d) => ({
-  value: d.kind,
-  label: d.label,
-}));
-
 /* The value a control shows: Onest Bold 18/24, 24 in from the control's edge.
    `RlSelect` carries the same string for the two dropdowns; this is what is
    left for the amount field. */
@@ -59,6 +55,15 @@ const CONTROL =
 
 const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false }) => {
   const { t } = useTranslation();
+
+  const kindOptions: RlOption<LimitKind>[] = LIMIT_DEFINITIONS.map((d) => ({
+    value: d.kind,
+    label: t(d.labelKey),
+  }));
+  const periodOptions: RlOption<LimitPeriod>[] = PERIOD_OPTIONS.map((p) => ({
+    value: p.value,
+    label: t(p.labelKey),
+  }));
 
   const [kind, setKind] = useState<LimitKind | ''>('');
   const [period, setPeriod] = useState<LimitPeriod>('daily');
@@ -117,13 +122,13 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
             id="rg-limit-title"
             className="min-w-0 flex-1 text-center text-[22px] leading-8 font-semibold tracking-[-0.56px] text-[#f0f1f5] sm:text-[28px] sm:leading-9"
           >
-            {t('rg.limitsSet')}
+            {t('rgc.limitsSet')}
           </h2>
 
           <button
             type="button"
             onClick={onClose}
-            aria-label={t('common.close')}
+            aria-label={t('rgc.close')}
             className="rl-chip -mt-2 flex h-12 w-12 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
             <CloseIcon size={18} />
@@ -135,20 +140,20 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
         <div className="thin-scrollbar mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto">
           {/* ── Limit Type ─────────────────────────────────────────────── */}
           <div className="space-y-1.75">
-            <FieldLabel htmlFor="rg-limit-kind">{t('rg.limitTypeLabel')}</FieldLabel>
+            <FieldLabel htmlFor="rg-limit-kind">{t('rgc.limitTypeLabel')}</FieldLabel>
 
             <RlSelect
               id="rg-limit-kind"
               value={kind}
-              options={KIND_OPTIONS}
+              options={kindOptions}
               onChange={setKind}
-              placeholder={t('rg.limitTypeLabel')}
+              placeholder={t('rgc.limitTypeLabel')}
             />
           </div>
 
           {/* ── Limit Amount ───────────────────────────────────────────── */}
           <div className="space-y-1.75">
-            <FieldLabel htmlFor="rg-limit-amount">{t('rg.limitAmount')}</FieldLabel>
+            <FieldLabel htmlFor="rg-limit-amount">{t('rgc.limitAmount')}</FieldLabel>
 
             <div className="relative">
               <input
@@ -163,14 +168,14 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
                 className={`${CONTROL} pe-14 tabular-nums`}
               />
               <span className="pointer-events-none absolute end-6 top-1/2 -translate-y-1/2 text-[18px] leading-6 font-bold text-[#f0f1f5]">
-                {isMinutes ? t('rg.limitMinutes') : DISPLAY_CURRENCY_SYMBOL}
+                {isMinutes ? t('rgc.limitMinutes') : DISPLAY_CURRENCY_SYMBOL}
               </span>
             </div>
           </div>
 
           {/* ── Limit Period ───────────────────────────────────────────── */}
           <div className="space-y-1.75">
-            <FieldLabel htmlFor="rg-limit-period">{t('rg.limitPeriod')}</FieldLabel>
+            <FieldLabel htmlFor="rg-limit-period">{t('rgc.limitPeriod')}</FieldLabel>
 
             {/* The design prints a "$" at this control's end, the same glyph as
                 the amount field above it. That is a paste, not an instruction —
@@ -179,7 +184,7 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
             <RlSelect
               id="rg-limit-period"
               value={period}
-              options={PERIOD_OPTIONS}
+              options={periodOptions}
               onChange={setPeriod}
             />
           </div>
@@ -198,7 +203,7 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
           disabled={!valid || saving}
           className="rl-btn-gold mt-6.25 flex h-14 shrink-0 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium disabled:cursor-not-allowed disabled:opacity-50 [@media(max-height:820px)]:mt-4"
         >
-          {saving ? t('common.saving') : t('rg.limitAdd')}
+          {saving ? t('rgc.saving') : t('rgc.limitAdd')}
         </button>
       </div>
     </div>

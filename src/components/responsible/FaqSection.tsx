@@ -24,7 +24,7 @@ const FaqSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rg.faqsTitle')}</h2>
+      <h2 className="rl-h-section">{t('rgc.faqsTitle')}</h2>
 
       {/* 60 tall closed, 16 apart, 34 of radius — the design's own row. */}
       <div className="mt-6 space-y-4">
@@ -38,7 +38,9 @@ const FaqSection: FC = () => {
               {/* No hover ink. The design gives this one colour in every state
                   it draws, and a question that turns yellow under the cursor
                   was an invention of the first pass. */}
-              <h3 className="rl-h-card min-w-0 tracking-normal text-[#f0f1f5]">{faq.question}</h3>
+              <h3 className="rl-h-card min-w-0 tracking-normal text-[#f0f1f5]">
+                {t(faq.question)}
+              </h3>
               <ChevronDownIcon
                 size={22}
                 className="shrink-0 text-[#cccccc] transition-transform duration-200 group-open:rotate-180"
@@ -49,7 +51,7 @@ const FaqSection: FC = () => {
                 the card's foot — the design's 170 for a three-line answer. */}
             <div className="px-6 pt-0.5 pb-6.25">
               <p className="pe-1 text-base leading-7 font-medium text-[#9da2b4] 2xl:text-[18px]">
-                {faq.answer}
+                {t(faq.answer)}
               </p>
             </div>
           </details>

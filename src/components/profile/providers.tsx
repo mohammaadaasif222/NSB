@@ -3,6 +3,7 @@ import Image from 'next/image';
 import metamaskLogo from '@/assets/metamask.png';
 import { GoogleMark, TelegramMark } from '@/components/brand';
 import { MailIcon } from '@/components/icons';
+import { translate } from '@/i18n/translate';
 
 /**
  * Who the account is attached to: the host behind the sign-in email, and the
@@ -172,5 +173,10 @@ const GenericMailMark: FC = () => (
  */
 export const mailHostOf = (email: string | null | undefined): MailHost => {
   const domain = email?.split('@')[1]?.toLowerCase() ?? '';
-  return KNOWN_HOSTS[domain] ?? { label: domain || 'Email', mark: <GenericMailMark /> };
+  return (
+    KNOWN_HOSTS[domain] ?? {
+      label: domain || translate('profile.email'),
+      mark: <GenericMailMark />,
+    }
+  );
 };

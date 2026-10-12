@@ -42,7 +42,7 @@ export const MatchTracker: FC = () => {
           {match.title}
         </span>
         <span className={`${text(12)} leading-[calc(var(--u)*20)] text-[#f0f1f5]`}>
-          {match.period}
+          {t(match.period.key)} - {match.period.clock}
         </span>
         <span
           className={`${text(24)} font-bold leading-[calc(var(--u)*32)] tabular-nums text-[#f0f1f5]`}

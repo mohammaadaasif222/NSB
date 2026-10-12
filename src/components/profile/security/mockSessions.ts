@@ -17,8 +17,11 @@ export interface PlayerSession {
   device: string;
   ip: string;
   location: string;
-  /** Relative age, pre-formatted. The API should send a timestamp instead. */
-  lastSeen: string;
+  /**
+   * Days since the session was last active. Formatted in the player's language
+   * by the row; the API should send a timestamp instead.
+   */
+  lastSeenDaysAgo: number;
   /** The session doing the asking — it cannot be ended from here. */
   current: boolean;
 }
@@ -29,7 +32,7 @@ export const MOCK_SESSIONS: readonly PlayerSession[] = [
     device: 'Windows(Chrome)',
     ip: '45.88.190.123',
     location: 'CA, Montréal',
-    lastSeen: '2d ago',
+    lastSeenDaysAgo: 2,
     current: true,
   },
 ];

@@ -102,7 +102,7 @@ export const SupportList: FC<{ compact?: boolean }> = ({ compact = false }) => {
 
   return (
     <div className="space-y-3">
-      {!compact && <p className="text-sm leading-6 text-[#9da2b4]">{t('rg.supportLead')}</p>}
+      {!compact && <p className="text-sm leading-6 text-[#9da2b4]">{t('rgc.supportLead')}</p>}
 
       <ul className="grid gap-2.5 sm:grid-cols-2">
         {SUPPORT_ORGS.map((org) => (
@@ -118,7 +118,7 @@ export const SupportList: FC<{ compact?: boolean }> = ({ compact = false }) => {
                   {org.name}
                 </span>
                 <span className="mt-1 block text-xs leading-5 text-[#9da2b4]">
-                  {org.description}
+                  {t(org.descriptionKey)}
                 </span>
               </span>
               <ArrowUpRightIcon size={16} className="mt-0.5 shrink-0 text-[#9da2b4]" />

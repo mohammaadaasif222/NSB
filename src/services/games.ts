@@ -1,4 +1,6 @@
 import apiService from '@/services/api';
+import { translate } from '@/i18n/translate';
+import type { TranslationKey } from '@/i18n/locales';
 import type { ShelfListQuery } from '@/constants/games';
 import type {
   ApiError,
@@ -31,7 +33,7 @@ export async function launchGame(
   });
 
   if (!res?.success || !res.data?.url) {
-    throw { message: res?.message || 'Game launch failed' } satisfies ApiError;
+    throw { message: res?.message || translate('game.launchFailed') } satisfies ApiError;
   }
   return res.data;
 }
@@ -56,7 +58,7 @@ export async function fetchShelfPage(
 ): Promise<GameListResponse> {
   const res = await apiService.get<GameListResponse>('/games', { ...list, page, limit });
   if (!res?.success || !Array.isArray(res.data?.data) || !res.data.pagination) {
-    throw { message: res?.message || 'Could not load games' } satisfies ApiError;
+    throw { message: res?.message || translate('myGames.failed') } satisfies ApiError;
   }
   return res.data;
 }
@@ -65,10 +67,10 @@ export async function fetchShelfPage(
 /* The player's own games — both need the player's token               */
 /* ------------------------------------------------------------------ */
 
-const listOrThrow = async <T>(url: string, subject: string): Promise<T[]> => {
+const listOrThrow = async <T>(url: string, failed: TranslationKey): Promise<T[]> => {
   const res = await apiService.get<T[]>(url);
   if (!res?.success || !Array.isArray(res.data)) {
-    throw { message: res?.message || `Could not load ${subject}` } satisfies ApiError;
+    throw { message: res?.message || translate(failed) } satisfies ApiError;
   }
   return res.data;
 };
@@ -81,20 +83,20 @@ const setHearted = async (base: string, slug: string, favourite: boolean): Promi
   const url = `${base}/${encodeURIComponent(slug)}/favourite`;
   const res = favourite ? await apiService.put(url) : await apiService.delete(url);
   if (!res?.success) {
-    throw { message: res?.message || 'Could not update favourites' } satisfies ApiError;
+    throw { message: res?.message || translate('favourites.failed') } satisfies ApiError;
   }
 };
 
 /** The player's favourite games, newest-hearted first. */
 export const fetchFavourites = (): Promise<Game[]> =>
-  listOrThrow<Game>('/games/favourites', 'games');
+  listOrThrow<Game>('/games/favourites', 'myGames.failed');
 
 /** The games the player launched most recently, newest first. */
-export const fetchRecentGames = (): Promise<Game[]> => listOrThrow<Game>('/games/recent', 'games');
+export const fetchRecentGames = (): Promise<Game[]> => listOrThrow<Game>('/games/recent', 'myGames.failed');
 
 /** The studios the player has hearted, newest-hearted first. */
 export const fetchFavouriteProviders = (): Promise<LobbyProvider[]> =>
-  listOrThrow<LobbyProvider>('/game-providers/favourites', 'providers');
+  listOrThrow<LobbyProvider>('/game-providers/favourites', 'favourites.providersFailed');
 
 /** Hearts or unhearts a game. Idempotent either way. */
 export const setFavourite = (slug: string, favourite: boolean): Promise<void> =>

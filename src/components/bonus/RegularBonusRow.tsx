@@ -31,23 +31,25 @@ const useCards = (): Card[] => {
 
   const spin: BonusCardAction = { kind: 'gold', label: t('bonus.spinWheel') };
   const bets: BonusCardAction = { kind: 'status', label: t('bonus.placeBets') };
-  const claimIn = (left: string): BonusCardAction => ({
+  const claimIn = (days: number): BonusCardAction => ({
     kind: 'status',
-    label: `${t('bonus.claimIn')} ${left}`,
+    label: `${t('bonus.claimIn')} ${t('content.bonus.daysTime', { days, time: '15:37:43' })}`,
   });
+  const cadence = t('content.bonus.hours', { count: 12 });
+  const furyWheel = t('content.bonus.regular.furyWheel');
 
   return [
-    { title: 'Free Fury Wheel', cadence: '12h', worth: '1 BTC', action: spin },
-    { title: 'Cashback', cadence: '12h', worth: '1 BTC', action: bets },
+    { title: furyWheel, cadence, worth: '1 BTC', action: spin },
+    { title: t('rewards.type.cashback'), cadence, worth: '1 BTC', action: bets },
     {
-      title: 'Weekly Sport Bonus',
-      cadence: '12h',
+      title: t('content.bonus.regular.weeklySport'),
+      cadence,
       worth: '1 BTC',
-      action: claimIn('1 d 15:37:43'),
+      action: claimIn(1),
     },
-    { title: 'Weekly Bonus', cadence: '12h', worth: '1 BTC', action: claimIn('1 d 15:37:43') },
-    { title: 'Monthly Bonus', cadence: '12h', worth: '1 BTC', action: claimIn('1 d 15:37:43') },
-    { title: 'Free Fury Wheel', cadence: '12h', worth: '1 BTC', action: claimIn('71 d 15:37:43') },
+    { title: t('rewards.type.weekly'), cadence, worth: '1 BTC', action: claimIn(1) },
+    { title: t('rewards.type.monthly'), cadence, worth: '1 BTC', action: claimIn(1) },
+    { title: furyWheel, cadence, worth: '1 BTC', action: claimIn(71) },
   ];
 };
 

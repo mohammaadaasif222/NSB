@@ -1,3 +1,4 @@
+import type { TranslationKey } from '@/i18n/locales';
 import type { UserRole, UserStatus } from './user';
 
 export type ThemeName =
@@ -47,16 +48,17 @@ export interface SecuritySettings {
   twoFactorEnabled: boolean;
 }
 
-export const THEME_OPTIONS: { value: ThemeName; label: string; swatch: string }[] = [
-  { value: 'dark', label: 'Dark', swatch: '#0f172a' },
-  { value: 'midnight', label: 'Midnight', swatch: '#020617' },
-  { value: 'thin', label: 'Thin', swatch: '#1e2533' },
-  { value: 'light', label: 'Light', swatch: '#e2e8f0' },
-  { value: 'white', label: 'White', swatch: '#ffffff' },
-  { value: 'slate', label: 'Slate', swatch: '#3f4856' },
-  { value: 'ocean', label: 'Ocean', swatch: '#082f49' },
-  { value: 'forest', label: 'Forest', swatch: '#052e1b' },
-  { value: 'contrast', label: 'High Contrast', swatch: '#000000' },
+/** `label` is a translation key — render it through `t()`. */
+export const THEME_OPTIONS: { value: ThemeName; label: TranslationKey; swatch: string }[] = [
+  { value: 'dark', label: 'acct.theme.dark', swatch: '#0f172a' },
+  { value: 'midnight', label: 'acct.theme.midnight', swatch: '#020617' },
+  { value: 'thin', label: 'acct.theme.thin', swatch: '#1e2533' },
+  { value: 'light', label: 'acct.theme.light', swatch: '#e2e8f0' },
+  { value: 'white', label: 'acct.theme.white', swatch: '#ffffff' },
+  { value: 'slate', label: 'acct.theme.slate', swatch: '#3f4856' },
+  { value: 'ocean', label: 'acct.theme.ocean', swatch: '#082f49' },
+  { value: 'forest', label: 'acct.theme.forest', swatch: '#052e1b' },
+  { value: 'contrast', label: 'acct.theme.contrast', swatch: '#000000' },
 ];
 
 /** The backend's default for a new account. */
@@ -77,6 +79,30 @@ export const TIMEZONE_OPTIONS: string[] = [
   'GMT-06 Chicago / Mexico City',
   'GMT-08 Los Angeles / Vancouver',
 ];
+
+/**
+ * Display labels for `TIMEZONE_OPTIONS`. The option strings themselves are
+ * what the backend stores, so they stay as they are; only what the player
+ * reads is translated.
+ */
+const TIMEZONE_LABELS: Record<string, TranslationKey> = {
+  'GMT+00 UTC / London': 'acct.tz.london',
+  'GMT+01 Berlin / Paris': 'acct.tz.berlin',
+  'GMT+02 Athens / Cairo': 'acct.tz.athens',
+  'GMT+03 Moscow / Nairobi': 'acct.tz.moscow',
+  'GMT+04 Samara / Armenia': 'acct.tz.samara',
+  'GMT+05:30 India Standard Time': 'acct.tz.india',
+  'GMT+07 Bangkok / Jakarta': 'acct.tz.bangkok',
+  'GMT+08 Singapore / Beijing': 'acct.tz.singapore',
+  'GMT+09 Tokyo / Seoul': 'acct.tz.tokyo',
+  'GMT+10 Sydney / Guam': 'acct.tz.sydney',
+  'GMT-05 New York / Toronto': 'acct.tz.newYork',
+  'GMT-06 Chicago / Mexico City': 'acct.tz.chicago',
+  'GMT-08 Los Angeles / Vancouver': 'acct.tz.losAngeles',
+};
+
+/** The translation key for a stored timezone, or null for one we have no label for. */
+export const timezoneLabelKey = (tz: string): TranslationKey | null => TIMEZONE_LABELS[tz] ?? null;
 
 /** "JD" for Jane Doe: the avatar fallback when there is no picture. */
 export const initialsOf = (user: Pick<ApiUser, 'first_name' | 'last_name'> | null): string => {

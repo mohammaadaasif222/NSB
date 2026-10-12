@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/services/api';
+import { translate } from '@/i18n/translate';
 
 /**
  * Changelly Buy Crypto API Types
@@ -87,7 +88,7 @@ export const useChangellyBuyCrypto = () => {
       setCryptos(cryptoList);
       return cryptoList;
     } catch (error: any) {
-      const errorMsg = error?.response?.data?.message || 'Failed to fetch cryptocurrencies';
+      const errorMsg = error?.response?.data?.message || translate('misc.buyCrypto.cryptosFailed');
       const err = { message: errorMsg, code: error?.response?.data?.code };
       setErrorCryptos(err);
       console.error('[Changelly] Error fetching cryptos:', err);
@@ -134,7 +135,7 @@ export const useChangellyBuyCrypto = () => {
         setOffers(offerList);
         return offerList;
       } catch (error: any) {
-        const errorMsg = error?.response?.data?.message || 'Failed to fetch offers';
+        const errorMsg = error?.response?.data?.message || translate('misc.buyCrypto.offersFailed');
         const err = { message: errorMsg, code: error?.response?.data?.code };
         setErrorOffers(err);
         console.error('[Changelly] Error fetching offers:', err);
@@ -187,20 +188,8 @@ export const useChangellyBuyCrypto = () => {
 
         return response?.data?.data || null;
       } catch (error: any) {
-        let errorMsg = 'Failed to create order';
-        let errorCode = undefined;
-
-        // Try to extract error message from various response formats
-        if (error?.response?.data?.message) {
-          errorMsg = error.response.data.message;
-          errorCode = error?.response?.data?.code;
-        } else if (error?.response?.data?.error) {
-          errorMsg = error.response.data.error;
-        } else if (error?.message) {
-          errorMsg = error.message;
-        }
-
-        const err = { message: errorMsg, code: errorCode };
+        const errorMsg = error?.response?.data?.message || translate('misc.buyCrypto.orderFailed');
+        const err = { message: errorMsg, code: error?.response?.data?.code };
         setErrorCreateOrder(err);
         console.error('[Changelly] Error creating order:', {
           fullError: error,

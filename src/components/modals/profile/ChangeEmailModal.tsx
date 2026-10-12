@@ -4,6 +4,7 @@ import apiService from '@/services/api';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import ModalInput from '@/components/inputs/ModalInput';
+import { useTranslation } from '@/context/I18nContext';
 import ProfileModalShell from './ProfileModalShell';
 
 interface Props {
@@ -17,6 +18,7 @@ const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
   // Security-sensitive profile changes are risk-scored: redirecting recovery
   // to a new address is how an account takeover is made permanent.
   const { run } = useSeonGuard();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState(currentEmail ?? '');
   const [error, setError] = useState('');
@@ -25,11 +27,11 @@ const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
   const handleSubmit = async (): Promise<void> => {
     const trimmed = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setError('Please enter a valid email address');
+      setError(t('stats.invalidEmail'));
       return;
     }
     if (trimmed === currentEmail?.toLowerCase()) {
-      setError('This is already your email');
+      setError(t('acct.email.same'));
       return;
     }
 
@@ -40,17 +42,17 @@ const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
         apiService.patch('/users/me', { email: trimmed }, { headers })
       );
       if (res?.success) {
-        toast.success('Email updated successfully');
+        toast.success(t('acct.email.updated'));
         onSaved(trimmed);
         onClose();
       } else {
-        setError(res?.message || 'Failed to update email');
+        setError(res?.message || t('acct.email.failed'));
       }
     } catch (err) {
       // Closing the code prompt is a decision, not a failure.
       if (isStepUpCancelled(err)) return;
       const e = err as { message?: string; errors?: Record<string, string> };
-      setError(e?.errors?.email || e?.message || 'Failed to update email');
+      setError(e?.errors?.email || e?.message || t('acct.email.failed'));
     } finally {
       setLoading(false);
     }
@@ -58,13 +60,13 @@ const ChangeEmailModal: FC<Props> = ({ currentEmail, onClose, onSaved }) => {
 
   return (
     <ProfileModalShell
-      title="Change Email"
+      title={t('acct.email.title')}
       onClose={onClose}
       onSubmit={handleSubmit}
       loading={loading}
     >
       <ModalInput
-        label="New Email"
+        label={t('acct.email.label')}
         type="email"
         value={email}
         onChange={setEmail}

@@ -11,10 +11,11 @@ import ToggleSwitch from '@/components/profile/ToggleSwitch';
 interface Props {
   me: ApiUser;
   onToggle2FA: () => void;
+  onChangeAvatar: () => void;
 }
 
 /** Identity, the email behind the account, 2FA, and third-party links. */
-const ProfileSection: FC<Props> = ({ me, onToggle2FA }) => {
+const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar }) => {
   const { t, locale } = useTranslation();
 
   const joined = me.created_at
@@ -38,7 +39,7 @@ const ProfileSection: FC<Props> = ({ me, onToggle2FA }) => {
 
       {/* The avatar starts 10 below the "Joined at" line in the design. */}
       <div className="sm:pt-[calc(var(--u)*10)]">
-        <ProfileIdentity me={me} />
+        <ProfileIdentity me={me} onChangeAvatar={onChangeAvatar} />
       </div>
 
       {/* 32 from the ID line to the first group label, 30 between groups. */}

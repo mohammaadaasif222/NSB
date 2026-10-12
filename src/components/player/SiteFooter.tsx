@@ -5,6 +5,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { categoryHref } from '@/constants/games';
 import LanguagePicker from '@/components/LanguagePicker';
+import type { TranslationKey } from '@/i18n/locales';
 
 import { PAYMENT_MARK, ROLLUCK_LOGO } from '@/constants/cdn';
 import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
@@ -31,11 +32,11 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
   { icon: telegram, label: 'Telegram', href: 'https://t.me/' },
 ];
 
-const CONTACTS: { icon: StaticImageData; label: string; email: string }[] = [
-  { icon: questions, label: 'Questions', email: 'support@rolluck.com' },
-  { icon: bug, label: 'BugBounty Reports', email: 'bugbounty@rolluck.com' },
-  { icon: partner, label: 'Become Partner', email: 'affiliate@rolluck.com' },
-  { icon: marketing, label: 'Marketing', email: 'pr@rolluck.com' },
+const CONTACTS: { icon: StaticImageData; label: TranslationKey; email: string }[] = [
+  { icon: questions, label: 'lobby.footer.contactQuestions', email: 'support@rolluck.com' },
+  { icon: bug, label: 'lobby.footer.contactBugBounty', email: 'bugbounty@rolluck.com' },
+  { icon: partner, label: 'lobby.footer.contactPartner', email: 'affiliate@rolluck.com' },
+  { icon: marketing, label: 'lobby.footer.contactMarketing', email: 'pr@rolluck.com' },
 ];
 
 const PAYMENTS: { mark: StaticImageData; label: string }[] = [
@@ -173,21 +174,21 @@ const SiteFooter: FC = () => {
     });
 
   const casino: FooterLink[] = [
-    { label: 'All games', href: '/casino' },
-    { label: 'Rolluck originals', href: categoryHref('originals') },
-    { label: 'Slots', href: categoryHref('slots') },
-    { label: 'Live casino' },
-    { label: 'Table Games' },
-    { label: 'Providers' },
+    { label: t('browse.filterAll'), href: '/casino' },
+    { label: t('nav.originals'), href: categoryHref('originals') },
+    { label: t('dash.slots'), href: categoryHref('slots') },
+    { label: t('dash.liveCasino') },
+    { label: t('dash.tableGames') },
+    { label: t('lobby.footer.providers') },
   ];
 
   const sports: FooterLink[] = [
-    { label: 'Home', href: '/sports' },
-    { label: 'Live', href: '/sports#live-games' },
-    { label: 'Soccer' },
-    { label: 'Tennis' },
-    { label: 'Basketball' },
-    { label: 'Counter-Strike' },
+    { label: t('nav.home'), href: '/sports' },
+    { label: t('lobby.footer.live'), href: '/sports#live-games' },
+    { label: t('lobby.sport.soccer') },
+    { label: t('lobby.sport.tennis') },
+    { label: t('lobby.sport.basketball') },
+    { label: t('lobby.sport.counterStrike') },
   ];
 
   /* Promotions and Bonuses are in the rail too; Blogs is reachable from
@@ -197,39 +198,39 @@ const SiteFooter: FC = () => {
   const earn: FooterLink[] = [
     // Rolluck Drops is the rewards page; dropped from the list entirely while
     // rewards are switched off rather than left as a link to a dead end.
-    ...(rewardsOn ? [{ label: 'Rolluck Drops', href: '/rewards' }] : []),
-    { label: 'Promotions', href: '/promotions' },
-    { label: 'Bonuses', href: '/bonuses' },
-    { label: 'Referral System', href: '/profile' },
-    { label: 'Affiliate System', href: '/affiliate' },
-    { label: 'Swap Crypto' },
+    ...(rewardsOn ? [{ label: t('lobby.footer.drops'), href: '/rewards' }] : []),
+    { label: t('menu.promotions'), href: '/promotions' },
+    { label: t('nav.bonuses'), href: '/bonuses' },
+    { label: t('lobby.footer.referral'), href: '/profile' },
+    { label: t('lobby.footer.affiliate'), href: '/affiliate' },
+    { label: t('lobby.footer.swapCrypto') },
   ];
 
   const help: FooterLink[] = [
-    { label: 'Blogs', href: '/blogs' },
-    { label: 'Report Bug', href: 'mailto:bugbounty@rolluck.com' },
-    { label: 'Privacy Policy', href: '/privacy-policy' },
-    { label: 'Terms of Service', href: '/terms-of-service' },
+    { label: t('nav.blogs'), href: '/blogs' },
+    { label: t('lobby.footer.reportBug'), href: 'mailto:bugbounty@rolluck.com' },
+    { label: t('lobby.footer.privacy'), href: '/privacy-policy' },
+    { label: t('lobby.footer.terms'), href: '/terms-of-service' },
   ];
 
   const legal: FooterLink[] = [
-    { label: 'Sportsbetting T&S', href: '/terms-of-service#sports-betting' },
-    { label: 'Live Support' },
-    { label: 'Responsible Gambling', href: '/responsible-play' },
+    { label: t('lobby.footer.sportsTerms'), href: '/terms-of-service#sports-betting' },
+    { label: t('menu.liveSupport') },
+    { label: t('menu.responsibleGambling'), href: '/responsible-play' },
   ];
 
   const groups: Group[] = [
     { title: t('nav.casino'), lists: [casino] },
     { title: t('nav.sports'), lists: [sports] },
-    { title: 'Earn', lists: [earn] },
-    { title: 'Help', lists: [help, legal] },
+    { title: t('lobby.footer.earn'), lists: [earn] },
+    { title: t('lobby.footer.help'), lists: [help, legal] },
   ];
 
   // A phone folds Help's second list into a group of its own, as the design does.
   const folds: Group[] = [
     ...groups.slice(0, 3),
-    { title: 'Help', lists: [help] },
-    { title: 'Other', lists: [legal] },
+    { title: t('lobby.footer.help'), lists: [help] },
+    { title: t('lobby.footer.other'), lists: [legal] },
   ];
 
   const payments = (
@@ -254,9 +255,9 @@ const SiteFooter: FC = () => {
     <span className="flex items-center gap-[calc(var(--u)*18)]">
       <img src={badge18.src} alt="" className="h-[calc(var(--u)*36)] w-[calc(var(--u)*36)]" />
       <span className="text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-[#f0f1f5]">
-        Play Responsibly
+        {t('lobby.footer.playResponsibly')}
         <span className="block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-normal leading-[calc(var(--u)*20)] text-[#9da2b4]">
-          18+ Only
+          {t('auth.ageRequirement', { min: 18 })}
         </span>
       </span>
     </span>
@@ -264,9 +265,9 @@ const SiteFooter: FC = () => {
 
   const secure = (
     <span className="text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-[#f0f1f5] lg:text-left">
-      Safe &amp; Secure Payments
+      {t('lobby.footer.securePayments')}
       <span className="block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-normal leading-[calc(var(--u)*20)] text-[#9da2b4]">
-        Your security is our priority
+        {t('lobby.footer.securityPriority')}
       </span>
     </span>
   );
@@ -304,8 +305,8 @@ const SiteFooter: FC = () => {
           <button
             type="button"
             onClick={toTop}
-            aria-label="Back to top"
-            title="Back to top"
+            aria-label={t('lobby.footer.backToTop')}
+            title={t('lobby.footer.backToTop')}
             className={`${DISC} transition-colors hover:bg-white/10`}
           >
             <img
@@ -332,7 +333,7 @@ const SiteFooter: FC = () => {
             </span>
             <span className="min-w-0">
               <span className="block text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4]">
-                {label}
+                {t(label)}
               </span>
               <span className="mt-[calc(var(--u)*2)] block truncate text-[length:max(min(11px,20px),calc(var(--u)*20))] font-semibold leading-[calc(var(--u)*28)] tracking-[-0.02em] text-[#f0f1f5] transition-colors group-hover:text-[#f9d028] lg:mt-[calc(var(--u)*8)]">
                 {email}
@@ -373,7 +374,7 @@ const SiteFooter: FC = () => {
       </div>
 
       <p className="mt-[calc(var(--u)*16)] pb-[calc(var(--u)*4)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:mt-[calc(var(--u)*32)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
-        Copyright © {new Date().getFullYear()} Rolluck. All rights reserved.
+        {t('lobby.footer.copyright', { year: new Date().getFullYear() })}
       </p>
     </footer>
   );

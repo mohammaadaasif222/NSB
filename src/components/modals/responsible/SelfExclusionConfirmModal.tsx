@@ -1,7 +1,12 @@
 import { useEffect, useState, type FC } from 'react';
 import Image from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
-import { EXCLUSION_CONFIRM_PHRASE, type ExclusionOption } from '@/components/responsible/rgContent';
+import {
+  EXCLUSION_CONFIRM_PHRASE_FALLBACK,
+  EXCLUSION_CONFIRM_PHRASE_KEY,
+  type ExclusionOption,
+} from '@/components/responsible/rgContent';
+import type { TranslationKey } from '@/i18n/locales';
 import { CloseIcon } from '@/components/icons';
 import checkFill from '@/assets/responsible/check-fill.svg';
 
@@ -43,25 +48,45 @@ const DURATION_DAYS: Record<string, number | null> = {
  * of "24 Hours Cooldown" is left off; putting the whole label there ran the
  * line past the end of the field.
  */
-const DURATION_LABEL: Record<string, string> = {
-  '24h': '24 Hours',
-  '7d': '7 Days',
-  '30d': '30 Days',
-  '3m': '3 Months',
-  '6m': '6 Months',
-  '1y': '1 Year',
-  '5y': '5 Years',
+const DURATION_LABEL: Record<string, TranslationKey> = {
+  '24h': 'rgc.duration24h',
+  '7d': 'rgc.duration7d',
+  '30d': 'rgc.duration30d',
+  '3m': 'rgc.duration3m',
+  '6m': 'rgc.duration6m',
+  '1y': 'rgc.duration1y',
+  '5y': 'rgc.duration5y',
 };
+
+/**
+ * Folds a typed phrase for comparison: upper-cased in the player's locale (so
+ * Turkish i/İ behave), accents and other combining marks dropped, and anything
+ * that is not a letter or digit — spaces, hyphens — ignored. Applied to both
+ * sides, so it only ever makes the match more forgiving, never wrong.
+ */
+const foldPhrase = (s: string, locale: string): string =>
+  s
+    .trim()
+    .toLocaleUpperCase(locale)
+    .normalize('NFD')
+    .replace(/[^\p{L}\p{N}]/gu, '');
 
 const dmy = (d: Date): string =>
   `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 
 const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, saving = false }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [typed, setTyped] = useState('');
 
+  const phrase = t(EXCLUSION_CONFIRM_PHRASE_KEY);
+  const periodLabel = t(option.labelKey);
+
   const needsPhrase = option.requiresTypedConfirmation === true;
-  const ready = !needsPhrase || typed.trim().toUpperCase() === EXCLUSION_CONFIRM_PHRASE;
+  const ready =
+    !needsPhrase ||
+    [phrase, EXCLUSION_CONFIRM_PHRASE_FALLBACK].some(
+      (p) => foldPhrase(typed, locale) === foldPhrase(p, locale)
+    );
 
   /**
    * The typed-phrase gate adds about 107px, which pushes this dialog past a
@@ -92,19 +117,20 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
   const start = new Date();
   const range =
     days === null
-      ? option.label
+      ? periodLabel
       : (() => {
           const end = new Date(start);
           end.setDate(end.getDate() + days);
-          const length = DURATION_LABEL[option.value] ?? option.label;
-          return `${dmy(start)} (${t('rg.exclusionToday')}) - ${dmy(end)} (${length})`;
+          const lengthKey = DURATION_LABEL[option.value];
+          const length = lengthKey ? t(lengthKey) : periodLabel;
+          return `${dmy(start)} (${t('rgc.exclusionToday')}) - ${dmy(end)} (${length})`;
         })();
 
   const points = [
-    t('rg.exclusionPoint1', { period: option.label }),
-    t('rg.exclusionPoint2'),
-    t('rg.exclusionPoint3', { period: option.label }),
-    t('rg.exclusionPoint4'),
+    t('rgc.exclusionPoint1', { period: periodLabel }),
+    t('rgc.exclusionPoint2'),
+    t('rgc.exclusionPoint3', { period: periodLabel }),
+    t('rgc.exclusionPoint4'),
   ];
 
   const BUTTON = `flex ${tight ? 'h-12' : 'h-14 [@media(max-height:700px)]:h-12'} w-full items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium`;
@@ -140,13 +166,13 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
             id="rg-exclusion-title"
             className="min-w-0 flex-1 text-center text-[20px] leading-7 font-semibold tracking-[-0.56px] text-[#f0f1f5] sm:text-[28px] sm:leading-9"
           >
-            {t('rg.exclusionConfirmTitle', { period: option.label })}
+            {t('rgc.exclusionConfirmTitle', { period: periodLabel })}
           </h2>
 
           <button
             type="button"
             onClick={onClose}
-            aria-label={t('common.close')}
+            aria-label={t('rgc.close')}
             className="rl-chip -mt-2 flex h-12 w-12 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
             <CloseIcon size={18} />
@@ -159,7 +185,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
         <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto">
           {/* ── The dates the break covers ────────────────────────────── */}
           <p className="mt-4 sm:mt-7.5 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-4 [@media(max-height:700px)]:sm:mt-2.5 text-sm leading-5 font-medium text-[#f0f1f5]">
-            {t('rg.exclusionBreakPeriod')}
+            {t('rgc.exclusionBreakPeriod')}
           </p>
           {/* 56 tall on a desktop, where the line fits. It grows rather than
             truncates on a narrow screen: these dates are the thing being
@@ -171,11 +197,11 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
           </p>
 
           <p className="mt-3.5 [@media(max-height:700px)]:mt-2 text-base leading-6 text-[#9da2b4]">
-            {t('rg.exclusionConfirmBody')}
+            {t('rgc.exclusionConfirmBody')}
           </p>
 
           <p className="mt-4 sm:mt-7.5 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-4 [@media(max-height:700px)]:sm:mt-2.5 text-base leading-6 text-[#f0f1f5]">
-            {t('rg.exclusionUnderstand')}
+            {t('rgc.exclusionUnderstand')}
           </p>
 
           {/* 35px mark, 39 to the text, 48 between rows — the design's list. */}
@@ -206,7 +232,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
                 htmlFor="rg-exclusion-phrase"
                 className="mb-1.75 block text-sm leading-5 font-medium text-[#f0f1f5]"
               >
-                {t('rg.exclusionTypeToConfirm', { phrase: EXCLUSION_CONFIRM_PHRASE })}
+                {t('rgc.exclusionTypeToConfirm', { phrase })}
               </label>
               <input
                 id="rg-exclusion-phrase"
@@ -215,7 +241,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
                 onChange={(e) => setTyped(e.target.value)}
                 autoComplete="off"
                 spellCheck={false}
-                placeholder={EXCLUSION_CONFIRM_PHRASE}
+                placeholder={phrase}
                 className="rl-modal-field h-12 w-full px-6 text-[18px] leading-6 font-bold tracking-wide text-[#f0f1f5] uppercase outline-none focus-visible:border-white/30"
               />
             </div>
@@ -228,7 +254,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
           disabled={!ready || saving}
           className={`rl-btn-gold ${BUTTON} mt-4 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-7.25 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-4 [@media(max-height:700px)]:sm:mt-3`}
         >
-          {saving ? t('common.saving') : t('rg.exclusionConfirmWith', { period: option.label })}
+          {saving ? t('rgc.saving') : t('rgc.exclusionConfirmWith', { period: periodLabel })}
         </button>
 
         <button
@@ -236,7 +262,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
           onClick={onClose}
           className={`${BUTTON} mt-2.5 [@media(max-height:700px)]:mt-2 shrink-0 bg-white/10 text-[#f0f1f5] transition-colors hover:bg-white/15 sm:mt-3.25 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-2.5 [@media(max-height:700px)]:sm:mt-2`}
         >
-          {t('common.cancel')}
+          {t('rgc.cancel')}
         </button>
       </div>
     </div>

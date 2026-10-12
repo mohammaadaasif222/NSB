@@ -101,7 +101,7 @@ const LoginFormStep: FC<LoginFormStepProps> = ({
       </Button>
 
       <div className="!mt-6 text-center">
-        <NeedHelpLink subject="Login help" />
+        <NeedHelpLink subject={t('misc.help.loginSubject')} />
       </div>
     </form>
   );

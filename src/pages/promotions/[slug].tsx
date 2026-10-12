@@ -48,14 +48,26 @@ interface Props {
  * the layout has to change.
  */
 const PromotionDetailPage: FC<Props> = ({ status, runs, games }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [rating, setRating] = useState(false);
   const ended = status === 'expired';
+  const title = t(DETAIL_COPY.title);
+
+  // The window is held as ISO dates and written out the way the reader's locale writes them.
+  const day = (iso: string | undefined): string =>
+    iso
+      ? new Date(iso).toLocaleDateString(locale, {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
+      : '—';
 
   return (
     <PlayerLayout>
       <Head>
-        <title>{`${DETAIL_COPY.title} · ROLLUCK`}</title>
+        <title>{`${title} · ROLLUCK`}</title>
       </Head>
 
       <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
@@ -71,7 +83,7 @@ const PromotionDetailPage: FC<Props> = ({ status, runs, games }) => {
             </Link>
 
             <h1 className="min-w-0 truncate text-[22px] font-semibold leading-8 tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(16px,calc(var(--u)*44))] lg:leading-[calc(var(--u)*52)]">
-              {DETAIL_COPY.title}
+              {title}
             </h1>
 
             {/* A running promotion flies the green Live flag; an ended one
@@ -79,7 +91,7 @@ const PromotionDetailPage: FC<Props> = ({ status, runs, games }) => {
                 say about it. */}
             {ended ? (
               <span className="flex h-[26px] shrink-0 items-center rounded-full bg-white/5 px-3 text-[13px] leading-5 text-[#f0f1f5] lg:h-[calc(var(--u)*29)] lg:px-[calc(var(--u)*12)] lg:text-[max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
-                {t('promo.runs', { from: runs?.from ?? '—', to: runs?.to ?? '—' })}
+                {t('promo.runs', { from: day(runs?.from), to: day(runs?.to) })}
               </span>
             ) : (
               <span className="rl-liquid flex h-[26px] shrink-0 items-center rounded-full px-3 text-[13px] leading-5 text-[#03b739] drop-shadow-[0_0_8.5px_rgba(3,183,57,0.2)] lg:h-[calc(var(--u)*30)] lg:px-[calc(var(--u)*12)] lg:text-[max(11px,calc(var(--u)*14))]">
@@ -151,7 +163,10 @@ const PromotionDetailPage: FC<Props> = ({ status, runs, games }) => {
           )}
         </section>
 
-        <PromoTextPanel title={t('promo.details')} paragraphs={DETAIL_COPY.details} />
+        <PromoTextPanel
+          title={t('promo.details')}
+          paragraphs={DETAIL_COPY.details.map((key) => t(key))}
+        />
 
         <section className="space-y-[calc(var(--u)*14)] lg:space-y-[calc(var(--u)*20)]">
           <ShelfHeading

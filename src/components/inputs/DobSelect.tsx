@@ -1,6 +1,7 @@
 import { useEffect, useMemo, type FC } from 'react';
 
-import { MONTHS, birthYears, daysInMonth } from '@/utils/dob';
+import { useTranslation } from '@/context/I18nContext';
+import { birthYears, daysInMonth, localizedMonths } from '@/utils/dob';
 
 interface Props {
   day: string;
@@ -45,7 +46,9 @@ const DobSelect: FC<Props> = ({
   idPrefix = 'dob',
   describedBy,
 }) => {
+  const { t, locale } = useTranslation();
   const days = useMemo(() => daysInMonth(month, year), [month, year]);
+  const months = useMemo(() => localizedMonths(locale), [locale]);
   const years = useMemo(() => birthYears(), []);
 
   useEffect(() => {
@@ -61,7 +64,7 @@ const DobSelect: FC<Props> = ({
     <div className="grid grid-cols-3 gap-2.5">
       <select
         id={`${idPrefix}-day`}
-        aria-label="Day of birth"
+        aria-label={t('acct.dob.dayAria')}
         aria-describedby={describedBy}
         value={day}
         disabled={disabled}
@@ -69,7 +72,7 @@ const DobSelect: FC<Props> = ({
         className={selectClassName}
       >
         <option value="" className={placeholderClassName}>
-          Day
+          {t('acct.dob.day')}
         </option>
         {days.map((d) => (
           <option key={d} value={d} className={optionClassName}>
@@ -80,7 +83,7 @@ const DobSelect: FC<Props> = ({
 
       <select
         id={`${idPrefix}-month`}
-        aria-label="Month of birth"
+        aria-label={t('acct.dob.monthAria')}
         aria-describedby={describedBy}
         value={month}
         disabled={disabled}
@@ -88,9 +91,9 @@ const DobSelect: FC<Props> = ({
         className={selectClassName}
       >
         <option value="" className={placeholderClassName}>
-          Month
+          {t('acct.dob.month')}
         </option>
-        {MONTHS.map((m) => (
+        {months.map((m) => (
           <option key={m.value} value={m.value} className={optionClassName}>
             {m.label}
           </option>
@@ -99,7 +102,7 @@ const DobSelect: FC<Props> = ({
 
       <select
         id={`${idPrefix}-year`}
-        aria-label="Year of birth"
+        aria-label={t('acct.dob.yearAria')}
         aria-describedby={describedBy}
         value={year}
         disabled={disabled}
@@ -107,7 +110,7 @@ const DobSelect: FC<Props> = ({
         className={selectClassName}
       >
         <option value="" className={placeholderClassName}>
-          Year
+          {t('acct.dob.year')}
         </option>
         {years.map((y) => (
           <option key={y} value={y} className={optionClassName}>

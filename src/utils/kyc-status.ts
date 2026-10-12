@@ -57,8 +57,14 @@ export interface KycRequestError {
  * error IS the payload — but a thrown network error is not, and older
  * deployments answer without a `details` block. Every shape is handled here so
  * call sites do not each re-derive it.
+ *
+ * `fallbackMessage` is used when the API sent no wording; callers pass the
+ * translated line (this file stays import-free so it runs under `node --test`).
  */
-export function readKycError(err: unknown): KycRequestError | null {
+export function readKycError(
+  err: unknown,
+  fallbackMessage = 'Identity verification is required before you can continue.'
+): KycRequestError | null {
   if (!err || typeof err !== 'object') return null;
 
   const envelope =
@@ -73,10 +79,7 @@ export function readKycError(err: unknown): KycRequestError | null {
   if (!KYC_ERROR_CODES.includes(rawCode as KycErrorCode)) return null;
 
   const details = (envelope.details ?? {}) as KycErrorDetails;
-  const message =
-    typeof envelope.message === 'string'
-      ? envelope.message
-      : 'Identity verification is required before you can continue.';
+  const message = typeof envelope.message === 'string' ? envelope.message : fallbackMessage;
 
   return {
     code: rawCode as KycErrorCode,
@@ -92,9 +95,13 @@ export function readKycError(err: unknown): KycRequestError | null {
 }
 
 /**
- * Extracts a user-friendly rejection explanation.
+ * Extracts a user-friendly rejection explanation. `fallback` is the generic
+ * reason when the reviewer left none — callers pass the translated line.
  */
-export function getKycRejectReason(profile: PlayerKycProfile | null | undefined): string | null {
+export function getKycRejectReason(
+  profile: PlayerKycProfile | null | undefined,
+  fallback = 'Verification could not be approved with the provided documents. Please try again with clearer photos.'
+): string | null {
   if (!profile || profile.status !== 'REJECTED') {
     return null;
   }
@@ -114,5 +121,5 @@ export function getKycRejectReason(profile: PlayerKycProfile | null | undefined)
       .join(', ');
   }
 
-  return 'Verification could not be approved with the provided documents. Please try again with clearer photos.';
+  return fallback;
 }

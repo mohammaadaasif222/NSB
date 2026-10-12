@@ -9,6 +9,8 @@ import {
   ShieldCheckIcon,
   type IconProps,
 } from '@/components/icons';
+import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 import { getKycRejectReason, resolveKycGateState } from '@/utils/kyc-status';
 import type { KycErrorCode, PlayerKycProfile } from '@/types/kyc';
 
@@ -78,15 +80,15 @@ const TONES: Record<Tone, { wrap: string; icon: string; badge: string; button: s
  * sides of a mismatch and never leaves the operator's screen — so these say
  * what is wrong and what happens next without reproducing the comparison.
  */
-const HOLD_REASONS: Record<string, string> = {
-  IDENTITY_MISMATCH:
-    "The name or date of birth you entered doesn't match the document you uploaded. Correct your details and we'll check it again.",
-  AGE_CHECK: "We're confirming the date of birth on your document meets the 18+ requirement.",
-  DETAILS_MISSING:
-    'Some of your personal details are missing. Fill them in and the check can carry on.',
-  AWAITING_PROVIDER: "We're waiting on a result from our verification partner.",
-  UNDER_REVIEW: 'Our compliance team is taking a closer look at your documents.',
+const HOLD_REASONS: Record<string, TranslationKey> = {
+  IDENTITY_MISMATCH: 'acct.kycGate.holdIdentityMismatch',
+  AGE_CHECK: 'acct.kycGate.holdAgeCheck',
+  DETAILS_MISSING: 'acct.kycGate.holdDetailsMissing',
+  AWAITING_PROVIDER: 'acct.kycGate.holdAwaitingProvider',
+  UNDER_REVIEW: 'acct.kycGate.holdUnderReview',
 };
+
+type Translate = (key: TranslationKey, vars?: Record<string, string | number>) => string;
 
 interface Copy {
   tone: Tone;
@@ -98,24 +100,26 @@ interface Copy {
 }
 
 /** Shared by the profile's own hold state and by a `KYC_REVIEW_HOLD` refusal. */
-const holdCopy = (profile: PlayerKycProfile | null): Copy => ({
-  tone: 'warn',
-  Icon: AlertTriangleIcon,
-  badge: 'Manual check',
-  title: 'Your verification needs a manual check',
-  body:
-    HOLD_REASONS[profile?.holdReason ?? ''] ??
-    "Our compliance team is reviewing your verification. This one won't clear on its own.",
-  cta: 'View verification status',
-});
+const holdCopy = (profile: PlayerKycProfile | null, t: Translate): Copy => {
+  const reason = HOLD_REASONS[profile?.holdReason ?? ''];
+  return {
+    tone: 'warn',
+    Icon: AlertTriangleIcon,
+    badge: t('acct.kycGate.badgeManualCheck'),
+    title: t('acct.kycGate.holdTitle'),
+    body: reason ? t(reason) : t('acct.kycGate.holdDefault'),
+    cta: t('acct.kycGate.ctaViewStatus'),
+  };
+};
 
 const resolveCopy = (
   profile: PlayerKycProfile | null,
   action: Props['action'],
   apiMessage: string | null | undefined,
-  errorCode: KycErrorCode | null | undefined
+  errorCode: KycErrorCode | null | undefined,
+  t: Translate
 ): Copy => {
-  const verb = action === 'deposit' ? 'deposit' : 'withdraw';
+  const isDeposit = action === 'deposit';
 
   // Checked before the profile: a tier upgrade stops a player whose Level 2 is
   // long since approved, so the profile reads APPROVED and would otherwise
@@ -124,12 +128,12 @@ const resolveCopy = (
     return {
       tone: 'warn',
       Icon: LockIcon,
-      badge: 'Upgrade needed',
-      title: 'A higher verification level is required',
+      badge: t('acct.kycGate.badgeUpgrade'),
+      title: t('acct.kycGate.upgradeTitle'),
       body:
         apiMessage?.trim() ||
-        `This ${verb} is above the limit for your current verification level. Completing the next level raises it.`,
-      cta: 'Continue verification',
+        t(isDeposit ? 'acct.kycGate.upgradeBodyDeposit' : 'acct.kycGate.upgradeBodyWithdraw'),
+      cta: t('acct.kycGate.ctaContinue'),
     };
   }
 
@@ -138,7 +142,7 @@ const resolveCopy = (
   // Taking the profile's word for it here would tell a verified player that
   // they are unverified.
   if (errorCode === 'KYC_REVIEW_HOLD') {
-    return holdCopy(profile);
+    return holdCopy(profile, t);
   }
 
   switch (resolveKycGateState(profile)) {
@@ -146,37 +150,40 @@ const resolveCopy = (
       return {
         tone: 'wait',
         Icon: ClockIcon,
-        badge: 'In review',
-        title: 'Your verification is being checked',
-        body: `Your documents are with our verification partner. Most checks finish within a few minutes, and you'll be able to ${verb} as soon as it clears.`,
-        cta: 'View verification status',
+        badge: t('acct.kycGate.badgeInReview'),
+        title: t('acct.kycGate.inReviewTitle'),
+        body: t(
+          isDeposit ? 'acct.kycGate.inReviewBodyDeposit' : 'acct.kycGate.inReviewBodyWithdraw'
+        ),
+        cta: t('acct.kycGate.ctaViewStatus'),
       };
 
     case 'COMPLIANCE_HOLD':
-      return holdCopy(profile);
+      return holdCopy(profile, t);
 
     case 'REJECTED_RETRY':
       return {
         tone: 'stop',
         Icon: AlertTriangleIcon,
-        badge: 'Action needed',
-        title: "Your verification couldn't be approved",
+        badge: t('acct.kycGate.badgeActionNeeded'),
+        title: t('acct.kycGate.rejectedTitle'),
         body:
-          getKycRejectReason(profile) ??
-          'Your documents were not accepted. You can submit them again.',
-        cta: 'Fix and resubmit',
+          getKycRejectReason(profile, t('acct.kycGate.rejectedBody')) ??
+          t('acct.kycGate.rejectedBody'),
+        cta: t('acct.kycGate.ctaResubmit'),
       };
 
     case 'REJECTED_FINAL':
       return {
         tone: 'stop',
         Icon: LockIcon,
-        badge: 'Declined',
-        title: 'Your verification was declined',
+        badge: t('acct.kycGate.badgeDeclined'),
+        title: t('acct.kycGate.declinedTitle'),
         body: `${
-          getKycRejectReason(profile) ?? 'Your documents were not accepted.'
-        } This one cannot be resubmitted — our support team can take it further.`,
-        cta: 'View details',
+          getKycRejectReason(profile, t('acct.kycGate.declinedReason')) ??
+          t('acct.kycGate.declinedReason')
+        } ${t('acct.kycGate.declinedBody')}`,
+        cta: t('acct.kycGate.ctaViewDetails'),
       };
 
     // NOT_STARTED, and APPROVED too: this component is only mounted when
@@ -186,17 +193,17 @@ const resolveCopy = (
       // Level 1 on file but nothing submitted — say what is actually left,
       // rather than asking again for details the player has already given.
       const body = profile?.isLevel1Complete
-        ? `Your personal details are saved. The last step is a photo of your ID and a quick selfie, and then you can ${verb}.`
+        ? t(isDeposit ? 'acct.kycGate.level1DoneDeposit' : 'acct.kycGate.level1DoneWithdraw')
         : apiMessage?.trim() ||
-          `To comply with regulatory standards and protect your account, you need to verify your identity before you can ${verb}. It takes a few minutes.`;
+          t(isDeposit ? 'acct.kycGate.unverifiedDeposit' : 'acct.kycGate.unverifiedWithdraw');
 
       return {
         tone: 'warn',
         Icon: ShieldCheckIcon,
-        badge: 'Unverified',
-        title: 'Identity verification required',
+        badge: t('acct.kycGate.badgeUnverified'),
+        title: t('acct.kycGate.unverifiedTitle'),
         body,
-        cta: 'Verify identity',
+        cta: t('acct.kycGate.ctaVerify'),
       };
     }
   }
@@ -214,7 +221,8 @@ const resolveCopy = (
  */
 const KycGateNotice: FC<Props> = ({ profile, action, onLeave, apiMessage, errorCode }) => {
   const router = useRouter();
-  const copy = resolveCopy(profile, action, apiMessage, errorCode);
+  const { t } = useTranslation();
+  const copy = resolveCopy(profile, action, apiMessage, errorCode, t);
   const tone = TONES[copy.tone];
 
   const goToVerification = (): void => {
@@ -256,7 +264,7 @@ const KycGateNotice: FC<Props> = ({ profile, action, onLeave, apiMessage, errorC
       {/* The button leaves the wallet, and a player who has just typed an
           address deserves to know that before they press it. */}
       <p className="mt-2 text-center text-[10px] text-slate-500">
-        Opens your account verification page
+        {t('acct.kycGate.opensVerification')}
       </p>
     </div>
   );

@@ -66,7 +66,7 @@ const SelfExclusionSection: FC = () => {
 
     return (
       <div className="space-y-6">
-        <SectionIntro title={t('rg.exclusionActiveTitle')} />
+        <SectionIntro title={t('rgc.exclusionActiveTitle')} />
 
         <RgCard>
           <div className="flex items-start gap-4">
@@ -75,25 +75,25 @@ const SelfExclusionSection: FC = () => {
             </span>
             <div className="min-w-0 flex-1">
               <h3 className="text-base leading-6 font-medium text-[#f0f1f5]">
-                {t('rg.exclusionActiveHeading')}
+                {t('rgc.exclusionActiveHeading')}
               </h3>
               <p className="mt-1.5 text-sm leading-6 text-[#9da2b4]">
-                {t('rg.exclusionActiveBody')}
+                {t('rgc.exclusionActiveBody')}
               </p>
             </div>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-4 border-t border-white/8 pt-5">
-            <Stat label={t('rg.exclusionPeriod')} value={option?.label ?? '—'} />
+            <Stat label={t('rgc.exclusionPeriod')} value={option ? t(option.labelKey) : '—'} />
             <Stat
-              label={t('rg.exclusionEnds')}
-              value={state.endsAt ? formatDate(state.endsAt, locale) : t('rg.exclusionNever')}
+              label={t('rgc.exclusionEnds')}
+              value={state.endsAt ? formatDate(state.endsAt, locale) : t('rgc.exclusionNever')}
             />
           </div>
         </RgCard>
 
         <div>
-          <h3 className="rl-h-card mb-3 text-[#f0f1f5]">{t('rg.supportTitle')}</h3>
+          <h3 className="rl-h-card mb-3 text-[#f0f1f5]">{t('rgc.supportTitle')}</h3>
           <SupportList />
         </div>
       </div>
@@ -121,41 +121,41 @@ const SelfExclusionSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rg.exclusionTitle')}</h2>
+      <h2 className="rl-h-section">{t('rgc.exclusionTitle')}</h2>
 
       <div className="mt-5 space-y-7 text-[18px] leading-7 text-[#9da2b4] 2xl:text-[20px]">
-        <p>{t('rg.exclusionLead')}</p>
-        <p>{t('rg.exclusionEmailNote')}</p>
+        <p>{t('rgc.exclusionLead')}</p>
+        <p>{t('rgc.exclusionEmailNote')}</p>
       </div>
 
       {/* ── Step 1 ─────────────────────────────────────────────────────── */}
       <div className={`${CARD} mt-7.25`}>
-        <h3 className={STEP_TITLE}>{t('rg.exclusionStep1')}</h3>
+        <h3 className={STEP_TITLE}>{t('rgc.exclusionStep1')}</h3>
 
         {cooldown && (
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <button type="button" onClick={() => pick(cooldown)} className={optionClass(cooldown)}>
-              {cooldown.label}
+              {t(cooldown.labelKey)}
             </button>
-            <p className="text-sm leading-5 text-[#9da2b4]">{cooldown.note}</p>
+            <p className="text-sm leading-5 text-[#9da2b4]">{t(cooldown.noteKey)}</p>
           </div>
         )}
       </div>
 
       {/* ── Step 2 ─────────────────────────────────────────────────────── */}
       <div className={`${CARD} mt-4.75`}>
-        <h3 className={STEP_TITLE}>{t('rg.exclusionStep2')}</h3>
+        <h3 className={STEP_TITLE}>{t('rgc.exclusionStep2')}</h3>
 
         <div className="mt-5 flex flex-wrap gap-2.5">
           {longer.map((o) => (
             <button key={o.value} type="button" onClick={() => pick(o)} className={optionClass(o)}>
-              {o.label}
+              {t(o.labelKey)}
             </button>
           ))}
         </div>
 
         {selected && selected.value !== COOLDOWN_VALUE && (
-          <p className="mt-4 text-sm leading-5 text-[#9da2b4]">{selected.note}</p>
+          <p className="mt-4 text-sm leading-5 text-[#9da2b4]">{t(selected.noteKey)}</p>
         )}
       </div>
 
@@ -176,7 +176,7 @@ const SelfExclusionSection: FC = () => {
           <CheckIcon size={18} />
         </span>
         <span className="text-[18px] leading-7 text-[#f0f1f5] 2xl:text-[20px]">
-          {t('rg.exclusionConsent')}
+          {t('rgc.exclusionConsent')}
         </span>
       </label>
 
@@ -186,12 +186,12 @@ const SelfExclusionSection: FC = () => {
             href="/auth/login"
             className="rl-btn-gold mt-6.5 flex h-14 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium sm:w-67.5"
           >
-            {t('rg.exclusionContinueAction')}
+            {t('rgc.exclusionContinueAction')}
           </Link>
           {/* The one thing the old sign-in gate said that is worth keeping:
               being locked out IS the feature working. */}
           <p className="mt-3 max-w-2xl text-sm leading-5 text-[#9da2b4]">
-            {t('rg.signInExclusion')}
+            {t('rgc.signInExclusion')}
           </p>
         </>
       ) : (
@@ -201,7 +201,7 @@ const SelfExclusionSection: FC = () => {
           disabled={!selected || !consented || !hydrated}
           className="rl-btn-gold mt-6.5 flex h-14 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:w-67.5"
         >
-          {t('rg.exclusionContinueAction')}
+          {t('rgc.exclusionContinueAction')}
         </button>
       )}
 
