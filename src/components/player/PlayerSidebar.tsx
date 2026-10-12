@@ -2,7 +2,7 @@ import { useState, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useRouter } from 'next/router';
-import logo from '@/assets/logo.png';
+import { ICON, ROLLUCK_LOGO as logo } from '@/constants/cdn';
 import casinoArt from '@/assets/lobby/player/panel-casino.webp';
 import sportsArt from '@/assets/lobby/player/panel-sports.webp';
 import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
@@ -15,7 +15,6 @@ import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
 import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
 import promotionIcon from '@/assets/lobby/rail/nav-promotion.svg';
 import bonusesIcon from '@/assets/lobby/rail/nav-bonuses.svg';
-import telegramIcon from '@/assets/lobby/rail/rail-telegram.svg';
 import suggestionIcon from '@/assets/lobby/rail/rail-suggestion.svg';
 import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
 import instagram from '@/assets/lobby/footer/social-instagram.svg';
@@ -470,7 +469,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
           <div className="mt-[calc(var(--u)*11)] space-y-[calc(var(--u)*7)]">
             <RailButton
-              icon={telegramIcon}
+              icon={ICON.telegram}
               label="Join Telegram"
               href="https://t.me/"
               collapsed={collapsed}

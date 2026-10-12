@@ -1,9 +1,11 @@
 import { useState, type CSSProperties, type FC } from 'react';
 import Link, { type LinkProps } from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
+import { useFavourites } from '@/context/FavouritesContext';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
 import ScrollShelf from '@/components/player/ScrollShelf';
 import { BROWSE_ANCHOR } from '@/components/player/GameBrowser';
+import type { TranslationKey } from '@/i18n/locales';
 import type { LobbyProvider } from '@/types';
 import type { StaticImageData } from 'next/image';
 import pragmaticPlay from '@/assets/providers/pragmatic-play.svg';
@@ -13,7 +15,7 @@ import bgaming from '@/assets/providers/bgaming.svg';
 import hacksawGaming from '@/assets/providers/hacksaw-gaming.svg';
 import thunderkick from '@/assets/providers/thunderkick.svg';
 import nolimitCity from '@/assets/providers/nolimit-city.svg';
-import rolluck from '@/assets/lobby/footer/logo.webp';
+import { ROLLUCK_LOGO as rolluck } from '@/constants/cdn';
 
 /**
  * The design's own studio logos, keyed by provider slug — the fallback when
@@ -68,7 +70,7 @@ const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = (
   provider,
   href,
 }) => {
-  const [liked, setLiked] = useState(false);
+  const { isFavouriteProvider, toggleProvider } = useFavourites();
   const [broken, setBroken] = useState(false);
   const bundled = BUNDLED_LOGOS[provider.slug];
   const logo = provider.logo_url || bundled?.src || null;
@@ -113,8 +115,8 @@ const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = (
       </Link>
 
       <FavouriteHeart
-        liked={liked}
-        onToggle={() => setLiked((v) => !v)}
+        liked={isFavouriteProvider(provider.id)}
+        onToggle={() => toggleProvider(provider)}
         label={provider.name}
         tone="red"
         className="right-[calc(var(--u)*6)] top-[calc(var(--u)*6)] h-[calc(var(--u)*32)] w-[calc(var(--u)*32)] lg:right-[calc(var(--u)*10)] lg:top-[calc(var(--u)*10)]"
@@ -130,11 +132,21 @@ interface Props {
   basePath: string;
   /** The page's shelf query, kept so a filter does not reset shelf paging. */
   query: Record<string, string>;
+  /** The heading. The lobby's own row says "Provider". */
+  titleKey?: TranslationKey;
+  /**
+   * Offer "View all" — no studio directory exists, so it opens the browser,
+   * whose provider picker lists every studio. Off where the row is already
+   * the whole of what it lists: the player's favourites.
+   */
+  viewAll?: boolean;
 }
 
 /**
- * The lobby's Providers row, managed from the admin console's Providers
- * screen: which studios appear, in what order, and with which logo.
+ * A row of studio plates. In the lobby it is the Providers row, managed from
+ * the admin console's Providers screen: which studios appear, in what order,
+ * and with which logo. The Favourites page draws the player's hearted
+ * studios with the same row.
  *
  * It used to be derived from the `provider` text on whichever games the page
  * had loaded, so it could not be ordered or given artwork, and each plate
@@ -143,7 +155,13 @@ interface Props {
  * the lobby's own game browser with that provider selected, which searches
  * every category.
  */
-const ProviderRow: FC<Props> = ({ providers, basePath, query }) => {
+const ProviderRow: FC<Props> = ({
+  providers,
+  basePath,
+  query,
+  titleKey = 'dash.providers',
+  viewAll = true,
+}) => {
   const { t } = useTranslation();
 
   if (providers.length === 0) {
@@ -151,9 +169,11 @@ const ProviderRow: FC<Props> = ({ providers, basePath, query }) => {
   }
 
   return (
-    // No studio directory exists, so "View all" opens the game browser,
-    // whose provider picker lists every studio.
-    <ScrollShelf title={t('dash.providers')} href={`${basePath}#${BROWSE_ANCHOR}`} paged>
+    <ScrollShelf
+      title={t(titleKey)}
+      href={viewAll ? `${basePath}#${BROWSE_ANCHOR}` : undefined}
+      paged
+    >
       {providers.map((provider) => (
         <ProviderCard
           key={provider.id}

@@ -1,12 +1,9 @@
 import type { FC, ReactElement } from 'react';
 import Image, { type StaticImageData } from 'next/image';
+import { PAYMENT_MARK } from '@/constants/cdn';
 import visa from '@/assets/footer/pay-visa.png';
 import applePay from '@/assets/footer/pay-applepay.svg';
 import googlePay from '@/assets/footer/pay-googlepay.svg';
-import paypal from '@/assets/footer/pay-paypal.png';
-import ebay from '@/assets/footer/pay-ebay.png';
-import mastercard from '@/assets/footer/pay-mastercard.png';
-import cirrus from '@/assets/footer/pay-cirrus.png';
 import eighteenPlus from '@/assets/footer/18plus.svg';
 
 /**
@@ -22,10 +19,10 @@ const MARKS: { src: StaticImageData; label: string; w: number; h: number }[] = [
   { src: visa, label: 'Visa', w: 50, h: 31 },
   { src: applePay, label: 'Apple Pay', w: 50, h: 21 },
   { src: googlePay, label: 'Google Pay', w: 56, h: 23 },
-  { src: paypal, label: 'PayPal', w: 50, h: 31 },
-  { src: ebay, label: 'eBay', w: 50, h: 31 },
-  { src: mastercard, label: 'Mastercard', w: 50, h: 31 },
-  { src: cirrus, label: 'Cirrus', w: 50, h: 31 },
+  { src: PAYMENT_MARK.paypal, label: 'PayPal', w: 50, h: 31 },
+  { src: PAYMENT_MARK.ebay, label: 'eBay', w: 50, h: 31 },
+  { src: PAYMENT_MARK.mastercard, label: 'Mastercard', w: 50, h: 31 },
+  { src: PAYMENT_MARK.cirrus, label: 'Cirrus', w: 50, h: 31 },
 ];
 
 /** A title over its caption — used at both ends of the band. */
