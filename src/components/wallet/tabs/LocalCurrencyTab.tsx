@@ -1,8 +1,9 @@
-import { useState, type FC } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
 import { createD24Deposit } from '@/services/wallet';
+import { createD24Deposit, getD24Currencies } from '@/services/wallet';
 
 /** Currencies offered in the picker, with the English name as a fallback label. */
 const LOCAL_CURRENCIES = [
@@ -38,8 +39,35 @@ const currencyName = (code: string, fallback: string, locale: string): string =>
 const LocalCurrencyTab: FC = () => {
   const { t, locale } = useTranslation();
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currencies, setCurrencies] = useState<any[]>([]);
+  const [loadingCurrencies, setLoadingCurrencies] = useState(true);
+
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const data = await getD24Currencies();
+        const currencyList = data && data.length > 0 ? data : [
+          { code: 'BRL', name: 'Brazilian Real', min_deposit: '10', min_payout: '10', deposit_fee_percent: '0', payout_fee_percent: '1.5', precision: 2, methods: [] }
+        ];
+        setCurrencies(currencyList);
+        // Set default to first available currency
+        setCurrency(currencyList[0].code);
+      } catch (error) {
+        console.error('Failed to fetch D24 currencies:', error);
+        // Use BRL as fallback
+        setCurrencies([
+          { code: 'BRL', name: 'Brazilian Real', min_deposit: '10', min_payout: '10', deposit_fee_percent: '0', payout_fee_percent: '1.5', precision: 2, methods: [] }
+        ]);
+        setCurrency('BRL');
+      } finally {
+        setLoadingCurrencies(false);
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
 
   const handleDeposit = async () => {
     if (!amount || Number(amount) <= 0) {
@@ -113,7 +141,8 @@ const LocalCurrencyTab: FC = () => {
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
+          disabled={loadingCurrencies}
+          className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {LOCAL_CURRENCIES.map((c) => (
             <option key={c.code} value={c.code}>
@@ -127,9 +156,9 @@ const LocalCurrencyTab: FC = () => {
       <button
         type="button"
         onClick={handleDeposit}
-        disabled={loading || !amount || Number(amount) <= 0}
+        disabled={loading || loadingCurrencies || !amount || Number(amount) <= 0 || !currency}
         className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-          loading || !amount || Number(amount) <= 0
+          loading || loadingCurrencies || !amount || Number(amount) <= 0 || !currency
             ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
             : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg hover:shadow-emerald-500/30'
         }`}

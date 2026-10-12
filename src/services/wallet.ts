@@ -57,6 +57,10 @@ export const getCurrencies = () => apiService.get<Currency[]>('/wallet/currencie
 export const getCurrency = (code: string) =>
   apiService.get<Currency>(`/wallet/currencies/${encodeURIComponent(code)}`);
 
+/** Get available D24 fiat currencies */
+export const getD24Currencies = () =>
+  apiService.get<any[]>('/wallet/currencies/d24');
+
 /* ── Preferences ────────────────────────────────────────────────── */
 
 /**
