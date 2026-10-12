@@ -2,7 +2,6 @@ import { useState, useEffect, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
-import { createD24Deposit } from '@/services/wallet';
 import { createD24Deposit, getD24Currencies } from '@/services/wallet';
 
 /** Currencies offered in the picker, with the English name as a fallback label. */
@@ -41,25 +40,20 @@ const LocalCurrencyTab: FC = () => {
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currencies, setCurrencies] = useState<any[]>([]);
   const [loadingCurrencies, setLoadingCurrencies] = useState(true);
 
   useEffect(() => {
     const fetchCurrencies = async () => {
       try {
-        const data = await getD24Currencies();
-        const currencyList = data && data.length > 0 ? data : [
+        const response = await getD24Currencies();
+        const currencyList = response?.data && response.data.length > 0 ? response.data : [
           { code: 'BRL', name: 'Brazilian Real', min_deposit: '10', min_payout: '10', deposit_fee_percent: '0', payout_fee_percent: '1.5', precision: 2, methods: [] }
         ];
-        setCurrencies(currencyList);
         // Set default to first available currency
         setCurrency(currencyList[0].code);
       } catch (error) {
         console.error('Failed to fetch D24 currencies:', error);
         // Use BRL as fallback
-        setCurrencies([
-          { code: 'BRL', name: 'Brazilian Real', min_deposit: '10', min_payout: '10', deposit_fee_percent: '0', payout_fee_percent: '1.5', precision: 2, methods: [] }
-        ]);
         setCurrency('BRL');
       } finally {
         setLoadingCurrencies(false);
