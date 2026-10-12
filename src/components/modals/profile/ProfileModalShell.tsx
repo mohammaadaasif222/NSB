@@ -1,4 +1,5 @@
 import { useId, type FC, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from '@/context/I18nContext';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { CloseIcon } from '@/components/icons';
@@ -22,6 +23,11 @@ import { CloseIcon } from '@/components/icons';
  * `useModalA11y` brings what this shell never had: Tab stays inside, Escape
  * closes, focus goes back where it came from, and the page behind does not
  * scroll underneath.
+ *
+ * Portalled to <body>. The shell is opened from inside the top bar (logout,
+ * from the profile menu), and the bar's `backdrop-filter` makes it the
+ * containing block for `position: fixed` descendants — rendered in place, the
+ * overlay covered the bar alone and the dialog hung off the top of the screen.
  */
 interface ProfileModalShellProps {
   title: string;
@@ -54,9 +60,15 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
   const titleId = useId();
   const dialogRef = useModalA11y(onClose);
 
-  return (
+  // Only ever opened by a click, so this is a client render; the guard keeps
+  // a server render from reaching for `document`.
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
       onClick={onClose}
       role="presentation"
     >
@@ -114,7 +126,8 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
           {t('common.cancel')}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

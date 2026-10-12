@@ -7,7 +7,12 @@ import Image from 'next/image';
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
 import GameTile from '@/components/player/GameTile';
-import { ShelfHeading, SHELF_TRACK, ARROW_CLASS, ArrowGlyph } from '@/components/player/GameRow';
+import {
+  ShelfHeading,
+  SHELF_TRACK,
+  ARROW_CLASS,
+  ArrowGlyph,
+} from '@/components/player/ShelfHeading';
 import CountdownBar from '@/components/promotions/CountdownBar';
 import PromoTextPanel from '@/components/promotions/PromoTextPanel';
 import ReviewCard from '@/components/promotions/ReviewCard';

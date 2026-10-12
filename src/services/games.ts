@@ -1,5 +1,6 @@
 import apiService from '@/services/api';
-import type { ApiError, Game, GameDevice, GameLaunch, GameMode } from '@/types';
+import type { ShelfListQuery } from '@/constants/games';
+import type { ApiError, Game, GameDevice, GameLaunch, GameListResponse, GameMode } from '@/types';
 
 /**
  * Open a game. REAL needs the player's token (attached by apiService); DEMO
@@ -34,6 +35,23 @@ export async function launchGame(
  */
 export const currentGameDevice = (): GameDevice =>
   window.matchMedia('(max-width: 767px), (pointer: coarse)').matches ? 'MOBILE' : 'DESKTOP';
+
+/**
+ * One page of a shelf's listing, fetched in the browser as its slider nears
+ * the end of what the server rendered. The same query the shelf's "View all"
+ * page sends, so the slider and that page agree on order.
+ */
+export async function fetchShelfPage(
+  list: ShelfListQuery,
+  page: number,
+  limit: number
+): Promise<GameListResponse> {
+  const res = await apiService.get<GameListResponse>('/games', { ...list, page, limit });
+  if (!res?.success || !Array.isArray(res.data?.data) || !res.data.pagination) {
+    throw { message: res?.message || 'Could not load games' } satisfies ApiError;
+  }
+  return res.data;
+}
 
 /* ------------------------------------------------------------------ */
 /* The player's own games — both need the player's token               */

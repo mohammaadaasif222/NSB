@@ -11,8 +11,11 @@ interface ModalHeaderProps {
   /** Shows the back button when given. */
   onBack?: () => void;
   backLabel?: string;
-  /** `hero` = large bold title (first step); `compact` = one-line step title. */
-  variant?: 'hero' | 'compact';
+  /**
+   * `hero` = large bold title (first step); `compact` = one-line step title;
+   * `section` = the 24px semibold title of a short chooser (Register with).
+   */
+  variant?: 'hero' | 'compact' | 'section';
 }
 
 /**
@@ -43,7 +46,9 @@ const ModalHeader: FC<ModalHeaderProps> = ({
       className={`min-w-0 flex-1 text-center text-white ${
         variant === 'hero'
           ? 'pt-3 text-[32px] font-bold leading-tight sm:pt-5 sm:text-[40px]'
-          : 'text-base font-medium sm:text-lg'
+          : variant === 'section'
+            ? 'text-[24px] font-semibold leading-8 text-[#f0f1f5]'
+            : 'text-base font-medium sm:text-lg'
       }`}
     >
       {title}

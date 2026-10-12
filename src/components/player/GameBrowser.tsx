@@ -30,9 +30,7 @@ export const BROWSE_ANCHOR = 'browse';
 interface Props {
   /** Server-rendered shelves — the idle view, and what paints before hydration. */
   shelves: GameShelf[];
-  /** The page's query, so shelf pager links keep the other shelves' pages. */
-  query: Record<string, string>;
-  /** The route the shelves are on; their pager links are built against it. */
+  /** The route the browser is on; the provider picker keeps the URL there. */
   basePath?: string;
   /**
    * Show the search / sort / filter toolbar and the category chips. The home
@@ -65,8 +63,8 @@ export interface ShelfInsert {
  * chips over the game shelves.
  *
  * Two modes. Idle — nothing typed or picked — renders the server's shelves
- * exactly as before, which keeps their URL-based paging and means the section
- * is complete in the first HTML. As soon as any control is used it switches to
+ * as sliders, which fetch their further pages as they are slid, and means the
+ * section is complete in the first HTML. As soon as any control is used it switches to
  * a flat result grid built from the catalogue fetched in the browser, because
  * the API cannot search or sort across pages for us. The catalogue is only
  * fetched once, lazily, the first time a control is touched — an idle visitor
@@ -74,7 +72,6 @@ export interface ShelfInsert {
  */
 const GameBrowser: FC<Props> = ({
   shelves,
-  query,
   basePath = '/',
   controls = true,
   shelfKeys = LOBBY_SHELF_KEYS,
@@ -256,8 +253,7 @@ const GameBrowser: FC<Props> = ({
                 shelfKey={shelf.key}
                 page={shelf.pagination.page}
                 totalPages={shelf.pagination.totalPages}
-                query={query}
-                basePath={basePath}
+                limit={shelf.pagination.limit}
               />
               {insertsAt(shelf.key)}
             </Fragment>

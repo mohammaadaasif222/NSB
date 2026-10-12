@@ -12,6 +12,7 @@ import AuthModalFooter from '@/components/auth/AuthModalFooter';
 import MethodStep from '@/components/auth/register/MethodStep';
 import SignupFormStep from '@/components/auth/register/SignupFormStep';
 import OtpStep from '@/components/auth/register/OtpStep';
+import SocialStep from '@/components/auth/register/SocialStep';
 
 import type { TranslationKey } from '@/i18n/locales';
 import type { SignupTarget } from '@/hooks/useSignupForm';
@@ -19,6 +20,8 @@ import type { SignupMethod } from '@/types';
 
 export interface RegisterPrefill {
   method?: SignupMethod;
+  /** Open on "Register with" — the social providers — as "more option" does. */
+  social?: boolean;
   mobile?: string;
   dialCode?: string;
 }
@@ -29,7 +32,7 @@ interface RegisterModalProps {
   prefill?: RegisterPrefill;
 }
 
-type Step = 'method' | 'form' | 'otp';
+type Step = 'method' | 'social' | 'form' | 'otp';
 
 const FORM_TITLE: Record<SignupMethod, TranslationKey> = {
   mobile: 'registerModal.withMobile',
@@ -42,7 +45,9 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
   const telegram = useTelegramAuth();
 
   const initialMethod = prefill?.mobile ? 'mobile' : prefill?.method;
-  const [step, setStep] = useState<Step>(initialMethod ? 'form' : 'method');
+  const [step, setStep] = useState<Step>(
+    initialMethod ? 'form' : prefill?.social ? 'social' : 'method'
+  );
   const [method, setMethod] = useState<SignupMethod>(initialMethod ?? 'mobile');
   const [target, setTarget] = useState<SignupTarget | null>(null);
 
@@ -51,7 +56,6 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
     setMethod(next);
     setStep('form');
   };
-
 
   const handleRegistered = useCallback(
     (next: SignupTarget): void => {
@@ -71,15 +75,18 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
   const title =
     step === 'method'
       ? t('registerModal.title')
-      : step === 'form'
-        ? t(FORM_TITLE[method])
-        : t('registerModal.otpTitle');
+      : step === 'social'
+        ? t('registerModal.registerWith')
+        : step === 'form'
+          ? t(FORM_TITLE[method])
+          : t('registerModal.otpTitle');
 
   return (
     <AuthModalShell
       titleId="register-modal-title"
       title={title}
       hero={step === 'method'}
+      section={step === 'social'}
       onBack={() => setStep(step === 'otp' ? 'form' : 'method')}
       onClose={onClose}
       footer={
@@ -94,11 +101,18 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
           onGoogle={google.signIn}
           onTelegram={telegram.signIn}
           onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
+          onMore={() => setStep('social')}
           googleBusy={google.loading}
         />
       )}
+      {step === 'social' && (
+        <SocialStep
+          onTelegram={telegram.signIn}
+          onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
+        />
+      )}
 
-      {step !== 'method' && (
+      {(step === 'form' || step === 'otp') && (
         <div hidden={step === 'otp'}>
           <SignupFormStep
             key={method}
@@ -112,7 +126,7 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
 
       {step === 'otp' && target && <OtpStep target={target} onVerified={onSwitchToLogin} />}
 
-      {step !== 'otp' && (
+      {(step === 'method' || step === 'form') && (
         <p className="mx-auto mt-6 max-w-[300px] text-center text-[13px] leading-relaxed text-white/60 sm:text-[14px]">
           {t('registerModal.legal')}
         </p>

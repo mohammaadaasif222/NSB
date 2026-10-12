@@ -66,19 +66,25 @@ const AffiliatePage: FC = () => {
             so the cards scale their own type down to suit — see AffiliateStats
             — rather than the page reflowing them into a stack. A screen that
             only changes size should not also change shape. */}
+        {/* The ids are the account menu's Affiliate links (Campaign, Earning,
+            Referred Users, Terms); scroll-mt keeps each clear of the sticky bar. */}
         <div className="mt-5 grid gap-5 @4xl:grid-cols-2">
-          <AffiliateCodeCard />
-          <AffiliateStats summary={summary} />
+          <div id="campaign" className="scroll-mt-28">
+            <AffiliateCodeCard />
+          </div>
+          <div id="earning" className="scroll-mt-28">
+            <AffiliateStats summary={summary} />
+          </div>
         </div>
 
         {/* 34 down the column, not the 20 that separates the two cards above:
             the design stacks its rows further apart than it sets them side by
             side (463→497 and 1063→1096). */}
-        <div className="mt-8.5">
+        <div id="referred-users" className="mt-8.5 scroll-mt-28">
           <ReferralTable rows={rows} />
         </div>
 
-        <div className="mt-8.5">
+        <div id="terms" className="mt-8.5 scroll-mt-28">
           <AffiliateTerms />
         </div>
 

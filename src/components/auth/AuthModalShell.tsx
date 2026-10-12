@@ -9,6 +9,8 @@ interface AuthModalShellProps {
   title: string;
   /** First screen of a journey: large bold title, no back button. */
   hero?: boolean;
+  /** A short chooser step (Register with): a 24px title rather than the step size. */
+  section?: boolean;
   onBack?: () => void;
   onClose: () => void;
   /** Rendered under the body, at the card's inner padding (language + switch). */
@@ -24,6 +26,7 @@ const AuthModalShell: FC<AuthModalShellProps> = ({
   titleId,
   title,
   hero = false,
+  section = false,
   onBack,
   onClose,
   footer,
@@ -36,7 +39,7 @@ const AuthModalShell: FC<AuthModalShellProps> = ({
       <ModalHeader
         id={titleId}
         title={title}
-        variant={hero ? 'hero' : 'compact'}
+        variant={hero ? 'hero' : section ? 'section' : 'compact'}
         onClose={onClose}
         closeLabel={t('registerModal.close')}
         onBack={hero ? undefined : onBack}

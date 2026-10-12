@@ -233,7 +233,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
       )}
 
       <aside
-        className={`rl-glass-deep fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-shrink-0 flex-col rounded-none p-4 transition-[transform,width] duration-200 lg:sticky lg:top-[calc(var(--u)*20)] lg:z-auto lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-x-0 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
+        className={`rl-glass-deep fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-shrink-0 flex-col rounded-none p-4 transition-[transform,width] duration-200 lg:sticky lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-x-0 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-label={t('nav.games')}

@@ -7,7 +7,7 @@ import type { StaticImageData } from 'next/image';
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
 import GameTile from '@/components/player/GameTile';
-import { ARROW_CLASS, SHELF_TRACK } from '@/components/player/GameRow';
+import { ARROW_CLASS, SHELF_TRACK } from '@/components/player/ShelfHeading';
 import TournamentHero from '@/components/tournaments/TournamentHero';
 import TournamentSummaryHero from '@/components/tournaments/TournamentSummaryHero';
 import TournamentLeaderboard from '@/components/tournaments/TournamentLeaderboard';

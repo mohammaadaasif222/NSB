@@ -14,11 +14,16 @@ export type SportKey =
 /** What a fixture can be: a sport with a page, or esports (a chip, no tile). */
 export type FixtureSport = SportKey | 'esports';
 
-/**
- * The sportsbook's sports, in the designs' order, with their line icons.
- * The names are the designs' English, like the rest of the sports chrome.
- */
-export const SPORTS: { key: SportKey; label: string; icon: StaticImageData }[] = [
+export interface Sport {
+  key: SportKey;
+  /** The designs' English, like the rest of the sports chrome. */
+  label: string;
+  /** The sportsbook's line icon, with its colour accent. */
+  icon: StaticImageData;
+}
+
+/** The sportsbook's sports, in the designs' order. */
+export const SPORTS: Sport[] = [
   { key: 'football', label: 'Football', icon: lineFootball },
   { key: 'basketball', label: 'Basketball', icon: lineBasketball },
   { key: 'tennis', label: 'Tennis', icon: lineTennis },

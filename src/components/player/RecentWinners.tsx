@@ -1,20 +1,31 @@
-import { useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Game } from '@/types';
 import { gameHref } from '@/constants/games';
-import { SHELF_TRACK } from '@/components/player/GameRow';
+import { SHELF_TRACK } from '@/components/player/ShelfHeading';
 import avatar from '@/assets/lobby/winner-avatar.webp';
 
 /**
- * Illustrative "Recent Winners" row.
+ * Illustrative "Recent Winners" row, running as a live feed the way Rainbet's
+ * Live Wins does: twice a second a new win lands on the left — sliding in a
+ * little way and fading up — while the rest step along by one card at once,
+ * the oldest falling off the far end.
  *
- * There is no bets feed yet, so the winners are the design's sample rows,
- * paired with real games from the lobby's own shelves so each card opens a
- * game that exists. The tabs switch state but filter nothing until a feed
- * lands. English-only copy on purpose, like the other illustrative rows.
+ * There is no bets feed yet, so the wins are generated from the design's
+ * sample rows, paired with real games from the lobby's own shelves so each
+ * card opens a game that exists. The tabs switch state but filter nothing
+ * until a feed lands. English-only copy on purpose, like the other
+ * illustrative rows.
  */
-const SAMPLE: { id: string; user: string; multiplier: string; payout: string }[] = [
+interface Win {
+  id: string;
+  user: string;
+  multiplier: string;
+  payout: string;
+}
+
+const SAMPLE: Win[] = [
   { id: 'w1', user: 'Crimson Raiders', multiplier: '2.01x', payout: '0.47390026 SOL' },
   { id: 'w2', user: 'Crimson Raiders', multiplier: '2.01x', payout: '0.47390026 SOL' },
   { id: 'w3', user: 'Azure Sentinels', multiplier: '2.02x', payout: '0.52130045 SOL' },
@@ -50,8 +61,9 @@ const LiveBadge: FC = () => (
  * tiles, so the phone's 122px card is the same card scaled — with floors on
  * the text so it stays readable there.
  */
-const WinnerCard: FC<{ game: Game; win: (typeof SAMPLE)[number] }> = ({ game, win }) => (
-  <div className="@container">
+const WinnerCard: FC<{ game: Game; win: Win; fresh?: boolean }> = ({ game, win, fresh }) => (
+  // `fresh`: the card that has just arrived, which slides and fades in.
+  <div className={`@container ${fresh ? 'rl-winner-in' : ''}`}>
     <Link
       href={gameHref(game.slug)}
       title={`${win.user} won ${win.payout} on ${game.title}`}
@@ -85,6 +97,66 @@ const WinnerCard: FC<{ game: Game; win: (typeof SAMPLE)[number] }> = ({ game, wi
   </div>
 );
 
+/** A new win every this many milliseconds — Rainbet's pace, measured off its feed. */
+const FEED_INTERVAL = 500;
+/** Cards kept: the widest row shows seven; the rest are off the end. */
+const KEPT = 9;
+
+interface FeedItem {
+  key: string;
+  win: Win;
+  /** Index into the games the row was given. */
+  game: number;
+}
+
+/**
+ * The n-th generated win: a sample player on a rotating game, with a
+ * multiplier and payout that vary from one to the next. Deterministic, so a
+ * render and its re-render agree.
+ */
+const winAt = (n: number, games: number): FeedItem => {
+  // A stride coprime with the list, so consecutive wins go to different players.
+  const base = SAMPLE[(n * 3) % SAMPLE.length];
+  const multiplier = 1.5 + ((n * 37) % 250) / 100;
+  const payout = 0.2 + ((n * 7919) % 90000) / 100000;
+  return {
+    key: `feed-${n}`,
+    win: {
+      ...base,
+      id: `feed-${n}`,
+      multiplier: `${multiplier.toFixed(2)}x`,
+      payout: `${payout.toFixed(8)} SOL`,
+    },
+    game: (n * 3) % Math.max(1, games),
+  };
+};
+
+/** The row as the server renders it: the design's seven, in order. */
+const initialFeed = (games: number): FeedItem[] =>
+  SAMPLE.map((win, i) => ({ key: win.id, win, game: i % Math.max(1, games) }));
+
+/**
+ * The feed: a new win at the front every FEED_INTERVAL, held while the
+ * pointer is over the row (so a card can be clicked) and while the tab is
+ * hidden. Starts after hydration, so the first paint matches the server's.
+ */
+const useWinnerFeed = (games: number, paused: boolean): FeedItem[] => {
+  const [items, setItems] = useState<FeedItem[]>(() => initialFeed(games));
+  const next = useRef(SAMPLE.length);
+
+  useEffect(() => {
+    if (paused || games === 0) return;
+    const id = window.setInterval(() => {
+      if (document.hidden) return;
+      const item = winAt(next.current++, games);
+      setItems((current) => [item, ...current].slice(0, KEPT));
+    }, FEED_INTERVAL);
+    return () => window.clearInterval(id);
+  }, [paused, games]);
+
+  return items;
+};
+
 interface Props {
   /** Games to pair the sample winners with — any of the lobby's shelves. */
   games: Game[];
@@ -95,6 +167,8 @@ interface Props {
 const RecentWinners: FC<Props> = ({ games, tabs = 'landing' }) => {
   const labels: readonly string[] = WINNER_TABS[tabs];
   const [tab, setTab] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const items = useWinnerFeed(games.length, hovered);
 
   if (games.length === 0) {
     return null;
@@ -130,10 +204,25 @@ const RecentWinners: FC<Props> = ({ games, tabs = 'landing' }) => {
         </div>
       </div>
 
-      <div className={SHELF_TRACK}>
-        {SAMPLE.map((win, i) => (
-          <WinnerCard key={win.id} game={games[i % games.length]} win={win} />
-        ))}
+      {/* A ticker rather than a scroller: the row moves by itself, so it
+          clips instead of scrolling. The feed holds while the pointer is on
+          it, so a card stays put long enough to be clicked. */}
+      <div
+        className="overflow-hidden"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        aria-live="off"
+      >
+        <div className={`${SHELF_TRACK} !overflow-visible`}>
+          {items.map((item, i) => (
+            <WinnerCard
+              key={item.key}
+              game={games[item.game % games.length]}
+              win={item.win}
+              fresh={i === 0 && item.key.startsWith('feed-')}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
