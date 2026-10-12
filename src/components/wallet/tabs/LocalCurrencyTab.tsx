@@ -1,7 +1,7 @@
-import { useState, type FC } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { toast } from 'react-toastify';
 
-import { createD24Deposit } from '@/services/wallet';
+import { createD24Deposit, getD24Currencies } from '@/services/wallet';
 
 /**
  * Fiat (Local Currency) deposit tab - D24 Hosted Checkout.
@@ -18,8 +18,35 @@ import { createD24Deposit } from '@/services/wallet';
  */
 const LocalCurrencyTab: FC = () => {
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currencies, setCurrencies] = useState<any[]>([]);
+  const [loadingCurrencies, setLoadingCurrencies] = useState(true);
+
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const data = await getD24Currencies();
+        const currencyList = data && data.length > 0 ? data : [
+          { code: 'BRL', name: 'Brazilian Real', min_deposit: '10', min_payout: '10', deposit_fee_percent: '0', payout_fee_percent: '1.5', precision: 2, methods: [] }
+        ];
+        setCurrencies(currencyList);
+        // Set default to first available currency
+        setCurrency(currencyList[0].code);
+      } catch (error) {
+        console.error('Failed to fetch D24 currencies:', error);
+        // Use BRL as fallback
+        setCurrencies([
+          { code: 'BRL', name: 'Brazilian Real', min_deposit: '10', min_payout: '10', deposit_fee_percent: '0', payout_fee_percent: '1.5', precision: 2, methods: [] }
+        ]);
+        setCurrency('BRL');
+      } finally {
+        setLoadingCurrencies(false);
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
 
   const handleDeposit = async () => {
     if (!amount || Number(amount) <= 0) {
@@ -93,13 +120,18 @@ const LocalCurrencyTab: FC = () => {
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
+          disabled={loadingCurrencies}
+          className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <option value="USD">USD - US Dollar</option>
-          <option value="EUR">EUR - Euro</option>
-          <option value="GBP">GBP - British Pound</option>
-          <option value="INR">INR - Indian Rupee</option>
-          <option value="BRL">BRL - Brazilian Real</option>
+          {loadingCurrencies ? (
+            <option value="">Loading currencies...</option>
+          ) : (
+            currencies.map((curr) => (
+              <option key={curr.code} value={curr.code}>
+                {curr.code} - {curr.name}
+              </option>
+            ))
+          )}
         </select>
       </div>
 
@@ -107,9 +139,9 @@ const LocalCurrencyTab: FC = () => {
       <button
         type="button"
         onClick={handleDeposit}
-        disabled={loading || !amount || Number(amount) <= 0}
+        disabled={loading || loadingCurrencies || !amount || Number(amount) <= 0 || !currency}
         className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-          loading || !amount || Number(amount) <= 0
+          loading || loadingCurrencies || !amount || Number(amount) <= 0 || !currency
             ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
             : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg hover:shadow-emerald-500/30'
         }`}
@@ -127,15 +159,6 @@ const LocalCurrencyTab: FC = () => {
         )}
       </button>
 
-      {/* Info message */}
-      <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-        <div className="text-xs text-blue-200 flex gap-2">
-          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" />
-          </svg>
-          <span>You'll be redirected to D24 to complete payment. Your balance updates automatically once confirmed.</span>
-        </div>
-      </div>
     </div>
   );
 };
