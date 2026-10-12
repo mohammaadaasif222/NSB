@@ -137,7 +137,6 @@ const GameTile: FC<Props> = ({ game, shelf = false, surface }) => {
         <FavouriteHeart
           liked={isFavourite(game.id)}
           onToggle={() => toggle(game)}
-          saved
           label={game.title}
           className="-right-[0.5cqw] top-0 h-[16.16cqw] w-[16.16cqw]"
         />

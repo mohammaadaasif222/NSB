@@ -4,6 +4,7 @@ import PlayerLayout from '@/layout/PlayerLayout';
 import GameTile from '@/components/player/GameTile';
 import GoldGlow from '@/components/player/GoldGlow';
 import PageNumbers from '@/components/player/PageNumbers';
+import ProviderRow from '@/components/player/ProviderRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import SiteFooter from '@/components/player/SiteFooter';
 import {
@@ -18,7 +19,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { DESKTOP_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
 import { providersOf } from '@/services/catalogue';
 import type { TranslationKey } from '@/i18n/locales';
-import type { Game } from '@/types';
+import type { Game, LobbyProvider } from '@/types';
 
 interface Props {
   titleKey: TranslationKey;
@@ -29,6 +30,11 @@ interface Props {
   /** The player's games, in the list's own order. Null while loading. */
   games: Game[] | null;
   failed: boolean;
+  /**
+   * Studios the player has hearted, shown as their own row above the games.
+   * Favourites has them; Recents has no equivalent.
+   */
+  providers?: LobbyProvider[] | null;
   /** Real games for the Recent Winners row, rendered server-side. */
   winnerGames: Game[];
 }
@@ -56,7 +62,15 @@ const Notice: FC<{ children: ReactNode }> = ({ children }) => (
  * control answers instantly. Its own order (newest first) holds until the
  * player picks a sort.
  */
-const MyGamesPage: FC<Props> = ({ titleKey, emptyKey, surface, games, failed, winnerGames }) => {
+const MyGamesPage: FC<Props> = ({
+  titleKey,
+  emptyKey,
+  surface,
+  games,
+  failed,
+  providers: favouriteProviders,
+  winnerGames,
+}) => {
   const { t } = useTranslation();
   const { token, hydrated } = useAuth();
   const { openLogin } = useAuthModal();
@@ -165,6 +179,16 @@ const MyGamesPage: FC<Props> = ({ titleKey, emptyKey, surface, games, failed, wi
         )}
 
         <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
+          {/* Below the grid, so the toolbar above reads as the games' own. */}
+          {!!favouriteProviders?.length && (
+            <ProviderRow
+              providers={favouriteProviders}
+              basePath="/casino"
+              query={{}}
+              titleKey="favourites.providers"
+              viewAll={false}
+            />
+          )}
           <RecentWinners games={winnerGames} tabs="player" />
           <SiteFooter />
         </div>

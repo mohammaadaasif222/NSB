@@ -3,11 +3,10 @@ import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { toast } from 'react-toastify';
 
+import { SECTION_ART } from '@/constants/cdn';
 import backdrop from '@/assets/home-backdrop.webp';
 import backdropMobile from '@/assets/home-backdrop-mobile.webp';
-import casinoRoulette from '@/assets/casino-roulette.webp';
 import casinoDice from '@/assets/casino-dice.webp';
-import sportsFootball from '@/assets/sports-football.webp';
 import sportsTrophy from '@/assets/sports-trophy.webp';
 import casinoChip from '@/assets/casino-chip-mobile.webp';
 import sportsBall from '@/assets/sports-ball-mobile.webp';
@@ -264,7 +263,17 @@ const SignupTeaser: FC = () => {
 /* ==================================================================== */
 
 interface CardArt {
-  /** Desktop: the two 3D renders, placed as the design places them on its 764×152 card. */
+  /**
+   * Desktop: the two 3D renders, placed as the design places them on its
+   * 764×152 card.
+   *
+   * The box is the whole image, render and empty margin together, so it only
+   * means anything against the file it was measured from. The hero renders
+   * come from the CDN in a square frame with the render small inside it, and
+   * their boxes are the design's placement re-derived for that frame — each
+   * one scaled and shifted so the render itself lands where it did when the
+   * art was cut tight. Swapping either file means measuring again.
+   */
   hero: { src: StaticImageData; box: [x: number, y: number, w: number] };
   accent: { src: StaticImageData; box: [x: number, y: number, w: number] };
   /** Phone: the neon line-art mark, its glow baked in, hung off the right edge. */
@@ -272,7 +281,7 @@ interface CardArt {
 }
 
 const CASINO_ART: CardArt = {
-  hero: { src: casinoRoulette, box: [449, -3, 315.5] },
+  hero: { src: SECTION_ART.casino, box: [363.2, -127.3, 483.1] },
   accent: { src: casinoDice, box: [372, -52, 171.2] },
   mark: {
     src: casinoChip,
@@ -281,7 +290,7 @@ const CASINO_ART: CardArt = {
 };
 
 const SPORTS_ART: CardArt = {
-  hero: { src: sportsFootball, box: [510, 1, 252.5] },
+  hero: { src: SECTION_ART.sportsbook, box: [404.1, -105.8, 462.6] },
   accent: { src: sportsTrophy, box: [442, -48, 150.8] },
   mark: {
     src: sportsBall,
@@ -336,7 +345,7 @@ const SectionCard: FC<{
       <Image
         src={art.hero.src}
         alt=""
-        sizes="320px"
+        sizes="480px"
         className="absolute h-auto max-w-none"
         style={placed(art.hero.box)}
       />

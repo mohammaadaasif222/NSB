@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import wordmark from '@/assets/lobby/footer/logo.webp';
+import { ROLLUCK_LOGO as wordmark } from '@/constants/cdn';
 import menuGlyph from '@/assets/lobby/rail/bar-menu.svg';
 import searchGlyph from '@/assets/lobby/rail/bar-search.svg';
 import walletGlyph from '@/assets/lobby/rail/bar-wallet.svg';

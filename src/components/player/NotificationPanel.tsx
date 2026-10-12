@@ -7,7 +7,7 @@ import { BellIcon } from '@/components/icons';
 import type { TranslationKey } from '@/i18n/locales';
 import gearIcon from '@/assets/lobby/profile-menu/gear.svg';
 import chevronLeft from '@/assets/lobby/chevron-left.svg';
-import noticeArt from '@/assets/lobby/casino/banner.webp';
+import { LOBBY_BANNER as noticeArt } from '@/constants/cdn';
 
 /**
  * Notification centre.

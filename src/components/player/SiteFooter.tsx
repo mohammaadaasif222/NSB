@@ -7,7 +7,7 @@ import { categoryHref } from '@/constants/games';
 import LanguagePicker from '@/components/LanguagePicker';
 import type { TranslationKey } from '@/i18n/locales';
 
-import logo from '@/assets/lobby/footer/logo.webp';
+import { PAYMENT_MARK, ROLLUCK_LOGO } from '@/constants/cdn';
 import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
 import instagram from '@/assets/lobby/footer/social-instagram.svg';
 import facebook from '@/assets/lobby/footer/social-facebook.svg';
@@ -22,10 +22,6 @@ import badge18 from '@/assets/lobby/footer/badge-18.svg';
 import payVisa from '@/assets/lobby/footer/pay-visa.webp';
 import payApple from '@/assets/lobby/footer/pay-applepay.svg';
 import payGoogle from '@/assets/lobby/footer/pay-googlepay.svg';
-import payPaypal from '@/assets/lobby/footer/pay-paypal.webp';
-import payEbay from '@/assets/lobby/footer/pay-ebay.webp';
-import payMastercard from '@/assets/lobby/footer/pay-mastercard.webp';
-import payCirrus from '@/assets/lobby/footer/pay-cirrus.webp';
 import chevronDown from '@/assets/lobby/faq-chevron-down.svg';
 
 const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
@@ -47,10 +43,10 @@ const PAYMENTS: { mark: StaticImageData; label: string }[] = [
   { mark: payVisa, label: 'Visa' },
   { mark: payApple, label: 'Apple Pay' },
   { mark: payGoogle, label: 'Google Pay' },
-  { mark: payPaypal, label: 'PayPal' },
-  { mark: payEbay, label: 'eBay' },
-  { mark: payMastercard, label: 'Mastercard' },
-  { mark: payCirrus, label: 'Cirrus' },
+  { mark: PAYMENT_MARK.paypal, label: 'PayPal' },
+  { mark: PAYMENT_MARK.ebay, label: 'eBay' },
+  { mark: PAYMENT_MARK.mastercard, label: 'Mastercard' },
+  { mark: PAYMENT_MARK.cirrus, label: 'Cirrus' },
 ];
 
 /** The design's small dark glass disc, behind the socials, contacts and controls. */
@@ -285,7 +281,7 @@ const SiteFooter: FC = () => {
           aria-label="ROLLUCK"
           className="order-2 w-[calc(var(--u)*351)] max-w-full lg:order-1 lg:w-[calc(var(--u)*440)]"
         >
-          <Image src={logo} alt="ROLLUCK" sizes="440px" className="h-auto w-full" />
+          <Image src={ROLLUCK_LOGO} alt="ROLLUCK" sizes="440px" className="h-auto w-full" />
         </Link>
 
         <div className="order-3 flex items-center gap-[calc(var(--u)*12)] lg:order-2">
