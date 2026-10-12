@@ -1,6 +1,7 @@
 import { useId, useState, type FC, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import { categoryHref } from '@/constants/games';
+import SelectGameModal from '@/components/player/SelectGameModal';
 import { useTranslation } from '@/context/I18nContext';
 import chevronSmall from '@/assets/lobby/chevron-small.svg';
 import clearIcon from '@/assets/lobby/clear-x.svg';
@@ -145,6 +146,7 @@ const CrashPreview: FC = () => {
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [betAmount, setBetAmount] = useState('0.00100000');
   const [autoCashout, setAutoCashout] = useState('2.00');
+  const [picking, setPicking] = useState(false);
 
   const bet = Number.parseFloat(betAmount) || 0;
   const multiplier = Number.parseFloat(autoCashout) || 0;
@@ -159,9 +161,12 @@ const CrashPreview: FC = () => {
       {/* --- Chart side ------------------------------------------------- */}
       <div className="relative flex flex-col">
         <div className="flex flex-wrap items-center justify-between gap-x-[calc(var(--u)*17)] gap-y-[calc(var(--u)*15)] px-[calc(var(--u)*16)] pt-[calc(var(--u)*20)] lg:flex-nowrap lg:justify-start lg:px-[calc(var(--u)*30)] lg:pt-[calc(var(--u)*27)]">
+          {/* The game picker: Select Game, over the page. */}
           <button
             type="button"
-            onClick={play}
+            onClick={() => setPicking(true)}
+            aria-haspopup="dialog"
+            aria-expanded={picking}
             className="flex h-[calc(var(--u)*50)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*12.5)] border border-white/[0.07] bg-[#1b1d28] px-[calc(var(--u)*15)] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f5f6f9] transition-colors hover:bg-[#232634]"
           >
             Crash
@@ -299,6 +304,8 @@ const CrashPreview: FC = () => {
           <Summary label={t('lobby.crash.networkFee')} value={`${btc(NETWORK_FEE)} BTC`} />
         </div>
       </div>
+
+      <SelectGameModal open={picking} onClose={() => setPicking(false)} />
     </section>
   );
 };

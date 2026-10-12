@@ -2,17 +2,15 @@ import { useEffect, useState, type FC } from 'react';
 import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import type { TranslationKey } from '@/i18n/locales';
+import GlassDialog from '@/components/ui/GlassDialog';
+import WalletTabBar from './shared/WalletTabBar';
 import DepositTab from './tabs/DepositTab';
 import WithdrawTab from './tabs/WithdrawTab';
 import BuyCryptoTab from './tabs/BuyCryptoTab';
-import ComingSoonTab from './tabs/ComingSoonTab';
+import TipTab from './tabs/TipTab';
+import RedeemTab from './tabs/RedeemTab';
 
-/**
- * Tabs the wallet modal exposes. Deposit and Withdraw are wired; the rest
- * are placeholders that render a ComingSoon panel — kept in the tab list
- * so the modal matches the design and so the routing logic doesn't have
- * to change when one lands.
- */
+/** The wallet modal's sections, in the design's order. */
 type WalletTab = 'deposit' | 'withdraw' | 'buy' | 'tip' | 'redeem';
 
 interface Props {
@@ -29,15 +27,23 @@ const TABS: Array<{ id: WalletTab; label: TranslationKey }> = [
   { id: 'redeem', label: 'acct.wallet.tabRedeem' },
 ];
 
+const TITLE_ID = 'wallet-modal-title';
+
 /**
- * The wallet modal that opens from the header.
+ * The wallet modal that opens from the header, drawn as the design's 581px
+ * glass dialog — at the page's scale, so it keeps the design's proportions on
+ * a laptop: "Wallet" between nothing and the close button, the sections as
+ * chips, then the section itself. Tip and Redeem fill the design's 545px card;
+ * the longer sections grow it.
  *
  * Owns:
  *   • polling lifecycle — while the modal is open the WalletContext
  *     re-fetches summary every 15s so a confirmed deposit lands without
  *     a manual reload.
- *   • escape-to-close and body-scroll-lock while shown.
  *   • which tab is active — starts on `initialTab`, defaults to Deposit.
+ *
+ * The card, its scale, Escape, outside-click, focus and the scroll lock are
+ * GlassDialog's.
  */
 const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
   const { beginPolling, endPolling } = useWallet();
@@ -45,96 +51,39 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
   const [active, setActive] = useState<WalletTab>(initialTab);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return undefined;
     setActive(initialTab);
     beginPolling();
-
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-      endPolling();
-    };
-  }, [open, initialTab, beginPolling, endPolling, onClose]);
-
-  if (!open) return null;
+    return endPolling;
+  }, [open, initialTab, beginPolling, endPolling]);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('profile.wallet')}
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 backdrop-blur-sm pt-16 px-4 overflow-y-auto"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+    <GlassDialog
+      open={open}
+      onClose={onClose}
+      titleId={TITLE_ID}
+      title={t('profile.wallet')}
+      titleVariant="title"
+      // The design's 28 / 20 / 36 insets, less the rim's pixel.
+      className="max-w-[581px] px-4 pb-6 pt-4 sm:min-h-[545px] sm:px-[27px] sm:pb-[35px] sm:pt-[19px]"
     >
-      <div className="rl-modal-glass w-full max-w-lg overflow-hidden">
-        {/* Header + close */}
-        <div className="flex items-center justify-between gap-3 px-4 pt-4">
-          <h2 className="rl-h-card min-w-0 truncate text-[#f0f1f5]">{t('acct.wallet.total')}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('common.close')}
-            className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Tab bar */}
-        <div className="mt-3 px-4">
-          <div className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-white/8">
-            {TABS.map((tab) => {
-              const isActive = active === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setActive(tab.id)}
-                  className={`relative px-3 pb-2 pt-1 text-xs font-semibold whitespace-nowrap transition-colors ${
-                    isActive ? 'text-[#f0f1f5]' : 'text-[#9da2b4] hover:text-[#f0f1f5]'
-                  }`}
-                >
-                  {t(tab.label)}
-                  {isActive && (
-                    <span className="absolute inset-x-0 -bottom-px h-0.5 bg-white rounded-full" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Tab content */}
-        <div className="p-4">
-          {active === 'deposit' && <DepositTab onLeave={onClose} />}
-          {active === 'withdraw' && <WithdrawTab onLeave={onClose} />}
-          {active === 'buy' && <BuyCryptoTab />}
-          {active === 'tip' && <ComingSoonTab title={t('acct.wallet.tabTip')} />}
-          {active === 'redeem' && <ComingSoonTab title={t('acct.wallet.tabRedeem')} />}
-        </div>
+      <div className="mt-4 sm:mt-[17px]">
+        <WalletTabBar
+          tabs={TABS.map((tab) => ({ id: tab.id, label: t(tab.label) }))}
+          active={active}
+          onChange={setActive}
+          label={t('profile.wallet')}
+        />
       </div>
-    </div>
+
+      <div role="tabpanel" className="relative z-10 pt-6 sm:pt-[31px]">
+        {active === 'deposit' && <DepositTab onLeave={onClose} />}
+        {active === 'withdraw' && <WithdrawTab onLeave={onClose} />}
+        {active === 'buy' && <BuyCryptoTab />}
+        {active === 'tip' && <TipTab />}
+        {active === 'redeem' && <RedeemTab />}
+      </div>
+    </GlassDialog>
   );
 };
 

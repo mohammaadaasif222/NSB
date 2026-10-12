@@ -29,6 +29,7 @@ import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
 import { CoinIcon, HandshakeIcon } from '@/components/icons';
+import SuggestionModal from '@/components/suggestion/SuggestionModal';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -166,23 +167,49 @@ const RailLink: FC<RailLinkProps> = ({
 };
 
 /** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
+const RAIL_BUTTON =
+  'flex h-[calc(var(--u)*44)] w-full items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
+
+/** A contact pill at the rail's foot: a link out, or a button for a dialog. */
 const RailButton: FC<{
   icon: StaticImageData;
   label: string;
-  href: string;
   collapsed: boolean;
-}> = ({ icon, label, href, collapsed }) => (
-  <a
-    href={href}
-    target={href.startsWith('http') ? '_blank' : undefined}
-    rel={href.startsWith('http') ? 'noreferrer' : undefined}
-    title={label}
-    className="flex h-[calc(var(--u)*44)] items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white"
-  >
-    <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
-    <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
-  </a>
-);
+  href?: string;
+  onClick?: () => void;
+}> = ({ icon, label, collapsed, href, onClick }) => {
+  const body = (
+    <>
+      <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
+      <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        title={label}
+        aria-haspopup="dialog"
+        className={RAIL_BUTTON}
+      >
+        {body}
+      </button>
+    );
+  }
+  return (
+    <a
+      href={href}
+      target={href?.startsWith('http') ? '_blank' : undefined}
+      rel={href?.startsWith('http') ? 'noreferrer' : undefined}
+      title={label}
+      className={RAIL_BUTTON}
+    >
+      {body}
+    </a>
+  );
+};
 
 const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
   { icon: whatsapp, label: 'WhatsApp', href: 'https://wa.me/' },
@@ -216,6 +243,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
+  const [suggesting, setSuggesting] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
 
   const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
@@ -477,7 +505,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             <RailButton
               icon={suggestionIcon}
               label={t('lobby.rail.suggestionBox')}
-              href="mailto:support@rolluck.com?subject=Suggestion"
+              onClick={() => setSuggesting(true)}
               collapsed={collapsed}
             />
           </div>
@@ -494,6 +522,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           }}
         />
       )}
+      <SuggestionModal open={suggesting} onClose={() => setSuggesting(false)} />
     </>
   );
 };

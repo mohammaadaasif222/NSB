@@ -1660,6 +1660,17 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+/* A scroller with no visible bar — the dialogs' grids and chip rows. Still
+   scrolls by wheel, touch and keyboard. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility rl-shelf {
   overflow-x: auto;
   scroll-behavior: smooth;
@@ -1713,6 +1724,32 @@ html:not([data-theme='dark']) .border-blue-600 {
     background: radial-gradient(55% 32% at 50% 102%, rgba(214, 44, 44, 0.3), transparent 70%);
     pointer-events: none;
   }
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(18, 19, 23, 0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* The design's "Liquid Glass – Regular" as its dialogs draw it (the wallet):
+   nearly all blur, a hairline rim, and the depth inside the pane rather than
+   under it — shaded along the top and start edges, catching light along the
+   bottom and end. Measured off the design's render: no shadow falls outside.
+   `--dialog-fill` tints the pane — the suggestion box's is a lighter grey. */
+@utility rl-dialog-glass {
+  position: relative;
+  border-radius: 34px;
+  background: var(--dialog-fill, rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  backdrop-filter: blur(40px) saturate(140%);
+  box-shadow:
+    inset 8px 8px 16px rgba(0, 0, 0, 0.45),
+    inset -8px -8px 16px rgba(255, 255, 255, 0.045);
+  animation: auth-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: rgba(18, 19, 23, 0.98);
