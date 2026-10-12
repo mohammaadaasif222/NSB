@@ -83,7 +83,7 @@ const SectionTile: FC<{
       alt=""
       className="absolute left-1/2 top-[calc(var(--u)*-18)] hidden h-[calc(var(--u)*169)] w-[calc(var(--u)*169)] max-w-none -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-1 lg:block"
     />
-    <span className="mt-auto pb-3 text-[18px] leading-7 text-[#f0f1f5] lg:pb-[calc(var(--u)*16)] lg:text-[length:max(min(11px,18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
+    <span className="mt-auto pb-3 text-[18px] leading-7 text-[#f0f1f5] lg:pb-[calc(var(--u)*16)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
       {label}
     </span>
   </Link>
@@ -107,7 +107,7 @@ const Odometer: FC<{ value: number }> = ({ value }) => {
       aria-label={`$${value}`}
     >
       <span
-        className={`${cell} w-[calc(var(--u)*50)] text-[length:max(min(11px,36px),calc(var(--u)*36))] leading-[calc(var(--u)*44)] tracking-[-0.02em]`}
+        className={`${cell} w-[calc(var(--u)*50)] text-[length:max(min(var(--tf,11px),36px),calc(var(--u)*36))] leading-[calc(var(--u)*44)] tracking-[-0.02em]`}
       >
         $
       </span>
@@ -115,7 +115,7 @@ const Odometer: FC<{ value: number }> = ({ value }) => {
         <span
           // Positional digits: the index is their identity.
           key={i}
-          className={`${cell} flex-1 text-[length:max(min(11px,48px),calc(var(--u)*48))] leading-[calc(var(--u)*52)] tracking-[-0.02em]`}
+          className={`${cell} flex-1 text-[length:max(min(var(--tf,11px),48px),calc(var(--u)*48))] leading-[calc(var(--u)*52)] tracking-[-0.02em]`}
         >
           {d}
         </span>
@@ -143,7 +143,7 @@ const ProgressBar: FC<{ percent: number; label: string }> = ({ percent, label })
 
 /** A pale pill under the progress: "$350 remaining to unlock your bonus". */
 const RemainingPill: FC<{ children: ReactNode }> = ({ children }) => (
-  <span className="inline-flex h-[38px] items-center rounded-[24px] bg-white/10 px-[38px] text-[12px] leading-5 text-white lg:h-[calc(var(--u)*34)] lg:rounded-[calc(var(--u)*24)] lg:px-[calc(var(--u)*18)] lg:text-[length:max(min(11px,12px),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
+  <span className="inline-flex h-[38px] items-center rounded-[24px] bg-white/10 px-[38px] text-[12px] leading-5 text-white lg:h-[calc(var(--u)*34)] lg:rounded-[calc(var(--u)*24)] lg:px-[calc(var(--u)*18)] lg:text-[length:max(min(var(--tf,11px),12px),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
     {children}
   </span>
 );
@@ -172,7 +172,7 @@ const PlayerPanel: FC = () => {
       <div className="flex flex-col items-center px-[15px] pt-5 lg:h-[calc(var(--u)*212)] lg:flex-row lg:items-start lg:justify-between lg:px-[calc(var(--u)*20)] lg:pl-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*20)]">
         <div className="flex flex-col items-center gap-px lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">
           <Avatar ringed />
-          <span className="max-w-[calc(var(--u)*140)] truncate text-[18px] font-medium leading-7 text-white lg:text-[length:max(min(11px,18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
+          <span className="max-w-[calc(var(--u)*140)] truncate text-[18px] font-medium leading-7 text-white lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
             {name}
           </span>
         </div>
@@ -197,17 +197,17 @@ const PlayerPanel: FC = () => {
       <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[21px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*17)]">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-[calc(var(--u)*4)]">
-            <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
+            <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
               {t('dash.wageringProgress')}
             </span>
-            <span className="hidden h-[calc(var(--u)*16)] items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[calc(var(--u)*5)] text-[length:max(min(11px,10px),calc(var(--u)*10))] leading-none text-[#03b739] lg:inline-flex">
+            <span className="hidden h-[calc(var(--u)*16)] items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[calc(var(--u)*5)] text-[length:max(min(var(--tf,11px),10px),calc(var(--u)*10))] leading-none text-[#03b739] lg:inline-flex">
               {percent}%
             </span>
           </span>
           <span className="text-[12px] font-medium leading-5 text-white lg:hidden">
             {t('dash.percentComplete', { percent })}
           </span>
-          <span className="hidden text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
+          <span className="hidden text-[length:max(min(var(--tf,11px),12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
             {t('dash.wagered', { amount: usd(wagered, locale) })}
           </span>
         </div>
