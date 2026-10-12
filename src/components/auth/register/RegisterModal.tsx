@@ -1,7 +1,10 @@
 import { useCallback, useState, type FC } from 'react';
+import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 
+import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { isPlayerToken } from '@/lib/session';
 import { analytics } from '@/services/analytics';
 import { ANALYTICS_SIGNUP_METHOD } from '@/constants/auth';
 import { trackSignupComplete } from '@/utils/events';
@@ -41,6 +44,8 @@ const FORM_TITLE: Record<SignupMethod, TranslationKey> = {
 
 const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefill }) => {
   const { t } = useTranslation();
+  const { login } = useAuth();
+  const router = useRouter();
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
 
@@ -57,19 +62,32 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
     setStep('form');
   };
 
+  const finishSignup = useCallback(
+    (token?: string): void => {
+      if (!isPlayerToken(token)) {
+        onSwitchToLogin();
+        return;
+      }
+
+      login(token);
+      if (router.pathname !== '/') void router.push('/');
+    },
+    [login, onSwitchToLogin, router]
+  );
+
   const handleRegistered = useCallback(
     (next: SignupTarget): void => {
       if (!next.otpRequired) {
         trackSignupComplete(ANALYTICS_SIGNUP_METHOD[next.method]);
         toast.success(t('registerModal.created'));
-        onSwitchToLogin();
+        finishSignup(next.token);
         return;
       }
 
       setTarget(next);
       setStep('otp');
     },
-    [onSwitchToLogin, t]
+    [finishSignup, t]
   );
 
   const title =
@@ -124,7 +142,7 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
         </div>
       )}
 
-      {step === 'otp' && target && <OtpStep target={target} onVerified={onSwitchToLogin} />}
+      {step === 'otp' && target && <OtpStep target={target} onVerified={finishSignup} />}
 
       {(step === 'method' || step === 'form') && (
         <p className="mx-auto mt-6 max-w-[300px] text-center text-[13px] leading-relaxed text-white/60 sm:text-[14px]">
