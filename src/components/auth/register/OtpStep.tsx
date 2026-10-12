@@ -13,7 +13,7 @@ import type { SignupTarget } from '@/hooks/useSignupForm';
 
 interface OtpStepProps {
   target: SignupTarget;
-  onVerified: () => void;
+  onVerified: (token?: string) => void;
 }
 
 /** Confirms the code sent to the new account's email or mobile. */
@@ -38,7 +38,7 @@ const OtpStep: FC<OtpStepProps> = ({ target, onVerified }) => {
         // The real end of the funnel: the account is confirmed and usable.
         trackSignupComplete(ANALYTICS_SIGNUP_METHOD[target.method]);
         toast.success(t('otp.verified'));
-        onVerified();
+        onVerified(res.data?.token);
         return true;
       }
       analytics.auth.otpFailed('sign_up', failureReason(res?.message));
