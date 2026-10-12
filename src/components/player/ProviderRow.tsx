@@ -15,7 +15,7 @@ import bgaming from '@/assets/providers/bgaming.svg';
 import hacksawGaming from '@/assets/providers/hacksaw-gaming.svg';
 import thunderkick from '@/assets/providers/thunderkick.svg';
 import nolimitCity from '@/assets/providers/nolimit-city.svg';
-import rolluck from '@/assets/lobby/footer/logo.webp';
+import { ROLLUCK_LOGO as rolluck } from '@/constants/cdn';
 
 /**
  * The design's own studio logos, keyed by provider slug — the fallback when

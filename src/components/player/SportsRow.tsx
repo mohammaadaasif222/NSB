@@ -7,6 +7,9 @@ import ScrollShelf from '@/components/player/ScrollShelf';
 import leagueIcon from '@/assets/lobby/league-soccer.svg';
 import crestBayern from '@/assets/lobby/crest-bayern.webp';
 import crestUnion from '@/assets/lobby/crest-union-berlin.webp';
+// Bundled rather than on the CDN: the renders are cut out, and the CDN's
+// copies are JPEGs flattened onto black, which shows as a square behind each
+// one on the glass tile.
 import soccer from '@/assets/lobby/sports/soccer.webp';
 import basketball from '@/assets/lobby/sports/basketball.webp';
 import football from '@/assets/lobby/sports/football.webp';
