@@ -13,6 +13,7 @@ import SecuritySection from '@/components/profile/SecuritySection';
 import VerificationSection from '@/components/profile/VerificationSection';
 import TransactionsSection from '@/components/profile/TransactionsSection';
 import HelpCentreSection from '@/components/profile/HelpCentreSection';
+import ChangeAvatarModal from '@/components/modals/profile/ChangeAvatarModal';
 import ChangeEmailModal from '@/components/modals/profile/ChangeEmailModal';
 import ChangeUsernameModal from '@/components/modals/profile/ChangeUsernameModal';
 import ChangeTimezoneModal from '@/components/modals/profile/ChangeTimezoneModal';
@@ -29,7 +30,7 @@ import { DEFAULT_TIMEZONE } from '@/types/profile';
  * and it stays reachable from the top bar and the lobby rail, which own their
  * own copy of the modal.
  */
-type ActiveModal = 'email' | 'username' | 'timezone' | 'password' | '2fa' | null;
+type ActiveModal = 'avatar' | 'email' | 'username' | 'timezone' | 'password' | '2fa' | null;
 
 /**
  * The account area: a section nav beside one panel of settings.
@@ -82,7 +83,13 @@ const ProfilePage: FC = () => {
 
     switch (section) {
       case 'profile':
-        return <ProfileSection me={me} onToggle2FA={() => setActiveModal('2fa')} />;
+        return (
+          <ProfileSection
+            me={me}
+            onToggle2FA={() => setActiveModal('2fa')}
+            onChangeAvatar={() => setActiveModal('avatar')}
+          />
+        );
       case 'statistic':
         return <StatisticSection />;
       case 'preferences':
@@ -190,6 +197,14 @@ const ProfilePage: FC = () => {
           </button>
         </div>
       </div>
+
+      {me && activeModal === 'avatar' && (
+        <ChangeAvatarModal
+          currentAvatarUrl={me.avatar_url ?? null}
+          onClose={closeModal}
+          onSaved={(avatar_url) => updateMe({ avatar_url })}
+        />
+      )}
 
       {me && activeModal === 'email' && (
         <ChangeEmailModal

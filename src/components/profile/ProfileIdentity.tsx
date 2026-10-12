@@ -5,18 +5,17 @@ import { CameraIcon } from '@/components/icons';
 
 interface Props {
   me: ApiUser;
+  onChangeAvatar: () => void;
 }
 
-/** The avatar, display name and account number at the top of the Profile tab. */
-const ProfileIdentity: FC<Props> = ({ me }) => {
+const ProfileIdentity: FC<Props> = ({ me, onChangeAvatar }) => {
   const { t } = useTranslation();
   const name = me.display_name || fullNameOf(me) || me.username || t('account.account');
 
   return (
     <div className="flex flex-col items-center text-center">
       <div className="relative">
-        {/* 137 across in the design, in `--u` so it comes down with the panel
-            around it rather than staying a 137px disc on a laptop. */}
+       
         {me.avatar_url ? (
           <img
             src={me.avatar_url}
@@ -29,28 +28,18 @@ const ProfileIdentity: FC<Props> = ({ me }) => {
           </span>
         )}
 
-        {/* NOT WIRED. There is no avatar upload endpoint, so the camera badge
-            is shown — the design leans on it to explain the avatar — but it
-            does nothing rather than opening a picker it cannot submit.
-
-            The design builds this disc from the same frosted stack as the
-            account rail, but that stack darkens what is behind it through a
-            colour-burn pass, and a CSS blend cannot reach the photo from
-            inside a layer that is itself faded. Flattened to the black wash it
-            resolves to — the stack works out to roughly 0.61× whatever it
-            covers, which is black at 39% — so it reads correctly over a bright
-            portrait and a dark one alike. */}
-        <span
-          title={t('common.soon')}
-          aria-label={`${t('profile.editAvatar')} — ${t('common.soon')}`}
-          className="absolute end-[calc(var(--u)*5)] -bottom-[calc(var(--u)*7)] flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] cursor-default items-center justify-center rounded-full bg-black/39 text-[#f0f1f5] shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+        <button
+          type="button"
+          onClick={onChangeAvatar}
+          aria-label={t('profile.editAvatar')}
+          className="absolute end-[calc(var(--u)*5)] -bottom-[calc(var(--u)*7)] flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rounded-full bg-black/39 text-[#f0f1f5] shadow-[0_8px_40px_rgba(0,0,0,0.12)] transition-colors hover:bg-black/55 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
         >
           <CameraIcon
             size={24}
             strokeWidth={1.5}
             className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
           />
-        </span>
+        </button>
       </div>
 
       {/* Onest SemiBold 20/28 at −0.4, per the design's own H6 style. */}
