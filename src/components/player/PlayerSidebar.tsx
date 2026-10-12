@@ -30,7 +30,6 @@ import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
 import { CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
-import { inlineAssetUrl } from '@/lib/publicAssets';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
