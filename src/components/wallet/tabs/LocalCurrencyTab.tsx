@@ -1,4 +1,5 @@
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, useRef, type FC } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
@@ -28,6 +29,8 @@ const LocalCurrencyTab: FC = () => {
   const [loadingMethods, setLoadingMethods] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showAmountInput, setShowAmountInput] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Fetch enabled display currencies
   useEffect(() => {
@@ -89,6 +92,37 @@ const LocalCurrencyTab: FC = () => {
     fetchPaymentMethods();
   }, [currency, displayCurrencies]);
 
+  // Listen for iframe messages (D24 payment completion)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Verify origin (only for production, can be more permissive for dev)
+      if (event.origin.includes('checkoutogate.com') || event.origin.includes('localhost')) {
+        const data = event.data;
+
+        if (data?.type === 'payment_success' || data?.status === 'success') {
+          console.log('[D24] Payment successful:', data);
+          toast.success(t('acct.wallet.depositSuccess'));
+          // Close checkout and reset
+          setCheckoutUrl(null);
+          setShowAmountInput(false);
+          setSelectedMethod(null);
+          setAmount('');
+        } else if (data?.type === 'payment_error' || data?.status === 'error') {
+          console.error('[D24] Payment error:', data);
+          toast.error(data?.message || 'Payment failed');
+        } else if (data?.type === 'payment_cancelled' || data?.status === 'cancelled') {
+          console.log('[D24] Payment cancelled');
+          setCheckoutUrl(null);
+        }
+      }
+    };
+
+    if (checkoutUrl) {
+      window.addEventListener('message', handleMessage);
+      return () => window.removeEventListener('message', handleMessage);
+    }
+  }, [checkoutUrl, t]);
+
   // Show amount input only for D24 payment methods
   const handleMethodSelect = (methodCode: string) => {
     const selectedMethodInfo = paymentMethods.find((m) => m.code === methodCode);
@@ -117,11 +151,12 @@ const LocalCurrencyTab: FC = () => {
     toast.info(`${methodInfo.name} provider will be implemented soon`);
   };
 
-  // Go back to currency/method selection
+  // Go back to currency/method selection or from checkout
   const handleGoBack = () => {
     setShowAmountInput(false);
     setSelectedMethod(null);
     setAmount('');
+    setCheckoutUrl(null);
   };
 
   // Deposit API call (triggered by deposit button, not automatic)
@@ -151,17 +186,24 @@ const LocalCurrencyTab: FC = () => {
       });
 
       console.log('[D24] Response received:', res);
-      console.log('[D24] Full data:', JSON.stringify(res?.data));
+      console.log('[D24] Full response:', JSON.stringify(res, null, 2));
+      console.log('[D24] Response data:', JSON.stringify(res?.data, null, 2));
 
-      // D24 API response can have nested data structure: res.data.data.address or res.data.address
-      const redirectUrl = res?.data?.data?.address || res?.data?.address;
+      // D24 API response can have nested data structure
+      const responseData = res?.data?.data || res?.data;
+      console.log('[D24] Extracted responseData:', JSON.stringify(responseData, null, 2));
 
-      if (redirectUrl) {
-        console.log('[D24] Redirecting to:', redirectUrl);
-        // Redirect to D24 hosted checkout page
-        window.location.href = redirectUrl;
+      const checkoutAddress = responseData?.address;
+      console.log('[D24] Checkout address:', checkoutAddress);
+      console.log('[D24] All response fields:', Object.keys(responseData || {}));
+
+      if (checkoutAddress) {
+        console.log('[D24] Showing embedded checkout in iframe');
+        // Show checkout in iframe
+        setCheckoutUrl(checkoutAddress);
+        setShowAmountInput(false); // Hide form when showing checkout
       } else {
-        console.error('[D24] No redirect URL in response. Data:', res?.data);
+        console.error('[D24] No checkout URL in response. Full response:', res?.data);
         toast.error(t('acct.wallet.depositNoUrl'));
       }
     } catch (err: unknown) {
@@ -179,6 +221,58 @@ const LocalCurrencyTab: FC = () => {
   const getSelectedMethodInfo = () => {
     return paymentMethods.find((m) => m.code === selectedMethod);
   };
+
+  // Render checkout in portal (separate from wallet modal) - Responsive for mobile, tablet, desktop
+  const checkoutPortal = checkoutUrl && createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center overflow-hidden p-2 sm:p-4">
+      {/* Modal container - Responsive width and height */}
+      <div className="relative w-full h-full sm:h-[85vh] md:h-[80vh] md:w-[80vw] lg:w-[64vw] bg-slate-900 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-full">
+        {/* Close button - Responsive size */}
+        <button
+          onClick={handleGoBack}
+          disabled={loading}
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-slate-300 hover:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-slate-800/80 hover:bg-slate-700 p-1.5 sm:p-2 rounded-lg"
+        >
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* iframe - no scrollbar */}
+        <iframe
+          ref={iframeRef}
+          src={checkoutUrl}
+          className="w-full h-full border-0 overflow-hidden"
+          title="D24 Payment Checkout"
+          allow="payment"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        />
+
+        {/* Loading overlay */}
+        {loading && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
+            <div className="text-center">
+              <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <p className="text-sm text-slate-300 mt-2">{t('acct.buy.processing')}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  );
+
+  if (checkoutUrl) {
+    return checkoutPortal;
+  }
 
   return (
     <div className="space-y-4">
@@ -372,22 +466,6 @@ const LocalCurrencyTab: FC = () => {
           >
             Back
           </button>
-        </div>
-      )}
-
-      {loading && (
-        <div className="flex justify-center py-6">
-          <div className="text-center">
-            <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            <p className="text-sm text-slate-400">{t('acct.buy.processing')}</p>
-          </div>
         </div>
       )}
     </div>
