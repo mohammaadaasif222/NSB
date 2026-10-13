@@ -4,20 +4,6 @@ import { toast } from 'react-toastify';
 import { useTranslation } from '@/context/I18nContext';
 import { createD24Deposit, getDisplayCurrencies, getD24PaymentMethods } from '@/services/wallet';
 
-// Map display currency codes to country codes for D24
-const CURRENCY_TO_COUNTRY: Record<string, string> = {
-  USD: 'US',
-  EUR: 'DE',
-  GBP: 'GB',
-  INR: 'IN',
-  BRL: 'BR',
-  JPY: 'JP',
-  AUD: 'AU',
-  CAD: 'CA',
-  CHF: 'CH',
-  CNY: 'CN',
-};
-
 /**
  * Fiat (Local Currency) deposit tab - D24 Hosted Checkout.
  *
@@ -76,7 +62,10 @@ const LocalCurrencyTab: FC = () => {
       setSelectedMethod(null);
 
       try {
-        const countryCode = CURRENCY_TO_COUNTRY[currency] || 'BR';
+        // Get country code from display currency data
+        const selectedCurrency = displayCurrencies.find((c) => c.code === currency);
+        const countryCode = selectedCurrency?.country_code || 'BR';
+
         const response = await getD24PaymentMethods(countryCode);
 
         // API returns { success, data: { success, data: [...] }, message, timestamp }
@@ -84,7 +73,7 @@ const LocalCurrencyTab: FC = () => {
 
         if (Array.isArray(methods) && methods.length > 0) {
           setPaymentMethods(methods);
-          setSelectedMethod(methods[0].code);
+          // Don't auto-select - user must manually choose a payment method
         } else {
           setPaymentMethods([]);
         }
@@ -97,7 +86,7 @@ const LocalCurrencyTab: FC = () => {
     };
 
     fetchPaymentMethods();
-  }, [currency]);
+  }, [currency, displayCurrencies]);
 
   const handleDeposit = async () => {
     if (!amount || Number(amount) <= 0) {
@@ -147,16 +136,7 @@ const LocalCurrencyTab: FC = () => {
         </label>
         <div className="relative">
           <span className="absolute left-3 top-3 text-slate-400 text-sm font-semibold">
-            {currency === 'USD' && '$'}
-            {currency === 'EUR' && '€'}
-            {currency === 'GBP' && '£'}
-            {currency === 'INR' && '₹'}
-            {currency === 'BRL' && 'R$'}
-            {currency === 'JPY' && '¥'}
-            {currency === 'AUD' && 'A$'}
-            {currency === 'CAD' && 'C$'}
-            {currency === 'CHF' && 'CHF'}
-            {currency === 'CNY' && '¥'}
+            {displayCurrencies.find((c) => c.code === currency)?.symbol || '$'}
           </span>
           <input
             type="text"
@@ -244,9 +224,9 @@ const LocalCurrencyTab: FC = () => {
       <button
         type="button"
         onClick={handleDeposit}
-        disabled={loading || loadingCurrencies || !amount || Number(amount) <= 0 || !currency}
+        disabled={loading || loadingCurrencies || loadingMethods || !amount || Number(amount) <= 0 || !currency || !selectedMethod}
         className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-          loading || loadingCurrencies || !amount || Number(amount) <= 0 || !currency
+          loading || loadingCurrencies || loadingMethods || !amount || Number(amount) <= 0 || !currency || !selectedMethod
             ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
             : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg hover:shadow-emerald-500/30'
         }`}
@@ -274,19 +254,6 @@ const LocalCurrencyTab: FC = () => {
           t('acct.wallet.startDeposit')
         )}
       </button>
-
-      {/* Info message */}
-      <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-        <div className="text-xs text-blue-200 flex gap-2">
-          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            />
-          </svg>
-          <span>{t('acct.wallet.d24Note')}</span>
-        </div>
-      </div>
     </div>
   );
 };
