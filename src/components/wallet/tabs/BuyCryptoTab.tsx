@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useChangellyBuyCrypto, type Cryptocurrency } from '@/hooks/useChangellyBuyCrypto';
+import { getDisplayCurrencies } from '@/services/wallet';
 import api from '@/services/api';
 
 type BuyCryptoStep = 'step1' | 'step2';
@@ -58,16 +59,45 @@ const BuyCryptoTab: FC = () => {
   const [amount, setAmount] = useState('100');
   const [fiatCurrency, setFiatCurrency] = useState<string>('USD');
   const [selectedCrypto, setSelectedCrypto] = useState<Cryptocurrency | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<string>(''); // Empty until offers fetched
-  const [country] = useState('US'); // TODO: Detect user's country
+  const [selectedProvider, setSelectedProvider] = useState<string>(''); // Stores providerCode (not offerId)
+  const [selectedOfferId, setSelectedOfferId] = useState<string>(''); // Stores offerId for payment method
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [expectedAmount, setExpectedAmount] = useState<number | null>(null);
   const [toAddress, setToAddress] = useState<string | null>(null);
   const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
   const [showFiatDropdown, setShowFiatDropdown] = useState(false);
-  const [showProviderDropdown, setShowProviderDropdown] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null); // Track selected network
+  const [displayCurrencies, setDisplayCurrencies] = useState<any[]>([]);
+  const [minAmount, setMinAmount] = useState<number | null>(null);
+  const [maxAmount, setMaxAmount] = useState<number | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Fetch display currencies on mount
+  useEffect(() => {
+    const fetchDisplayCurrencies = async () => {
+      try {
+        const response = await getDisplayCurrencies();
+        setDisplayCurrencies(response?.data || []);
+        // Set initial fiat currency to first available
+        if (response?.data && response.data.length > 0) {
+          setFiatCurrency(response.data[0].code);
+        }
+      } catch (error) {
+        console.error('[Changelly] Failed to fetch display currencies:', error);
+      }
+    };
+    fetchDisplayCurrencies();
+  }, []);
+
+  // Get country and state based on selected fiat currency from display_currencies table
+  const getCountryAndState = () => {
+    const currencyData = displayCurrencies.find((c) => c.code === fiatCurrency);
+    const country = currencyData?.country_code || 'US';
+    const state = country === 'US' ? 'CA' : undefined;
+    return { country, state };
+  };
+
+  const { country, state } = getCountryAndState();
 
   // Fetch cryptos on mount
   useEffect(() => {
@@ -182,27 +212,60 @@ const BuyCryptoTab: FC = () => {
     if (!selectedCrypto || !amount || Number(amount) <= 0 || !fiatCurrency) {
       console.log('[Changelly] Skipping offers fetch - missing required fields');
       setSelectedProvider('');
+      setSelectedOfferId('');
+      setMinAmount(null);
+      setMaxAmount(null);
       return;
     }
 
-    console.log('[Changelly] Calling fetchOffers for:', selectedCrypto.code);
-    // For US: automatically use 'CA' as state
-    // For others: don't pass state
+    console.log('[Changelly] Calling fetchOffers for:', selectedCrypto.code, 'Country:', country);
     fetchOffers(
       Number(amount),
       fiatCurrency,
       selectedCrypto.code,
       country,
-      country === 'US' ? 'CA' : undefined
+      state
     );
-  }, [selectedCrypto, amount, fiatCurrency, country, fetchOffers]);
+  }, [selectedCrypto, amount, fiatCurrency, displayCurrencies, fetchOffers]);
 
   // Auto-select first provider when offers are fetched
   useEffect(() => {
-    if (offers.length > 0 && !selectedProvider) {
+    if (offers.length > 0 && !selectedProvider && offers[0].providerCode) {
       setSelectedProvider(offers[0].providerCode);
+      // Auto-select first payment method if available
+      if (offers[0].paymentMethodOffer && offers[0].paymentMethodOffer.length > 0) {
+        setSelectedOfferId(offers[0].paymentMethodOffer[0].offerId);
+      }
     }
   }, [offers, selectedProvider]);
+
+  // Extract min/max amounts from offers or error details
+  useEffect(() => {
+    if (offers.length > 0) {
+      const firstOffer = offers[0];
+
+      // Extract min from error details if present (errorType === 'limits')
+      if (firstOffer.errorType === 'limits' && firstOffer.errorDetails && firstOffer.errorDetails.length > 0) {
+        const minDetail = firstOffer.errorDetails.find((d: any) => d.cause === 'min');
+        const maxDetail = firstOffer.errorDetails.find((d: any) => d.cause === 'max');
+
+        if (minDetail) {
+          setMinAmount(Number(minDetail.value));
+        }
+        if (maxDetail) {
+          setMaxAmount(Number(maxDetail.value));
+        }
+      }
+
+      // Also check for minAmount/maxAmount directly in offer object
+      if (firstOffer.minAmount) {
+        setMinAmount(Number(firstOffer.minAmount));
+      }
+      if (firstOffer.maxAmount) {
+        setMaxAmount(Number(firstOffer.maxAmount));
+      }
+    }
+  }, [offers]);
 
   // Handle crypto selection
   const handleSelectCrypto = (crypto: Cryptocurrency) => {
@@ -216,10 +279,8 @@ const BuyCryptoTab: FC = () => {
     if (!selectedCrypto || !selectedProvider || !toAddress || !selectedNetwork) return;
 
     try {
-      console.log('[Changelly] Creating order...');
+      console.log('[Changelly] Creating order...', { fiatCurrency, country, state });
       // Create order with selected provider
-      // For US: automatically use 'CA' as state
-      // For other countries: don't pass state
       const order = await createOrder(
         Number(amount),
         fiatCurrency,
@@ -228,7 +289,7 @@ const BuyCryptoTab: FC = () => {
         country,
         toAddress,
         selectedNetwork, // Pass the network code (e.g., 'ETHEREUM', 'SOLANA')
-        country === 'US' ? 'CA' : undefined, // Automatically use CA for US, undefined for others
+        state, // US: 'CA', Others: undefined
       );
 
       if (order) {
@@ -248,6 +309,7 @@ const BuyCryptoTab: FC = () => {
     setSelectedCrypto(null);
     setIframeUrl(null);
     setExpectedAmount(null);
+    setSelectedOfferId('');
   };
 
   return (
@@ -270,8 +332,8 @@ const BuyCryptoTab: FC = () => {
                     setAmount(e.target.value);
                   }}
                   placeholder="100"
-                  min="10"
-                  max="10000"
+                  min={minAmount ?? '10'}
+                  max={maxAmount ?? '10000'}
                   className="flex-1 bg-transparent text-white outline-none placeholder-white/30"
                 />
               </div>
@@ -313,8 +375,8 @@ const BuyCryptoTab: FC = () => {
             </div>
             <p className="text-xs text-white/40 mt-1">
               {t('acct.buy.minMax', {
-                min: (10).toLocaleString(locale),
-                max: (10000).toLocaleString(locale),
+                min: minAmount ? minAmount.toLocaleString(locale) : (10).toLocaleString(locale),
+                max: maxAmount ? maxAmount.toLocaleString(locale) : (10000).toLocaleString(locale),
               })}
             </p>
           </div>
@@ -383,7 +445,7 @@ const BuyCryptoTab: FC = () => {
             )}
           </div>
 
-          {/* Select Provider Dropdown - Dynamic from offers */}
+          {/* Payment Methods Grid - Show available payment options */}
           {selectedCrypto && amount && fiatCurrency && (
             <div>
               <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
@@ -396,75 +458,104 @@ const BuyCryptoTab: FC = () => {
                 </div>
               )}
 
-              {errorOffers && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
-                  {errorOffers.message}
+              {/* Show error with details based on error type */}
+              {!loadingOffers && (offers.length === 0 || (offers.length > 0 && offers[0]?.errorType) || errorOffers) && (
+                <div className="space-y-3">
+                  {/* Main error message from API error state */}
+                  {errorOffers && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
+                      <p className="font-semibold mb-1">⚠️ Error</p>
+                      <p>{errorOffers.message}</p>
+                    </div>
+                  )}
+
+                  {/* Specific error handling based on error type from first offer */}
+                  {offers.length > 0 && offers[0] && (
+                    <>
+                      {/* Limits error - show minimum amount */}
+                      {offers[0].errorType === 'limits' && offers[0].errorDetails && offers[0].errorDetails.length > 0 && (
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-3 py-2 text-blue-300 text-xs">
+                          <p className="font-semibold mb-1">💡 Minimum Amount Required</p>
+                          {offers[0].errorDetails.map((detail: any) => (
+                            <p key={detail.cause}>
+                              {detail.cause === 'min' && `Minimum: ${detail.value} ${fiatCurrency}`}
+                              {detail.cause === 'max' && `Maximum: ${detail.value} ${fiatCurrency}`}
+                            </p>
+                          ))}
+                          <p className="mt-1">Please adjust the amount to proceed</p>
+                        </div>
+                      )}
+
+                      {/* Currency error - show unsupported message */}
+                      {offers[0].errorType === 'currency' && (
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 text-yellow-300 text-xs">
+                          <p className="font-semibold mb-1">⚠️ Exchange Pair Not Available</p>
+                          <p>{offers[0].errorMessage || 'This cryptocurrency/currency combination is not available'}</p>
+                          <p className="mt-1">Try selecting a different cryptocurrency or fiat currency</p>
+                        </div>
+                      )}
+
+                      {/* Generic error handling */}
+                      {offers[0].errorType && offers[0].errorType !== 'limits' && offers[0].errorType !== 'currency' && (
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 text-yellow-300 text-xs">
+                          <p className="font-semibold mb-1">⚠️ {offers[0].errorType.charAt(0).toUpperCase() + offers[0].errorType.slice(1)}</p>
+                          <p>{offers[0].errorMessage}</p>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
 
-              {!loadingOffers && !errorOffers && offers.length > 0 && (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowProviderDropdown(!showProviderDropdown)}
-                    className="w-full px-4 py-3 border border-white/10 rounded-lg hover:bg-white/5 hover:border-white/20 transition-colors text-left flex items-center justify-between"
-                  >
-                    <div>
-                      {selectedProvider ? (
-                        <>
-                          <div className="font-semibold text-white capitalize">
-                            {selectedProvider}
-                          </div>
-                          {offers.find((o) => o.providerCode === selectedProvider) && (
-                            <div className="text-xs text-white/60">
-                              {t('acct.buy.fee', {
-                                fee:
-                                  offers.find((o) => o.providerCode === selectedProvider)?.fee ??
-                                  '',
-                              })}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-white/60">{t('acct.buy.chooseProvider')}</span>
-                      )}
-                    </div>
-                    <span className="text-white/60">▼</span>
-                  </button>
+              {/* Payment Methods Grid */}
+              {!loadingOffers && !errorOffers && offers.length > 0 && !offers[0]?.errorType && offers[0]?.paymentMethodOffer && (
+                <div className="space-y-3">
+                  {offers[0].paymentMethodOffer.map((method) => (
+                    <button
+                      key={method.offerId}
+                      onClick={() => {
+                        setSelectedOfferId(method.offerId);
+                      }}
+                      className={`w-full text-left px-4 py-3 border rounded-lg transition-all ${
+                        selectedOfferId === method.offerId
+                          ? 'border-orange-500 bg-orange-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                      }`}
+                    >
+                      {/* Payment Method Name */}
+                      <div className="font-semibold text-white mb-1">{method.methodName}</div>
 
-                  {showProviderDropdown && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1b2e] border border-white/20 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-                      {offers.map((offer) => (
-                        <button
-                          key={offer.providerCode}
-                          onClick={() => {
-                            setSelectedProvider(offer.providerCode);
-                            setShowProviderDropdown(false);
-                          }}
-                          className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0 ${
-                            selectedProvider === offer.providerCode
-                              ? 'bg-white/10 border-l-2 border-orange-500'
-                              : ''
-                          }`}
-                        >
-                          <div className="font-semibold text-white capitalize">
-                            {offer.providerCode}
-                          </div>
-                          <div className="text-xs text-white/60">
-                            {t('acct.buy.fee', { fee: offer.fee })} •{' '}
-                            {t('acct.buy.expected', {
-                              amount: `${Number(offer.amountExpectedTo).toFixed(8)} ${selectedCrypto.code}`,
-                            })}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                      {/* Amount Received + Fee */}
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="text-white/60">
+                          You will receive:{' '}
+                          <span className="text-green-400 font-semibold">
+                            {Number(method.amountExpectedTo).toFixed(8)} {selectedCrypto.code}
+                          </span>
+                        </div>
+                        <div className="text-xs text-white/40">Fee: {method.fee}%</div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               )}
 
               {!loadingOffers && offers.length === 0 && !errorOffers && selectedCrypto && (
                 <div className="text-center py-6 text-white/60">{t('acct.buy.noProviders')}</div>
               )}
+            </div>
+          )}
+
+          {/* Amount validation error */}
+          {amount && minAmount && Number(amount) < minAmount && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
+              <span className="font-semibold">⚠️ Amount too low:</span> Minimum {minAmount.toLocaleString(locale)} {fiatCurrency} required
+            </div>
+          )}
+
+          {amount && maxAmount && Number(amount) > maxAmount && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
+              <span className="font-semibold">⚠️ Amount too high:</span> Maximum {maxAmount.toLocaleString(locale)} {fiatCurrency} allowed
             </div>
           )}
 
@@ -484,8 +575,11 @@ const BuyCryptoTab: FC = () => {
               fetchingAddress ||
               !amount ||
               Number(amount) <= 0 ||
+              (minAmount && Number(amount) < minAmount) ||
+              (maxAmount && Number(amount) > maxAmount) ||
               !selectedCrypto ||
               !selectedProvider ||
+              !selectedOfferId ||
               !toAddress ||
               !selectedNetwork ||
               offers.length === 0

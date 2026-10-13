@@ -101,7 +101,7 @@ const LocalCurrencyTab: FC = () => {
 
         if (data?.type === 'payment_success' || data?.status === 'success') {
           console.log('[D24] Payment successful:', data);
-          toast.success(t('acct.wallet.depositSuccess'));
+          toast.success('Deposit successful');
           // Close checkout and reset
           setCheckoutUrl(null);
           setShowAmountInput(false);
