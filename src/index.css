@@ -1402,9 +1402,17 @@ html:not([data-theme='dark']) .border-blue-600 {
 
 /* The halo the design puts behind the selected Responsible Gambling tab. It is
    on that rail's glass and nowhere else — the account rail's selected row has
-   no glow — so it is its own utility rather than a change to `rl-rail-row-active`. */
+   no glow — so it is its own utility rather than a change to `rl-rail-row-active`.
+
+   It adds to the row's shadows rather than replacing them: the selected tab is
+   glass in the design — a light rim, shaded at its top start and lit at its
+   bottom end — and a bare `box-shadow` here wiped that edge (carried in
+   `--tw-inset-shadow` by `rl-rail-row-active`) and left a flat gold slab. */
 @utility rl-rail-glow {
-  box-shadow: 0 0 17.6px 0 rgba(255, 231, 121, 0.2);
+  box-shadow:
+    var(--tw-inset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    0 8px 40px rgba(0, 0, 0, 0.12),
+    0 0 17.6px 0 rgba(255, 231, 121, 0.2);
 }
 
 /* --- Section titles --------------------------------------------------- */
@@ -1910,19 +1918,29 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+/* The halo rides on top of whatever edge the button already wears in
+   `--tw-inset-shadow` (a glass control's rim and shading): the animation holds
+   `box-shadow` for its whole cycle, so without it the edge would be gone for
+   good, not just during the bloom. */
 @keyframes rl-cta-pulse {
   0%,
   7.5%,
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    box-shadow:
+      var(--tw-inset-shadow, 0 0 #0000),
+      0 0 0 rgba(0, 0, 0, 0);
   }
   2% {
-    box-shadow: 0 0 14px var(--cta-glow, rgba(249, 208, 40, 0.6));
+    box-shadow:
+      var(--tw-inset-shadow, 0 0 #0000),
+      0 0 14px var(--cta-glow, rgba(249, 208, 40, 0.6));
   }
   3.7% {
     transform: scale(1.06);
-    box-shadow: 0 0 12px var(--cta-glow, rgba(249, 208, 40, 0.6));
+    box-shadow:
+      var(--tw-inset-shadow, 0 0 #0000),
+      0 0 12px var(--cta-glow, rgba(249, 208, 40, 0.6));
   }
 }
 

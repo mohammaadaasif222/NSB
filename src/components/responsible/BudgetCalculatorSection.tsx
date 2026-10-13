@@ -29,9 +29,23 @@ const money = (n: number): string =>
     maximumFractionDigits: 2,
   })}`;
 
-/* 56 tall, 34 of radius, white 5% on a 0.2 edge — the design's own field. */
+/*
+ * Sizes step like the rest of the Responsible Gambling sections: the design's
+ * own from 2xl (1536) up, a step down below it. On a laptop the page around it
+ * is drawn at about 0.71, and at full size this form — eight 56px fields of 18px
+ * type — stood twice as heavy as everything beside it.
+ */
+
+/* 56 tall, 34 of radius, white 5% on a 0.2 edge — the design's own field;
+   44 tall and 15px type below 2xl. */
 const FIELD =
-  'rl-field-card h-14 w-full rounded-[34px] border border-white/20 px-6.75 text-[18px] leading-7 text-[#f0f1f5] outline-none placeholder:text-[#9ca3af] focus-visible:border-white/35';
+  'rl-field-card h-11 w-full rounded-[34px] border border-white/20 px-5 text-[15px] leading-6 text-[#f0f1f5] outline-none placeholder:text-[#9ca3af] focus-visible:border-white/35 2xl:h-14 2xl:px-6.75 2xl:text-[18px] 2xl:leading-7';
+
+/* A line's label and its running figure: the design's 18/28, 14/20 below 2xl. */
+const LABEL = 'text-[14px] leading-5 text-[#b3bec1] 2xl:text-[18px] 2xl:leading-7';
+
+/* The two column headings: 24/32, 20/28 below 2xl. */
+const HEADING = 'text-[20px] leading-7 text-[#f0f1f5] 2xl:text-2xl 2xl:leading-8';
 
 /** A label with its running figure, then the box you type in. */
 const Line: FC<{
@@ -45,17 +59,15 @@ const Line: FC<{
   const id = `budget-${fieldKey}`;
 
   return (
-    <div className="pt-3.75">
+    <div className="pt-2.5 2xl:pt-3.75">
       <div className="flex items-center justify-between gap-4">
-        <label htmlFor={id} className="text-[18px] leading-7 text-[#b3bec1]">
+        <label htmlFor={id} className={LABEL}>
           {label}
         </label>
-        <span className="shrink-0 text-[18px] leading-7 text-[#b3bec1] tabular-nums">
-          {money(num(value))}
-        </span>
+        <span className={`shrink-0 tabular-nums ${LABEL}`}>{money(num(value))}</span>
       </div>
 
-      <div className="pt-2">
+      <div className="pt-1.5 2xl:pt-2">
         <input
           id={id}
           type="number"
@@ -96,9 +108,9 @@ const BudgetCalculatorSection: FC = () => {
 
       {/* 557 and 598 across 1196 with 41 between — two columns that become one
           when the panel can no longer hold a readable pair. */}
-      <div className="mt-2.5 grid gap-x-10.25 gap-y-8 @3xl:grid-cols-2">
+      <div className="mt-2 grid gap-x-8 gap-y-6 @3xl:grid-cols-2 2xl:mt-2.5 2xl:gap-x-10.25 2xl:gap-y-8">
         <section>
-          <h3 className="text-2xl leading-8 text-[#f0f1f5]">{t('rgc.budgetIncome')}</h3>
+          <h3 className={HEADING}>{t('rgc.budgetIncome')}</h3>
 
           {INCOME_LINES.map((line) => (
             <Line
@@ -119,7 +131,7 @@ const BudgetCalculatorSection: FC = () => {
         </section>
 
         <section>
-          <h3 className="text-2xl leading-8 text-[#f0f1f5]">{t('rgc.budgetExpenses')}</h3>
+          <h3 className={HEADING}>{t('rgc.budgetExpenses')}</h3>
 
           {EXPENSE_LINES.map((line) => (
             <Line
@@ -140,13 +152,13 @@ const BudgetCalculatorSection: FC = () => {
         </section>
       </div>
 
-      <hr className="mt-6.25 border-white/10" />
+      <hr className="mt-5 border-white/10 2xl:mt-6.25" />
 
-      <div className="rl-field-card mt-2.75 rounded-[34px] border border-white/20 py-4 ps-6.75 pe-4">
-        <p className="text-[18px] leading-6 font-semibold text-[#f0f1f5]">
+      <div className="rl-field-card mt-2.75 rounded-[34px] border border-white/20 py-3 ps-5 pe-4 2xl:py-4 2xl:ps-6.75">
+        <p className="text-[15px] leading-6 font-semibold text-[#f0f1f5] 2xl:text-[18px]">
           {t('rgc.budgetDisposable')}
         </p>
-        <p className="mt-3 text-[32px] leading-10 tracking-[-0.64px] text-[#9da2b4] tabular-nums">
+        <p className="mt-1.5 text-[24px] leading-8 tracking-[-0.48px] text-[#9da2b4] tabular-nums 2xl:mt-3 2xl:text-[32px] 2xl:leading-10 2xl:tracking-[-0.64px]">
           {totals.left === 0 ? '0' : money(totals.left)}
         </p>
       </div>
