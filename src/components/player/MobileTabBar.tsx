@@ -62,7 +62,7 @@ const MobileTabBar: FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
       aria-label={t('nav.games')}
       // The floating chat bubble steps aside for this bar's own Chat tab.
       data-mobile-tabbar=""
-      className="fixed inset-x-4 bottom-4 z-30 flex h-16 items-center rounded-[34px] border border-white/10 bg-black/45 px-1.5 backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-4 bottom-4 z-30 flex h-16 items-center rl-drop-pane rounded-[34px] bg-black/45 px-1.5 backdrop-blur-xl lg:hidden"
     >
       <button type="button" onClick={onOpenMenu} className={`${ITEM} ${ITEM_IDLE}`}>
         <Tab icon={menuIcon.src} label={t('nav.menu')} />

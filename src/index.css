@@ -757,14 +757,14 @@ html:not([data-theme='dark']) .border-blue-600 {
     rgba(255, 255, 255, 0.05) 55%,
     rgba(255, 255, 255, 0.025) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  border: 1px solid transparent;
   -webkit-backdrop-filter: blur(30px) saturate(170%);
   backdrop-filter: blur(30px) saturate(170%);
+  --tw-inset-shadow: var(--rl-drop-pane);
   box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 32px 90px -24px rgba(0, 0, 0, 0.8),
-    0 2px 10px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    0 2px 10px rgba(0, 0, 0, 0.3);
 
   /* Specular sheen along the top edge — the detail that sells "glass". */
   &::after {
@@ -838,10 +838,11 @@ html:not([data-theme='dark']) .border-blue-600 {
   color: #fff;
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(32, 34, 40, 0.96), rgba(10, 11, 14, 0.96));
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop);
   box-shadow:
-    0 14px 32px -14px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+    0 14px 32px -14px rgba(0, 0, 0, 0.9);
   transition:
     transform 0.15s ease,
     box-shadow 0.2s ease,
@@ -851,8 +852,8 @@ html:not([data-theme='dark']) .border-blue-600 {
     filter: brightness(1.3);
     transform: translateY(-1px);
     box-shadow:
-      0 18px 38px -14px rgba(0, 0, 0, 0.95),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      var(--rl-drop), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+      0 18px 38px -14px rgba(0, 0, 0, 0.95);
 
     @media (prefers-reduced-motion: reduce) {
       transform: none;
@@ -870,20 +871,28 @@ html:not([data-theme='dark']) .border-blue-600 {
 }
 
 /* --- Pills / icon buttons -------------------------------------------- */
+/* Clear glass — the auth modal's language pill. The design's Liquid Glass
+   refracts what is behind it, so the artwork under the pill reads through it
+   in full colour rather than frosted grey. CSS cannot bend the light, so this
+   gets as close as it can: almost no fill, a light blur, the colour pushed up,
+   and the water drop's rim without its shaded body (the design's pill is lit
+   by what it shows, not darkened at the crown). */
 @utility glass-pill {
   color: #e7ebf3;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop-rim), inset 0 0 10px rgba(255, 255, 255, 0.05);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
+  -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(1.15);
+  backdrop-filter: blur(5px) saturate(180%) brightness(1.15);
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.17);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.09);
   }
 }
 
@@ -891,7 +900,10 @@ html:not([data-theme='dark']) .border-blue-600 {
   color: rgba(255, 255, 255, 0.85);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   transition:
@@ -909,10 +921,13 @@ html:not([data-theme='dark']) .border-blue-600 {
 @utility glass-menu {
   border-radius: 16px;
   background: rgba(20, 23, 30, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid transparent;
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   backdrop-filter: blur(24px) saturate(160%);
-  box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.85);
+  --tw-inset-shadow: var(--rl-drop-pane);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+    0 24px 60px -18px rgba(0, 0, 0, 0.85);
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: rgba(20, 23, 30, 0.98);
@@ -973,6 +988,30 @@ html:not([data-theme='dark']) .border-blue-600 {
   --rl-line: rgba(255, 255, 255, 0.07);
   --rl-line-2: rgba(255, 255, 255, 0.12);
 
+  /* The design's Liquid Glass edge — what makes a control read as a drop of
+     water rather than a flat disc. Lit from the top start at -45°: a 1px rim
+     brightest at the top-start and bottom-end and fading to nothing on the
+     other two corners (a 1px offset inset traces exactly that crescent round
+     a curved edge), over a pane shaded along its top and start and lifted
+     along its bottom and end. Sampled off the design's render: the header's
+     controls peak at about a third white on the rim, the header bar itself
+     at half that — so controls take `--rl-drop`, panes `--rl-drop-pane`.
+
+     The surfaces below hand these to Tailwind's `--tw-inset-shadow` and
+     compose `box-shadow` the way its own shadow utilities do, so a glow or
+     focus ring added at a call site (`shadow-[…]`, `ring-…`) joins the rim
+     instead of wiping it out. */
+  --rl-drop-rim:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.3), inset -1px -1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  --rl-drop-rim-pane:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.1), inset -1px -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --rl-drop-depth:
+    inset 6px 6px 12px rgba(0, 0, 0, 0.35), inset -6px -6px 12px rgba(255, 255, 255, 0.03);
+  --rl-drop: var(--rl-drop-rim), var(--rl-drop-depth);
+  --rl-drop-pane: var(--rl-drop-rim-pane), var(--rl-drop-depth);
+
   /* Ink */
   --rl-text: #ffffff;
   --rl-text-2: rgba(255, 255, 255, 0.72);
@@ -1012,7 +1051,10 @@ html:not([data-theme='dark']) .border-blue-600 {
 /* The workhorse: every card, rail and tray in the shell is one of these. */
 @utility rl-glass {
   background: var(--rl-glass);
-  border: 1px solid var(--rl-line);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop-pane);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
 
@@ -1026,7 +1068,10 @@ html:not([data-theme='dark']) .border-blue-600 {
    milky film; these have to darken what is behind them, not lighten it. */
 @utility rl-glass-dark {
   background: rgba(11, 12, 16, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop-pane);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   -webkit-backdrop-filter: blur(22px) saturate(150%);
   backdrop-filter: blur(22px) saturate(150%);
 
@@ -1039,7 +1084,10 @@ html:not([data-theme='dark']) .border-blue-600 {
    brightest at the leading edge and fading toward the artwork. */
 @utility rl-glass-card {
   background: linear-gradient(100deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.07));
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop-pane);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   -webkit-backdrop-filter: blur(22px) saturate(150%);
   backdrop-filter: blur(22px) saturate(150%);
 
@@ -1064,9 +1112,9 @@ html:not([data-theme='dark']) .border-blue-600 {
    drop shadow. The lobby's tiles, plates, fixture cards and round arrows. */
 @utility rl-liquid {
   background: rgba(255, 255, 255, 0.07);
+  --tw-inset-shadow: var(--rl-drop-pane);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.2);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   backdrop-filter: blur(12px) saturate(140%);
@@ -1077,11 +1125,46 @@ html:not([data-theme='dark']) .border-blue-600 {
    at the rim, and the backdrop blurred through it. */
 @utility rl-glass-deep {
   background: rgba(10, 11, 13, 0.62);
+  --tw-inset-shadow: var(--rl-drop-pane);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.11),
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.12);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   backdrop-filter: blur(20px) saturate(140%);
+}
+
+/* The design's glass control in the header bar — the round icon buttons, the
+   balance chip, the avatar pill. A water-drop lens rather than a flat disc:
+   the inside shaded along the top and start edges and lifted along the bottom
+   and end, and a 1px rim that catches the light only where the design's -45°
+   light hits it (top-start, bottom-end), fading out on the other two corners.
+   Measured off the design's render; the edge itself is `--rl-drop`. */
+@utility rl-glass-btn {
+  background: rgba(255, 255, 255, 0.025);
+  --tw-inset-shadow: var(--rl-drop);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* The edge alone, for a surface that keeps a fill of its own — a selected
+   rail row, the rail's contact pills, a solid card. */
+@utility rl-drop {
+  --tw-inset-shadow: var(--rl-drop);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
+}
+
+@utility rl-drop-pane {
+  --tw-inset-shadow: var(--rl-drop-pane);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
 }
 
 /* A panel that also reacts to the pointer — tiles, nav rows, chips. */
@@ -1093,14 +1176,16 @@ html:not([data-theme='dark']) .border-blue-600 {
 
   &:hover {
     background: var(--rl-glass-2);
-    border-color: var(--rl-line-2);
   }
 }
 
 /* The lifted state: a selected tab, the active nav row, a focused chip. */
 @utility rl-glass-active {
   background: var(--rl-glass-3);
-  border: 1px solid var(--rl-line-2);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
 }
@@ -1136,7 +1221,10 @@ html:not([data-theme='dark']) .border-blue-600 {
 @utility rl-rail-row {
   background: rgba(255, 255, 255, 0.075);
   border-radius: 1000px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  --tw-inset-shadow: var(--rl-drop);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+    0 8px 40px rgba(0, 0, 0, 0.12);
   transition:
     background 0.18s ease,
     box-shadow 0.18s ease,
@@ -1158,7 +1246,9 @@ html:not([data-theme='dark']) .border-blue-600 {
     linear-gradient(180deg, rgba(252, 213, 53, 0.13), rgba(252, 213, 53, 0.175)),
     rgba(255, 255, 255, 0.075);
   border-radius: 1000px;
+  --tw-inset-shadow: var(--rl-drop);
   box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.12),
     0 0 17.6px rgba(255, 231, 121, 0.2);
 }
@@ -1242,6 +1332,54 @@ html:not([data-theme='dark']) .border-blue-600 {
     0 8px 40px rgba(0, 0, 0, 0.12);
 }
 
+/* The footer's payment plates — the water drop, sampled off the design's
+   render. Three layers:
+
+   - The body: a flat black wash (0.29) that sits *darker* than the band, with
+     no blur — a white-washed, frosted plate reads as milky film over the marks.
+   - The inner shadow that gives it depth: the top and start edges sink about
+     0.2 deeper and the bottom and end edges lift a little, each fading out
+     over ~11px, so the face reads as curved rather than printed on.
+   - The rim, which is what makes it read as a drop: not an even hairline but
+     a light catching the edge — brightest on the top-start corner (0.6),
+     about a quarter along the middle of each edge, gone by the top-end and
+     bottom-start corners, and back up on the bottom-end corner (0.45). An
+     inset shadow cannot fade along a straight edge, so it is a gradient
+     border on a masked `::before`; `to bottom right` pins both dark corners
+     at the 50% stop whatever the plate's proportions. */
+@utility rl-plate {
+  position: relative;
+  background: rgba(0, 0, 0, 0.29);
+  box-shadow:
+    inset calc(var(--u, 1px) * 4) calc(var(--u, 1px) * 4) calc(var(--u, 1px) * 11) rgba(0, 0, 0, 0.22),
+    inset calc(var(--u, 1px) * -4) calc(var(--u, 1px) * -4) calc(var(--u, 1px) * 11)
+      rgba(255, 255, 255, 0.05);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0.28) 25%,
+      rgba(255, 255, 255, 0) 50%,
+      rgba(255, 255, 255, 0.2) 75%,
+      rgba(255, 255, 255, 0.45) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+}
+
 /* Kept off `rl-pill` itself: the payment plates and the contact discs are not
    controls, and a pill that lit up under a pointer that cannot click it would
    be a lie. Only the things that do something take this. */
@@ -1315,7 +1453,7 @@ html:not([data-theme='dark']) .border-blue-600 {
    from what is behind it with a dropped shadow rather than a drawn edge. */
 @utility rl-panel {
   background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid transparent;
   border-radius: 34px;
 
   /* The pane's own thickness. The design lights it from the top left, so the
@@ -1323,9 +1461,11 @@ html:not([data-theme='dark']) .border-blue-600 {
      where it leaves — roughly ten pixels of fall-off on each edge. Without
      these the fill is flat and the panel reads as paper, not glass. The third
      shadow is the one it drops on the stage. */
+  --tw-inset-shadow:
+    var(--rl-drop-rim-pane), inset 2px 2px 12px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 12px rgba(255, 255, 255, 0.08);
   box-shadow:
-    inset 2px 2px 12px rgba(0, 0, 0, 0.3),
-    inset -2px -2px 12px rgba(255, 255, 255, 0.08),
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.2);
 }
 
@@ -1351,14 +1491,15 @@ html:not([data-theme='dark']) .border-blue-600 {
  * which order Tailwind happens to emit them in.
  */
 @utility rl-glass-edge {
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid transparent;
   border-radius: 34px;
 
   /* No drop shadow — measured against the design, the panel under this card
      is not darkened at all, where a real panel's is. */
-  box-shadow:
-    inset 2px 2px 12px rgba(0, 0, 0, 0.3),
+  --tw-inset-shadow:
+    var(--rl-drop-rim-pane), inset 2px 2px 12px rgba(0, 0, 0, 0.3),
     inset -2px -2px 12px rgba(255, 255, 255, 0.08);
+  box-shadow: var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
 }
 
 /* The Referral tab's table sits in a card that goes the other way from the
@@ -1390,9 +1531,12 @@ html:not([data-theme='dark']) .border-blue-600 {
  */
 @utility rl-chip {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  border: 1px solid transparent;
   border-radius: 1000px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  --tw-inset-shadow: var(--rl-drop);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+    0 8px 40px rgba(0, 0, 0, 0.12);
   transition:
     background 0.18s ease,
     box-shadow 0.18s ease,
@@ -1439,9 +1583,11 @@ html:not([data-theme='dark']) .border-blue-600 {
   background:
     linear-gradient(180deg, rgba(255, 231, 121, 0.145), rgba(255, 231, 121, 0.2)),
     rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  border: 1px solid transparent;
   border-radius: 1000px;
+  --tw-inset-shadow: var(--rl-drop);
   box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.12),
     0 0 17.6px rgba(255, 231, 121, 0.2);
 }
@@ -1453,9 +1599,11 @@ html:not([data-theme='dark']) .border-blue-600 {
   background:
     linear-gradient(180deg, rgba(227, 56, 39, 0.19), rgba(227, 56, 39, 0.19)),
     linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  border: 1px solid transparent;
   border-radius: 1000px;
+  --tw-inset-shadow: var(--rl-drop);
   box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.12),
     0 0 17.6px rgba(227, 56, 39, 0.2);
   transition:
@@ -1464,50 +1612,58 @@ html:not([data-theme='dark']) .border-blue-600 {
 
   &:hover:not(:disabled) {
     box-shadow:
+      var(--rl-drop), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
       0 8px 40px rgba(0, 0, 0, 0.12),
       0 0 17.6px rgba(227, 56, 39, 0.35);
   }
 }
 
 /* --- Pager ------------------------------------------------------------ */
-/* The ledger's pagination, built from the same pill as everything else and
-   separated only by how far each is lifted off it: the steps sit well proud,
-   a page sits barely above, and the current page is washed gold and bloomed.
-   The black grade underneath is the chip's — what changes is the layer over
-   it. */
+/* Every pagination row in the app — the favourites and category grids, the
+   blog, the ledger. Sampled off the design's own render: flat fills, no rim
+   and no bevel (the water drop is not on these). The steps are a pale pill at
+   0.2 white, a page a faint disc at 0.07, and the current page solid-looking
+   gold — the brand gold at ~0.63 over the stage, a shade brighter at its foot —
+   with a soft gold bloom round it.
+
+   Disabled steps keep their pill and fade only the label: the design never
+   draws a ghosted pill, and one fading out entirely on a one-page list read as
+   broken rather than unavailable. */
 @utility rl-pager-step {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  color: #f0f1f5;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 1000px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
-  transition: background 0.18s ease;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+
+  &:hover:not(:disabled):not([aria-disabled='true']) {
+    background: rgba(255, 255, 255, 0.26);
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    color: rgba(240, 241, 245, 0.4);
+    cursor: default;
+  }
 }
 
 @utility rl-pager-page {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  color: #f0f1f5;
+  background: rgba(255, 255, 255, 0.07);
   border-radius: 1000px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
-  transition:
-    background 0.18s ease,
-    box-shadow 0.18s ease;
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
 }
 
-/* A heavier bloom than the rail's selected row — 0.55 against its 0.2 — so the
-   current page carries across a row of six. */
 @utility rl-pager-page-on {
-  background:
-    linear-gradient(180deg, rgba(249, 208, 40, 0.6), rgba(249, 208, 40, 0.6)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  color: #f0f1f5;
+  background: linear-gradient(180deg, rgba(249, 208, 40, 0.6), rgba(249, 208, 40, 0.67));
   border-radius: 1000px;
-  box-shadow:
-    0 8px 40px rgba(0, 0, 0, 0.12),
-    0 0 14px rgba(249, 208, 40, 0.55);
+  box-shadow: 0 0 14px rgba(249, 208, 40, 0.55);
 }
 
 /* And lit green — Verification's "start" actions. Same pill, third colour. */
@@ -1515,9 +1671,11 @@ html:not([data-theme='dark']) .border-blue-600 {
   background:
     linear-gradient(180deg, rgba(53, 208, 127, 0.19), rgba(53, 208, 127, 0.19)),
     linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
-  border: 1px solid rgba(255, 255, 255, 0.17);
+  border: 1px solid transparent;
   border-radius: 1000px;
+  --tw-inset-shadow: var(--rl-drop);
   box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.12),
     0 0 17.6px rgba(53, 208, 127, 0.2);
   transition:
@@ -1526,6 +1684,7 @@ html:not([data-theme='dark']) .border-blue-600 {
 
   &:hover:not(:disabled) {
     box-shadow:
+      var(--rl-drop), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
       0 8px 40px rgba(0, 0, 0, 0.12),
       0 0 17.6px rgba(53, 208, 127, 0.35);
   }
@@ -1535,10 +1694,13 @@ html:not([data-theme='dark']) .border-blue-600 {
    whatever the page happens to be showing underneath. */
 @utility rl-menu {
   background: rgba(14, 16, 21, 0.86);
-  border: 1px solid var(--rl-line-2);
+  border: 1px solid transparent;
   -webkit-backdrop-filter: blur(26px) saturate(160%);
   backdrop-filter: blur(26px) saturate(160%);
-  box-shadow: 0 26px 60px -20px rgba(0, 0, 0, 0.9);
+  --tw-inset-shadow: var(--rl-drop-pane);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+    0 26px 60px -20px rgba(0, 0, 0, 0.9);
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: rgba(14, 16, 21, 0.98);
@@ -1554,11 +1716,14 @@ html:not([data-theme='dark']) .border-blue-600 {
  * as it is for the dialogs that already use it. */
 @utility rl-modal-glass {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid transparent;
   border-radius: 34px;
   -webkit-backdrop-filter: blur(40px) saturate(140%);
   backdrop-filter: blur(40px) saturate(140%);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+  --tw-inset-shadow: var(--rl-drop-pane);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+    0 8px 40px rgba(0, 0, 0, 0.2);
 
   /* Without backdrop-filter the fill alone is unreadable, so it falls back to
      something solid rather than to transparent text on a live page. */
@@ -1572,6 +1737,193 @@ html:not([data-theme='dark']) .border-blue-600 {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 34px;
+}
+
+/* --- Running border light ---------------------------------------------- */
+/* The bet button's cue: two points of light chasing each other round the
+   button's edge, once every 3s, without end — the button is the one thing on
+   the panel the player is meant to press next.
+
+   The light is a conic gradient, spun by animating its start angle, in two
+   layers that sit just *outside* the button, where they read against the dark
+   panel rather than being lost in the gold:
+
+   - `::before`, the ring itself: 2px, a faint gold all the way round with
+     each light a long gold tail brightening to a white head;
+   - `::after`, its halo: the same two lights alone, blurred and masked to an
+     8px band beyond the ring. (A drop shadow on the ring would not do — a
+     filter is applied before the mask, so the mask cuts its shadow away.)
+
+   The angle is animated on the button and inherited by both layers, so they
+   cannot drift apart. It has to be a registered property for the browser to
+   interpolate it; without `@property` support, and under reduced motion, the
+   lights hold still. The fill and label are untouched. */
+@property --rl-border-angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes rl-border-spin {
+  to {
+    --rl-border-angle: 360deg;
+  }
+}
+
+@utility rl-border-shine {
+  position: relative;
+  animation: rl-border-spin 3s linear infinite;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: inherit;
+    pointer-events: none;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
+
+  &::before {
+    inset: -2px;
+    padding: 2px;
+    background: conic-gradient(
+      from var(--rl-border-angle),
+      rgba(249, 208, 40, 0.28) 0deg,
+      rgba(249, 208, 40, 0.28) 70deg,
+      #ffd84d 140deg,
+      #fff4c4 168deg,
+      #ffffff 177deg,
+      rgba(249, 208, 40, 0.28) 181deg,
+      rgba(249, 208, 40, 0.28) 250deg,
+      #ffd84d 320deg,
+      #fff4c4 348deg,
+      #ffffff 357deg,
+      rgba(249, 208, 40, 0.28) 360deg
+    );
+  }
+
+  &::after {
+    inset: -10px;
+    padding: 8px;
+    background: conic-gradient(
+      from var(--rl-border-angle),
+      rgba(255, 216, 77, 0) 0deg,
+      rgba(255, 216, 77, 0) 110deg,
+      rgba(255, 216, 77, 0.9) 165deg,
+      rgba(255, 244, 196, 1) 177deg,
+      rgba(255, 216, 77, 0) 185deg,
+      rgba(255, 216, 77, 0) 290deg,
+      rgba(255, 216, 77, 0.9) 345deg,
+      rgba(255, 244, 196, 1) 357deg,
+      rgba(255, 216, 77, 0) 360deg
+    );
+    filter: blur(5px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* --- Call-to-action shine ---------------------------------------------- */
+/* The sign-up button's attention cue, matched frame by frame to the
+   reference's "Claim Promotion" button (30fps capture). Every 10s, unprompted:
+
+   - a broad, soft white band — about 40% of the button's width, vertical —
+     sweeps left to right *over* the label, reaching the end edge ~0.33s in
+     and fading out there by ~0.6s;
+   - the button swells to 1.06 and settles back, peaking ~0.37s in and done by
+     ~0.75s;
+   - and a halo of the button's own colour blooms round it for the same span
+     (`--cta-glow`, gold by default).
+
+   One 10s cycle per property, the event in its first 7.5%, so the three stay
+   in step; the first runs 2s after the page settles rather than on load, when
+   everything else is still moving. `--cta-delay` moves that start, so two
+   buttons side by side can take turns rather than flash together — Login runs
+   half a cycle after Register. `--cta-shine` sets the band's strength: 0.9
+   reads as light on gold, but on a near-black button it is a hard chrome
+   stripe, so a dark button takes it down. Off entirely under reduced motion.
+
+   Needs nothing of the button but a radius: the band is clipped to it by
+   `overflow: hidden`, which leaves the halo (the element's own shadow) alone. */
+@utility rl-cta-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: rl-cta-pulse 10s ease-in-out var(--cta-delay, 2s) infinite;
+
+  &::after {
+    content: '';
+    position: absolute;
+    /* Physical, not logical: the sweep runs left to right in every
+       direction, as drawn, so in RTL it must still start at the left. */
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 45%;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, var(--cta-shine, 0.9)) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    opacity: 0;
+    transform: translateX(-100%);
+    animation: rl-cta-sweep 10s linear var(--cta-delay, 2s) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+
+    &::after {
+      animation: none;
+    }
+  }
+}
+
+@keyframes rl-cta-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%);
+  }
+  1% {
+    opacity: 1;
+    transform: translateX(-30%);
+  }
+  /* Its end edge on the button's: 55% of the button is 122% of the band. */
+  3.3% {
+    opacity: 1;
+    transform: translateX(122%);
+  }
+  6%,
+  100% {
+    opacity: 0;
+    transform: translateX(122%);
+  }
+}
+
+@keyframes rl-cta-pulse {
+  0%,
+  7.5%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  2% {
+    box-shadow: 0 0 14px var(--cta-glow, rgba(249, 208, 40, 0.6));
+  }
+  3.7% {
+    transform: scale(1.06);
+    box-shadow: 0 0 12px var(--cta-glow, rgba(249, 208, 40, 0.6));
+  }
 }
 
 /* --- Controls -------------------------------------------------------- */
@@ -1598,7 +1950,10 @@ html:not([data-theme='dark']) .border-blue-600 {
 @utility rl-btn-ghost {
   color: var(--rl-text);
   background: var(--rl-glass-2);
-  border: 1px solid var(--rl-line-2);
+  border: 1px solid transparent;
+  --tw-inset-shadow: var(--rl-drop);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
   transition:
@@ -1607,7 +1962,6 @@ html:not([data-theme='dark']) .border-blue-600 {
 
   &:hover:not(:disabled) {
     background: var(--rl-glass-3);
-    border-color: rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -1707,12 +2061,13 @@ html:not([data-theme='dark']) .border-blue-600 {
   position: relative;
   border-radius: 32px;
   background: linear-gradient(180deg, rgba(34, 35, 40, 0.74), rgba(12, 13, 16, 0.82));
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid transparent;
   -webkit-backdrop-filter: blur(28px) saturate(140%);
   backdrop-filter: blur(28px) saturate(140%);
+  --tw-inset-shadow: var(--rl-drop-pane);
   box-shadow:
-    0 40px 100px -30px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000),
+    0 40px 100px -30px rgba(0, 0, 0, 0.9);
   animation: auth-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   /* The warm glow pooled at the card's foot in the design. */
@@ -1738,17 +2093,23 @@ html:not([data-theme='dark']) .border-blue-600 {
    nearly all blur, a hairline rim, and the depth inside the pane rather than
    under it — shaded along the top and start edges, catching light along the
    bottom and end. Measured off the design's render: no shadow falls outside.
-   `--dialog-fill` tints the pane — the suggestion box's is a lighter grey. */
+   `--dialog-fill` tints the pane — the suggestion box's is a lighter grey.
+
+   The rim is an even drawn border, not the panes' soft directional one: on
+   these dialogs the design's edge is a clear line the same on all four sides.
+   `--dialog-rim` / `--dialog-rim-width` let a dialog drawn with a heavier rim
+   say so — the wallet's measures a 1px hairline at 0.22, Select Game's about
+   1.5px at 0.38. */
 @utility rl-dialog-glass {
   position: relative;
   border-radius: 34px;
   background: var(--dialog-fill, rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: var(--dialog-rim-width, 1px) solid var(--dialog-rim, rgba(255, 255, 255, 0.22));
   -webkit-backdrop-filter: blur(40px) saturate(140%);
   backdrop-filter: blur(40px) saturate(140%);
-  box-shadow:
-    inset 8px 8px 16px rgba(0, 0, 0, 0.45),
-    inset -8px -8px 16px rgba(255, 255, 255, 0.045);
+  --tw-inset-shadow:
+    inset 8px 8px 16px rgba(0, 0, 0, 0.45), inset -8px -8px 16px rgba(255, 255, 255, 0.045);
+  box-shadow: var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   animation: auth-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
@@ -1808,19 +2169,39 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
-/* A sign-up method row (Gmail, Mobile number, Email). */
+/* A sign-up method row (Gmail, Mobile number, Email).
+   Not the water drop: sampled off the design's auth modal, the row is flat top
+   to bottom — a white wash of 0.05 over the card, an even hairline rim at
+   0.24 all the way round, and the glass catching a little more light in its
+   two rounded ends (about +0.045, fading out over the first ~8% of the run). */
 @utility rl-option {
   color: #fff;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0) 8%,
+      rgba(255, 255, 255, 0) 92%,
+      rgba(255, 255, 255, 0.045)
+    ),
+    rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.26);
+    background:
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.06),
+        rgba(255, 255, 255, 0) 8%,
+        rgba(255, 255, 255, 0) 92%,
+        rgba(255, 255, 255, 0.06)
+      ),
+      rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.34);
   }
 
   &:disabled {
@@ -1829,18 +2210,30 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
-/* Round back / close control in the modal's top corners. */
+/* Round back / close control in the modal's top corners — the water drop as
+   the design's auth modal draws it: a dark lens, deepest at its crown, with a
+   soft pool of light gathered just under the centre (about 0.13 white) and
+   the -45° rim a shade stronger than the header's controls (0.36 / 0.3). */
 @utility rl-circle-btn {
   color: #fff;
   border-radius: 9999px;
-  background: radial-gradient(circle at 35% 30%, rgba(60, 62, 70, 0.9), rgba(10, 11, 14, 0.95));
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background:
+    radial-gradient(48% 30% at 50% 70%, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0) 100%),
+    rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  --tw-inset-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.36), inset -1px -1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 -6px 8px -4px rgba(255, 255, 255, 0.1),
+    var(--rl-drop-depth);
+  box-shadow:
+    var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   transition:
     border-color 0.2s ease,
     filter 0.2s ease;
 
   &:hover {
     filter: brightness(1.25);
-    border-color: rgba(255, 255, 255, 0.34);
   }
 }

@@ -63,8 +63,10 @@ const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onC
     onClick={onClick}
     aria-current={active ? 'page' : undefined}
     title={label}
-    className={`flex flex-1 flex-col items-center justify-center rounded-[calc(var(--u)*24)] transition-colors ${
-      active ? 'bg-white/[0.12] text-white' : 'text-[#9da2b4] hover:text-white'
+    className={`group/section flex flex-1 flex-col items-center justify-center rounded-[calc(var(--u)*24)] transition-colors ${
+      active
+        ? 'rl-drop bg-white/[0.12] text-white hover:bg-white/[0.16]'
+        : 'text-[#9da2b4] hover:bg-white/[0.06] hover:text-white'
     } ${collapsed ? 'lg:py-[calc(var(--u)*10)]' : ''}`}
   >
     {/* The render carries its glow: the image is the 58px art plus ~20px of
@@ -76,7 +78,13 @@ const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onC
           : 'h-[calc(var(--u)*58)] w-[calc(var(--u)*58)]'
       }`}
     >
-      <img src={art} alt="" className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none" />
+      {/* The overhang ignores the pointer, so a hover near the middle lands
+          on the tab under it rather than on its neighbour's glow. */}
+      <img
+        src={art}
+        alt=""
+        className="pointer-events-none absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none transition-transform duration-200 group-hover/section:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover/section:scale-100"
+      />
       {/* <img
         src={inlineAssetUrl('private/ebay.jpeg')}
         alt=""
@@ -102,7 +110,7 @@ const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onC
 
 const ROW =
   'flex h-[calc(var(--u)*44)] w-full flex-shrink-0 items-center gap-[calc(var(--u)*11)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*15)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] transition-colors';
-const ROW_ACTIVE = 'bg-white/10 text-white';
+const ROW_ACTIVE = 'rl-drop bg-white/10 text-white';
 const ROW_IDLE = 'text-[#9da2b4] hover:bg-white/5 hover:text-white';
 
 interface RailLinkProps {
@@ -176,7 +184,7 @@ const RailLink: FC<RailLinkProps> = ({
 
 /** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
 const RAIL_BUTTON =
-  'flex h-[calc(var(--u)*44)] w-full items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
+  'flex h-[calc(var(--u)*44)] w-full items-center justify-center gap-[calc(var(--u)*6)] rl-drop rounded-[calc(var(--u)*34)] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
 
 /** A contact pill at the rail's foot: a link out, or a button for a dialog. */
 const RailButton: FC<{
@@ -321,7 +329,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             openRegister();
           }}
           title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
-          className={`mt-[calc(var(--u)*24)] flex flex-shrink-0 flex-col gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*16.25)] bg-[#1b1f29] px-[calc(var(--u)*16.25)] py-[calc(var(--u)*17.5)] text-start transition-colors hover:bg-[#222735] ${
+          className={`mt-[calc(var(--u)*24)] flex flex-shrink-0 flex-col gap-[calc(var(--u)*6)] rl-drop-pane rounded-[calc(var(--u)*16.25)] bg-[#1b1f29] px-[calc(var(--u)*16.25)] py-[calc(var(--u)*17.5)] text-start transition-colors hover:bg-[#222735] ${
             collapsed ? 'lg:items-center lg:px-[calc(var(--u)*8)] lg:text-center' : ''
           }`}
         >

@@ -90,8 +90,8 @@ const ChevronLead: FC<{ open: boolean }> = ({ open }) => (
 interface Props {
   /** `compact` drops the label on small screens (used in the top bar). */
   compact?: boolean;
-  /** Frosted styling for the auth modals' footer — sized to match the gold
-   *  action button beside it (Button size="md"). */
+  /** Clear-glass styling for the auth modals' footer — sized to match the gold
+   *  action button beside it (Button size="sm"). */
   glass?: boolean;
   /** Open the list above the trigger — it sits at the foot of the auth card. */
   dropUp?: boolean;
@@ -104,6 +104,8 @@ interface Props {
   /**
    * The lobby shell's frosted pill — globe, label and chevron. Distinct from
    * `glass`, which is the auth card's heavier frosting on a fixed backdrop.
+   * Sized in `--u` like the footer discs beside it (the design's 143×48), so
+   * the pill scales with them instead of outgrowing them on a smaller screen.
    */
   shell?: boolean;
   /**
@@ -150,11 +152,11 @@ const LanguagePicker: FC<Props> = ({
   }, []);
 
   const triggerClass = glass
-    ? 'glass-pill flex h-11 items-center gap-2 px-4 text-[15px] text-white sm:h-12 sm:px-5 sm:text-base'
+    ? 'glass-pill flex h-10 items-center gap-1.5 px-2.5 text-[14px] text-white'
     : iconOnly
-      ? 'inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]'
+      ? 'rl-glass-btn inline-flex h-10 w-10 items-center justify-center rounded-full lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]'
       : shell
-        ? 'flex h-12 items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 text-[16px] font-medium leading-6 text-white backdrop-blur-md transition-colors hover:bg-white/10'
+        ? 'rl-glass-btn flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*6)] rounded-full ps-[calc(var(--u)*12)] pe-[calc(var(--u)*15)] text-[length:max(11px,calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white'
         : 'flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors';
 
   // Where the list opens. The auth card's rises over its own trigger, as the
@@ -164,7 +166,7 @@ const LanguagePicker: FC<Props> = ({
     : iconOnly
       ? 'start-0 top-12 lg:top-[calc(var(--u)*56)]'
       : dropUp
-        ? `end-0 ${shell ? 'bottom-14' : 'bottom-11'}`
+        ? `end-0 ${shell ? 'bottom-[calc(100%+var(--u)*8)]' : 'bottom-11'}`
         : 'end-0 top-11';
 
   return (
@@ -189,7 +191,11 @@ const LanguagePicker: FC<Props> = ({
             {footer ? (
               <TranslateIcon />
             ) : shell ? (
-              <img src={globeIcon.src} alt="" className="h-6 w-6" />
+              <img
+                src={globeIcon.src}
+                alt=""
+                className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
+              />
             ) : (
               <CountryFlag country={meta.country} size={glass ? 24 : 18} />
             )}
@@ -204,7 +210,7 @@ const LanguagePicker: FC<Props> = ({
               <img
                 src={chevronIcon.src}
                 alt=""
-                className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`}
+                className={`ms-[calc(var(--u)*8)] h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] transition-transform ${open ? 'rotate-180' : ''}`}
               />
             ) : (
               <ChevronDown open={open} size={glass ? 16 : 12} />

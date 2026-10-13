@@ -4,6 +4,7 @@ import Modal from '@/components/ui/Modal';
 import CircleIconButton from '@/components/ui/CircleIconButton';
 import { CloseIcon, StarIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
+import { useStageScale } from '@/hooks/useStageScale';
 
 interface Props {
   open: boolean;
@@ -22,9 +23,16 @@ const TITLE_ID = 'rate-promotion-title';
  * The score resets whenever the dialog opens rather than persisting between
  * openings: a half-finished rating left over from last time, shown as though
  * it had been recorded, would be worse than a blank one.
+ *
+ * Drawn at the page's scale. The dialog is portalled outside the player stage,
+ * where `--u` falls back to 1px, so every `calc(var(--u)*…)` below resolves to
+ * the design's full 1920 size; zooming the card by the stage's own scale (as
+ * GlassDialog does) brings it back in proportion with the page behind it —
+ * unzoomed, it stood half again too big on a laptop.
  */
 const RatePromotionModal: FC<Props> = ({ open, onClose }) => {
   const { t } = useTranslation();
+  const scale = useStageScale(open);
   const [score, setScore] = useState(0);
   const [hover, setHover] = useState(0);
   const [remark, setRemark] = useState('');
@@ -45,6 +53,7 @@ const RatePromotionModal: FC<Props> = ({ open, onClose }) => {
       open={open}
       onClose={onClose}
       labelledBy={TITLE_ID}
+      style={{ zoom: scale }}
       className="max-w-[581px] px-5 pb-6 pt-5 lg:px-[calc(var(--u)*27)] lg:pb-[calc(var(--u)*43)] lg:pt-[calc(var(--u)*20)]"
     >
       <div className="flex items-start justify-between gap-3">

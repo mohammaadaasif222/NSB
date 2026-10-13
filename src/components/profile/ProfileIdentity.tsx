@@ -32,7 +32,7 @@ const ProfileIdentity: FC<Props> = ({ me, onChangeAvatar }) => {
           type="button"
           onClick={onChangeAvatar}
           aria-label={t('profile.editAvatar')}
-          className="absolute end-[calc(var(--u)*5)] -bottom-[calc(var(--u)*7)] flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rounded-full bg-black/39 text-[#f0f1f5] shadow-[0_8px_40px_rgba(0,0,0,0.12)] transition-colors hover:bg-black/55 focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
+          className="absolute end-[calc(var(--u)*5)] -bottom-[calc(var(--u)*7)] flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rl-glass-btn rounded-full text-[#f0f1f5] shadow-[0_8px_40px_rgba(0,0,0,0.12)] focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
         >
           <CameraIcon
             size={24}

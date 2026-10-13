@@ -19,7 +19,7 @@ interface AuthMethodListProps {
 
 /** One full-width method row: icon, label, and an optional badge. */
 const MethodRow: FC<AuthMethodOption> = ({ icon, label, onClick, badge, disabled }) => (
-  <Button variant="option" fullWidth onClick={onClick} disabled={disabled}>
+  <Button variant="option" size="row" fullWidth onClick={onClick} disabled={disabled}>
     <span className="flex h-7 items-center text-white">{icon}</span>
     <span>{label}</span>
     {badge && (
@@ -40,7 +40,7 @@ const AuthMethodList: FC<AuthMethodListProps> = ({ methods, tab }) => {
       <div className="pt-4 sm:pt-6">
         {tab && (
           <div className="flex justify-center">
-            <span className="rounded-t-lg bg-white px-3.5 py-2 text-[13px] font-medium leading-none text-[#111216]">
+            <span className="rounded-t-lg bg-white px-3.5 py-3 text-[14px] font-medium leading-none text-[#111216]">
               {tab}
             </span>
           </div>

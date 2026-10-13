@@ -118,7 +118,6 @@ const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = (
         liked={isFavouriteProvider(provider.id)}
         onToggle={() => toggleProvider(provider)}
         label={provider.name}
-        tone="red"
         className="right-[calc(var(--u)*6)] top-[calc(var(--u)*6)] h-[calc(var(--u)*32)] w-[calc(var(--u)*32)] lg:right-[calc(var(--u)*10)] lg:top-[calc(var(--u)*10)]"
       />
     </div>

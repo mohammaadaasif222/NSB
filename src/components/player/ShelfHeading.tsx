@@ -9,7 +9,7 @@ import chevronRight from '@/assets/lobby/chevron-right.svg';
  * disc on phones, its 48px clear glass disc on desktop.
  */
 export const ARROW_CLASS =
-  'flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-md transition-colors lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] lg:border-white/[0.06] lg:bg-white/[0.07] lg:shadow-[0_8px_40px_rgba(0,0,0,0.2)]';
+  'flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rl-glass-btn rounded-full lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] lg:shadow-[0_8px_40px_rgba(0,0,0,0.2)]';
 
 export const ArrowGlyph: FC<{ dir: 'prev' | 'next' }> = ({ dir }) => (
   <img

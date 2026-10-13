@@ -31,7 +31,7 @@ import Glyph from '@/components/player/Glyph';
 
 /** The design's small dark glass, which every control here sits on. */
 const GLASS =
-  'border border-white/10 bg-black/40 backdrop-blur-md transition-colors hover:bg-white/[0.08]';
+  'rl-glass-btn';
 
 /* ==================================================================== */
 /* Search                                                                */
@@ -44,7 +44,7 @@ export const SearchField: FC<{
   label: string;
 }> = ({ value, onChange, placeholder, label }) => (
   <label
-    className={`${GLASS} flex h-[47px] min-w-0 flex-shrink-0 items-center gap-2.5 rounded-full lg:flex-1 px-3 focus-within:border-white/25 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*12)]`}
+    className={`${GLASS} flex h-[47px] min-w-0 flex-shrink-0 items-center gap-2.5 rounded-full lg:flex-1 px-3 focus-within:bg-white/[0.08] lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*12)]`}
   >
     <img
       src={searchIcon.src}
@@ -406,7 +406,7 @@ export const CategoryChips: FC<{
               key={text}
               title={`${text} — ${t('common.soon')}`}
               aria-disabled="true"
-              className={`${CHIP} cursor-default border border-white/10 bg-black/40 text-[#9da2b4]/50 backdrop-blur-md`}
+              className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:bg-white/[0.025]`}
             >
               {icon}
               {text}

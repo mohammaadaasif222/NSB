@@ -39,7 +39,7 @@ const RaffleCard: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex h-[94px] items-center gap-3 rounded-[34px] bg-white/20 px-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] lg:h-[calc(var(--u)*94)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*16)]">
+    <div className="flex h-[94px] items-center gap-3 rounded-[34px] rl-drop-pane bg-white/20 px-4 lg:h-[calc(var(--u)*94)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*16)]">
       <span
         className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#666666] lg:h-[calc(var(--u)*36)] lg:w-[calc(var(--u)*36)] lg:rounded-[calc(var(--u)*8)]"
         aria-hidden="true"
@@ -98,7 +98,7 @@ const RewardRow: FC<RowProps> = ({ reward, currency, clockOffset, claiming, onCl
   }
 
   return (
-    <li className="flex h-[70px] items-center gap-3 rounded-[24px] bg-white/10 px-4 pe-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] lg:h-[calc(var(--u)*70)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*24)] lg:pe-[calc(var(--u)*20)] lg:ps-[calc(var(--u)*16)]">
+    <li className="flex h-[70px] items-center gap-3 rounded-[24px] rl-drop-pane bg-white/10 px-4 pe-5 lg:h-[calc(var(--u)*70)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*24)] lg:pe-[calc(var(--u)*20)] lg:ps-[calc(var(--u)*16)]">
       <span
         className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-[#f0f1f5]/80 lg:h-[calc(var(--u)*36)] lg:w-[calc(var(--u)*36)]"
         aria-hidden="true"
@@ -131,7 +131,7 @@ const RewardRow: FC<RowProps> = ({ reward, currency, clockOffset, claiming, onCl
 
 /** A message in a row's place — signed out, loading or failed. */
 const Notice: FC<{ children: ReactNode }> = ({ children }) => (
-  <div className="rounded-[24px] bg-white/10 px-4 py-5 text-center text-[14px] leading-5 text-[#9da2b4] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] lg:rounded-[calc(var(--u)*24)]">
+  <div className="rounded-[24px] bg-white/10 px-4 py-5 text-center text-[14px] leading-5 rl-drop-pane text-[#9da2b4] lg:rounded-[calc(var(--u)*24)]">
     {children}
   </div>
 );

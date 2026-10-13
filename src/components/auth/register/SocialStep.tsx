@@ -18,7 +18,7 @@ const ProviderButton: FC<{
   onClick: () => void;
 }> = ({ icon, colour, label, onClick }) => (
   // The design's 56px pill with a 16px label (the button's own size steps up to 18).
-  <Button variant="option" fullWidth onClick={onClick} className="h-14 text-[16px] sm:text-[16px]">
+  <Button variant="option" size="row" fullWidth onClick={onClick}>
     <span className={`flex h-[22px] w-[22px] items-center justify-center ${colour}`}>{icon}</span>
     <span className="font-medium">{label}</span>
   </Button>

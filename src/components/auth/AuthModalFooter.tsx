@@ -13,7 +13,7 @@ interface AuthModalFooterProps {
 const AuthModalFooter: FC<AuthModalFooterProps> = ({ actionLabel, onAction }) => (
   <div className="relative z-20 mt-6 flex items-center justify-between gap-3">
     <LanguagePicker glass dropUp />
-    <Button size="md" onClick={onAction}>
+    <Button size="sm" onClick={onAction}>
       {actionLabel}
     </Button>
   </div>

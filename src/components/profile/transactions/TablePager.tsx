@@ -26,7 +26,7 @@ const TablePager: FC<Props> = ({ page, totalPages, onPage }) => {
   }
 
   const step =
-    'rl-pager-step h-[calc(var(--u)*48)] w-[calc(var(--u)*104)] shrink-0 text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] disabled:cursor-not-allowed disabled:opacity-40';
+    'rl-pager-step h-[calc(var(--u)*48)] w-[calc(var(--u)*104)] shrink-0 text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium';
 
   return (
     <nav
@@ -45,7 +45,7 @@ const TablePager: FC<Props> = ({ page, totalPages, onPage }) => {
             type="button"
             onClick={() => onPage(n)}
             aria-current={current ? 'page' : undefined}
-            className={`h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] shrink-0 text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium tabular-nums text-[#f0f1f5] ${
+            className={`h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] shrink-0 text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium tabular-nums ${
               current ? 'rl-pager-page-on' : 'rl-pager-page'
             }`}
           >

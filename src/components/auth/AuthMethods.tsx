@@ -74,7 +74,7 @@ const AuthMethods: FC<Props> = ({ methods, onSelect, otherLabel, onSelectOther }
       <button
         type="button"
         onClick={onSelectOther}
-        className="flex h-13 w-full items-center justify-center gap-2.5 rounded-[14px] border border-white/15 bg-white/10 text-[13px] font-semibold text-white/75 backdrop-blur-md transition-colors hover:border-white/25 hover:bg-white/[0.17] hover:text-white"
+        className="flex h-13 w-full items-center justify-center gap-2.5 glass-pill rounded-[14px] text-[13px] font-semibold text-white/75 hover:text-white"
       >
         <span className="flex items-center gap-1.5 text-white/70">
           <GoogleIcon size={14} />
