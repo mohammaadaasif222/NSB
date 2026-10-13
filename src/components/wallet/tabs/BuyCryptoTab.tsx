@@ -1,4 +1,5 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useState, useRef, type FC } from 'react';
+import { createPortal } from 'react-dom';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useChangellyBuyCrypto, type Cryptocurrency } from '@/hooks/useChangellyBuyCrypto';
@@ -66,6 +67,7 @@ const BuyCryptoTab: FC = () => {
   const [showFiatDropdown, setShowFiatDropdown] = useState(false);
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null); // Track selected network
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Fetch cryptos on mount
   useEffect(() => {
@@ -233,10 +235,7 @@ const BuyCryptoTab: FC = () => {
         console.log('[Changelly] Order created, received URL:', order.iframeUrl);
         setIframeUrl(order.iframeUrl);
         setExpectedAmount(order.expectedAmount);
-
-        // Redirect to Changelly payment URL
-        console.log('[Changelly] Redirecting to payment URL');
-        window.location.href = order.iframeUrl;
+        console.log('[Changelly] Showing payment iframe in modal');
       }
     } catch (error: any) {
       console.error('[Changelly] Error creating order:', error);
@@ -568,6 +567,53 @@ const BuyCryptoTab: FC = () => {
             {t('acct.buy.backToWallet')}
           </button>
         </div>
+      )}
+
+      {/* Changelly iframe portal - Responsive modal for mobile, tablet, desktop */}
+      {iframeUrl && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center overflow-hidden p-2 sm:p-4">
+          {/* Modal container - Responsive width and height */}
+          <div className="relative w-full h-full sm:h-[85vh] md:h-[80vh] md:w-[80vw] lg:w-[64vw] bg-slate-900 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-full">
+            {/* Close button */}
+            <button
+              onClick={handleReset}
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-slate-300 hover:text-slate-100 transition-colors bg-slate-800/80 hover:bg-slate-700 p-1.5 sm:p-2 rounded-lg"
+            >
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* iframe - no scrollbar */}
+            <iframe
+              ref={iframeRef}
+              src={iframeUrl}
+              className="w-full h-full border-0 overflow-hidden"
+              title="Changelly Payment Checkout"
+              allow="payment"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            />
+
+            {/* Loading overlay */}
+            {creatingOrder && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
+                <div className="text-center">
+                  <svg className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <p className="text-sm text-slate-300 mt-2">{t('acct.buy.processing')}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
