@@ -10,6 +10,7 @@ import WalletModal from '@/components/wallet/WalletModal';
 import { useAuth } from '@/context/AuthContext';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import type { TranslationKey } from '@/i18n/locales';
 import accountIcon from '@/assets/lobby/profile-menu/account.svg';
 import affiliateIcon from '@/assets/lobby/profile-menu/affiliate.svg';
@@ -222,6 +223,7 @@ interface Props {
  * phone. Closes on a choice, a click away, Escape, or navigation.
  */
 const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
+  const { promotions: promotionsOn } = usePlatformFeatures();
   const { t } = useTranslation();
   const router = useRouter();
   const { logout } = useAuth();
@@ -287,7 +289,10 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
             <ul role="menu" className={LIST}>
               <GroupRow group={ACCOUNT} onAction={onAction} />
               <GroupRow group={AFFILIATE} onAction={onAction} />
-              {LEAVES.filter((leaf) => phone || !leaf.phoneOnly).map((leaf) => (
+              {LEAVES.filter(
+                (leaf) =>
+                  (phone || !leaf.phoneOnly) && (promotionsOn || leaf.href !== '/promotions')
+              ).map((leaf) => (
                 <li key={leaf.labelKey}>
                   <LeafRow leaf={leaf} onAction={onAction} />
                 </li>

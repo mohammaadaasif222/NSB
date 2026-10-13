@@ -255,7 +255,7 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { pathname } = useRouter();
   const { t } = useTranslation();
-  const { rewards: rewardsOn } = usePlatformFeatures();
+  const { rewards: rewardsOn, promotions: promotionsOn } = usePlatformFeatures();
   const { openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
@@ -432,15 +432,17 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           >
             {t('nav.tournaments')}
           </RailLink>
-          <RailLink
-            href="/promotions"
-            active={pathname === '/promotions'}
-            icon={icon(promotionIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.promotions')}
-          </RailLink>
+          {promotionsOn && (
+            <RailLink
+              href="/promotions"
+              active={pathname === '/promotions'}
+              icon={icon(promotionIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.promotions')}
+            </RailLink>
+          )}
           <RailLink
             href="/bonuses"
             active={pathname === '/bonuses'}

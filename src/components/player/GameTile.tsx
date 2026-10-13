@@ -398,6 +398,7 @@ const GameTile: FC<Props> = ({ game, shelf = false, surface, onSelect, selected 
           liked={isFavourite(game.id)}
           onToggle={() => toggle(game)}
           label={game.title}
+          tone="red"
           className="-right-[0.5cqw] top-0 h-[16.16cqw] w-[16.16cqw]"
         />
 

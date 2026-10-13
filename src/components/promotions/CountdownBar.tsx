@@ -2,7 +2,7 @@ import { Fragment, type FC } from 'react';
 
 import { useTranslation } from '@/context/I18nContext';
 
-/** Zero-padded, as the design draws them — "05", not "5". */
+
 export interface Countdown {
   day: string;
   hr: string;
@@ -10,15 +10,19 @@ export interface Countdown {
   sec: string;
 }
 
-/**
- * The design draws this bar at three sizes: 330×70 on a promotion or
- * tournament card, 615×91 inside the tournament hero, and 478×90 under the
- * promotion detail banner. Same shape, same glass, so one component with the
- * three sets of figures rather than three near-copies.
- *
- * `wide` carries `sm`'s type on a longer bar — the design keeps the 28px
- * figures and only opens up the padding and the gaps between the cells.
- */
+const pad2 = (n: number): string => String(n).padStart(2, '0');
+
+export const countdownParts = (ms: number): Countdown => {
+  const total = Number.isFinite(ms) ? Math.max(0, Math.floor(ms / 1000)) : 0;
+  return {
+    day: pad2(Math.floor(total / 86_400)),
+    hr: pad2(Math.floor((total % 86_400) / 3600)),
+    min: pad2(Math.floor((total % 3600) / 60)),
+    sec: pad2(total % 60),
+  };
+};
+
+
 const SIZES = {
   sm: {
     shell: 'rounded-[16px] p-[4px] lg:rounded-[calc(var(--u)*22)] lg:p-[calc(var(--u)*5)]',
@@ -64,15 +68,6 @@ interface Props {
   className?: string;
 }
 
-/**
- * Four glass cells on a glass bar — days, hours, minutes, seconds.
- *
- * It does NOT tick. The figures are fixed strings carried in with the rest of
- * the placeholder copy, because nothing serves a real end time yet. Give it an
- * ISO date and run it through `useCountdown` when promotions are a real feed;
- * that hook already corrects for the gap between the server's clock and the
- * device's.
- */
 const CountdownBar: FC<Props> = ({ value, size = 'sm', className = '' }) => {
   const { t } = useTranslation();
   const s = SIZES[size];
