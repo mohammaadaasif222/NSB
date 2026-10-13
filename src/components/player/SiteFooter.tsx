@@ -164,7 +164,7 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  */
 const SiteFooter: FC = () => {
   const { t } = useTranslation();
-  const { rewards: rewardsOn } = usePlatformFeatures();
+  const { rewards: rewardsOn, promotions: promotionsOn } = usePlatformFeatures();
   const soon = t('common.soon');
 
   const toTop = (): void =>
@@ -199,7 +199,7 @@ const SiteFooter: FC = () => {
     // Rolluck Drops is the rewards page; dropped from the list entirely while
     // rewards are switched off rather than left as a link to a dead end.
     ...(rewardsOn ? [{ label: t('lobby.footer.drops'), href: '/rewards' }] : []),
-    { label: t('menu.promotions'), href: '/promotions' },
+    ...(promotionsOn ? [{ label: t('menu.promotions'), href: '/promotions' }] : []),
     { label: t('nav.bonuses'), href: '/bonuses' },
     { label: t('lobby.footer.referral'), href: '/profile' },
     { label: t('lobby.footer.affiliate'), href: '/affiliate' },
