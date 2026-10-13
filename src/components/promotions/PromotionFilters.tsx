@@ -22,7 +22,17 @@ interface Props {
   onCategory: (key: PromoCategory) => void;
   status: PromoStatus;
   onStatus: (key: PromoStatus) => void;
+  /**
+   * Which controls System config leaves on. The chips need at least two
+   * categories to be a choice (with one, "All" is that category), and the tabs
+   * at least two statuses; below that the row is not drawn at all.
+   */
+  categories?: Exclude<PromoCategory, 'all'>[];
+  statuses?: PromoStatus[];
 }
+
+const ALL_CATEGORIES: Exclude<PromoCategory, 'all'>[] = ['casino', 'sports'];
+const ALL_STATUSES: PromoStatus[] = ['live', 'expired'];
 
 /**
  * The two rows of controls above the grid: the rounded category chips, then
@@ -32,13 +42,23 @@ interface Props {
  * the same gold wash and the same 17.6px bloom those utilities already carry,
  * so there is nothing here to restate.
  */
-const PromotionFilters: FC<Props> = ({ category, onCategory, status, onStatus }) => {
+const PromotionFilters: FC<Props> = ({
+  category,
+  onCategory,
+  status,
+  onStatus,
+  categories = ALL_CATEGORIES,
+  statuses = ALL_STATUSES,
+}) => {
   const { t } = useTranslation();
+  const chips = categories.length >= 2 ? CATEGORIES.filter((c) => c.key === 'all' || categories.includes(c.key as Exclude<PromoCategory, 'all'>)) : [];
+  const tabs = statuses.length >= 2 ? STATUSES.filter((s) => statuses.includes(s.key)) : [];
 
   return (
     <div className="space-y-5 lg:space-y-[calc(var(--u)*32)]">
+      {chips.length > 0 && (
       <div className="flex flex-wrap gap-3 lg:gap-[calc(var(--u)*12)]">
-        {CATEGORIES.map((c) => (
+        {chips.map((c) => (
           <button
             key={c.key}
             type="button"
@@ -54,11 +74,13 @@ const PromotionFilters: FC<Props> = ({ category, onCategory, status, onStatus })
           </button>
         ))}
       </div>
+      )}
 
       {/* The rule runs the full width of the column; the selected tab lights
           its own 100px of it. */}
+      {tabs.length > 0 && (
       <div role="tablist" className="flex border-b border-[#252937]">
-        {STATUSES.map((s) => (
+        {tabs.map((s) => (
           <button
             key={s.key}
             type="button"
@@ -75,6 +97,7 @@ const PromotionFilters: FC<Props> = ({ category, onCategory, status, onStatus })
           </button>
         ))}
       </div>
+      )}
     </div>
   );
 };

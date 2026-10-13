@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { LOBBY_BANNER } from '@/constants/cdn';
 
 /**
@@ -16,6 +17,12 @@ import { LOBBY_BANNER } from '@/constants/cdn';
  */
 const LobbyBanner: FC = () => {
   const { t } = useTranslation();
+  const { promotions: promotionsOn } = usePlatformFeatures();
+
+  // The banner only opens the promotions page; with promotions off it goes too.
+  if (!promotionsOn) {
+    return null;
+  }
 
   return (
     <Link

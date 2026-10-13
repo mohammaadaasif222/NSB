@@ -1,43 +1,82 @@
 import { useEffect, useState, type FC } from 'react';
+import { toast } from 'react-toastify';
 
 import Modal from '@/components/ui/Modal';
 import CircleIconButton from '@/components/ui/CircleIconButton';
 import { CloseIcon, StarIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
+import {
+  removeMyReview,
+  submitReview,
+  type PromotionReview,
+  type RatingSummary,
+  type SubmittedReview,
+} from '@/services/promotionReviews';
+import type { ApiError } from '@/types';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  promotionId: string;
+  onSubmitted: (result: SubmittedReview) => void;
+  existing: PromotionReview | null;
+  onRemoved: (summary: RatingSummary) => void;
 }
 
 const TITLE_ID = 'rate-promotion-title';
 
-/**
- * "Rate the Promotion" — the design's 581×534 dialog.
- *
- * Nothing is submitted. There is no promotions table and no reviews endpoint,
- * so Submit closes the dialog and the score is dropped; wiring it up is a POST
- * and a toast once the feed exists.
- *
- * The score resets whenever the dialog opens rather than persisting between
- * openings: a half-finished rating left over from last time, shown as though
- * it had been recorded, would be worse than a blank one.
- */
-const RatePromotionModal: FC<Props> = ({ open, onClose }) => {
+
+const RatePromotionModal: FC<Props> = ({
+  open,
+  onClose,
+  promotionId,
+  onSubmitted,
+  existing,
+  onRemoved,
+}) => {
   const { t } = useTranslation();
   const [score, setScore] = useState(0);
   const [hover, setHover] = useState(0);
   const [remark, setRemark] = useState('');
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setScore(0);
+      setScore(existing?.rating ?? 0);
       setHover(0);
-      setRemark('');
+      setRemark(existing?.remark ?? '');
+      setSending(false);
     }
-  }, [open]);
+ }, [open]);
 
-  // Hovering previews what a click would set, so the row reads ahead of it.
+  const remove = async (): Promise<void> => {
+    if (sending) return;
+    setSending(true);
+    try {
+      onRemoved(await removeMyReview(promotionId));
+      toast.success(t('promo.reviewRemoved'));
+      onClose();
+    } catch (error) {
+      toast.error((error as Partial<ApiError>).message || t('promo.reviewFailed'));
+      setSending(false);
+    }
+  };
+
+  const submit = async (): Promise<void> => {
+    if (score === 0 || sending) return;
+    setSending(true);
+    try {
+      const result = await submitReview(promotionId, score, remark.trim());
+      onSubmitted(result);
+      toast.success(t(existing ? 'promo.reviewUpdated' : 'promo.reviewThanks'));
+      onClose();
+    } catch (error) {
+      const failure = error as Partial<ApiError>;
+      toast.error(failure.message || t('promo.reviewFailed'));
+      setSending(false);
+    }
+  };
+
   const lit = hover || score;
 
   return (
@@ -48,9 +87,7 @@ const RatePromotionModal: FC<Props> = ({ open, onClose }) => {
       className="max-w-[581px] px-5 pb-6 pt-5 lg:px-[calc(var(--u)*27)] lg:pb-[calc(var(--u)*43)] lg:pt-[calc(var(--u)*20)]"
     >
       <div className="flex items-start justify-between gap-3">
-        {/* The title is optically centred on the card, so the close button's
-            width is mirrored on the left rather than letting it push the
-            heading off-centre. */}
+
         <span className="h-10 w-10 shrink-0 sm:h-12 sm:w-12" aria-hidden="true" />
         <h2
           id={TITLE_ID}
@@ -93,6 +130,7 @@ const RatePromotionModal: FC<Props> = ({ open, onClose }) => {
       <textarea
         value={remark}
         onChange={(e) => setRemark(e.target.value)}
+        maxLength={500}
         placeholder={t('promo.addRemark')}
         aria-label={t('promo.addRemark')}
         className="rl-modal-field mt-5 h-[150px] w-full resize-none border-white/20 px-5 py-4 text-[16px] leading-6 text-[#f0f1f5] placeholder:text-[#9da2b4] lg:mt-[calc(var(--u)*24)] lg:h-[calc(var(--u)*192)] lg:px-[calc(var(--u)*24)] lg:py-[calc(var(--u)*26)] lg:text-[max(12px,calc(var(--u)*18))]"
@@ -100,12 +138,23 @@ const RatePromotionModal: FC<Props> = ({ open, onClose }) => {
 
       <button
         type="button"
-        onClick={onClose}
-        disabled={score === 0}
+        onClick={() => void submit()}
+        disabled={score === 0 || sending}
         className="rl-btn-gold mt-5 h-12 w-full rounded-full text-[16px] font-medium disabled:cursor-not-allowed lg:mt-[calc(var(--u)*37)] lg:h-[calc(var(--u)*56)] lg:rounded-[calc(var(--u)*34)] lg:text-[max(12px,calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]"
       >
-        {t('promo.submitRating')}
+        {t(existing ? 'promo.updateRating' : 'promo.submitRating')}
       </button>
+
+      {existing && (
+        <button
+          type="button"
+          onClick={() => void remove()}
+          disabled={sending}
+          className="mx-auto mt-4 block text-[14px] text-[#9da2b4] underline-offset-4 transition-colors hover:text-[#f0f1f5] hover:underline disabled:opacity-50"
+        >
+          {t('promo.removeReview')}
+        </button>
+      )}
     </Modal>
   );
 };
