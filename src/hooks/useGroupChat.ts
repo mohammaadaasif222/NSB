@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from '@/context/I18nContext';
 import {
   CHAT_LIMITS_DEFAULT,
   CHAT_MESSAGE_EVENT,
@@ -212,6 +213,10 @@ const predict = (held: ReactionSummary, clicked: ReactionKind): ReactionSummary 
 };
 
 export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
+  const { t } = useTranslation();
+  const tRef = useRef(t);
+  tRef.current = t;
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -293,7 +298,7 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
           if (cancelled) return;
           // The live socket may well still be fine, so this is reported
           // without clearing what has already arrived through it.
-          setError(err?.message || 'Could not load the chat history');
+          setError(err?.message || tRef.current('chat.loadFailed'));
         })
         .finally(() => {
           loadingRef.current = false;
@@ -411,7 +416,7 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
           startCooldown(failure.retry_after_ms ?? limits.slow_mode_ms);
         }
 
-        setError(failure?.message || 'Could not send your message');
+        setError(failure?.message || tRef.current('chat.sendFailed'));
         return false;
       } finally {
         setSending(false);
@@ -443,7 +448,7 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
       } catch (err) {
         setMessages((current) => setReaction(current, messageId, held));
         const failure = err as { message?: string };
-        setError(failure?.message || 'Could not save your reaction');
+        setError(failure?.message || tRef.current('chat.reactFailed'));
       }
     },
     [room]
