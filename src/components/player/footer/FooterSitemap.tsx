@@ -93,12 +93,15 @@ const Column: FC<{
  */
 const FooterSitemap: FC = () => {
   const { t } = useTranslation();
-  const { rewards: rewardsOn } = usePlatformFeatures();
+  const { rewards: rewardsOn, promotions: promotionsOn } = usePlatformFeatures();
   const soon = t('common.soon');
 
   // "Rolluck Drops" is the rewards page. Dropped from the column while
   // rewards are switched off, rather than left pointing at a dead end.
-  const earn = rewardsOn ? EARN_LINKS : EARN_LINKS.filter((link) => link.href !== '/rewards');
+  const earn = EARN_LINKS.filter(
+    (link) =>
+      (rewardsOn || link.href !== '/rewards') && (promotionsOn || link.href !== '/promotions')
+  );
 
   return (
     <div className="rl-panel overflow-hidden">
