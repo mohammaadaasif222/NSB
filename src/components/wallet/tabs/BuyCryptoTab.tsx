@@ -36,6 +36,16 @@ const currencyName = (code: string, fallback: string, locale: string): string =>
   }
 };
 
+// Payment method logo mapping
+const PAYMENT_METHOD_LOGOS: Record<string, { name: string; logo: string }> = {
+  card: { name: 'Visa / Mastercard', logo: '/payment-logos/visa.png' },
+  google_pay: { name: 'Google Pay', logo: '/payment-logos/gpay.png' },
+  apple_pay: { name: 'Apple Pay', logo: '/payment-logos/apay.png' },
+  pay_pal: { name: 'PayPal', logo: '/payment-logos/paypal.png' },
+  ebay: { name: 'eBay', logo: '/payment-logos/ebay.png' },
+  mastercard: { name: 'Mastercard', logo: '/payment-logos/mastercard.png' },
+};
+
 const BuyCryptoTab: FC = () => {
   const { me } = useMe();
   const { t, locale } = useTranslation();
@@ -513,40 +523,70 @@ const BuyCryptoTab: FC = () => {
                 </div>
               )}
 
-              {/* Payment Methods Grid */}
+              {/* Payment Methods Grid - Square Cards with Logos */}
               {!loadingOffers && !errorOffers && offers.length > 0 && !offers[0]?.errorType && offers[0]?.paymentMethodOffer && (
-                <div className="space-y-3">
-                  {offers[0].paymentMethodOffer.map((method) => (
-                    <button
-                      key={method.offerId}
-                      onClick={() => {
-                        setSelectedOfferId(method.offerId);
-                        setSelectedPaymentMethod(method.method); // Store payment method code
-                      }}
-                      className={`w-full text-left px-4 py-3 border rounded-lg transition-all ${
-                        selectedOfferId === method.offerId
-                          ? 'border-orange-500 bg-orange-500/10'
-                          : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                      }`}
-                    >
-                      {/* Top row: Payment Method Name + Provider Code */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="font-semibold text-white">{method.methodName}</div>
-                        <div className="text-xs text-white/60">{offers[0].providerCode}</div>
-                      </div>
+                <div className="space-y-4">
+                  {/* Logo Cards Grid */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {offers[0].paymentMethodOffer.map((method) => {
+                      const methodKey = method.method.toLowerCase();
+                      const methodInfo = PAYMENT_METHOD_LOGOS[methodKey] || { name: method.methodName, logo: '/payment-logos/default.png' };
 
-                      {/* Bottom row: Amount Received + Fee */}
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="text-white/60">
-                          You will receive:{' '}
-                          <span className="text-green-400 font-semibold">
-                            {Number(method.amountExpectedTo).toFixed(8)} {selectedCrypto.code}
-                          </span>
-                        </div>
-                        <div className="text-xs text-white/40">Fee: {method.fee}%</div>
-                      </div>
-                    </button>
-                  ))}
+                      return (
+                        <button
+                          key={method.offerId}
+                          onClick={() => {
+                            setSelectedOfferId(method.offerId);
+                            setSelectedPaymentMethod(method.method);
+                          }}
+                          className={`aspect-square rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden group ${
+                            selectedOfferId === method.offerId
+                              ? 'border-orange-500 bg-orange-500/20'
+                              : 'border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10'
+                          }`}
+                        >
+                          <img
+                            src={methodInfo.logo}
+                            alt={methodInfo.name}
+                            className="w-24 h-24 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Details Section for Selected Method */}
+                  {selectedOfferId && offers[0].paymentMethodOffer && (
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-2">
+                      {(() => {
+                        const selectedMethod = offers[0].paymentMethodOffer.find((m) => m.offerId === selectedOfferId);
+                        if (!selectedMethod) return null;
+
+                        return (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <span className="text-white/60">{selectedMethod.methodName}</span>
+                              <span className="text-xs text-white/50">{offers[0].providerCode}</span>
+                            </div>
+                            <div className="border-t border-white/10" />
+                            <div className="flex items-center justify-between">
+                              <div className="text-white/60 text-sm">You will receive:</div>
+                              <div className="text-green-400 font-semibold text-sm">
+                                {Number(selectedMethod.amountExpectedTo).toFixed(8)} {selectedCrypto.code}
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="text-white/60 text-sm">Fee:</div>
+                              <div className="text-white/80 text-sm">{selectedMethod.fee}%</div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               )}
 
