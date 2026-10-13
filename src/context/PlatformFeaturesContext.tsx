@@ -9,16 +9,22 @@ import {
 } from 'react';
 import apiService from '@/services/api';
 
-/** GET /platform/features. */
 export interface PlatformFeatures {
   bonuses: boolean;
-  /** All five reward types — rakeback, cashback, daily, weekly, monthly. */
   rewards: boolean;
   vip_tiers: boolean;
+  promotions: boolean;
+  promotion_filters: { live: boolean; expired: boolean; casino: boolean; sports: boolean };
 }
 
 
-const ALL_ON: PlatformFeatures = { bonuses: true, rewards: true, vip_tiers: true };
+const ALL_ON: PlatformFeatures = {
+  bonuses: true,
+  rewards: true,
+  vip_tiers: true,
+  promotions: true,
+  promotion_filters: { live: true, expired: true, casino: true, sports: true },
+};
 
 const PlatformFeaturesContext = createContext<PlatformFeatures>(ALL_ON);
 
@@ -32,10 +38,13 @@ export const PlatformFeaturesProvider: FC<{ children: ReactNode }> = ({ children
       try {
         const res = await apiService.get<PlatformFeatures>('/platform/features');
         if (!cancelled && res?.success && res.data) {
-          setFeatures(res.data);
+          setFeatures({
+            ...ALL_ON,
+            ...res.data,
+            promotion_filters: { ...ALL_ON.promotion_filters, ...res.data.promotion_filters },
+          });
         }
       } catch {
-        // Stay as we are. See ALL_ON: a failed fetch must not empty the site.
       }
     })();
 

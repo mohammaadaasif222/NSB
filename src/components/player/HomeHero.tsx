@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { fullNameOf } from '@/types/profile';
 import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import casinoArt from '@/assets/lobby/player/panel-casino.webp';
@@ -283,11 +284,15 @@ const PromoBanner: FC = () => {
  * The signed-in lobby's hero: the player panel and the promotion beside it —
  * 558 and 966 of the design's 1548px — stacked on a phone.
  */
-const HomeHero: FC = () => (
-  <div className="flex flex-col gap-[15px] lg:grid lg:grid-cols-[calc(var(--u)*558)_minmax(0,1fr)] lg:gap-[calc(var(--u)*24)]">
-    <PlayerPanel />
-    <PromoBanner />
-  </div>
-);
+const HomeHero: FC = () => {
+  const { promotions: promotionsOn } = usePlatformFeatures();
+
+  return (
+    <div className="flex flex-col gap-[15px] lg:grid lg:grid-cols-[calc(var(--u)*558)_minmax(0,1fr)] lg:gap-[calc(var(--u)*24)]">
+      <PlayerPanel />
+      {promotionsOn && <PromoBanner />}
+    </div>
+  );
+};
 
 export default HomeHero;

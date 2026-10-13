@@ -11,6 +11,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "type-check": "tsc --noEmit",
+    "i18n:check": "node scripts/i18n-check.mjs",
     "prepare": "husky",
     "test": "node --test \"src/**/*.spec.ts\"",
     "test:watch": "node --test --watch \"src/**/*.spec.ts\""
