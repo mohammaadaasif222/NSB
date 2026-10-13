@@ -529,10 +529,13 @@ const BuyCryptoTab: FC = () => {
                           : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
                       }`}
                     >
-                      {/* Payment Method Name */}
-                      <div className="font-semibold text-white mb-1">{method.methodName}</div>
+                      {/* Top row: Payment Method Name + Provider Code */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="font-semibold text-white">{method.methodName}</div>
+                        <div className="text-xs text-white/60">{offers[0].providerCode}</div>
+                      </div>
 
-                      {/* Amount Received + Fee */}
+                      {/* Bottom row: Amount Received + Fee */}
                       <div className="flex items-center justify-between text-sm">
                         <div className="text-white/60">
                           You will receive:{' '}
