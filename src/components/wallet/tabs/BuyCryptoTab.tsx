@@ -242,7 +242,7 @@ const BuyCryptoTab: FC = () => {
 
   // Auto-select first provider when offers are fetched
   useEffect(() => {
-    if (offers.length > 0 && !selectedProvider && offers[0].providerCode) {
+    if (offers.length > 0 && offers[0].providerCode) {
       setSelectedProvider(offers[0].providerCode);
       // Auto-select first payment method if available
       if (offers[0].paymentMethodOffer && offers[0].paymentMethodOffer.length > 0) {
@@ -251,7 +251,7 @@ const BuyCryptoTab: FC = () => {
         setSelectedPaymentMethod(firstMethod.method);
       }
     }
-  }, [offers, selectedProvider]);
+  }, [offers]);
 
   // Extract min/max amounts from offers or error details
   useEffect(() => {
