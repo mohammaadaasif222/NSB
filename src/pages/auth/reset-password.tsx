@@ -82,11 +82,11 @@ const ResetPassword: FC = () => {
         setCooldown(RESEND_SECONDS);
         setStep('code');
       } else {
-        toast.error(res?.message || 'Could not send a reset code');
+        toast.error(res?.message || t('loginModal.codeFailed'));
       }
     } catch (err) {
       const apiErr = err as ApiError;
-      toast.error(apiErr?.message || 'Could not send a reset code');
+      toast.error(apiErr?.message || t('loginModal.codeFailed'));
     } finally {
       setLoading(false);
     }
@@ -100,11 +100,11 @@ const ResetPassword: FC = () => {
         identifier: identifier.trim(),
       });
       if (!res?.success) {
-        toast.error(res?.message || 'Could not send a new code');
+        toast.error(res?.message || t('loginModal.codeFailed'));
       }
     } catch (err) {
       const apiErr = err as ApiError;
-      toast.error(apiErr?.message || 'Could not send a new code');
+      toast.error(apiErr?.message || t('loginModal.codeFailed'));
     }
   };
 
@@ -123,11 +123,11 @@ const ResetPassword: FC = () => {
   /** Step three — redeem the code and set the password. */
   const submitReset = async (): Promise<void> => {
     if (!password || !confirmPassword) {
-      toast.error('All fields are required');
+      toast.error(t('misc.reset.allRequired'));
       return;
     }
     if (password.length < MIN_PASSWORD) {
-      toast.error(`Password must be at least ${MIN_PASSWORD} characters`);
+      toast.error(t('misc.reset.minLength', { min: MIN_PASSWORD }));
       return;
     }
     if (password !== confirmPassword) {
@@ -148,17 +148,17 @@ const ResetPassword: FC = () => {
         // this is both facts at once.
         analytics.auth.otpVerified('password_reset');
         analytics.auth.passwordResetCompleted();
-        toast.success('Password reset successful');
+        toast.success(t('loginModal.resetDone'));
         router.push('/auth/login');
       } else {
         analytics.auth.passwordResetFailed(failureReason(res?.message));
-        toast.error(res?.message || 'Reset failed');
+        toast.error(res?.message || t('loginModal.resetFailed'));
       }
     } catch (err) {
       const apiErr = err as ApiError;
       const firstFieldError = apiErr?.errors ? Object.values(apiErr.errors)[0] : undefined;
       analytics.auth.passwordResetFailed(failureReason(firstFieldError ?? apiErr));
-      toast.error(firstFieldError || apiErr?.message || 'Reset failed');
+      toast.error(firstFieldError || apiErr?.message || t('loginModal.resetFailed'));
       // A 400 here is very likely the code, not the password — send them back
       // with empty boxes so the next attempt starts clean.
       setCode(Array(OTP_LENGTH).fill(''));

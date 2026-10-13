@@ -1,7 +1,8 @@
 import { useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
-import { TIMEZONE_OPTIONS } from '@/types/profile';
+import { useTranslation } from '@/context/I18nContext';
+import { TIMEZONE_OPTIONS, timezoneLabelKey } from '@/types/profile';
 import RlSelect, { type RlOption } from '@/components/inputs/RlSelect';
 import ProfileModalShell from './ProfileModalShell';
 
@@ -11,10 +12,13 @@ interface Props {
   onSaved: (timezone: string) => void;
 }
 
-/** The zone strings are their own labels — nothing to map, just the shape. */
-const TZ_OPTIONS: RlOption<string>[] = TIMEZONE_OPTIONS.map((tz) => ({ value: tz, label: tz }));
-
 const ChangeTimezoneModal: FC<Props> = ({ currentTimezone, onClose, onSaved }) => {
+  const { t } = useTranslation();
+  /** The zone strings are what the API stores; each is shown under a translated label. */
+  const tzOptions: RlOption<string>[] = TIMEZONE_OPTIONS.map((tz) => {
+    const key = timezoneLabelKey(tz);
+    return { value: tz, label: key ? t(key) : tz };
+  });
   const [timezone, setTimezone] = useState(currentTimezone || TIMEZONE_OPTIONS[0]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,15 +34,15 @@ const ChangeTimezoneModal: FC<Props> = ({ currentTimezone, onClose, onSaved }) =
     try {
       const res = await apiService.patch('/users/me', { timezone });
       if (res?.success) {
-        toast.success('Time zone updated successfully');
+        toast.success(t('acct.tz.updated'));
         onSaved(timezone);
         onClose();
       } else {
-        setError(res?.message || 'Failed to update time zone');
+        setError(res?.message || t('acct.tz.failed'));
       }
     } catch (err) {
       const e = err as { message?: string };
-      setError(e?.message || 'Failed to update time zone');
+      setError(e?.message || t('acct.tz.failed'));
     } finally {
       setLoading(false);
     }
@@ -46,7 +50,7 @@ const ChangeTimezoneModal: FC<Props> = ({ currentTimezone, onClose, onSaved }) =
 
   return (
     <ProfileModalShell
-      title="Change Time Zone"
+      title={t('acct.tz.title')}
       onClose={onClose}
       onSubmit={handleSubmit}
       loading={loading}
@@ -56,7 +60,7 @@ const ChangeTimezoneModal: FC<Props> = ({ currentTimezone, onClose, onSaved }) =
           htmlFor="profile-timezone"
           className="block text-sm leading-5 font-medium text-[#f0f1f5]"
         >
-          Time Zone
+          {t('acct.tz.label')}
         </label>
 
         {/* `RlSelect`, not a native one: the option list a `<select>` opens is
@@ -66,7 +70,7 @@ const ChangeTimezoneModal: FC<Props> = ({ currentTimezone, onClose, onSaved }) =
         <RlSelect
           id="profile-timezone"
           value={timezone}
-          options={TZ_OPTIONS}
+          options={tzOptions}
           onChange={setTimezone}
         />
 

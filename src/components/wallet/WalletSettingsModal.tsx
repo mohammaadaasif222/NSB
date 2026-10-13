@@ -1,5 +1,6 @@
 import { useEffect, type FC } from 'react';
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
 import type { DisplayFiat } from '@/types';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
   const { summary, changePreferences, displayCurrencies } = useWallet();
+  const { t } = useTranslation();
 
   const preferences = summary?.preferences;
   const displayCurrency = (preferences?.active_currency ?? 'USD') as DisplayFiat;
@@ -39,7 +41,7 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Wallet Settings"
+      aria-label={t('acct.wallet.settings')}
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 backdrop-blur-sm pt-16 px-4 overflow-y-auto"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -64,12 +66,14 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
               <path d="M1 12h6m6 0h6" />
               <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24" />
             </svg>
-            <h2 className="rl-h-card min-w-0 truncate text-[#f0f1f5]">Wallet Settings</h2>
+            <h2 className="rl-h-card min-w-0 truncate text-[#f0f1f5]">
+              {t('acct.wallet.settings')}
+            </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('common.close')}
             className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
             <svg
@@ -91,11 +95,13 @@ const WalletSettingsModal: FC<Props> = ({ open, onClose }) => {
           {/* Display Currency Section */}
           <div>
             <h3 className="mb-4 text-xs font-semibold tracking-wider text-[#9da2b4] uppercase">
-              Display Currency
+              {t('acct.wallet.displayCurrency')}
             </h3>
 
             {displayCurrencies.length === 0 ? (
-              <p className="py-4 text-center text-xs text-[#9da2b4]">No currencies available</p>
+              <p className="py-4 text-center text-xs text-[#9da2b4]">
+                {t('acct.wallet.noCurrencies')}
+              </p>
             ) : (
               <div className="grid grid-cols-3 gap-3">
                 {displayCurrencies.map((fiat) => (

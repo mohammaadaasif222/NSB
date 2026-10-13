@@ -59,6 +59,7 @@ const LeagueTable: FC<{ league: League }> = ({ league }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(true);
   const listId = useId();
+  const name = `${t(league.country)} - ${league.name}`;
 
   return (
     <section className="rl-liquid rounded-[34px] px-3 pb-4 pt-[18px] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*19)] lg:pb-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*18)]">
@@ -67,7 +68,7 @@ const LeagueTable: FC<{ league: League }> = ({ league }) => {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={listId}
-        aria-label={t('sports.toggleLeague', { league: league.name })}
+        aria-label={t('sports.toggleLeague', { league: name })}
         className="flex w-full items-center gap-[calc(var(--u)*4)] text-start"
       >
         {league.badge && (
@@ -80,7 +81,7 @@ const LeagueTable: FC<{ league: League }> = ({ league }) => {
         <span
           className={`${text(16)} ms-[calc(var(--u)*4)] truncate font-medium leading-[calc(var(--u)*24)] text-[#f0f1f5]`}
         >
-          {league.name}
+          {name}
         </span>
         <span className={`${text(12)} leading-[calc(var(--u)*20)] text-[#ffe779]`}>
           {league.fixtures.length}

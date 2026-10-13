@@ -31,7 +31,7 @@ const TablePager: FC<Props> = ({ page, totalPages, onPage }) => {
   return (
     <nav
       className="flex flex-wrap items-center justify-center gap-[calc(var(--u)*20)]"
-      aria-label={t('tx.next')}
+      aria-label={t('acct.tx.pagination')}
     >
       <button type="button" onClick={() => onPage(page - 1)} disabled={page === 1} className={step}>
         {t('tx.prev')}

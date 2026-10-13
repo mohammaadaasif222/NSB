@@ -1,5 +1,6 @@
 import type { StaticImageData } from 'next/image';
 import type { FixtureSport } from '@/constants/sportsbook';
+import type { TranslationKey } from '@/i18n/locales';
 import crestArsenal from '@/assets/lobby/sportsbook/crest-arsenal.webp';
 import crestChelsea from '@/assets/lobby/sportsbook/crest-chelsea.webp';
 import premierLeague from '@/assets/lobby/sportsbook/league-premier.webp';
@@ -43,7 +44,9 @@ export interface Fixture {
 
 export interface League {
   id: string;
-  /** "England - Premier League". */
+  /** The competition's country, as a dictionary key — shown "England - Premier League". */
+  country: TranslationKey;
+  /** The competition's own name, a proper noun. */
   name: string;
   badge?: StaticImageData;
   fixtures: Fixture[];
@@ -145,7 +148,8 @@ export const SPORT_SECTIONS = {
   liveLeagues: repeat(ARSENAL_CHELSEA, 4),
   leagues: Array.from({ length: 5 }, (_, i): League => ({
     id: `epl-${i}`,
-    name: 'England - Premier League',
+    country: 'lobby.sports.england',
+    name: 'Premier League',
     badge: premierLeague,
     fixtures: [ARSENAL_CHELSEA, REAL_BARCA, BAYERN_DORTMUND],
   })),
@@ -154,7 +158,7 @@ export const SPORT_SECTIONS = {
 /** The Live Match Tracker's game. */
 export const TRACKED_MATCH = {
   title: 'LAK vs CEL',
-  period: '3rd Quarter - 08:14',
+  period: { key: 'lobby.sports.thirdQuarter', clock: '08:14' },
   score: '78 - 72',
   stats: [
     { key: 'sports.totalFouls', value: '4 - 5' },

@@ -108,7 +108,7 @@ const OtpVerification: FC<OtpVerificationProps> = ({ channel, target, onSubmit, 
         {t('registerModal.continue')}
       </Button>
 
-      <NeedHelpLink subject="Verification code" className="mt-5 inline-block" />
+      <NeedHelpLink subject={t('misc.help.otpSubject')} className="mt-5 inline-block" />
     </div>
   );
 };

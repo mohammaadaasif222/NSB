@@ -614,6 +614,31 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+/* Recent Winners: the win that has just arrived comes in from a little to
+   its left and fades up, while the rest of the row has already stepped along
+   (RecentWinners). Rainbet's entry, measured frame by frame: about 40% of a
+   card's width, 15% to full opacity, ~130ms, easing out. */
+@keyframes rl-winner-in {
+  from {
+    opacity: 0.15;
+    transform: translateX(-40%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rl-winner-in {
+  animation: rl-winner-in 130ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rl-winner-in {
+    animation: none;
+  }
+}
+
 /* ==================================================================== */
 /* Glassmorphic auth surface (login / register / reset password)         */
 /*                                                                       */
@@ -1374,6 +1399,35 @@ html:not([data-theme='dark']) .border-blue-600 {
     color 0.18s ease;
 }
 
+/* The Affiliate card's share discs, which overlap each other.
+ *
+ * `rl-chip` is wrong for these and the grade above is exactly why: a fill that
+ * lands level with its surface at the foot leaves nothing to cover the disc
+ * behind, so all five rings read through one another and the row turns into a
+ * chain of outlines. These need a flat wash instead.
+ *
+ * Its values are sampled off the design's own render rather than derived from
+ * the export, whose Liquid Glass body comes back as a Code Connect stub with
+ * no fill to read. Against a stage at 8, the disc runs 9 at its crown to 19 at
+ * its foot — so the wash climbs *downwards*, which is the opposite of the chip
+ * above — and its rim peaks at 64, half again as bright.
+ *
+ * The base is the stage's own colour, opaque. Figma hides the ring behind with
+ * a colour-burn pass, which crushes anything bright under it to black; CSS
+ * cannot reach the sibling discs that way, because each one carries a z-index
+ * and so blends only against itself. Painting the stage back in is what is
+ * left, and it is the reason this is the one surface utility here that names a
+ * colour instead of washing over whatever it covers — it is only ever on the
+ * stage.
+ */
+@utility rl-chip-disc {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.045)),
+    #07080b;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1000px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
 /* The selected chip, and the hovered one — the rail's rule applies here too.
    The wash ends on exactly the 0.2 the design's bloom is set to; it starts
    lower because the bloom is weakest where the chip meets its own top edge.
@@ -1606,6 +1660,17 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+/* A scroller with no visible bar — the dialogs' grids and chip rows. Still
+   scrolls by wheel, touch and keyboard. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility rl-shelf {
   overflow-x: auto;
   scroll-behavior: smooth;
@@ -1659,6 +1724,32 @@ html:not([data-theme='dark']) .border-blue-600 {
     background: radial-gradient(55% 32% at 50% 102%, rgba(214, 44, 44, 0.3), transparent 70%);
     pointer-events: none;
   }
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(18, 19, 23, 0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* The design's "Liquid Glass – Regular" as its dialogs draw it (the wallet):
+   nearly all blur, a hairline rim, and the depth inside the pane rather than
+   under it — shaded along the top and start edges, catching light along the
+   bottom and end. Measured off the design's render: no shadow falls outside.
+   `--dialog-fill` tints the pane — the suggestion box's is a lighter grey. */
+@utility rl-dialog-glass {
+  position: relative;
+  border-radius: 34px;
+  background: var(--dialog-fill, rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  backdrop-filter: blur(40px) saturate(140%);
+  box-shadow:
+    inset 8px 8px 16px rgba(0, 0, 0, 0.45),
+    inset -8px -8px 16px rgba(255, 255, 255, 0.045);
+  animation: auth-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: rgba(18, 19, 23, 0.98);
@@ -1735,22 +1826,6 @@ html:not([data-theme='dark']) .border-blue-600 {
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-  }
-}
-
-/* The auth modals' language menu: a lighter frosted panel over the card. */
-@utility rl-lang-menu {
-  border-radius: 20px;
-  background: linear-gradient(180deg, rgba(58, 60, 68, 0.78), rgba(26, 27, 32, 0.86));
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  backdrop-filter: blur(24px) saturate(150%);
-  box-shadow:
-    0 24px 60px -20px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
-
-  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    background: rgba(30, 31, 36, 0.98);
   }
 }
 

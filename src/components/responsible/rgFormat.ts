@@ -1,4 +1,5 @@
 import { DISPLAY_CURRENCY_SYMBOL } from '@/components/responsible/rgContent';
+import { translate } from '@/i18n/translate';
 
 /**
  * Formatting for the Responsible Gambling section.
@@ -8,17 +9,20 @@ import { DISPLAY_CURRENCY_SYMBOL } from '@/components/responsible/rgContent';
  * of hydration-mismatch territory.
  */
 
-/** "in 3 days", "in 5 hours", "in 12 minutes". Falls back to a date. */
+/** "in 3 days", "in 5 hours", "in 12 minutes" — in `locale`. Falls back to a date. */
 export const formatUntil = (iso: string, locale = 'en'): string => {
   const ms = new Date(iso).getTime() - Date.now();
   if (!Number.isFinite(ms)) {
     return '—';
   }
-  if (ms <= 0) {
-    return 'now';
-  }
 
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+  // `numeric: 'auto'` renders zero seconds as the locale's own word for "now".
+  if (ms <= 0) {
+    return rtf.format(0, 'second');
+  }
+
   const minutes = Math.round(ms / 60_000);
 
   if (minutes < 60) {
@@ -48,7 +52,9 @@ export const formatDate = (iso: string, locale = 'en'): string =>
 
 /** A limit figure with its unit — `$500.00`, or `60 min`. */
 export const formatLimit = (amount: string, unit: 'currency' | 'minutes'): string =>
-  unit === 'minutes' ? `${amount} min` : `${DISPLAY_CURRENCY_SYMBOL}${amount}`;
+  unit === 'minutes'
+    ? `${amount} ${translate('rgc.limitMinutes')}`
+    : `${DISPLAY_CURRENCY_SYMBOL}${amount}`;
 
 /** How much of a limit is spent, clamped to 0–1 for the usage bar. */
 export const usageRatio = (used: string, amount: string): number => {

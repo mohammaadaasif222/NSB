@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import logo from '@/assets/footer/logo.svg';
 import LanguagePicker from '@/components/LanguagePicker';
+import { useTranslation } from '@/context/I18nContext';
 import { BackToTopIcon } from '@/components/player/footer/footerIcons';
 import { SOCIALS } from '@/components/player/footer/footerContent';
 
@@ -17,6 +18,7 @@ import { SOCIALS } from '@/components/player/footer/footerContent';
  * three stack and centre instead.
  */
 const FooterTopBar: FC = () => {
+  const { t } = useTranslation();
   const toTop = (): void =>
     window.scrollTo({
       top: 0,
@@ -54,8 +56,8 @@ const FooterTopBar: FC = () => {
         <button
           type="button"
           onClick={toTop}
-          aria-label="Back to top"
-          title="Back to top"
+          aria-label={t('lobby.footer.backToTop')}
+          title={t('lobby.footer.backToTop')}
           className="rl-pill rl-pill-hover flex h-12 w-12 items-center justify-center rounded-full text-[#f0f1f5] hover:text-white"
         >
           <BackToTopIcon />

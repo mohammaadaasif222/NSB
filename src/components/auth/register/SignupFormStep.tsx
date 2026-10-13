@@ -1,5 +1,6 @@
 import { useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { PASSWORD_MAX_LENGTH } from '@/constants/auth';
 import { useSignupForm, type SignupTarget } from '@/hooks/useSignupForm';
 import TextField from '@/components/ui/TextField';
 import PasswordField from '@/components/ui/PasswordField';
@@ -88,6 +89,10 @@ const SignupFormStep: FC<SignupFormStepProps> = ({
           label={t('auth.password')}
           placeholder={t('registerModal.passwordPlaceholder')}
           autoComplete="new-password"
+          // The API's upper bound (utils/passwordPolicy). Capped here so an
+          // over-long password is impossible to type rather than accepted by
+          // the form's own rules and then refused by the server.
+          maxLength={PASSWORD_MAX_LENGTH}
           value={values.password}
           onChange={(e) => setField('password', e.target.value)}
           onFocus={() => setPasswordFocused(true)}
@@ -122,16 +127,18 @@ const SignupFormStep: FC<SignupFormStepProps> = ({
             className="text-[13px] sm:text-[15px]"
             value={values.promoCode}
             onChange={(e) => setField('promoCode', e.target.value)}
+            invalid={invalid === 'promoCode'}
           />
           <TextField
             id={`${idPrefix}-referral`}
             label={t('registerModal.referralPlaceholder')}
             autoCapitalize="characters"
             spellCheck={false}
-            maxLength={20}
+            maxLength={50}
             className="text-[13px] sm:text-[15px]"
             value={values.referralCode}
             onChange={(e) => setField('referralCode', e.target.value)}
+            invalid={invalid === 'referralCode'}
           />
         </div>
       )}

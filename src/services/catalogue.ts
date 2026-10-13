@@ -1,4 +1,5 @@
 import apiService from '@/services/api';
+import { translate } from '@/i18n/translate';
 import type { Game, GameListResponse } from '@/types';
 
 /**
@@ -18,7 +19,7 @@ export async function fetchCatalogue(): Promise<Game[]> {
   const first = await apiService.get<GameListResponse>('/games', { page: 1, limit: PAGE_SIZE });
 
   if (!first?.success || !first.data?.data) {
-    throw new Error('Games list unavailable');
+    throw new Error(translate('dash.catalogueUnavailable'));
   }
 
   const totalPages = Math.min(first.data.pagination?.totalPages ?? 1, PAGE_CAP);

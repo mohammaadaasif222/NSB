@@ -10,6 +10,7 @@ import linkIcon from '@/assets/lobby/stream-link.svg';
 import shareIcon from '@/assets/lobby/stream-share.svg';
 import { useTranslation } from '@/context/I18nContext';
 import { categoryHref } from '@/constants/games';
+import type { TranslationKey } from '@/i18n/locales';
 
 /**
  * Illustrative "loved by live streamers" row.
@@ -23,21 +24,25 @@ import { categoryHref } from '@/constants/games';
 const STREAMS: {
   name: string;
   game: string;
-  blurb: string;
+  /** Caption key; filled with the game and the stake. */
+  blurb: TranslationKey;
+  stake: string;
   still: StaticImageData;
   avatar: StaticImageData;
 }[] = [
   {
     name: 'John Mathew',
     game: 'Wild Falls',
-    blurb: 'Free spins on Wild Falls at $50 a spin.',
+    blurb: 'lobby.streams.freeSpinsBlurb',
+    stake: '$50',
     still: liveOne,
     avatar: avatarJohn,
   },
   {
     name: 'Tony Stark',
     game: 'Return of the Dead',
-    blurb: 'Auto-spinning Return of the Dead at $25 a spin.',
+    blurb: 'lobby.streams.autoSpinBlurb',
+    stake: '$25',
     still: liveTwo,
     avatar: avatarTony,
   },
@@ -89,7 +94,7 @@ const StreamersRow: FC = () => {
           >
             <Image
               src={s.still}
-              alt={`${s.name} streaming ${s.game}`}
+              alt={t('lobby.streams.alt', { name: s.name, game: s.game })}
               fill
               placeholder="blur"
               sizes="(max-width: 1024px) 100vw, 760px"
@@ -103,9 +108,9 @@ const StreamersRow: FC = () => {
             />
 
             <span className="absolute right-[2.92cqw] top-[2.92cqw] flex flex-col gap-[1.59cqw]">
-              <Control label="Paused" icon={pauseIcon} ringed />
-              <Control label="Open stream" icon={linkIcon} />
-              <Control label="Share" icon={shareIcon} />
+              <Control label={t('lobby.streams.paused')} icon={pauseIcon} ringed />
+              <Control label={t('lobby.streams.open')} icon={linkIcon} />
+              <Control label={t('lobby.streams.share')} icon={shareIcon} />
             </span>
 
             <span className="absolute inset-x-0 bottom-0 flex h-[14.6cqw] items-center gap-[1.9cqw] px-[2.92cqw]">
@@ -119,7 +124,7 @@ const StreamersRow: FC = () => {
                   {s.name}
                 </span>
                 <span className="block truncate text-[max(12px,2.39cqw)] leading-[1.55] text-[#f0f1f5]">
-                  {s.blurb}
+                  {t(s.blurb, { game: s.game, amount: s.stake })}
                 </span>
               </span>
             </span>

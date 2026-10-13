@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useRef, useState, type FC } from 'react';
-import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
 import { getDepositAddress } from '@/services/wallet';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
+import kycApi from '@/services/kyc.api';
 import { readKycError } from '@/utils/kyc-status';
 import { trackDepositAbandoned, trackDepositStart } from '@/utils/events';
+import type { KycErrorCode, PlayerKycProfile } from '@/types/kyc';
 import type { Currency, DepositAddress } from '@/types';
 import CurrencyPicker from '../shared/CurrencyPicker';
 import NetworkPicker from '../shared/NetworkPicker';
 import AddressDisplay from '../shared/AddressDisplay';
-import KycVerifyModal from '@/components/modals/profile/KycVerifyModal';
+import KycGateNotice from '../KycGateNotice';
 import LocalCurrencyTab from './LocalCurrencyTab';
 
 type DepositType = 'crypto' | 'local';
@@ -45,7 +47,7 @@ interface Props {
 }
 
 const DepositTab: FC<Props> = ({ onLeave }) => {
-  const router = useRouter();
+  const { t } = useTranslation();
   const { run } = useSeonGuard();
   const { summary, currencies } = useWallet();
   const [depositType, setDepositType] = useState<DepositType>('crypto');
@@ -98,10 +100,17 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
   // Set when the backend refuses to issue an address until Level 1 is done.
   // Held in state rather than shown as a toast alone: the tab would otherwise
   // sit empty with no explanation once the toast faded.
-  const [kycBlock, setKycBlock] = useState<{ message: string; level: number } | null>(null);
-  const [kycModalTier, setKycModalTier] = useState<number | null>(null);
-  // Bumped to re-run the address fetch once verification has been attempted.
-  const [retry, setRetry] = useState(0);
+  const [kycBlock, setKycBlock] = useState<{
+    message: string;
+    level: number;
+    code: KycErrorCode;
+  } | null>(null);
+  /**
+   * Fetched only once a refusal has happened, so the gate can name the actual
+   * reason — in review, held by compliance, rejected and why — instead of
+   * repeating "verification needed" at a player who has already submitted.
+   */
+  const [kycProfile, setKycProfile] = useState<PlayerKycProfile | null>(null);
 
   /* ── Funnel tracking ──────────────────────────────────────────── */
 
@@ -153,7 +162,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
         if (res?.success && res.data) {
           setAddress(res.data);
         } else {
-          toast.error(res?.message || 'Could not fetch deposit address');
+          toast.error(res?.message || t('acct.wallet.fetchAddressFailed'));
         }
       })
       .catch((err: unknown) => {
@@ -164,17 +173,29 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
         // A deposit address is withheld until Level 1 is complete. That is a
         // step the player can take right now, so say so and offer it rather
         // than reporting it as a failure to fetch something.
-        const kycError = readKycError(err);
+        const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
         if (kycError) {
           setAddress(null);
-          setKycBlock({ message: kycError.message, level: kycError.requiredLevel });
+          setKycBlock({
+            message: kycError.message,
+            level: kycError.requiredLevel,
+            code: kycError.code,
+          });
+          // Resolves to null for a player with no profile yet, which is the
+          // common case here and exactly what the gate's default copy is for.
+          void kycApi
+            .getKycMe()
+            .then((profile) => {
+              if (!cancelled) setKycProfile(profile);
+            })
+            .catch(() => undefined);
           return;
         }
 
         const message =
           typeof err === 'object' && err && 'message' in err
             ? String((err as { message: string }).message)
-            : 'Could not fetch deposit address';
+            : t('acct.wallet.fetchAddressFailed');
         toast.error(message);
       })
       .finally(() => {
@@ -185,12 +206,17 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
     };
     // `run` is stable (memoised in SeonGuardProvider), so listing it does not
     // re-fetch the address on every render.
-  }, [currency, network, run, retry]);
+    // No retry trigger any more: verification now happens on the account page,
+    // which means the wallet has been closed and this tab unmounted. Reopening
+    // it re-runs this effect and re-asks for the address.
+    // `t` is left out on purpose: switching language must not re-request the address.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency, network, run]);
 
   if (eligible.length === 0) {
     return (
       <div className="py-8 text-center text-sm text-slate-400">
-        No currencies available for deposit yet. Ask an operator to sync the catalogue.
+        {t('acct.wallet.noDepositCurrencies')}
       </div>
     );
   }
@@ -208,7 +234,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
               : 'text-slate-500 hover:text-slate-400'
           }`}
         >
-          Crypto
+          {t('acct.wallet.crypto')}
         </button>
         <button
           type="button"
@@ -219,7 +245,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
               : 'text-slate-500 hover:text-slate-400'
           }`}
         >
-          Local currency
+          {t('acct.wallet.localCurrency')}
         </button>
       </div>
 
@@ -227,7 +253,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
       {depositType === 'crypto' && (
         <>
           <CurrencyPicker
-            label="Currency"
+            label={t('pref.currency')}
             currencies={eligible}
             value={currency}
             onChange={setCurrency}
@@ -235,71 +261,36 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
 
           {enabledNetworks.length > 0 ? (
             <NetworkPicker
-              label="Network"
+              label={t('acct.wallet.network')}
               networks={enabledNetworks}
               value={network}
               onChange={setNetwork}
             />
           ) : (
             <div className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-[11px] text-slate-500">
-              No enabled network for {currency} — ask an operator to enable one.
+              {t('acct.wallet.noEnabledNetwork', { currency })}
             </div>
           )}
 
           {loading ? (
             <div className="h-64 rounded-xl border border-slate-700 flex items-center justify-center text-xs text-slate-400">
-              Loading address…
+              {t('acct.wallet.loadingAddress')}
             </div>
-      ) : kycBlock ? (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-          {/* Named as the level, because that is what the account area calls
-              it: a player sent to "complete verification" and shown a page
-              headed "Level 1 — Personal Information" has to work out for
-              themselves that those are the same thing. The gate asks only for
-              a name, a date of birth and an address; the passport and selfie
-              are Level 2 and are not being requested here. */}
-          <p className="text-xs font-semibold text-amber-300">
-            {kycBlock.level === 1
-              ? 'Level 1 verification pending'
-              : 'Verification needed first'}
-          </p>
-          <p className="text-[11px] leading-relaxed text-slate-300">{kycBlock.message}</p>
-          <button
-            type="button"
-            onClick={() => {
-              if (kycBlock.level !== 1) {
-                setKycModalTier(kycBlock.level);
-                return;
-              }
-              // Closed first, then navigated: the wallet is an overlay that
-              // outlives a route change, so the other order lands the player
-              // on the verification page with the dialog still covering it.
-              onLeave?.();
-              void router.push('/profile?section=verification');
-            }}
-            className="w-full h-10 rounded-xl bg-amber-500/15 border border-amber-500/40 text-xs font-semibold text-amber-200 hover:bg-amber-500/25 transition-colors"
-          >
-            {kycBlock.level === 1 ? 'Complete Level 1' : 'Complete verification'}
-          </button>
-        </div>
+          ) : kycBlock ? (
+            <KycGateNotice
+              profile={kycProfile}
+              action="deposit"
+              onLeave={onLeave}
+              apiMessage={kycBlock.message}
+              errorCode={kycBlock.code}
+            />
           ) : address ? (
             <AddressDisplay address={address} />
           ) : null}
 
-          <p className="text-center text-[11px] text-slate-400 pt-2">Need help with your deposit?</p>
-
-      {kycModalTier !== null && (
-        <KycVerifyModal
-          tier={kycModalTier}
-          onClose={() => {
-            setKycModalTier(null);
-            // Completing Level 1 is exactly what unblocks this, so re-ask for
-            // the address instead of leaving the refusal on screen.
-            setRetry((n) => n + 1);
-          }}
-          onSubmitted={() => setRetry((n) => n + 1)}
-        />
-      )}
+          <p className="text-center text-[11px] text-slate-400 pt-2">
+            {t('acct.wallet.depositHelp')}
+          </p>
         </>
       )}
 

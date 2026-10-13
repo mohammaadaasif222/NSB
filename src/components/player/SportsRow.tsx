@@ -1,12 +1,16 @@
-import type { FC, ReactNode } from 'react';
+import type { CSSProperties, FC, ReactNode } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
 import ScrollShelf from '@/components/player/ScrollShelf';
+import type { TranslationKey } from '@/i18n/locales';
 
 import leagueIcon from '@/assets/lobby/league-soccer.svg';
 import crestBayern from '@/assets/lobby/crest-bayern.webp';
 import crestUnion from '@/assets/lobby/crest-union-berlin.webp';
+// Bundled rather than on the CDN: the renders are cut out, and the CDN's
+// copies are JPEGs flattened onto black, which shows as a square behind each
+// one on the glass tile.
 import soccer from '@/assets/lobby/sports/soccer.webp';
 import basketball from '@/assets/lobby/sports/basketball.webp';
 import football from '@/assets/lobby/sports/football.webp';
@@ -28,7 +32,6 @@ import volleyball from '@/assets/lobby/sports/volleyball.webp';
 import wrestling from '@/assets/lobby/sports/wrestling.webp';
 import sportsbook from '@/assets/lobby/sports/sportsbook.webp';
 import mma from '@/assets/lobby/sports/mma.webp';
-import { SPORTS, sportHref } from '@/constants/sportsbook';
 
 /**
  * The sportsbook teasers.
@@ -36,8 +39,7 @@ import { SPORTS, sportHref } from '@/constants/sportsbook';
  * Nothing here is live: there is no fixtures feed and no odds provider, so the
  * disciplines below are a fixed list and the matches are the design's sample
  * rows. The lobby shows both sections as a teaser; /sports shows them on their
- * own. English-only copy on purpose — it is replaced wholesale when the real
- * sportsbook lands.
+ * own. It is replaced wholesale when the real sportsbook lands.
  */
 
 /* ==================================================================== */
@@ -45,7 +47,7 @@ import { SPORTS, sportHref } from '@/constants/sportsbook';
 /* ==================================================================== */
 
 interface Discipline {
-  label: string;
+  label: TranslationKey;
   art: StaticImageData;
   /**
    * Where the design places the artwork inside its 198×192 tile: left, top
@@ -57,27 +59,27 @@ interface Discipline {
 
 /** In the design's order, which is also the order the shelf scrolls in. */
 const DISCIPLINES: Discipline[] = [
-  { label: 'Soccer', art: soccer, box: [48, 21, 99] },
-  { label: 'Basketball', art: basketball, box: [48, 21, 99] },
-  { label: 'Football', art: football, box: [48, 21, 99] },
-  { label: 'Tennis', art: tennis, box: [46, 21, 102] },
-  { label: 'E sport', art: esport, box: [42, 18, 110] },
-  { label: 'CS2', art: cs2, box: [26, 21, 143] },
-  { label: 'FIFA', art: fifa, box: [48, 21, 99] },
-  { label: 'Cricket', art: cricket, box: [48, 21, 99] },
-  { label: 'Table Tennis', art: tableTennis, box: [48, 21, 99] },
-  { label: 'Valorant', art: valorant, box: [48, 21, 99] },
-  { label: 'Chess', art: chess, box: [48, 21, 99] },
-  { label: 'Dota 2', art: dota2, box: [38, 15, 118] },
-  { label: 'League of Legends', art: lol, box: [48, 21, 99] },
-  { label: 'Golf', art: golf, box: [43, 18, 109] },
-  { label: 'Live', art: live, box: [41, 33, 113] },
-  { label: 'Boxing', art: boxing, box: [48, 21, 99] },
-  { label: 'Ice Hockey', art: iceHockey, box: [47, 20, 101] },
-  { label: 'Volleyball', art: volleyball, box: [48, 21, 99] },
-  { label: 'Wrestling', art: wrestling, box: [45, 21, 108] },
-  { label: 'Sportsbook', art: sportsbook, box: [48, 21, 99] },
-  { label: 'MMA', art: mma, box: [35, 27, 129] },
+  { label: 'lobby.sport.soccer', art: soccer, box: [48, 21, 99] },
+  { label: 'lobby.sport.basketball', art: basketball, box: [48, 21, 99] },
+  { label: 'lobby.sport.americanFootball', art: football, box: [48, 21, 99] },
+  { label: 'lobby.sport.tennis', art: tennis, box: [46, 21, 102] },
+  { label: 'lobby.sport.esports', art: esport, box: [42, 18, 110] },
+  { label: 'lobby.sport.cs2', art: cs2, box: [26, 21, 143] },
+  { label: 'lobby.sport.fifa', art: fifa, box: [48, 21, 99] },
+  { label: 'lobby.sport.cricket', art: cricket, box: [48, 21, 99] },
+  { label: 'lobby.sport.tableTennis', art: tableTennis, box: [48, 21, 99] },
+  { label: 'lobby.sport.valorant', art: valorant, box: [48, 21, 99] },
+  { label: 'lobby.sport.chess', art: chess, box: [48, 21, 99] },
+  { label: 'lobby.sport.dota2', art: dota2, box: [38, 15, 118] },
+  { label: 'lobby.sport.lol', art: lol, box: [48, 21, 99] },
+  { label: 'lobby.sport.golf', art: golf, box: [43, 18, 109] },
+  { label: 'lobby.sport.live', art: live, box: [41, 33, 113] },
+  { label: 'lobby.sport.boxing', art: boxing, box: [48, 21, 99] },
+  { label: 'lobby.sport.iceHockey', art: iceHockey, box: [47, 20, 101] },
+  { label: 'lobby.sport.volleyball', art: volleyball, box: [48, 21, 99] },
+  { label: 'lobby.sport.wrestling', art: wrestling, box: [45, 21, 108] },
+  { label: 'lobby.sport.sportsbook', art: sportsbook, box: [48, 21, 99] },
+  { label: 'lobby.sport.mma', art: mma, box: [35, 27, 129] },
 ];
 
 /**
@@ -90,59 +92,56 @@ const DISCIPLINES: Discipline[] = [
  * its label at the foot. What sits above the label is the caller's: a 3D
  * render or a line icon.
  */
-const TileShell: FC<{ label: string; href?: string; children: ReactNode }> = ({
-  label,
-  href = '/sports',
-  children,
-}) => {
-  return (
-    <Link
-      href={href}
-      title={label}
-      className="rl-liquid group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
-    >
-      {children}
-      <span className="absolute inset-x-1 bottom-[calc(var(--u)*22)] text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white lg:bottom-[calc(var(--u)*28)] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:font-semibold lg:leading-[calc(var(--u)*28)]">
-        {label}
-      </span>
-    </Link>
-  );
-};
+const TileShell: FC<{ label: string; children: ReactNode }> = ({ label, children }) => (
+  <Link
+    href="/sports"
+    title={label}
+    className="rl-liquid group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
+  >
+    {children}
+    <span className="absolute inset-x-1 bottom-[calc(var(--u)*22)] text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white lg:bottom-[calc(var(--u)*28)] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:font-semibold lg:leading-[calc(var(--u)*28)]">
+      {label}
+    </span>
+  </Link>
+);
 
 /** A tile with the discipline's 3D render, placed as the design places it. */
-const DisciplineTile: FC<{ sport: Discipline }> = ({ sport }) => {
+const DisciplineTile: FC<{ sport: Discipline; phoneLarge?: boolean }> = ({
+  sport,
+  phoneLarge = false,
+}) => {
   const [x, y, w] = sport.box;
+  // The signed-in phone design draws the renders bigger on its 122px tile —
+  // a 99px render at 74, 16px from the top, centred — so each box is scaled
+  // by 74/99 from the desktop's, keeping wide renders (CS2, MMA) wide.
+  const phone = { width: w * (74 / 99), top: 16 + (y - 21) * (74 / 99) };
+  const { t } = useTranslation();
 
   return (
-    <TileShell label={sport.label}>
+    <TileShell label={t(sport.label)}>
       <Image
         src={sport.art}
         alt=""
-        sizes="(max-width: 1024px) 80px, 150px"
-        className="absolute h-auto transition-transform duration-300 group-hover:-translate-y-1"
-        style={{
-          left: `${(x / 198) * 100}%`,
-          top: `${(y / 192) * 100}%`,
-          width: `${(w / 198) * 100}%`,
-        }}
+        sizes="(max-width: 1024px) 110px, 150px"
+        className={`absolute h-auto transition-transform duration-300 group-hover:-translate-y-1 ${
+          phoneLarge
+            ? 'left-[var(--pl)] top-[var(--pt)] w-[var(--pw)] lg:left-[var(--dl)] lg:top-[var(--dt)] lg:w-[var(--dw)]'
+            : 'left-[var(--dl)] top-[var(--dt)] w-[var(--dw)]'
+        }`}
+        style={
+          {
+            '--dl': `${(x / 198) * 100}%`,
+            '--dt': `${(y / 192) * 100}%`,
+            '--dw': `${(w / 198) * 100}%`,
+            '--pl': `calc(50% - ${phone.width / 2}px)`,
+            '--pt': `${phone.top}px`,
+            '--pw': `${phone.width}px`,
+          } as CSSProperties
+        }
       />
     </TileShell>
   );
 };
-
-/**
- * A tile with the discipline's 82px line icon, centred above the label —
- * the signed-in lobby's version, opening that sport's page.
- */
-const LineTile: FC<{ sport: (typeof SPORTS)[number] }> = ({ sport }) => (
-  <TileShell label={sport.label} href={sportHref(sport.key)}>
-    <img
-      src={sport.icon.src}
-      alt=""
-      className="absolute left-1/2 top-[calc(var(--u)*11)] h-[calc(var(--u)*82)] w-[calc(var(--u)*82)] -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-1 lg:top-[calc(var(--u)*34)]"
-    />
-  </TileShell>
-);
 
 /* ==================================================================== */
 /* Fixtures                                                              */
@@ -155,12 +154,12 @@ interface Team {
 
 interface Match {
   id: string;
+  /** ISO region code, named in the reader's language. */
   country: string;
   league: string;
   home: Team;
   away: Team;
-  time: string;
-  date: string;
+  kickoff: Date;
   odds: [string, string, string];
   more: string;
 }
@@ -171,12 +170,11 @@ const UNION: Team = { name: 'Union Berlin', crest: crestUnion };
 /** The design's sample fixture, repeated as it is there. */
 const MATCHES: Match[] = ['m1', 'm2', 'm3', 'm4'].map((id) => ({
   id,
-  country: 'Germany',
+  country: 'DE',
   league: 'Bundesliga',
   home: BAYERN,
   away: UNION,
-  time: '12:00 AM',
-  date: '09/19/2026',
+  kickoff: new Date(2026, 8, 19, 0, 0),
   odds: ['1.04', '14.00', '30.00'],
   more: '+55',
 }));
@@ -203,50 +201,59 @@ const TeamColumn: FC<{ team: Team }> = ({ team }) => (
 );
 
 /** The design's 423×240 fixture card; a phone shows one at full width. */
-const MatchCard: FC<{ match: Match }> = ({ match }) => (
-  <Link
-    href="/sports"
-    className="rl-liquid group flex flex-col rounded-[calc(var(--u)*34)] px-px pb-[calc(var(--u)*18)] pt-[calc(var(--u)*18)] transition-colors hover:bg-white/[0.11] lg:px-[calc(var(--u)*19)]"
-  >
-    <span className="flex h-[calc(var(--u)*36)] items-start justify-center gap-[calc(var(--u)*8)] pb-[calc(var(--u)*12)]">
-      <img src={leagueIcon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
-      <span className="flex items-center truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold leading-[calc(var(--u)*21)] text-[#b3bec1]">
-        {match.country}
-        <span
-          className="mx-1.5 h-[calc(var(--u)*4)] w-[calc(var(--u)*4)] flex-shrink-0 rounded-full bg-white"
-          aria-hidden="true"
-        />
-        {match.league}
-      </span>
-    </span>
+const MatchCard: FC<{ match: Match }> = ({ match }) => {
+  const { t, locale } = useTranslation();
+  const country = new Intl.DisplayNames([locale], { type: 'region' }).of(match.country);
 
-    <span className="mt-[calc(var(--u)*22)] grid grid-cols-[1fr_calc(var(--u)*107)_1fr] items-start gap-[calc(var(--u)*4)] px-[calc(var(--u)*16)]">
-      <TeamColumn team={match.home} />
-      <span className="flex flex-col items-center pt-[calc(var(--u)*12)]">
-        <span className="whitespace-nowrap text-[length:max(min(11px,24px),calc(var(--u)*24))] font-bold leading-[calc(var(--u)*32)] text-white">
-          {match.time}
-        </span>
-        <span className="pt-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] tabular-nums text-[#b3bec1]">
-          {match.date}
+  return (
+    <Link
+      href="/sports"
+      className="rl-liquid group flex flex-col rounded-[calc(var(--u)*34)] px-px pb-[calc(var(--u)*18)] pt-[calc(var(--u)*18)] transition-colors hover:bg-white/[0.11] lg:px-[calc(var(--u)*19)]"
+    >
+      <span className="flex h-[calc(var(--u)*36)] items-start justify-center gap-[calc(var(--u)*8)] pb-[calc(var(--u)*12)]">
+        <img src={leagueIcon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
+        <span className="flex items-center truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold leading-[calc(var(--u)*21)] text-[#b3bec1]">
+          {country}
+          <span
+            className="mx-1.5 h-[calc(var(--u)*4)] w-[calc(var(--u)*4)] flex-shrink-0 rounded-full bg-white"
+            aria-hidden="true"
+          />
+          {match.league}
         </span>
       </span>
-      <TeamColumn team={match.away} />
-    </span>
 
-    <span className="pb-[calc(var(--u)*6)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#849194]">
-      1x2
-    </span>
-
-    <span className="flex items-center gap-[calc(var(--u)*8)] px-[calc(var(--u)*12)]">
-      <Odd label="1" price={match.odds[0]} />
-      <Odd label="draw" price={match.odds[1]} />
-      <Odd label="2" price={match.odds[2]} />
-      <span className="flex h-[calc(var(--u)*40)] flex-shrink-0 items-center rounded-lg bg-[#292d2e] px-[calc(var(--u)*12)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#6a7287]">
-        {match.more}
+      <span className="mt-[calc(var(--u)*22)] grid grid-cols-[1fr_calc(var(--u)*107)_1fr] items-start gap-[calc(var(--u)*4)] px-[calc(var(--u)*16)]">
+        <TeamColumn team={match.home} />
+        <span className="flex flex-col items-center pt-[calc(var(--u)*12)]">
+          <span className="whitespace-nowrap text-[length:max(min(11px,24px),calc(var(--u)*24))] font-bold leading-[calc(var(--u)*32)] text-white">
+            {match.kickoff.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })}
+          </span>
+          <span className="pt-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] tabular-nums text-[#b3bec1]">
+            {match.kickoff.toLocaleDateString(locale, {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+            })}
+          </span>
+        </span>
+        <TeamColumn team={match.away} />
       </span>
-    </span>
-  </Link>
-);
+
+      <span className="pb-[calc(var(--u)*6)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#849194]">
+        1x2
+      </span>
+
+      <span className="flex items-center gap-[calc(var(--u)*8)] px-[calc(var(--u)*12)]">
+        <Odd label="1" price={match.odds[0]} />
+        <Odd label={t('sports.draw')} price={match.odds[1]} />
+        <Odd label="2" price={match.odds[2]} />
+        <span className="flex h-[calc(var(--u)*40)] flex-shrink-0 items-center rounded-lg bg-[#292d2e] px-[calc(var(--u)*12)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#6a7287]">
+          {match.more}
+        </span>
+      </span>
+    </Link>
+  );
+};
 
 /** One fixture across on a phone, three and a half at the design's width. */
 const LIVE_TRACK =
@@ -262,32 +269,39 @@ interface ShelfProps {
 }
 
 /**
- * The disciplines shelf. `line` is the signed-in lobby's version, with line
- * icons; the default has the 3D renders.
+ * The disciplines shelf: a tile per sport with its 3D render. Signed out, a
+ * phone pages it three by two, as that design does; the signed-in design runs
+ * it as one row of three, like the game shelves (`paged={false}`).
  */
-export const SportsShelf: FC<ShelfProps & { variant?: '3d' | 'line' }> = ({
-  viewAll,
-  variant = '3d',
-}) => {
+export const SportsShelf: FC<ShelfProps & { paged?: boolean }> = ({ viewAll, paged = true }) => {
   const { t } = useTranslation();
 
   return (
-    <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll} paged>
-      {variant === 'line'
-        ? SPORTS.map((sport) => <LineTile key={sport.key} sport={sport} />)
-        : DISCIPLINES.map((sport) => <DisciplineTile key={sport.label} sport={sport} />)}
+    <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll} paged={paged}>
+      {DISCIPLINES.map((sport) => (
+        <DisciplineTile key={sport.label} sport={sport} phoneLarge={!paged} />
+      ))}
     </ScrollShelf>
   );
 };
 
 /** The live fixtures shelf. */
-export const LiveGamesShelf: FC<ShelfProps> = ({ viewAll }) => (
-  <ScrollShelf id="live-games" title="Live Games" href={viewAll} track={LIVE_TRACK}>
-    {MATCHES.map((m) => (
-      <MatchCard key={m.id} match={m} />
-    ))}
-  </ScrollShelf>
-);
+export const LiveGamesShelf: FC<ShelfProps> = ({ viewAll }) => {
+  const { t } = useTranslation();
+
+  return (
+    <ScrollShelf
+      id="live-games"
+      title={t('lobby.sports.liveGames')}
+      href={viewAll}
+      track={LIVE_TRACK}
+    >
+      {MATCHES.map((m) => (
+        <MatchCard key={m.id} match={m} />
+      ))}
+    </ScrollShelf>
+  );
+};
 
 /** Both sportsbook teasers together, as the signed-out lobby shows them. */
 const SportsRow: FC = () => (

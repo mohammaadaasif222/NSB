@@ -1,11 +1,15 @@
 import { useMemo, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import DataTable, { TableBadge, type DataColumn } from '@/components/profile/DataTable';
-import { labelKeyOf, type ReferralRow } from '@/components/profile/referral/mockReferral';
+import {
+  labelKeyOf,
+  rewardKeyOf,
+  type ReferralRow,
+} from '@/components/profile/referral/mockReferral';
 
 /** Who the player has brought in, and what each one paid out. */
 const ReferralTable: FC<{ rows: readonly ReferralRow[] }> = ({ rows }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const columns = useMemo<readonly DataColumn<ReferralRow>[]>(
     () => [
@@ -25,7 +29,12 @@ const ReferralTable: FC<{ rows: readonly ReferralRow[] }> = ({ rows }) => {
         width: 232,
         cell: (r) => (
           <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#8c8c8c]">
-            {r.date}
+            {new Date(`${r.date}T00:00:00Z`).toLocaleDateString(locale, {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              timeZone: 'UTC',
+            })}
           </span>
         ),
       },
@@ -52,12 +61,14 @@ const ReferralTable: FC<{ rows: readonly ReferralRow[] }> = ({ rows }) => {
         end: true,
         cell: (r) => (
           <span className="block truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white">
-            {r.reward ?? t('ref.noChange')}
+            {r.reward
+              ? t(rewardKeyOf(r.reward.kind), { amount: r.reward.amount })
+              : t('ref.noChange')}
           </span>
         ),
       },
     ],
-    [t]
+    [t, locale]
   );
 
   return (

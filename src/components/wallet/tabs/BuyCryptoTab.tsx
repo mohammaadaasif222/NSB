@@ -1,11 +1,13 @@
 import { useEffect, useState, type FC } from 'react';
 import { useMe } from '@/context/UserContext';
+import { useTranslation } from '@/context/I18nContext';
 import { useChangellyBuyCrypto, type Cryptocurrency } from '@/hooks/useChangellyBuyCrypto';
 import api from '@/services/api';
 
 type BuyCryptoStep = 'step1' | 'step2';
 
-// Common fiat currencies for payment
+// Common fiat currencies for payment. `name` is the English fallback; the
+// picker shows the name in the player's language via Intl.DisplayNames.
 const FIAT_CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
   { code: 'EUR', name: 'Euro', symbol: '€' },
@@ -23,8 +25,18 @@ const FIAT_CURRENCIES = [
   { code: 'TRY', name: 'Turkish Lira', symbol: '₺' },
 ];
 
+/** Localised currency name, falling back to the English one when Intl cannot help. */
+const currencyName = (code: string, fallback: string, locale: string): string => {
+  try {
+    return new Intl.DisplayNames([locale], { type: 'currency' }).of(code) ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 const BuyCryptoTab: FC = () => {
   const { me } = useMe();
+  const { t, locale } = useTranslation();
   const {
     cryptos,
     loadingCryptos,
@@ -35,6 +47,7 @@ const BuyCryptoTab: FC = () => {
     errorOffers,
     fetchOffers,
     creatingOrder,
+    errorCreateOrder,
     createOrder,
   } = useChangellyBuyCrypto();
 
@@ -52,6 +65,7 @@ const BuyCryptoTab: FC = () => {
   const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
   const [showFiatDropdown, setShowFiatDropdown] = useState(false);
   const [showProviderDropdown, setShowProviderDropdown] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null); // Track selected network
 
   // Fetch cryptos on mount
   useEffect(() => {
@@ -60,7 +74,12 @@ const BuyCryptoTab: FC = () => {
 
   // Fetch wallet address when crypto is selected
   useEffect(() => {
-    console.log('[Changelly] Address effect triggered - selectedCrypto:', selectedCrypto?.code, 'me:', !!me);
+    console.log(
+      '[Changelly] Address effect triggered - selectedCrypto:',
+      selectedCrypto?.code,
+      'me:',
+      !!me
+    );
 
     if (!selectedCrypto || !me) {
       console.log('[Changelly] Skipping address fetch - missing crypto or user');
@@ -90,7 +109,12 @@ const BuyCryptoTab: FC = () => {
         const currencyDetails = currencyResponse?.data;
         const defaultNetwork = currencyDetails?.networks?.[0];
 
-        console.log('[Changelly] Available networks:', currencyDetails?.networks, 'Default:', defaultNetwork);
+        console.log(
+          '[Changelly] Available networks:',
+          currencyDetails?.networks,
+          'Default:',
+          defaultNetwork
+        );
 
         if (!defaultNetwork) {
           console.error('[Changelly] No networks available for currency:', selectedCrypto.code);
@@ -117,8 +141,10 @@ const BuyCryptoTab: FC = () => {
         console.log('[Changelly] Address response:', addressResponse);
 
         const address = addressResponse?.data?.address;
+        const networkCode = addressResponse?.data?.network_code;
         setToAddress(address || null);
-        console.log('[Changelly] Successfully fetched wallet address:', address);
+        setSelectedNetwork(networkCode || null);
+        console.log('[Changelly] Successfully fetched wallet address:', address, 'Network:', networkCode);
       } catch (error: any) {
         console.error('[Changelly] Address fetch error - Full details:', {
           status: error?.status,
@@ -128,7 +154,10 @@ const BuyCryptoTab: FC = () => {
         });
         // Use placeholder if real address fetch fails
         setToAddress(`deposit_${selectedCrypto.code}_${me.id}`);
-        console.warn('[Changelly] Using placeholder address:', `deposit_${selectedCrypto.code}_${me.id}`);
+        console.warn(
+          '[Changelly] Using placeholder address:',
+          `deposit_${selectedCrypto.code}_${me.id}`
+        );
       } finally {
         setFetchingAddress(false);
       }
@@ -139,7 +168,14 @@ const BuyCryptoTab: FC = () => {
 
   // Auto-fetch offers when all 3 are selected: amount, fiat currency, and crypto
   useEffect(() => {
-    console.log('[Changelly] Offers effect triggered - crypto:', selectedCrypto?.code, 'amount:', amount, 'fiat:', fiatCurrency);
+    console.log(
+      '[Changelly] Offers effect triggered - crypto:',
+      selectedCrypto?.code,
+      'amount:',
+      amount,
+      'fiat:',
+      fiatCurrency
+    );
 
     if (!selectedCrypto || !amount || Number(amount) <= 0 || !fiatCurrency) {
       console.log('[Changelly] Skipping offers fetch - missing required fields');
@@ -155,7 +191,7 @@ const BuyCryptoTab: FC = () => {
       fiatCurrency,
       selectedCrypto.code,
       country,
-      country === 'US' ? 'CA' : undefined,
+      country === 'US' ? 'CA' : undefined
     );
   }, [selectedCrypto, amount, fiatCurrency, country, fetchOffers]);
 
@@ -175,7 +211,7 @@ const BuyCryptoTab: FC = () => {
 
   // Handle Buy Now → Create order with selected provider
   const handleBuyNow = async () => {
-    if (!selectedCrypto || !selectedProvider || !toAddress) return;
+    if (!selectedCrypto || !selectedProvider || !toAddress || !selectedNetwork) return;
 
     try {
       console.log('[Changelly] Creating order...');
@@ -189,6 +225,7 @@ const BuyCryptoTab: FC = () => {
         selectedProvider,
         country,
         toAddress,
+        selectedNetwork, // Pass the network code (e.g., 'ETHEREUM', 'SOLANA')
         country === 'US' ? 'CA' : undefined, // Automatically use CA for US, undefined for others
       );
 
@@ -222,7 +259,7 @@ const BuyCryptoTab: FC = () => {
           {/* Amount Input with Dual Currency */}
           <div>
             <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
-              Amount
+              {t('acct.buy.amount')}
             </label>
             <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2">
               {/* Left side: Amount input */}
@@ -232,7 +269,7 @@ const BuyCryptoTab: FC = () => {
                   value={amount}
                   onChange={(e) => {
                     setAmount(e.target.value);
-                                }}
+                  }}
                   placeholder="100"
                   min="10"
                   max="10000"
@@ -258,30 +295,39 @@ const BuyCryptoTab: FC = () => {
                         onClick={() => {
                           setFiatCurrency(fiat.code);
                           setShowFiatDropdown(false);
-                                            }}
+                        }}
                         className={`w-full text-left px-4 py-2 hover:bg-white/10 transition-colors ${
-                          fiatCurrency === fiat.code ? 'bg-white/10 border-l-2 border-orange-500' : ''
+                          fiatCurrency === fiat.code
+                            ? 'bg-white/10 border-l-2 border-orange-500'
+                            : ''
                         }`}
                       >
                         <div className="font-medium text-white">{fiat.code}</div>
-                        <div className="text-xs text-white/60">{fiat.name}</div>
+                        <div className="text-xs text-white/60">
+                          {currencyName(fiat.code, fiat.name, locale)}
+                        </div>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
             </div>
-            <p className="text-xs text-white/40 mt-1">Min 10 • Max 10,000</p>
+            <p className="text-xs text-white/40 mt-1">
+              {t('acct.buy.minMax', {
+                min: (10).toLocaleString(locale),
+                max: (10000).toLocaleString(locale),
+              })}
+            </p>
           </div>
 
           {/* Crypto Selection Dropdown */}
           <div>
             <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
-              Select Cryptocurrency
+              {t('acct.buy.selectCrypto')}
             </label>
 
             {loadingCryptos && (
-              <div className="text-center py-6 text-white/60">Loading cryptocurrencies...</div>
+              <div className="text-center py-6 text-white/60">{t('acct.buy.loadingCryptos')}</div>
             )}
 
             {errorCryptos && (
@@ -303,7 +349,7 @@ const BuyCryptoTab: FC = () => {
                         <div className="text-xs text-white/60">{selectedCrypto.name}</div>
                       </>
                     ) : (
-                      <span className="text-white/60">Choose a cryptocurrency...</span>
+                      <span className="text-white/60">{t('acct.buy.chooseCrypto')}</span>
                     )}
                   </div>
                   <span className="text-white/60">▼</span>
@@ -319,7 +365,9 @@ const BuyCryptoTab: FC = () => {
                           setShowCryptoDropdown(false);
                         }}
                         className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0 ${
-                          selectedCrypto?.code === crypto.code ? 'bg-white/10 border-l-2 border-orange-500' : ''
+                          selectedCrypto?.code === crypto.code
+                            ? 'bg-white/10 border-l-2 border-orange-500'
+                            : ''
                         }`}
                       >
                         <div className="font-semibold text-white">{crypto.code}</div>
@@ -332,7 +380,7 @@ const BuyCryptoTab: FC = () => {
             )}
 
             {!loadingCryptos && cryptos.length === 0 && !errorCryptos && (
-              <div className="text-center py-6 text-white/60">No cryptocurrencies available</div>
+              <div className="text-center py-6 text-white/60">{t('acct.buy.noCryptos')}</div>
             )}
           </div>
 
@@ -340,11 +388,13 @@ const BuyCryptoTab: FC = () => {
           {selectedCrypto && amount && fiatCurrency && (
             <div>
               <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
-                Payment Provider
+                {t('acct.buy.provider')}
               </label>
 
               {loadingOffers && (
-                <div className="text-center py-6 text-white/60">Fetching available providers...</div>
+                <div className="text-center py-6 text-white/60">
+                  {t('acct.buy.fetchingProviders')}
+                </div>
               )}
 
               {errorOffers && (
@@ -362,15 +412,21 @@ const BuyCryptoTab: FC = () => {
                     <div>
                       {selectedProvider ? (
                         <>
-                          <div className="font-semibold text-white capitalize">{selectedProvider}</div>
-                          {offers.find(o => o.providerCode === selectedProvider) && (
+                          <div className="font-semibold text-white capitalize">
+                            {selectedProvider}
+                          </div>
+                          {offers.find((o) => o.providerCode === selectedProvider) && (
                             <div className="text-xs text-white/60">
-                              Fee: {offers.find(o => o.providerCode === selectedProvider)?.fee}%
+                              {t('acct.buy.fee', {
+                                fee:
+                                  offers.find((o) => o.providerCode === selectedProvider)?.fee ??
+                                  '',
+                              })}
                             </div>
                           )}
                         </>
                       ) : (
-                        <span className="text-white/60">Choose a provider...</span>
+                        <span className="text-white/60">{t('acct.buy.chooseProvider')}</span>
                       )}
                     </div>
                     <span className="text-white/60">▼</span>
@@ -386,12 +442,19 @@ const BuyCryptoTab: FC = () => {
                             setShowProviderDropdown(false);
                           }}
                           className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-b-0 ${
-                            selectedProvider === offer.providerCode ? 'bg-white/10 border-l-2 border-orange-500' : ''
+                            selectedProvider === offer.providerCode
+                              ? 'bg-white/10 border-l-2 border-orange-500'
+                              : ''
                           }`}
                         >
-                          <div className="font-semibold text-white capitalize">{offer.providerCode}</div>
+                          <div className="font-semibold text-white capitalize">
+                            {offer.providerCode}
+                          </div>
                           <div className="text-xs text-white/60">
-                            Fee: {offer.fee}% • Expected: {Number(offer.amountExpectedTo).toFixed(8)} {selectedCrypto.code}
+                            {t('acct.buy.fee', { fee: offer.fee })} •{' '}
+                            {t('acct.buy.expected', {
+                              amount: `${Number(offer.amountExpectedTo).toFixed(8)} ${selectedCrypto.code}`,
+                            })}
                           </div>
                         </button>
                       ))}
@@ -401,8 +464,15 @@ const BuyCryptoTab: FC = () => {
               )}
 
               {!loadingOffers && offers.length === 0 && !errorOffers && selectedCrypto && (
-                <div className="text-center py-6 text-white/60">No providers available for this pair</div>
+                <div className="text-center py-6 text-white/60">{t('acct.buy.noProviders')}</div>
               )}
+            </div>
+          )}
+
+          {/* Error message when order creation fails */}
+          {errorCreateOrder && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-sm">
+              <span className="font-semibold">Error creating order:</span> {errorCreateOrder.message}
             </div>
           )}
 
@@ -418,6 +488,7 @@ const BuyCryptoTab: FC = () => {
               !selectedCrypto ||
               !selectedProvider ||
               !toAddress ||
+              !selectedNetwork ||
               offers.length === 0
             }
             className="w-full px-4 py-3 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] rounded-lg text-white hover:opacity-90 transition-opacity text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
@@ -425,20 +496,20 @@ const BuyCryptoTab: FC = () => {
             {fetchingAddress ? (
               <div className="flex items-center justify-center gap-2">
                 <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                Getting Wallet...
+                {t('acct.buy.gettingWallet')}
               </div>
             ) : loadingOffers ? (
               <div className="flex items-center justify-center gap-2">
                 <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                Loading Providers...
+                {t('acct.buy.loadingProviders')}
               </div>
             ) : creatingOrder ? (
               <div className="flex items-center justify-center gap-2">
                 <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                Processing...
+                {t('acct.buy.processing')}
               </div>
             ) : (
-              'Buy Now'
+              t('acct.buy.buyNow')
             )}
           </button>
         </div>
@@ -450,22 +521,20 @@ const BuyCryptoTab: FC = () => {
           {/* Summary */}
           <div className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-white/60">Expected to receive</span>
+              <span className="text-white/60">{t('acct.buy.expectedReceive')}</span>
               <span className="font-semibold text-white">
                 {expectedAmount?.toFixed(8)} {selectedCrypto.code}
               </span>
             </div>
             <div className="border-t border-white/10" />
-            <div className="text-xs text-white/60">
-              Processing time: 5-30 minutes (depending on payment method)
-            </div>
+            <div className="text-xs text-white/60">{t('acct.buy.processingTime')}</div>
           </div>
 
           {/* URL Display - No Iframe */}
           <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
             <div>
               <label className="block text-xs font-semibold text-[#9da2b4] mb-2">
-                Changelly Payment URL:
+                {t('acct.buy.paymentUrl')}
               </label>
               <div className="bg-black/50 border border-white/20 rounded p-3 break-all text-white/80 text-sm font-mono max-h-40 overflow-y-auto">
                 {iframeUrl}
@@ -480,15 +549,15 @@ const BuyCryptoTab: FC = () => {
               }}
               className="w-full px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#F7931E] rounded-lg text-white hover:opacity-90 transition-opacity text-sm font-semibold"
             >
-              Copy URL to Clipboard
+              {t('acct.buy.copyUrl')}
             </button>
           </div>
 
           {/* Info */}
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-3 py-2 text-blue-300 text-xs space-y-1">
-            <p>✅ Destination address is locked and cannot be changed</p>
-            <p>✅ Your payment is secured through Changelly</p>
-            <p>✅ Keep this window open until payment completes</p>
+            <p>✅ {t('acct.buy.infoLocked')}</p>
+            <p>✅ {t('acct.buy.infoSecured')}</p>
+            <p>✅ {t('acct.buy.infoKeepOpen')}</p>
           </div>
 
           {/* Action */}
@@ -496,7 +565,7 @@ const BuyCryptoTab: FC = () => {
             onClick={handleReset}
             className="w-full px-3 py-2 border border-white/10 rounded-lg text-white hover:bg-white/5 transition-colors text-sm font-semibold"
           >
-            Back to Wallet
+            {t('acct.buy.backToWallet')}
           </button>
         </div>
       )}

@@ -51,7 +51,12 @@ const AffiliatePage: FC = () => {
       {/* 1544 is the design's content column — the same one the footer and the
           account area use, so the three line up down the page. */}
       <div className="@container mx-auto w-full max-w-[1544px]">
-        <h1 className="rl-h-section">{t('aff.title')}</h1>
+        {/* The design opens the title at y140, 40 under the bar; the shell
+            leaves 16, so the other 24 is here. In `--u` because both of the
+            numbers it answers to — the layout's 20 of inset and its 16 of
+            lead — scale with the chrome, where the card column below does
+            not. */}
+        <h1 className="mt-1 rl-h-section lg:mt-[calc(var(--u)*24)]">{t('aff.title')}</h1>
 
         {/* Two 764 cards with 20 between them is the design's 1548 — the column
             itself, give or take the 4px it rounds off.
@@ -61,16 +66,25 @@ const AffiliatePage: FC = () => {
             so the cards scale their own type down to suit — see AffiliateStats
             — rather than the page reflowing them into a stack. A screen that
             only changes size should not also change shape. */}
-        <div className="mt-6 grid gap-5 @4xl:grid-cols-2">
-          <AffiliateCodeCard />
-          <AffiliateStats summary={summary} />
+        {/* The ids are the account menu's Affiliate links (Campaign, Earning,
+            Referred Users, Terms); scroll-mt keeps each clear of the sticky bar. */}
+        <div className="mt-5 grid gap-5 @4xl:grid-cols-2">
+          <div id="campaign" className="scroll-mt-28">
+            <AffiliateCodeCard />
+          </div>
+          <div id="earning" className="scroll-mt-28">
+            <AffiliateStats summary={summary} />
+          </div>
         </div>
 
-        <div className="mt-5">
+        {/* 34 down the column, not the 20 that separates the two cards above:
+            the design stacks its rows further apart than it sets them side by
+            side (463→497 and 1063→1096). */}
+        <div id="referred-users" className="mt-8.5 scroll-mt-28">
           <ReferralTable rows={rows} />
         </div>
 
-        <div className="mt-5">
+        <div id="terms" className="mt-8.5 scroll-mt-28">
           <AffiliateTerms />
         </div>
 

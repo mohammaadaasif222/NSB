@@ -9,6 +9,7 @@ import { useTranslation } from '@/context/I18nContext';
 import apiService from '@/services/api';
 import { encryptPassword } from '@/utils/crypto';
 import { isPlatformRole } from '@/constants/roles';
+import { REGISTER_HREF } from '@/constants/auth';
 import { analytics, failureReason, type AuthMethod } from '@/services/analytics';
 
 import PublicRoute from '@/routes/PublicRoute';
@@ -80,13 +81,13 @@ const Login: FC = () => {
             role = jwtDecode<JwtPayload>(response.data.token).role;
           } catch {
             analytics.auth.loginFailed(method, 'malformed_token');
-            toast.error('Received a malformed token');
+            toast.error(t('misc.auth.malformedToken'));
             return;
           }
 
           if (!isPlatformRole(role)) {
             analytics.auth.loginFailed(method, 'operator_account');
-            toast.error('This app is for player accounts. Operators sign in on the admin console.');
+            toast.error(t('loginModal.operatorAccount'));
             return;
           }
 
@@ -96,18 +97,18 @@ const Login: FC = () => {
           toast.success(t('login.success'));
         } else {
           analytics.auth.loginFailed(method, 'token_missing');
-          toast.error('Token not found in response');
+          toast.error(t('loginModal.failed'));
           console.error('Login failed: token missing from response');
         }
       } else {
         analytics.auth.loginFailed(method, failureReason(response?.message));
-        toast.error(response?.message || 'Login failed');
+        toast.error(response?.message || t('loginModal.failed'));
       }
     } catch (err) {
       const apiErr = err as ApiError;
       analytics.auth.loginFailed(method, failureReason(apiErr));
       console.error(apiErr);
-      toast.error(apiErr?.message || 'An error occurred during login');
+      toast.error(apiErr?.message || t('loginModal.failed'));
     } finally {
       setLoading(false);
     }
@@ -194,7 +195,7 @@ const Login: FC = () => {
     return (
       <AuthShell
         subtitle={t('auth.methodLogin')}
-        action={{ href: '/auth/register', label: t('login.register') }}
+        action={{ href: REGISTER_HREF, label: t('login.register') }}
         legal={t('auth.legal')}
       >
         <AuthMethods
@@ -213,7 +214,7 @@ const Login: FC = () => {
         subtitle={t('auth.methodOther')}
         onBack={() => setStep('choose')}
         backLabel={t('auth.back')}
-        action={{ href: '/auth/register', label: t('login.register') }}
+        action={{ href: REGISTER_HREF, label: t('login.register') }}
         legal={t('auth.legal')}
       >
         <AuthMethods
@@ -230,7 +231,7 @@ const Login: FC = () => {
       caption={t('login.subtitle')}
       onBack={() => setStep('choose')}
       backLabel={t('auth.back')}
-      action={{ href: '/auth/register', label: t('login.register') }}
+      action={{ href: REGISTER_HREF, label: t('login.register') }}
       legal={t('auth.legal')}
     >
       <form className="space-y-3.5" onSubmit={handleLogin}>

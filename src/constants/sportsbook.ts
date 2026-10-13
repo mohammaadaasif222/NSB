@@ -6,6 +6,7 @@ import lineCricket from '@/assets/lobby/player/sport-cricket.svg';
 import lineHorse from '@/assets/lobby/player/sport-horse.svg';
 import lineBaseball from '@/assets/lobby/player/sport-baseball.svg';
 import lineHockey from '@/assets/lobby/player/sport-hockey.svg';
+import type { TranslationKey } from '@/i18n/locales';
 
 /** A sport with its own page, `/sports/<key>`. */
 export type SportKey =
@@ -14,27 +15,32 @@ export type SportKey =
 /** What a fixture can be: a sport with a page, or esports (a chip, no tile). */
 export type FixtureSport = SportKey | 'esports';
 
-/**
- * The sportsbook's sports, in the designs' order, with their line icons.
- * The names are the designs' English, like the rest of the sports chrome.
- */
-export const SPORTS: { key: SportKey; label: string; icon: StaticImageData }[] = [
-  { key: 'football', label: 'Football', icon: lineFootball },
-  { key: 'basketball', label: 'Basketball', icon: lineBasketball },
-  { key: 'tennis', label: 'Tennis', icon: lineTennis },
-  { key: 'cricket', label: 'Cricket', icon: lineCricket },
-  { key: 'horse-racing', label: 'Horse Racing', icon: lineHorse },
-  { key: 'baseball', label: 'Baseball', icon: lineBaseball },
-  { key: 'hockey', label: 'Hockey', icon: lineHockey },
+export interface Sport {
+  key: SportKey;
+  /** Dictionary key of the sport's name. */
+  label: TranslationKey;
+  /** The sportsbook's line icon, with its colour accent. */
+  icon: StaticImageData;
+}
+
+/** The sportsbook's sports, in the designs' order. */
+export const SPORTS: Sport[] = [
+  { key: 'football', label: 'lobby.sport.football', icon: lineFootball },
+  { key: 'basketball', label: 'lobby.sport.basketball', icon: lineBasketball },
+  { key: 'tennis', label: 'lobby.sport.tennis', icon: lineTennis },
+  { key: 'cricket', label: 'lobby.sport.cricket', icon: lineCricket },
+  { key: 'horse-racing', label: 'lobby.sport.horseRacing', icon: lineHorse },
+  { key: 'baseball', label: 'lobby.sport.baseball', icon: lineBaseball },
+  { key: 'hockey', label: 'lobby.sport.hockey', icon: lineHockey },
 ];
 
 /** The Top Sports chips: every sport, then the four the design names. */
-export const SPORT_CHIPS: { key: FixtureSport | 'all'; label?: string }[] = [
+export const SPORT_CHIPS: { key: FixtureSport | 'all'; label?: TranslationKey }[] = [
   { key: 'all' },
-  { key: 'football', label: 'Soccer' },
-  { key: 'basketball', label: 'Basketball' },
-  { key: 'tennis', label: 'Tennis' },
-  { key: 'esports', label: 'Esports' },
+  { key: 'football', label: 'lobby.sport.soccer' },
+  { key: 'basketball', label: 'lobby.sport.basketball' },
+  { key: 'tennis', label: 'lobby.sport.tennis' },
+  { key: 'esports', label: 'lobby.sport.esports' },
 ];
 
 export const isSportKey = (value: unknown): value is SportKey =>

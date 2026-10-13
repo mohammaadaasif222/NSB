@@ -1,13 +1,11 @@
 import type { FC, ReactElement } from 'react';
 import Image, { type StaticImageData } from 'next/image';
+import { PAYMENT_MARK } from '@/constants/cdn';
 import visa from '@/assets/footer/pay-visa.png';
 import applePay from '@/assets/footer/pay-applepay.svg';
 import googlePay from '@/assets/footer/pay-googlepay.svg';
-import paypal from '@/assets/footer/pay-paypal.png';
-import ebay from '@/assets/footer/pay-ebay.png';
-import mastercard from '@/assets/footer/pay-mastercard.png';
-import cirrus from '@/assets/footer/pay-cirrus.png';
 import eighteenPlus from '@/assets/footer/18plus.svg';
+import { useTranslation } from '@/context/I18nContext';
 
 /**
  * The band across the foot of the sitemap card.
@@ -22,10 +20,10 @@ const MARKS: { src: StaticImageData; label: string; w: number; h: number }[] = [
   { src: visa, label: 'Visa', w: 50, h: 31 },
   { src: applePay, label: 'Apple Pay', w: 50, h: 21 },
   { src: googlePay, label: 'Google Pay', w: 56, h: 23 },
-  { src: paypal, label: 'PayPal', w: 50, h: 31 },
-  { src: ebay, label: 'eBay', w: 50, h: 31 },
-  { src: mastercard, label: 'Mastercard', w: 50, h: 31 },
-  { src: cirrus, label: 'Cirrus', w: 50, h: 31 },
+  { src: PAYMENT_MARK.paypal, label: 'PayPal', w: 50, h: 31 },
+  { src: PAYMENT_MARK.ebay, label: 'eBay', w: 50, h: 31 },
+  { src: PAYMENT_MARK.mastercard, label: 'Mastercard', w: 50, h: 31 },
+  { src: PAYMENT_MARK.cirrus, label: 'Cirrus', w: 50, h: 31 },
 ];
 
 /** A title over its caption — used at both ends of the band. */
@@ -54,41 +52,48 @@ const Rule = (): ReactElement => (
  * been scaled down to fit is a payment mark nobody recognises, so if anything
  * has to go it is the air around them.
  */
-const FooterPaymentBar: FC = () => (
-  <div className="flex flex-col items-center gap-6 bg-white/[0.07] px-6 py-7 @foot:h-22.5 @foot:flex-row @foot:justify-between @foot:gap-0 @foot:px-6 @foot:py-0 @7xl:pe-10 @7xl:ps-12.5">
-    <Note title="Safe & Secure Payments" caption="Your security is our priority" />
+const FooterPaymentBar: FC = () => {
+  const { t } = useTranslation();
 
-    <Rule />
+  return (
+    <div className="flex flex-col items-center gap-6 bg-white/[0.07] px-6 py-7 @foot:h-22.5 @foot:flex-row @foot:justify-between @foot:gap-0 @foot:px-6 @foot:py-0 @7xl:pe-10 @7xl:ps-12.5">
+      <Note title={t('lobby.footer.securePayments')} caption={t('lobby.footer.securityPriority')} />
 
-    <div className="flex flex-wrap items-center justify-center gap-3 @foot:flex-nowrap @foot:gap-2.5 @7xl:gap-6">
-      {MARKS.map(({ src, label, w, h }) => (
-        <span
-          key={label}
-          role="img"
-          aria-label={label}
-          title={label}
-          className="rl-pill flex h-[54px] w-[76px] shrink-0 items-center justify-center rounded-[14px]"
-        >
-          <Image src={src} alt="" width={w} height={h} unoptimized />
-        </span>
-      ))}
+      <Rule />
+
+      <div className="flex flex-wrap items-center justify-center gap-3 @foot:flex-nowrap @foot:gap-2.5 @7xl:gap-6">
+        {MARKS.map(({ src, label, w, h }) => (
+          <span
+            key={label}
+            role="img"
+            aria-label={label}
+            title={label}
+            className="rl-pill flex h-[54px] w-[76px] shrink-0 items-center justify-center rounded-[14px]"
+          >
+            <Image src={src} alt="" width={w} height={h} unoptimized />
+          </span>
+        ))}
+      </div>
+
+      <Rule />
+
+      <div className="flex items-center gap-3 @7xl:gap-5.25">
+        <Image
+          src={eighteenPlus}
+          alt=""
+          width={36}
+          height={36}
+          unoptimized
+          className="shrink-0"
+          aria-hidden="true"
+        />
+        <Note
+          title={t('lobby.footer.playResponsibly')}
+          caption={t('auth.ageRequirement', { min: 18 })}
+        />
+      </div>
     </div>
-
-    <Rule />
-
-    <div className="flex items-center gap-3 @7xl:gap-5.25">
-      <Image
-        src={eighteenPlus}
-        alt=""
-        width={36}
-        height={36}
-        unoptimized
-        className="shrink-0"
-        aria-hidden="true"
-      />
-      <Note title="Play Responsibly" caption="18+ Only" />
-    </div>
-  </div>
-);
+  );
+};
 
 export default FooterPaymentBar;

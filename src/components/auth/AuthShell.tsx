@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from 'react';
 import Link from 'next/link';
 import LanguagePicker from '@/components/LanguagePicker';
+import { useTranslation } from '@/context/I18nContext';
 
 /**
  * Auth layout: a single frosted "modal" floating over a dark, softly lit
@@ -73,90 +74,95 @@ const AuthShell: FC<AuthShellProps> = ({
   caption,
   backHref,
   onBack,
-  backLabel = 'Back',
+  backLabel,
   closeHref = '/',
   action,
   legal,
   width = 'md',
   children,
-}) => (
-  <div className="auth-stage min-h-screen flex items-center justify-center px-4 py-8 sm:py-12">
-    {/* Colour behind the glass — without these the frosting has nothing to
-        refract and the card reads as flat grey. */}
-    <div className="auth-backdrop" aria-hidden="true">
-      <div className="auth-orb auth-orb-1" />
-      <div className="auth-orb auth-orb-2" />
-      <div className="auth-orb auth-orb-3" />
-    </div>
+}) => {
+  const { t } = useTranslation();
+  const back = backLabel ?? t('auth.back');
 
-    <div
-      className={`glass-card auth-card-in w-full ${
-        width === 'lg' ? 'max-w-[520px]' : 'max-w-[440px]'
-      } px-5 py-6 sm:px-8 sm:py-8`}
-    >
-      {/* Top rail: back on the left, close on the right. Both are optional,
+  return (
+    <div className="auth-stage min-h-screen flex items-center justify-center px-4 py-8 sm:py-12">
+      {/* Colour behind the glass — without these the frosting has nothing to
+        refract and the card reads as flat grey. */}
+      <div className="auth-backdrop" aria-hidden="true">
+        <div className="auth-orb auth-orb-1" />
+        <div className="auth-orb auth-orb-2" />
+        <div className="auth-orb auth-orb-3" />
+      </div>
+
+      <div
+        className={`glass-card auth-card-in w-full ${
+          width === 'lg' ? 'max-w-[520px]' : 'max-w-[440px]'
+        } px-5 py-6 sm:px-8 sm:py-8`}
+      >
+        {/* Top rail: back on the left, close on the right. Both are optional,
           and the rail keeps its height either way so the wordmark never
           shifts between screens. */}
-      <div className="relative z-10 flex items-start justify-between min-h-9">
-        {backHref && (
-          <Link href={backHref} className={BACK_CLASS}>
-            <BackIcon />
-            {backLabel}
+        <div className="relative z-10 flex items-start justify-between min-h-9">
+          {backHref && (
+            <Link href={backHref} className={BACK_CLASS}>
+              <BackIcon />
+              {back}
+            </Link>
+          )}
+          {!backHref && onBack && (
+            <button type="button" onClick={onBack} className={BACK_CLASS}>
+              <BackIcon />
+              {back}
+            </button>
+          )}
+          {!backHref && !onBack && <span />}
+
+          <Link
+            href={closeHref}
+            aria-label={t('common.close')}
+            className="glass-icon-btn flex h-9 w-9 items-center justify-center"
+          >
+            <CloseIcon />
           </Link>
-        )}
-        {!backHref && onBack && (
-          <button type="button" onClick={onBack} className={BACK_CLASS}>
-            <BackIcon />
-            {backLabel}
-          </button>
-        )}
-        {!backHref && !onBack && <span />}
+        </div>
 
-        <Link
-          href={closeHref}
-          aria-label="Close"
-          className="glass-icon-btn flex h-9 w-9 items-center justify-center"
-        >
-          <CloseIcon />
-        </Link>
-      </div>
+        {/* Identity block */}
+        <div className="relative z-10 text-center -mt-1">
+          <span className="auth-wordmark block text-4xl sm:text-[42px] font-extrabold select-none">
+            ROLLUCK
+          </span>
+          {subtitle && <p className="mt-2 text-sm text-white/65">{subtitle}</p>}
+          {caption && (
+            <p className="mt-2 text-[12px] leading-relaxed text-white/45 max-w-[340px] mx-auto">
+              {caption}
+            </p>
+          )}
+        </div>
 
-      {/* Identity block */}
-      <div className="relative z-10 text-center -mt-1">
-        <span className="auth-wordmark block text-4xl sm:text-[42px] font-extrabold select-none">
-          ROLLUCK
-        </span>
-        {subtitle && <p className="mt-2 text-sm text-white/65">{subtitle}</p>}
-        {caption && (
-          <p className="mt-2 text-[12px] leading-relaxed text-white/45 max-w-[340px] mx-auto">
-            {caption}
+        <div className="relative z-10 mt-6">{children}</div>
+
+        {legal && (
+          <p className="relative z-10 mt-6 text-center text-[11.5px] leading-relaxed text-white/45">
+            {legal}
           </p>
         )}
-      </div>
 
-      <div className="relative z-10 mt-6">{children}</div>
-
-      {legal && (
-        <p className="relative z-10 mt-6 text-center text-[11.5px] leading-relaxed text-white/45">
-          {legal}
-        </p>
-      )}
-
-      {/* Bottom rail: language on the left, the opposite journey on the right.
+        {/* Bottom rail: language on the left, the opposite journey on the right.
           The picker opens upward here — it sits at the card's floor. */}
-      <div className="relative z-20 mt-7 flex items-center justify-between gap-3">
-        <LanguagePicker glass dropUp />
-        {action && (
-          <Link
-            href={action.href}
-            className="glass-pill px-6 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            {action.label}
-          </Link>
-        )}
+        <div className="relative z-20 mt-7 flex items-center justify-between gap-3">
+          <LanguagePicker glass dropUp />
+          {action && (
+            <Link
+              href={action.href}
+              className="glass-pill px-6 py-2 text-sm font-medium whitespace-nowrap"
+            >
+              {action.label}
+            </Link>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AuthShell;

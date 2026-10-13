@@ -1,4 +1,5 @@
 import type { BlogPost } from '@/components/blogs/BlogCard';
+import type { TranslationKey } from '@/i18n/locales';
 
 import blog1 from '@/assets/blogs/blog-1.webp';
 import blog2 from '@/assets/blogs/blog-2.webp';
@@ -32,6 +33,17 @@ export const BLOG_CATEGORIES = [
 
 export type BlogCategory = (typeof BLOG_CATEGORIES)[number];
 
+/** What each chip reads in the active language. The values above stay the filter ids. */
+export const BLOG_CATEGORY_LABELS: Record<BlogCategory, TranslationKey> = {
+  'Rolluck Inside': 'content.blogs.cat.inside',
+  Casino: 'nav.casino',
+  Sportbook: 'content.blogs.cat.sportsbook',
+  'VIP Club': 'nav.vipClub',
+  Ambassadors: 'content.blogs.cat.ambassadors',
+  'Rolluck Charity': 'content.blogs.cat.charity',
+  Crypto: 'content.blogs.cat.crypto',
+};
+
 export interface BlogRow extends BlogPost {
   category: BlogCategory;
 }
@@ -56,11 +68,10 @@ export interface BlogRow extends BlogPost {
 export const BLOG_POSTS: readonly BlogRow[] = Array.from({ length: 9 }, (_, i) => ({
   id: `post-${i + 1}`,
   image: ART[i],
-  tag: 'Casino',
-  title: 'Worst Odds in Casino: Games You Should Avoid',
-  excerpt:
-    'Learn about casino games with the worst odds, including slots, keno, and wheel of fortune. Find out which games give the house a bigger',
-  date: '21 Jan 2026',
+  tag: 'nav.casino',
+  title: 'content.blogs.post.title',
+  excerpt: 'content.blogs.post.excerpt',
+  date: '2026-01-21',
   category: BLOG_CATEGORIES[i % BLOG_CATEGORIES.length],
 }));
 
@@ -77,14 +88,15 @@ export const findPost = (id: string): BlogRow | undefined => BLOG_POSTS.find((p)
  * `body` and `publishedOn` when they are real.
  */
 export const ARTICLE = {
-  publishedOn: 'Jan 21, 2025',
+  /** ISO date — the page writes it out per locale. */
+  publishedOn: '2025-01-21',
   author: 'Rolluck',
   body: [
-    "Casino games can be fun, but some offer terrible chances of winning. I want to tell you about the worst odds in casino games so you can make better choices with your money. Slots are the most common trap. They have a house edge between 2% and 15%. While playing slots is simple, you can't use any strategy to win. The results are random, and the casino always has an advantage.",
-    'Keno gives players the worst chances. The house edge ranges from 20% to 40%, making it nearly impossible to win in the long run.\nYou pick numbers from 1 to 80, but the odds are stacked heavily against you. The Wheel of Fortune isn’t much better. When you bet on the $1 space, which seems safest, the house still has an 11% edge.',
-    'Betting on the joker space is even worse, with a 24% house advantage. If you want better chances of winning, try games that need skill. Many players who visit online casino sites prefer games like blackjack or video poker because they can use strategy to improve their odds.',
-    'Remember that casinos design these games to make money. While you might get lucky and win sometimes, the house always has an advantage. Set a budget before playing and stick to it.',
-    'Your goal should be entertainment, not making money.',
-    'The best approach is to play the games you enjoy but know your limits. The longer you play games with bad odds, the more likely you are to lose money.\nChoose games that make your money last longer and give you more play time for your budget.',
+    'content.blogs.article.p1',
+    'content.blogs.article.p2',
+    'content.blogs.article.p3',
+    'content.blogs.article.p4',
+    'content.blogs.article.p5',
+    'content.blogs.article.p6',
   ],
 } as const;

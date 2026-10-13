@@ -1,12 +1,17 @@
 /**
- * Every CDN host game artwork is served from. Each aggregator's catalogue
- * sync stores its own CDN's URLs, so integrating a new aggregator means
- * adding its image host here — otherwise its tiles fail to load.
+ * Every host an image may be loaded from. Most are game artwork: each
+ * aggregator's catalogue sync stores its own CDN's URLs, so integrating a new
+ * aggregator means adding its image host here — otherwise its tiles fail to
+ * load.
  */
-const GAME_IMAGE_HOSTS = [
+const REMOTE_IMAGE_HOSTS = [
   'mediumrare.imgix.net',
   // Alea Play
   'thumbs.alea.com',
+  // Our own asset bucket: the site artwork marketing re-exports without a
+  // deploy. Mirrors ASSET_CDN in `src/constants/cdn.ts` — the two have to
+  // move together, and both still point at the staging bucket.
+  'rolluck-staging-assets-2026.fra1.cdn.digitaloceanspaces.com',
 ];
 
 /** @type {import('next').NextConfig} */
@@ -20,10 +25,10 @@ const nextConfig = {
   },
 
   images: {
-    // Game tile artwork is CDN-hosted. next/image refuses any remote host that
-    // is not listed here: an allowlist, so a compromised API cannot turn the
-    // image optimiser into an open proxy for arbitrary URLs.
-    remotePatterns: GAME_IMAGE_HOSTS.map((hostname) => ({
+    // next/image refuses any remote host that is not listed here: an
+    // allowlist, so a compromised API cannot turn the image optimiser into an
+    // open proxy for arbitrary URLs.
+    remotePatterns: REMOTE_IMAGE_HOSTS.map((hostname) => ({
       protocol: 'https',
       hostname,
       pathname: '/**',

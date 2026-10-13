@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FC, type ReactNode } from 'react';
 import type { StaticImageData } from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { gameMatches } from '@/services/catalogue';
 import type { Game, GameShelfKey } from '@/types';
@@ -18,6 +19,8 @@ import chipBaccarat from '@/assets/lobby/player/chip-baccarat.svg';
 import chipGameShows from '@/assets/lobby/player/chip-gameshows.svg';
 import chipNewArrivals from '@/assets/lobby/player/chip-newarrivals.svg';
 import chipBonusBuys from '@/assets/lobby/player/chip-bonusbuys.svg';
+// The rail's own heart, so the chip and the Favourites nav entry read as one thing.
+import chipFavourites from '@/assets/lobby/rail/nav-favourites.svg';
 import Glyph from '@/components/player/Glyph';
 
 /*
@@ -312,7 +315,7 @@ export const BrowseToolbar: FC<{
 /* Category chips                                                        */
 /* ==================================================================== */
 
-export type ChipKey = GameShelfKey | 'lobby';
+export type ChipKey = GameShelfKey | 'lobby' | 'favourites';
 
 /**
  * The chip row, in the design's order. A chip with a `key` filters the
@@ -323,24 +326,28 @@ export type ChipKey = GameShelfKey | 'lobby';
 interface Chip {
   /** The shelf it filters to; absent for a chip with nothing behind it yet. */
   key?: ChipKey;
-  /** Translated label, or `label` for the design's own copy. */
-  labelKey?: TranslationKey;
-  label?: string;
+  labelKey: TranslationKey;
   icon: StaticImageData;
+  /**
+   * Only drawn for a signed-in player — the list behind it is their own, so
+   * to a visitor the chip would be a dead end onto an empty grid.
+   */
+  signedIn?: boolean;
 }
 
 const CHIPS: Chip[] = [
   { key: 'lobby', labelKey: 'browse.lobby', icon: chipLobby },
+  { key: 'favourites', labelKey: 'nav.favourites', icon: chipFavourites, signedIn: true },
   { key: 'originals', labelKey: 'nav.originals', icon: chipOriginals },
   { key: 'slots', labelKey: 'dash.slots', icon: chipSlots },
   { key: 'live', labelKey: 'dash.liveCasino', icon: chipLive },
-  { label: 'Blackjack', icon: chipLive },
-  { label: 'Roulette', icon: chipRoulette },
-  { label: 'Baccarat', icon: chipBaccarat },
-  { label: 'Game Shows', icon: chipGameShows },
+  { labelKey: 'lobby.chips.blackjack', icon: chipLive },
+  { labelKey: 'lobby.chips.roulette', icon: chipRoulette },
+  { labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
+  { labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
   { key: 'table', labelKey: 'dash.tableGames', icon: chipOriginals },
-  { label: 'Boosted RTP', icon: chipOriginals },
-  { key: 'new', label: 'New Arrivals', icon: chipNewArrivals },
+  { labelKey: 'lobby.chips.boostedRtp', icon: chipOriginals },
+  { key: 'new', labelKey: 'lobby.chips.newArrivals', icon: chipNewArrivals },
   { key: 'bonus-buys', labelKey: 'dash.bonusBuys', icon: chipBonusBuys },
 ];
 
@@ -385,11 +392,12 @@ export const CategoryChips: FC<{
   onChange: (key: ChipKey) => void;
 }> = ({ active, onChange }) => {
   const { t } = useTranslation();
+  const { token } = useAuth();
 
   return (
     <div className={CHIP_ROW}>
-      {CHIPS.map((chip) => {
-        const text = chip.labelKey ? t(chip.labelKey) : (chip.label ?? '');
+      {CHIPS.filter((chip) => !chip.signedIn || token).map((chip) => {
+        const text = t(chip.labelKey);
         const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
 
         if (!chip.key) {

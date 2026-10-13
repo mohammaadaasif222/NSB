@@ -2,18 +2,29 @@ import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useWallet } from '@/context/WalletContext';
+import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { requestWithdrawal } from '@/services/wallet';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import kycApi from '@/services/kyc.api';
-import type { PlayerKycProfile } from '@/types/kyc';
+import type { KycErrorCode, PlayerKycProfile } from '@/types/kyc';
 import { readKycError } from '@/utils/kyc-status';
-import KycVerifyModal from '@/components/modals/profile/KycVerifyModal';
-import { ShieldCheckIcon, AlertTriangleIcon } from '@/components/icons';
+import KycGateNotice from '../KycGateNotice';
 import type { Currency, WalletBalance } from '@/types';
 import CurrencyPicker from '../shared/CurrencyPicker';
 import NetworkPicker from '../shared/NetworkPicker';
+
+interface Props {
+  /**
+   * Closes the wallet dialog.
+   *
+   * Every KYC refusal here sends the player to the account area, and the
+   * wallet is an overlay owned by PlayerTopBar — navigating without closing it
+   * would leave it sitting on top of the verification page.
+   */
+  onLeave?: () => void;
+}
 
 /**
  * Withdraw tab with display currency model.
@@ -23,10 +34,11 @@ import NetworkPicker from '../shared/NetworkPicker';
  * User enters amount in their display currency only.
  * Crypto amount is calculated at approval time using LIVE rates.
  */
-const WithdrawTab: FC = () => {
+const WithdrawTab: FC<Props> = ({ onLeave }) => {
   // Handles a fraud step-up: on a 428 it prompts for the one-time code and
   // resubmits this exact request.
   const { run } = useSeonGuard();
+  const { t } = useTranslation();
   const { summary, currencies, refresh } = useWallet();
   const { convertToDisplayCurrency } = useCurrencyConversion();
 
@@ -92,12 +104,17 @@ const WithdrawTab: FC = () => {
   const [kyc, setKyc] = useState<PlayerKycProfile | null>(null);
   const [kycLoading, setKycLoading] = useState(true);
   /**
-   * Which verification level the modal should open, or null when closed.
+   * A KYC refusal the withdrawal request itself came back with, kept so the
+   * gate can quote the API's own reason.
    *
-   * A level rather than a boolean: a tier upgrade and a missing Level 2 both
-   * open this modal, but they must present different steps.
+   * The profile alone is not enough: `TIER_UPGRADE_REQUIRED` stops a player
+   * whose Level 2 is approved, so reading the profile would resolve to no gate
+   * at all and the tab would look like nothing had happened.
    */
-  const [kycModalTier, setKycModalTier] = useState<number | null>(null);
+  const [kycRefusal, setKycRefusal] = useState<{
+    code: KycErrorCode;
+    message: string;
+  } | null>(null);
 
   const fetchKyc = useCallback(async () => {
     try {
@@ -117,6 +134,18 @@ const WithdrawTab: FC = () => {
 
   const isKycMandatory = summary?.kyc_mandatory_for_withdrawal ?? true;
   const isKycApproved = !isKycMandatory || kyc?.status === 'APPROVED';
+  /**
+   * The profile itself blocks withdrawals. Nothing in the form can change
+   * that, so the form is not worth rendering — the gate takes its place.
+   */
+  const isHardGated = !kycLoading && isKycMandatory && !isKycApproved;
+  /**
+   * A refusal against an otherwise-approved profile: a tier upgrade, or a hold
+   * placed after approval. The form STAYS — a tier refusal means the amount
+   * was over a cap, and a smaller one would go through. Replacing the form
+   * here would take away the one thing that fixes it.
+   */
+  const softRefusal = !isHardGated ? kycRefusal : null;
 
   /* ── Form state ────────────────────────────────────────────────── */
 
@@ -124,13 +153,22 @@ const WithdrawTab: FC = () => {
   const [displayAmount, setDisplayAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  /**
+   * A refusal was about the request that produced it. Editing any part of that
+   * request makes it stale, so it goes — otherwise a player who drops the
+   * amount under the cap is still reading why the previous one was refused.
+   */
+  const clearRefusal = (): void => setKycRefusal(null);
+
   // Handle display amount input
   const handleDisplayChange = (value: string) => {
     const cleanValue = value.replace(/[^\d.]/g, '');
     setDisplayAmount(cleanValue);
+    clearRefusal();
   };
 
   const setPercent = (pct: 25 | 50 | 75 | 100): void => {
+    clearRefusal();
     const n = Number(availableUSD);
     if (!isFinite(n) || n <= 0) {
       setDisplayAmount('0');
@@ -150,7 +188,10 @@ const WithdrawTab: FC = () => {
 
   const canSubmit =
     isKycApproved &&
-    !!currency && !!network && !!toAddress.trim() && !!displayAmount &&
+    !!currency &&
+    !!network &&
+    !!toAddress.trim() &&
+    !!displayAmount &&
     !submitting;
 
   const submit = async (): Promise<void> => {
@@ -176,7 +217,7 @@ const WithdrawTab: FC = () => {
         setDisplayAmount('');
         void refresh();
       } else {
-        toast.error(res?.message || 'Withdrawal failed');
+        toast.error(res?.message || t('acct.wallet.withdrawFailed'));
       }
     } catch (err: any) {
       // Closing the code prompt is a decision, not a failure — no error toast.
@@ -185,11 +226,13 @@ const WithdrawTab: FC = () => {
       // Every KYC refusal — Level 2 missing, compliance hold, or a tier
       // upgrade — arrives with a `requiredLevel`, so one branch opens the
       // right step instead of three.
-      const kycError = readKycError(err);
+      const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
       if (kycError) {
-        setKycModalTier(kycError.requiredLevel);
+        // Held on screen rather than toasted alone: the toast fades and the
+        // player is left looking at a form that refused them for no visible
+        // reason. The gate explains it and offers the one route that fixes it.
+        setKycRefusal({ code: kycError.code, message: kycError.message });
         void fetchKyc();
-        toast.error(kycError.message);
         return;
       }
 
@@ -198,7 +241,7 @@ const WithdrawTab: FC = () => {
         errData?.message ||
         (typeof err === 'object' && err && 'message' in err
           ? String((err as { message: string }).message)
-          : 'Withdrawal failed');
+          : t('acct.wallet.withdrawFailed'));
       toast.error(message);
     } finally {
       setSubmitting(false);
@@ -208,7 +251,7 @@ const WithdrawTab: FC = () => {
   if (eligible.length === 0) {
     return (
       <div className="py-8 text-center text-sm text-slate-400">
-        No currencies available for withdrawal yet.
+        {t('acct.wallet.noWithdrawCurrencies')}
       </div>
     );
   }
@@ -216,170 +259,157 @@ const WithdrawTab: FC = () => {
   return (
     <div className="space-y-3">
       <p className="text-[11px] text-slate-400">
-        Withdraw to any crypto wallet · Available to withdraw:{' '}
+        {t('acct.wallet.withdrawIntro')}{' '}
         <span className="text-slate-200 font-semibold">
           {availableDisplay} {displayCurrency}
         </span>
       </p>
 
-      {/* ── KYC Compliance Notice ───────────────────────────────── */}
-      {!kycLoading && isKycMandatory && !isKycApproved && (
-        <div className="rounded-xl p-3 bg-amber-500/10 border border-amber-500/30 text-amber-200">
-          <div className="flex items-start gap-2.5">
-            <div className="p-1 rounded-lg bg-amber-500/20 text-amber-400 mt-0.5 shrink-0">
-              <AlertTriangleIcon size={16} />
+      {/* ── KYC gate ────────────────────────────────────────────────
+          A hard gate replaces the form rather than sitting above it. The old
+          banner left every field live behind a block nothing in the form could
+          lift, so a player could pick a network, paste an address and type an
+          amount before being told that none of it could be submitted. */}
+      {kycLoading && isKycMandatory ? (
+        /* Neither the form nor the gate until the profile is in. Rendering the
+           form first and replacing it a moment later made an unverified player
+           watch the thing they came for appear and then be taken away. */
+        <div className="flex h-40 items-center justify-center rounded-xl border border-slate-700 text-xs text-slate-400">
+          {t('acct.wallet.checkingKyc')}
+        </div>
+      ) : isHardGated ? (
+        <>
+          <KycGateNotice
+            profile={kyc}
+            action="withdraw"
+            onLeave={onLeave}
+            apiMessage={kycRefusal?.message}
+            errorCode={kycRefusal?.code}
+          />
+          <p className="text-center text-[11px] text-slate-400 pt-1">
+            {t('acct.wallet.withdrawHelp')}
+          </p>
+        </>
+      ) : (
+        <>
+          {/* Above the form, not instead of it — see `softRefusal`. */}
+          {softRefusal && (
+            <KycGateNotice
+              profile={kyc}
+              action="withdraw"
+              onLeave={onLeave}
+              apiMessage={softRefusal.message}
+              errorCode={softRefusal.code}
+            />
+          )}
+
+          <CurrencyPicker
+            label={t('pref.currency')}
+            currencies={eligible}
+            value={currency}
+            onChange={setCurrency}
+          />
+
+          {enabledNetworks.length > 0 ? (
+            <NetworkPicker
+              label={t('acct.wallet.network')}
+              networks={enabledNetworks}
+              value={network}
+              onChange={setNetwork}
+            />
+          ) : (
+            <div className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-[11px] text-slate-500">
+              {t('acct.wallet.noNetworkFor', { currency })}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold text-white">Identity Verification Required</p>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-                  {kyc?.status === 'REJECTED'
-                    ? 'Rejected'
-                    : kyc?.status === 'PENDING_REVIEW' || kyc?.status === 'IN_PROGRESS'
-                      ? 'In Review'
-                      : 'Unverified'}
+          )}
+
+          <div>
+            <label className="block text-[11px] text-slate-400 mb-1">
+              {t('acct.wallet.addressLabel', { currency })}
+            </label>
+            <input
+              value={toAddress}
+              onChange={(e) => {
+                setToAddress(e.target.value);
+                clearRefusal();
+              }}
+              placeholder={t('acct.wallet.enterAddress')}
+              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+            />
+          </div>
+
+          {/* Amount Input - Display Currency Only */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] text-slate-400">
+                {t('acct.wallet.withdrawAmount')}
+              </label>
+              <div className="flex gap-3 items-center text-[11px]">
+                <span className="text-slate-500">
+                  {t('acct.wallet.balanceValue', {
+                    amount: `${availableDisplay} ${displayCurrency}`,
+                  })}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                {kyc?.status === 'PENDING_REVIEW' || kyc?.status === 'IN_PROGRESS'
-                  ? 'Your verification documents are being reviewed. Withdrawals will unlock once approved.'
-                  : kyc?.status === 'REJECTED'
-                    ? 'Your identity documents need to be re-submitted before you can withdraw.'
-                    : 'To comply with regulatory standards and protect your account, identity verification must be completed before requesting withdrawals.'}
-              </p>
-              <button
-                type="button"
-                onClick={() => setKycModalTier(2)}
-                className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors"
-              >
-                <ShieldCheckIcon size={13} />
-                {kyc?.status === 'PENDING_REVIEW' || kyc?.status === 'IN_PROGRESS'
-                  ? 'Check Verification'
-                  : kyc?.status === 'REJECTED'
-                    ? 'Retry Verification'
-                    : 'Verify Identity Now'}
-              </button>
             </div>
+
+            {/* Display Currency Amount Input */}
+            <div>
+              <label className="block text-[10px] text-slate-500 mb-1">
+                {t('acct.wallet.currencyAmount', { currency: displayCurrency })}
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={displayAmount}
+                onChange={(e) => handleDisplayChange(e.target.value)}
+                placeholder={t('acct.wallet.enterAmount', { currency: displayCurrency })}
+                className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
+              />
+            </div>
+
+            {/* Info Text */}
+            <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-2.5">
+              <p className="text-[10px] text-blue-200 leading-relaxed">
+                ℹ️ {t('acct.wallet.liveRateNote', { currency })}
+              </p>
+            </div>
+
+            {/* Quick percentage buttons */}
+            <div className="grid grid-cols-4 gap-2">
+              {[25, 50, 75, 100].map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPercent(p as 25 | 50 | 75 | 100)}
+                  className="h-8 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 font-semibold hover:bg-slate-700 transition-colors"
+                >
+                  {p === 100 ? t('acct.wallet.max') : `${p}%`}
+                </button>
+              ))}
+            </div>
+
+            {displayAmount && Number(displayAmount) > Number(availableDisplay) && (
+              <p className="mt-1 text-[11px] text-red-400">{t('acct.wallet.insufficient')}</p>
+            )}
           </div>
-        </div>
-      )}
 
-      <CurrencyPicker
-        label="Currency"
-        currencies={eligible}
-        value={currency}
-        onChange={setCurrency}
-      />
+          {/* The only action on this screen now. The gate above owns the
+          verification route, so there is no second button competing for it. */}
+          <button
+            type="button"
+            onClick={() => void submit()}
+            disabled={!canSubmit}
+            className="w-full h-11 rounded-xl bg-white text-black text-sm font-semibold disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+          >
+            {submitting ? t('acct.wallet.submitting') : t('acct.wallet.tabWithdraw')}
+          </button>
 
-      {enabledNetworks.length > 0 ? (
-        <NetworkPicker
-          label="Network"
-          networks={enabledNetworks}
-          value={network}
-          onChange={setNetwork}
-        />
-      ) : (
-        <div className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-[11px] text-slate-500">
-          No enabled network for {currency}.
-        </div>
-      )}
-
-      <div>
-        <label className="block text-[11px] text-slate-400 mb-1">{currency} Address</label>
-        <input
-          value={toAddress}
-          onChange={(e) => setToAddress(e.target.value)}
-          placeholder="Enter Address"
-          className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-mono"
-        />
-      </div>
-
-      {/* Amount Input - Display Currency Only */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-[11px] text-slate-400">Withdrawal Amount</label>
-          <div className="flex gap-3 items-center text-[11px]">
-            <span className="text-slate-500">
-              Balance: {availableDisplay} {displayCurrency}
-            </span>
-          </div>
-        </div>
-
-        {/* Display Currency Amount Input */}
-        <div>
-          <label className="block text-[10px] text-slate-500 mb-1">
-            {displayCurrency} Amount
-          </label>
-          <input
-            type="text"
-            inputMode="decimal"
-            value={displayAmount}
-            onChange={(e) => handleDisplayChange(e.target.value)}
-            placeholder={`Enter ${displayCurrency} amount`}
-            className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
-          />
-        </div>
-
-        {/* Info Text */}
-        <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-2.5">
-          <p className="text-[10px] text-blue-200 leading-relaxed">
-            ℹ️ Crypto amount will be calculated at approval based on live {currency} rates.
+          <p className="text-center text-[11px] text-slate-400 pt-1">
+            {t('acct.wallet.withdrawHelp')}
           </p>
-        </div>
-
-        {/* Quick percentage buttons */}
-        <div className="grid grid-cols-4 gap-2">
-          {[25, 50, 75, 100].map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPercent(p as 25 | 50 | 75 | 100)}
-              className="h-8 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 font-semibold hover:bg-slate-700 transition-colors"
-            >
-              {p === 100 ? 'Max' : `${p}%`}
-            </button>
-          ))}
-        </div>
-
-        {displayAmount && Number(displayAmount) > Number(availableDisplay) && (
-          <p className="mt-1 text-[11px] text-red-400">Insufficient balance</p>
-        )}
-      </div>
-
-      {isKycApproved ? (
-        <button
-          type="button"
-          onClick={() => void submit()}
-          disabled={!canSubmit}
-          className="w-full h-11 rounded-xl bg-white text-black text-sm font-semibold disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
-        >
-          {submitting ? 'Submitting…' : 'Withdraw'}
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setKycModalTier(2)}
-          className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
-        >
-          <ShieldCheckIcon size={16} />
-          Verify Identity to Enable Withdrawals
-        </button>
+        </>
       )}
-
-      {kycModalTier !== null && (
-        <KycVerifyModal
-          tier={kycModalTier}
-          onClose={() => {
-            setKycModalTier(null);
-            void fetchKyc();
-          }}
-          onSubmitted={() => {
-            void fetchKyc();
-          }}
-        />
-      )}
-
-      <p className="text-center text-[11px] text-slate-400 pt-1">Need help with your Withdraw?</p>
     </div>
   );
 };

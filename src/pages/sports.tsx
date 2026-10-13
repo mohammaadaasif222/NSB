@@ -86,7 +86,7 @@ const Sports: FC = () => {
               <div className={`${CHIP_ROW} lg:pb-[calc(var(--u)*22)] lg:pt-[calc(var(--u)*16)]`}>
                 {SPORT_CHIPS.map((c) => (
                   <ChipButton key={c.key} active={chip === c.key} onClick={() => setChip(c.key)}>
-                    {c.label ?? t('sports.allSports')}
+                    {c.label ? t(c.label) : t('sports.allSports')}
                   </ChipButton>
                 ))}
               </div>

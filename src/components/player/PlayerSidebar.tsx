@@ -2,7 +2,7 @@ import { useState, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useRouter } from 'next/router';
-import logo from '@/assets/logo.png';
+import { ICON, ROLLUCK_LOGO as logo } from '@/constants/cdn';
 import casinoArt from '@/assets/lobby/player/panel-casino.webp';
 import sportsArt from '@/assets/lobby/player/panel-sports.webp';
 import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
@@ -15,7 +15,6 @@ import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
 import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
 import promotionIcon from '@/assets/lobby/rail/nav-promotion.svg';
 import bonusesIcon from '@/assets/lobby/rail/nav-bonuses.svg';
-import telegramIcon from '@/assets/lobby/rail/rail-telegram.svg';
 import suggestionIcon from '@/assets/lobby/rail/rail-suggestion.svg';
 import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
 import instagram from '@/assets/lobby/footer/social-instagram.svg';
@@ -29,7 +28,8 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
-import { CoinIcon } from '@/components/icons';
+import { CoinIcon, HandshakeIcon } from '@/components/icons';
+import SuggestionModal from '@/components/suggestion/SuggestionModal';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -77,6 +77,14 @@ const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onC
       }`}
     >
       <img src={art} alt="" className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none" />
+      {/* <img
+        src={inlineAssetUrl('private/ebay.jpeg')}
+        alt=""
+        className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none"
+        onError={(e) => {
+          e.currentTarget.src = art;
+        }}
+      /> */}
     </span>
     <span
       className={`text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] ${
@@ -167,23 +175,49 @@ const RailLink: FC<RailLinkProps> = ({
 };
 
 /** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
+const RAIL_BUTTON =
+  'flex h-[calc(var(--u)*44)] w-full items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
+
+/** A contact pill at the rail's foot: a link out, or a button for a dialog. */
 const RailButton: FC<{
   icon: StaticImageData;
   label: string;
-  href: string;
   collapsed: boolean;
-}> = ({ icon, label, href, collapsed }) => (
-  <a
-    href={href}
-    target={href.startsWith('http') ? '_blank' : undefined}
-    rel={href.startsWith('http') ? 'noreferrer' : undefined}
-    title={label}
-    className="flex h-[calc(var(--u)*44)] items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white"
-  >
-    <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
-    <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
-  </a>
-);
+  href?: string;
+  onClick?: () => void;
+}> = ({ icon, label, collapsed, href, onClick }) => {
+  const body = (
+    <>
+      <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
+      <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        title={label}
+        aria-haspopup="dialog"
+        className={RAIL_BUTTON}
+      >
+        {body}
+      </button>
+    );
+  }
+  return (
+    <a
+      href={href}
+      target={href?.startsWith('http') ? '_blank' : undefined}
+      rel={href?.startsWith('http') ? 'noreferrer' : undefined}
+      title={label}
+      className={RAIL_BUTTON}
+    >
+      {body}
+    </a>
+  );
+};
 
 const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
   { icon: whatsapp, label: 'WhatsApp', href: 'https://wa.me/' },
@@ -217,6 +251,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
+  const [suggesting, setSuggesting] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
 
   const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
@@ -233,7 +268,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
       )}
 
       <aside
-        className={`rl-glass-deep fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-shrink-0 flex-col rounded-none p-4 transition-[transform,width] duration-200 lg:sticky lg:top-[calc(var(--u)*20)] lg:z-auto lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-x-0 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
+        className={`rl-glass-deep fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-shrink-0 flex-col rounded-none p-4 transition-[transform,width] duration-200 lg:sticky lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-x-0 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-label={t('nav.games')}
@@ -285,7 +320,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             onClose();
             openRegister();
           }}
-          title="Welcome package — $1,500 + 100 free spins"
+          title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
           className={`mt-[calc(var(--u)*24)] flex flex-shrink-0 flex-col gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*16.25)] bg-[#1b1f29] px-[calc(var(--u)*16.25)] py-[calc(var(--u)*17.5)] text-start transition-colors hover:bg-[#222735] ${
             collapsed ? 'lg:items-center lg:px-[calc(var(--u)*8)] lg:text-center' : ''
           }`}
@@ -295,7 +330,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               collapsed ? 'lg:hidden' : ''
             }`}
           >
-            Welcome package
+            {t('lobby.rail.welcomePackage')}
           </span>
           <span
             className={`block font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
@@ -311,7 +346,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               collapsed ? 'lg:hidden' : ''
             }`}
           >
-            + 100 free spins
+            {t('lobby.rail.freeSpins', { count: 100 })}
           </span>
         </button>
 
@@ -408,10 +443,14 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             {t('nav.bonuses')}
           </RailLink>
 
-          {/* A built feature the design's list leaves out: kept at the end,
-              below the fold of the list, so nothing becomes unreachable.
-              Hidden while rewards are switched off platform-wide — the page
-              it points at renders nothing in that state. */}
+          {/* Built features the design's list leaves out, kept at the end and
+              below its fold so nothing becomes unreachable. Neither has a
+              `nav-*.svg` beside the rows above, because the design never drew
+              them a row — they take a line icon at the same 24 box instead.
+
+              Rewards is hidden while it is switched off platform-wide, since
+              the page it points at renders nothing in that state. Affiliate is
+              always on: it is open to signed-out visitors by design. */}
           {rewardsOn && (
             <RailLink
               href="/rewards"
@@ -427,6 +466,19 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               {t('nav.rewards')}
             </RailLink>
           )}
+          <RailLink
+            href="/affiliate"
+            active={pathname === '/affiliate'}
+            icon={
+              <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
+                <HandshakeIcon size={18} strokeWidth={1.6} />
+              </span>
+            }
+            onClick={onClose}
+            collapsed={collapsed}
+          >
+            {t('aff.title')}
+          </RailLink>
         </nav>
 
         {/* --- Socials and contact pills --------------------------------- */}
@@ -453,15 +505,15 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
           <div className="mt-[calc(var(--u)*11)] space-y-[calc(var(--u)*7)]">
             <RailButton
-              icon={telegramIcon}
-              label="Join Telegram"
+              icon={ICON.telegram}
+              label={t('lobby.rail.joinTelegram')}
               href="https://t.me/"
               collapsed={collapsed}
             />
             <RailButton
               icon={suggestionIcon}
-              label="Suggestion Box"
-              href="mailto:support@rolluck.com?subject=Suggestion"
+              label={t('lobby.rail.suggestionBox')}
+              onClick={() => setSuggesting(true)}
               collapsed={collapsed}
             />
           </div>
@@ -478,6 +530,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           }}
         />
       )}
+      <SuggestionModal open={suggesting} onClose={() => setSuggesting(false)} />
     </>
   );
 };

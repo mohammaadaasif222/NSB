@@ -12,6 +12,8 @@ export interface PodiumPlace {
   /** Already formatted — "2,350". */
   points: string;
   avatar: StaticImageData;
+  /** A withheld name — shown as the translated "Hidden" in place of `name`. */
+  masked?: boolean;
 }
 
 export interface LeaderboardRow {
@@ -21,7 +23,7 @@ export interface LeaderboardRow {
   wager: string;
   /** Already formatted — "$1,200", or "—" where none was won. */
   prize: string;
-  /** A withheld name, which the design greys out. */
+  /** A withheld name, which the design greys out and labels "Hidden" in the reader's language. */
   masked?: boolean;
 }
 
@@ -74,7 +76,7 @@ const Podium: FC<{ place: PodiumPlace }> = ({ place }) => {
       </div>
 
       <p className="mt-2 text-[18px] leading-7 tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*8)] lg:text-[max(14px,calc(var(--u)*20))] lg:leading-[calc(var(--u)*28)]">
-        {place.name}
+        {place.masked ? t('content.tournament.hidden') : place.name}
       </p>
       <p className="mt-0.5 text-[13px] leading-5 text-[#6a7287] lg:mt-[calc(var(--u)*4)] lg:text-[max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
         {place.wagered}
@@ -167,7 +169,7 @@ const TournamentLeaderboard: FC<Props> = ({ podium, rows }) => {
                       row.masked ? 'text-[#696969] opacity-60' : 'text-[#f0f1f5]'
                     }`}
                   >
-                    {row.name}
+                    {row.masked ? t('content.tournament.hidden') : row.name}
                   </span>
                 </div>
                 <div className={`${RIGHT_GROUP} items-center`}>

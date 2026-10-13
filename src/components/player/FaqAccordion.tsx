@@ -1,5 +1,6 @@
 import { useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 import chevronRight from '@/assets/lobby/faq-chevron.svg';
 import chevronDown from '@/assets/lobby/faq-chevron-down.svg';
 
@@ -8,31 +9,13 @@ import chevronDown from '@/assets/lobby/faq-chevron-down.svg';
  * amounts, timings and audit claims below are placeholders and should be
  * replaced with whatever compliance signs off on before launch.
  */
-const FAQ_ITEMS: { q: string; a: string }[] = [
-  {
-    q: 'What types of casino games are available on your platform?',
-    a: "Our platform offers a wide variety of casino games designed to suit every player's preference and skill level. You can explore an extensive collection of classic and modern slot machines featuring stunning graphics and exciting bonus rounds. Table game enthusiasts can enjoy timeless favorites like blackjack, roulette, baccarat, and poker in multiple variations. We also feature a thrilling live dealer section where you can interact with professional dealers in real time. For those who love instant wins, our selection includes scratch cards, keno, and virtual lottery-style games. Progressive jackpot games are available across slots and table games, offering life-changing prize pools. Video poker fans can choose from dozens of variants including Jacks or Better and Deuces Wild.",
-  },
-  {
-    q: 'How do I claim my welcome bonus after signing up?',
-    a: 'Your welcome package is attached to your account the moment registration completes — there is nothing to redeem by hand. Make your first deposit and the matched amount plus the free spins are credited automatically, with the promo code applied if you entered one on the lobby banner. Progress toward the wagering requirement is shown on your dashboard, and the bonus balance converts to withdrawable funds as soon as that requirement is met. Bonus funds are always spent after your real balance, so you are never wagering the bonus while cash is available.',
-  },
-  {
-    q: 'What payment methods are accepted for deposits and withdrawals?',
-    a: 'Deposits and withdrawals are available through major cards, popular e-wallets and a range of cryptocurrencies. Every method your account is eligible for is listed in the wallet once you are signed in, along with its minimum, maximum and expected clearing time. Crypto deposits credit after the network confirmations shown on the deposit screen; card and wallet payments are usually instant. Withdrawals return to the method you deposited with wherever the payment provider requires it.',
-  },
-  {
-    q: 'Is my personal and financial information kept secure?',
-    a: 'All traffic between your device and our servers is encrypted in transit, and payment details are handled by our payment partners rather than stored on our systems. Account access can be protected with two-factor authentication from your security settings, and every sign-in and withdrawal generates a notification so an unfamiliar session is easy to spot. We only ask for the identity documents our licence obliges us to collect, and those are retained no longer than the licence requires.',
-  },
-  {
-    q: 'How long does it take to process a withdrawal request?',
-    a: 'Most withdrawals are reviewed and approved within a few hours of being requested. Once approved, how quickly the money reaches you depends on the method: crypto typically lands within minutes of the transaction being broadcast, e-wallets the same day, and card refunds within a few business days depending on your issuer. A first withdrawal may take longer if identity verification has not yet been completed — clearing that once keeps every later payout on the fast path.',
-  },
-  {
-    q: 'Are your games provably fair and independently audited?',
-    a: "Rolluck Originals are provably fair: every round is generated from a server seed, your own client seed and a nonce, and you can change your client seed and verify any past round yourself from the game screen. Third-party titles use the studio's own certified random number generators, which are tested by independent laboratories, and each provider's return-to-player figure is published on the game's detail page.",
-  },
+const FAQ_ITEMS: { q: TranslationKey; a: TranslationKey }[] = [
+  { q: 'lobby.faq.q1', a: 'lobby.faq.a1' },
+  { q: 'lobby.faq.q2', a: 'lobby.faq.a2' },
+  { q: 'lobby.faq.q3', a: 'lobby.faq.a3' },
+  { q: 'lobby.faq.q4', a: 'lobby.faq.a4' },
+  { q: 'lobby.faq.q5', a: 'lobby.faq.a5' },
+  { q: 'lobby.faq.q6', a: 'lobby.faq.a6' },
 ];
 
 /**
@@ -67,7 +50,7 @@ const FaqAccordion: FC = () => {
                 aria-expanded={open}
                 className="flex min-h-[calc(var(--u)*72)] w-full items-center justify-between gap-[calc(var(--u)*8)] py-[calc(var(--u)*10)] pl-[calc(var(--u)*20)] pr-[calc(var(--u)*19)] text-left text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#f0f1f5]"
               >
-                <span className="min-w-0">{item.q}</span>
+                <span className="min-w-0">{t(item.q)}</span>
                 <img
                   src={chevronDown.src}
                   alt=""
@@ -76,7 +59,7 @@ const FaqAccordion: FC = () => {
               </button>
               {open && (
                 <p className="px-[calc(var(--u)*17)] pb-[calc(var(--u)*23)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4]">
-                  {item.a}
+                  {t(item.a)}
                 </p>
               )}
             </li>
@@ -99,7 +82,7 @@ const FaqAccordion: FC = () => {
                     : 'text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#9da2b4] hover:bg-white/[0.04] hover:text-[#f0f1f5]'
                 }`}
               >
-                <span className="min-w-0">{item.q}</span>
+                <span className="min-w-0">{t(item.q)}</span>
                 <img
                   src={chevronRight.src}
                   alt=""
@@ -112,7 +95,7 @@ const FaqAccordion: FC = () => {
 
         <div className="rl-glass-deep rounded-r-[calc(var(--u)*34)] px-[calc(var(--u)*36)] py-[calc(var(--u)*24)]">
           <p className="text-[length:max(min(11px,24px),calc(var(--u)*24))] font-medium leading-[calc(var(--u)*42)] tracking-[-0.02em] text-[#c8ccd8]">
-            {FAQ_ITEMS[Math.max(active, 0)].a}
+            {t(FAQ_ITEMS[Math.max(active, 0)].a)}
           </p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import type { DepositAddress } from '@/types';
+import { useTranslation } from '@/context/I18nContext';
 
 /**
  * QR rendering is delegated to `api.qrserver.com` — a free image endpoint
@@ -12,7 +13,7 @@ import type { DepositAddress } from '@/types';
  */
 const qrUrl = (payload: string, size = 220): string =>
   `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(
-    payload,
+    payload
   )}&bgcolor=ffffff&color=000000&margin=2`;
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
 }
 
 const AddressDisplay: FC<Props> = ({ address }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const copy = async (): Promise<void> => {
@@ -27,37 +29,39 @@ const AddressDisplay: FC<Props> = ({ address }) => {
       await navigator.clipboard.writeText(address.address);
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
-      toast.success('Address copied');
+      toast.success(t('acct.wallet.addressCopied'));
     } catch {
-      toast.error('Could not copy — long-press the address to copy manually');
+      toast.error(t('acct.wallet.copyFailed'));
     }
   };
 
   return (
     <div className="space-y-2">
       <label className="block text-[11px] text-slate-400">
-        {address.currency_code}
-        {address.network_code !== address.currency_code
-          ? ` (${address.network_code})`
-          : ''}{' '}
-        Address
+        {t('acct.wallet.addressLabel', {
+          currency:
+            address.network_code !== address.currency_code
+              ? `${address.currency_code} (${address.network_code})`
+              : address.currency_code,
+        })}
       </label>
 
       <button
         type="button"
         onClick={() => void copy()}
-        title="Click to copy"
+        title={t('acct.wallet.clickToCopy')}
         className="group w-full min-h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-left text-xs text-slate-100 font-mono break-all hover:border-slate-600 transition-colors"
       >
         {address.address}
         <span className="block text-[10px] text-slate-500 group-hover:text-blue-400 mt-1">
-          {copied ? 'Copied ✓' : 'Tap to copy'}
+          {copied ? `${t('ref.copied')} ✓` : t('acct.wallet.tapToCopy')}
         </span>
       </button>
 
       {address.tag && (
         <div className="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-          Include tag / memo: <span className="font-mono font-semibold">{address.tag}</span>
+          {t('acct.wallet.includeTag')}{' '}
+          <span className="font-mono font-semibold">{address.tag}</span>
         </div>
       )}
 
@@ -71,11 +75,13 @@ const AddressDisplay: FC<Props> = ({ address }) => {
        */}
       <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[11px] text-red-200 leading-snug">
         <span className="font-semibold text-red-100">
-          ⚠ Send only {address.currency_code} on {address.network_name}.
-        </span>
-        {' '}
-        Any other token or another network is treated as a wrong-network
-        deposit and cannot be automatically credited.
+          ⚠{' '}
+          {t('acct.wallet.sendOnly', {
+            currency: address.currency_code,
+            network: address.network_name,
+          })}
+        </span>{' '}
+        {t('acct.wallet.wrongNetworkWarning')}
       </div>
 
       <div className="mt-2 flex justify-center">
@@ -83,7 +89,7 @@ const AddressDisplay: FC<Props> = ({ address }) => {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrUrl(address.qr_payload)}
-            alt={`QR code for ${address.currency_code} deposit address`}
+            alt={t('acct.wallet.qrAlt', { currency: address.currency_code })}
             width={220}
             height={220}
             className="block w-56 h-56"
@@ -92,8 +98,10 @@ const AddressDisplay: FC<Props> = ({ address }) => {
       </div>
 
       <p className="text-center text-[11px] text-slate-500 pt-1">
-        Minimum deposit: {address.min_deposit} {address.currency_code} • {' '}
-        Confirmations: {address.deposit_confirmations}
+        {t('acct.wallet.minDeposit', {
+          amount: `${address.min_deposit} ${address.currency_code}`,
+        })}{' '}
+        • {t('acct.wallet.confirmations', { count: address.deposit_confirmations })}
       </p>
     </div>
   );

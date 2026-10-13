@@ -1,3 +1,6 @@
+import type { TranslationKey } from '@/i18n/locales';
+import { translate } from '@/i18n/translate';
+
 /**
  * Mirrors the backend's src/constants/roles.ts — keep the two in step.
  *
@@ -42,23 +45,23 @@ export const isSystemRole = (role: string | undefined | null): role is SystemRol
 
 export const isVip = (role: string | undefined | null): boolean => role === VIP_ROLE;
 
-const ROLE_LABELS: Record<AnyRole, string> = {
-  USER: 'Player',
-  VIP: 'VIP Player',
-  SUPER_MASTER: 'Super Master',
-  MASTER: 'Master',
-  RISK_MANAGEMENT: 'Risk Management',
-  ACCOUNTANT: 'Accountant',
-  CUSTOMER_SUPPORT: 'Customer Support',
-  MARKETING: 'Marketing',
-  PARTNER: 'Partner',
-  RISK_MANAGEMENT_TRAINEE: 'Risk Management Trainee',
+const ROLE_LABELS: Record<AnyRole, TranslationKey> = {
+  USER: 'role.player',
+  VIP: 'role.vip',
+  SUPER_MASTER: 'content.role.superMaster',
+  MASTER: 'content.role.master',
+  RISK_MANAGEMENT: 'content.role.riskManagement',
+  ACCOUNTANT: 'content.role.accountant',
+  CUSTOMER_SUPPORT: 'content.role.customerSupport',
+  MARKETING: 'content.role.marketing',
+  PARTNER: 'content.role.partner',
+  RISK_MANAGEMENT_TRAINEE: 'content.role.riskManagementTrainee',
 };
 
-/** Human label for a role badge; an unknown value is shown as-is. */
+/** Human label for a role badge, in the active language; an unknown value is shown as-is. */
 export const roleLabel = (role: string | undefined | null): string => {
   if (!role) {
     return '—';
   }
-  return isKnownRole(role) ? ROLE_LABELS[role] : role;
+  return isKnownRole(role) ? translate(ROLE_LABELS[role]) : role;
 };

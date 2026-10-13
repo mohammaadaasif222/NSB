@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useTranslation } from '@/context/I18nContext';
 import { CONTACTS } from '@/components/player/footer/footerContent';
 
 /**
@@ -18,39 +19,43 @@ import { CONTACTS } from '@/components/player/footer/footerContent';
  *
  * Below the row it really is a pair, and below that a column.
  */
-const FooterContacts: FC = () => (
-  <div className="rl-panel px-6 py-7 @xl:px-8 @7xl:px-12.5 @7xl:py-12">
-    {/* `gap` is only the floor here — `justify-between` spreads whatever is
+const FooterContacts: FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="rl-panel px-6 py-7 @xl:px-8 @7xl:px-12.5 @7xl:py-12">
+      {/* `gap` is only the floor here — `justify-between` spreads whatever is
         left over — so keeping it small costs nothing at the design's width and
         buys the row its last few pixels at the width where it first forms. */}
-    <div className="grid gap-7 @xl:grid-cols-2 @xl:gap-x-6 @foot-wide:flex @foot-wide:justify-between @foot-wide:gap-2.5 @7xl:gap-3">
-      {CONTACTS.map(({ Icon, label, email }) => (
-        <a
-          key={email}
-          href={`mailto:${email}`}
-          className="group flex min-w-0 items-start gap-2.5 @7xl:gap-3"
-        >
-          {/* A hair below the label's cap line, which is where the design
+      <div className="grid gap-7 @xl:grid-cols-2 @xl:gap-x-6 @foot-wide:flex @foot-wide:justify-between @foot-wide:gap-2.5 @7xl:gap-3">
+        {CONTACTS.map(({ Icon, label, email }) => (
+          <a
+            key={email}
+            href={`mailto:${email}`}
+            className="group flex min-w-0 items-start gap-2.5 @7xl:gap-3"
+          >
+            {/* A hair below the label's cap line, which is where the design
               lands it — not centred on the two lines it sits beside. */}
-          <span className="rl-pill rl-pill-hover mt-px flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#f0f1f5] @7xl:h-12 @7xl:w-12">
-            <Icon />
-          </span>
-
-          <span className="flex min-w-0 flex-col gap-1.5 @7xl:gap-2.5">
-            <span className="text-xs leading-4 text-[#9da2b4] @7xl:text-sm @7xl:leading-5">
-              {label}
+            <span className="rl-pill rl-pill-hover mt-px flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#f0f1f5] @7xl:h-12 @7xl:w-12">
+              <Icon />
             </span>
-            {/* The design's 20px only once the row has room for it. Narrower
+
+            <span className="flex min-w-0 flex-col gap-1.5 @7xl:gap-2.5">
+              <span className="text-xs leading-4 text-[#9da2b4] @7xl:text-sm @7xl:leading-5">
+                {t(label)}
+              </span>
+              {/* The design's 20px only once the row has room for it. Narrower
                 than that, 20px runs `bugbounty@rolluck.com` into an ellipsis,
                 and half an address is worse than a small one. */}
-            <span className="truncate text-base leading-6 font-semibold text-[#f0f1f5] transition-colors group-hover:text-white @7xl:text-xl @7xl:leading-7 @7xl:tracking-[-0.4px]">
-              {email}
+              <span className="truncate text-base leading-6 font-semibold text-[#f0f1f5] transition-colors group-hover:text-white @7xl:text-xl @7xl:leading-7 @7xl:tracking-[-0.4px]">
+                {email}
+              </span>
             </span>
-          </span>
-        </a>
-      ))}
+          </a>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default FooterContacts;

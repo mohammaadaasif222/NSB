@@ -36,9 +36,28 @@ interface Props extends LobbyProps {
   variant: 'home' | 'casino';
 }
 
+/**
+ * Desktop: the signed-in first screen — the player's panel and banner, then
+ * the live game — ends inside the window, so a short window draws those two a
+ * little smaller than the rest of the page. The bar, the winners and
+ * everything below keep the page's own scale.
+ *
+ * - `--uw`: the page's unit (PlayerLayout's `--u`, by width).
+ * - `--fold-top`: where the panel starts — the bar and the winners above it,
+ *   measured: 182px at 1920 wide, 147 at 1536, 136 at 1323.
+ * - `--u`: what the panel, the banner and the live game are drawn in. They
+ *   are 415 + 24 + 498 design px at their shortest (the live game gives up
+ *   chart height first — `--crash-h`), so that has to end 8px above the
+ *   window's foot. Never more than the page's unit, never below 65% of it.
+ * - `--tf`: the type scale's text floor, down to 9px with it, so the labels
+ *   stay inside the boxes drawn for them.
+ */
+const FIRST_SCREEN_FIT =
+  'lg:[--uw:min(1px,calc(100vw/1920))] lg:[--fold-top:max(calc(66px+var(--uw)*102),calc(10px+var(--uw)*172))] lg:[--u:min(var(--uw),max(calc((100vh-8px-var(--fold-top))/937),calc(var(--uw)*0.65)))] lg:[--tf:clamp(9px,calc(var(--u)*11),11px)] lg:[--crash-h:clamp(calc(var(--u)*498),calc(100vh-8px-var(--fold-top)-var(--u)*439),calc(var(--u)*586))]';
+
 /** The signed-in lobby's sports row, after Live Casino. */
 const PLAYER_INSERTS: readonly ShelfInsert[] = [
-  { id: 'sports', after: 'live', node: <SportsShelf viewAll="/sports" variant="line" /> },
+  { id: 'sports', after: 'live', node: <SportsShelf viewAll="/sports" paged={false} /> },
 ];
 
 /** The casino page's rows among its shelves: providers after Live Casino, tournaments after Recommended. */
@@ -105,7 +124,6 @@ const Lobby: FC<Props> = ({
   const browser = (
     <GameBrowser
       shelves={shelves}
-      query={query}
       basePath={basePath}
       controls={controls}
       {...(casino
@@ -149,8 +167,10 @@ const Lobby: FC<Props> = ({
           // the hero, the crash card and the browser 24px apart.
           <div className="space-y-4 pt-1 lg:space-y-[calc(var(--u)*24)] lg:pt-0">
             <WinnersStrip />
-            <HomeHero />
-            <CrashPreview />
+            <div className={`space-y-4 ${FIRST_SCREEN_FIT} lg:space-y-[calc(var(--u)*24)]`}>
+              <HomeHero />
+              <CrashPreview />
+            </div>
             {unavailable}
             {browser}
           </div>

@@ -1,6 +1,7 @@
 import type { CSSProperties, FC } from 'react';
 
 import { StarIcon } from '@/components/icons';
+import { useTranslation } from '@/context/I18nContext';
 
 interface Props {
   /** How many of the five are lit. Rounded down — 4.5 lights four. */
@@ -21,6 +22,7 @@ interface Props {
  * width attribute the icon writes.
  */
 const StarRating: FC<Props> = ({ value, size, lgSize, className = '' }) => {
+  const { t } = useTranslation();
   const vars = {
     '--star': `${size}px`,
     '--star-lg': `calc(var(--u) * ${lgSize})`,
@@ -30,7 +32,7 @@ const StarRating: FC<Props> = ({ value, size, lgSize, className = '' }) => {
     <span
       className={`flex items-center gap-[calc(var(--star)*0.14)] lg:gap-[calc(var(--star-lg)*0.14)] ${className}`}
       role="img"
-      aria-label={`${value} out of 5`}
+      aria-label={t('content.promo.starsOutOf5', { value })}
       style={vars}
     >
       {[0, 1, 2, 3, 4].map((i) => (

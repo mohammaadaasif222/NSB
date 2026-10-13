@@ -14,9 +14,9 @@ import SiteLoader from '@/components/SiteLoader';
  * full-screen loader; anything quicker resolves before the timer fires and the
  * overlay never mounts.
  *
- * There is deliberately no first-load splash. The server already sent the
- * page's HTML, so there is no data being waited on — an overlay there would
- * hide content that is sitting ready underneath it.
+ * First load is not this component's business: the server already sent the
+ * page's HTML, so there is no navigation to wait on. The splash there belongs
+ * to AuthGate, which waits on the session rather than on the route.
  */
 const DELAY_MS = 400;
 

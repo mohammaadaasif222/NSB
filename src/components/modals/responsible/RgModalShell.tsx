@@ -86,7 +86,7 @@ const RgModalShell: FC<Props> = ({
           <button
             type="button"
             onClick={onClose}
-            aria-label={t('common.close')}
+            aria-label={t('rgc.close')}
             className="rl-glass rl-glass-hover -me-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9da2b4] hover:text-white"
           >
             <CloseIcon size={16} />
@@ -103,7 +103,7 @@ const RgModalShell: FC<Props> = ({
             onClick={onClose}
             className="rl-btn-ghost h-11 rounded-full px-5 text-sm font-medium"
           >
-            {t('common.cancel')}
+            {t('rgc.cancel')}
           </button>
 
           <button
@@ -117,7 +117,7 @@ const RgModalShell: FC<Props> = ({
             }
             style={destructive ? { background: '#e33827' } : undefined}
           >
-            {loading ? t('common.saving') : submitLabel}
+            {loading ? t('rgc.saving') : submitLabel}
           </button>
         </footer>
       </div>

@@ -1,6 +1,8 @@
 import { useEffect, useState, type FC } from 'react';
 import dynamic from 'next/dynamic';
 import kycApi from '@/services/kyc.api';
+import { useTranslation } from '@/context/I18nContext';
+import { translate } from '@/i18n/translate';
 import KycLevel1Form from '@/components/profile/kyc/KycLevel1Form';
 import type { PlayerKycProfile } from '@/types/kyc';
 import { useModalA11y } from '@/hooks/useModalA11y';
@@ -11,7 +13,7 @@ const SumsubWebSdk = dynamic(() => import('@sumsub/websdk-react'), {
   loading: () => (
     <div className="flex h-96 flex-col items-center justify-center space-y-3 text-[#9da2b4]">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--rl-gold) border-t-transparent" />
-      <p className="text-sm font-medium">Initializing verification widget…</p>
+      <p className="text-sm font-medium">{translate('acct.kycModal.initializing')}</p>
     </div>
   ),
 });
@@ -45,6 +47,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
   // Tab stays inside, Escape closes, focus returns where it came from, and a
   // screen reader is told a dialog opened. None of that was true before.
   const dialogRef = useModalA11y(onClose);
+  const { t, locale } = useTranslation();
   const isUpperTier = typeof tier === 'number' && tier > 2;
   const isLevel1Only = tier === 1;
   const [step, setStep] = useState<Step>('resolving');
@@ -70,8 +73,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
       setStep('sdk');
       return res.token;
     } catch (err: any) {
-      const msg =
-        err?.message || 'Unable to connect to verification provider. Please try again later.';
+      const msg = err?.message || t('acct.kycModal.connectFailed');
       setError(msg);
       setStep('error');
       throw err;
@@ -178,7 +180,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
     // staring at a blank frame with no way to retry. The step has to move too:
     // the error panel renders on `step`, so setting only the message would
     // leave the broken iframe on screen and the explanation nowhere.
-    setError('The verification widget hit an error. Please try again.');
+    setError(t('acct.kycModal.widgetError'));
     setStep('error');
   };
 
@@ -207,7 +209,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
             </div>
             <div className="min-w-0">
               <h2 id="kyc-verify-title" className="rl-h-card truncate text-[#f0f1f5]">
-                {step === 'level1' ? 'Personal Information' : 'Identity Verification'}
+                {step === 'level1' ? t('acct.kycModal.personalInfo') : t('acct.kycModal.identity')}
               </h2>
               {/* Sumsub is not involved in the details form, so crediting them
                   there would be both wrong and faintly alarming — the player
@@ -215,9 +217,9 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
               <p className="truncate text-xs text-[#9da2b4]">
                 {step === 'level1'
                   ? isLevel1Only
-                    ? 'Your name, date of birth and address'
-                    : 'Step 1 of 2 — your details, then your ID'
-                  : 'Powered by Sumsub'}
+                    ? t('acct.kycModal.level1Sub')
+                    : t('acct.kycModal.step1of2')
+                  : t('acct.kycModal.poweredBy')}
               </p>
             </div>
           </div>
@@ -225,7 +227,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
             type="button"
             onClick={onClose}
             className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
-            aria-label="Close modal"
+            aria-label={t('common.close')}
           >
             <CloseIcon size={18} />
           </button>
@@ -236,7 +238,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
           {step === 'resolving' && (
             <div className="flex h-96 flex-col items-center justify-center space-y-3 text-[#9da2b4]">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--rl-gold) border-t-transparent" />
-              <p className="text-sm font-medium">Connecting to verification service…</p>
+              <p className="text-sm font-medium">{t('acct.kycModal.connecting')}</p>
             </div>
           )}
 
@@ -244,9 +246,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
             <div className="space-y-4">
               {!isLevel1Only && (
                 <p className="text-xs leading-relaxed text-[#9da2b4]">
-                  We need these details before we can check your ID — they are what your
-                  document is matched against. Make sure they are spelled exactly as they
-                  appear on it.
+                  {t('acct.kycModal.level1Intro')}
                 </p>
               )}
               <KycLevel1Form profile={profile} onSuccess={handleLevel1Saved} />
@@ -260,7 +260,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
               </div>
               <div>
                 <h3 className="text-base font-medium text-[#f0f1f5]">
-                  Service Temporarily Unavailable
+                  {t('acct.kycModal.unavailable')}
                 </h3>
                 <p className="mt-1 max-w-sm text-sm leading-6 text-[#9da2b4]">{error}</p>
               </div>
@@ -270,7 +270,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
                 className="rl-btn-gold inline-flex h-12 items-center gap-2 rounded-[34px] px-6 text-base font-medium"
               >
                 <RefreshCwIcon size={15} />
-                <span>Retry</span>
+                <span>{t('acct.retry')}</span>
               </button>
             </div>
           )}
@@ -281,7 +281,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
                 accessToken={token}
                 expirationHandler={handleExpiration}
                 config={{
-                  lang: 'en',
+                  lang: locale,
                   theme: 'dark',
                 }}
                 options={{

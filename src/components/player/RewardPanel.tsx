@@ -1,11 +1,10 @@
-import { useEffect, type FC } from 'react';
+import { useEffect, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
-import { PanelHeader } from '@/components/player/HeaderPopover';
 import ButtonLoader from '@/components/ButtonLoader';
-import { ClockIcon, LinkIcon, REWARD_ICONS, TrophyIcon } from '@/components/icons';
+import { REWARD_ICONS } from '@/components/icons';
 import { analytics } from '@/services/analytics';
 import { useRewards } from '@/hooks/useRewards';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
@@ -14,40 +13,54 @@ import { formatRewardAmount } from '@/utils/money';
 import type { RewardType, RewardTypeSummary } from '@/types';
 
 /**
- * Rewards tray.
+ * Rewards tray, as the design draws it: the raffle card, a row per reward,
+ * and All Rewards.
  *
- * Each row is one of the five rewards from GET /rewards/me: a Claim button
- * when something is claimable, otherwise what is building up and when it turns
- * claimable. Rewards switched off in the console are left out.
+ * Each row is one of the rewards from GET /rewards/me — the design's sample
+ * rows (Daily Reload, Pre-Monthly…) are not rewards the platform has, so the
+ * real ones are drawn in their style instead. On the right, Claim when
+ * something is claimable, otherwise what is building up. Rewards switched off
+ * in the console are left out.
  *
- * The raffle card above the list is still a placeholder — there is no raffle
- * behind it yet.
+ * The raffle card is still a placeholder — there is no raffle behind it yet.
  */
 
-/** The headline raffle, which sits above the list on its own card. */
-const RaffleCard: FC = () => (
-  <div className="flex items-center gap-3 rounded-2xl bg-slate-900 border border-slate-700 p-3">
-    <span
-      className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300"
-      aria-hidden="true"
-    >
-      <TrophyIcon size={18} />
-    </span>
+/* Every size is written out in full: Tailwind only generates class names it
+   can read whole in the source. 16/500 titles, 12/500 uppercase subtitles. */
+const TITLE =
+  'block truncate text-[16px] font-medium leading-6 text-[#f0f1f5] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+const SUBTITLE =
+  'block truncate text-[12px] font-medium uppercase leading-5 tracking-[1px] text-[#9da2b4] tabular-nums lg:text-[length:max(min(11px,12px),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]';
+const GOLD =
+  'text-[16px] font-medium leading-6 text-[#ffe779] tabular-nums lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 
-    <span className="min-w-0 flex-1">
-      <span className="block truncate text-sm font-extrabold text-white">
-        $20,000 WEEKLY RAFFLE
-      </span>
-      <span className="block truncate text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-        Raffle entry active
-      </span>
-    </span>
+/** The headline raffle, on a lighter card above the list. */
+const RaffleCard: FC = () => {
+  const { t } = useTranslation();
 
-    <span className="inline-flex flex-shrink-0 items-center gap-1 rounded-lg bg-slate-800 border border-slate-700 px-2 py-1 text-[11px] font-semibold text-slate-300 tabular-nums">
-      <LinkIcon size={12} />0
-    </span>
-  </div>
-);
+  return (
+    <div className="flex h-[94px] items-center gap-3 rounded-[34px] bg-white/20 px-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] lg:h-[calc(var(--u)*94)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*16)]">
+      <span
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[#666666] lg:h-[calc(var(--u)*36)] lg:w-[calc(var(--u)*36)] lg:rounded-[calc(var(--u)*8)]"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 18 18"
+          fill="none"
+          className="h-[18px] w-[18px] lg:h-[calc(var(--u)*18)] lg:w-[calc(var(--u)*18)]"
+        >
+          <rect x="2" y="2" width="14" height="14" rx="2" stroke="#d0d0d0" strokeWidth="2" />
+          <circle cx="6.5" cy="6.5" r="1.5" fill="#d0d0d0" />
+          <path d="M16 11.5 12 7.5 3 16" stroke="#d0d0d0" strokeWidth="2" strokeLinejoin="round" />
+        </svg>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={TITLE}>{t('lobby.raffle.title', { amount: '$20,000' })}</span>
+        <span className={`${SUBTITLE} mt-0.5`}>{t('lobby.raffle.active')}</span>
+      </span>
+    </div>
+  );
+};
 
 interface RowProps {
   reward: RewardTypeSummary;
@@ -85,21 +98,17 @@ const RewardRow: FC<RowProps> = ({ reward, currency, clockOffset, claiming, onCl
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl bg-slate-900 border border-slate-700 px-3 py-2.5">
+    <li className="flex h-[70px] items-center gap-3 rounded-[24px] bg-white/10 px-4 pe-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] lg:h-[calc(var(--u)*70)] lg:gap-[calc(var(--u)*12)] lg:rounded-[calc(var(--u)*24)] lg:pe-[calc(var(--u)*20)] lg:ps-[calc(var(--u)*16)]">
       <span
-        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-          claimable ? 'bg-amber-500/15 text-amber-300' : 'bg-blue-600/20 text-blue-300'
-        }`}
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-[#f0f1f5]/80 lg:h-[calc(var(--u)*36)] lg:w-[calc(var(--u)*36)]"
         aria-hidden="true"
       >
-        <Icon size={15} />
+        <Icon size={16} />
       </span>
 
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-semibold text-slate-100">
-          {t(REWARD_TITLE_KEYS[reward.type])}
-        </span>
-        <span className="block truncate text-[11px] text-slate-500 tabular-nums">{detail}</span>
+        <span className={TITLE}>{t(REWARD_TITLE_KEYS[reward.type])}</span>
+        <span className={SUBTITLE}>{detail}</span>
       </span>
 
       {claimable ? (
@@ -107,24 +116,22 @@ const RewardRow: FC<RowProps> = ({ reward, currency, clockOffset, claiming, onCl
           type="button"
           onClick={() => onClaim(reward.type)}
           disabled={claiming !== null}
-          className="inline-flex h-7 min-w-[3.5rem] flex-shrink-0 items-center justify-center rounded-lg bg-amber-500 px-3 text-[11px] font-bold text-slate-950 hover:bg-amber-400 disabled:opacity-60 transition-colors"
+          className={`${GOLD} flex-shrink-0 transition-[filter] hover:brightness-125 disabled:opacity-60`}
         >
           {claiming === reward.type ? <ButtonLoader /> : t('rewards.claim')}
         </button>
       ) : (
-        <span
-          className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-500"
-          aria-hidden="true"
-        >
-          <ClockIcon size={13} />
+        <span className={`${GOLD} flex-shrink-0`}>
+          {formatRewardAmount(reward.pending_amount, currency)}
         </span>
       )}
     </li>
   );
 };
 
-const Notice: FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="rounded-2xl bg-slate-900 border border-slate-700 px-4 py-5 text-center text-xs text-slate-400">
+/** A message in a row's place — signed out, loading or failed. */
+const Notice: FC<{ children: ReactNode }> = ({ children }) => (
+  <div className="rounded-[24px] bg-white/10 px-4 py-5 text-center text-[14px] leading-5 text-[#9da2b4] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] lg:rounded-[calc(var(--u)*24)]">
     {children}
   </div>
 );
@@ -137,7 +144,7 @@ const RewardPanel: FC = () => {
 
   const visible = summary?.rewards.filter((reward) => reward.enabled) ?? [];
 
-  const body = (): React.ReactNode => {
+  const body = (): ReactNode => {
     if (!token) {
       return (
         <Notice>
@@ -145,7 +152,7 @@ const RewardPanel: FC = () => {
           <button
             type="button"
             onClick={() => openLogin()}
-            className="mt-3 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 transition-colors"
+            className="mt-3 inline-flex h-10 items-center rounded-full bg-[#f9d028] px-5 text-[14px] font-medium text-[#07080a] transition-[filter] hover:brightness-110"
           >
             {t('account.login')}
           </button>
@@ -160,7 +167,7 @@ const RewardPanel: FC = () => {
           <button
             type="button"
             onClick={() => void refresh()}
-            className="mt-3 rounded-lg bg-slate-800 border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
+            className="mt-3 inline-flex h-9 items-center rounded-full bg-white/10 px-4 text-[13px] font-medium text-[#f0f1f5] transition-colors hover:bg-white/15"
           >
             {t('rewards.retry')}
           </button>
@@ -171,26 +178,18 @@ const RewardPanel: FC = () => {
     }
 
     return (
-      <>
-        <ul className="space-y-2.5">
-          {visible.map((reward) => (
-            <RewardRow
-              key={reward.type}
-              reward={reward}
-              currency={summary.currency}
-              clockOffset={clockOffset}
-              claiming={claiming}
-              onClaim={(type) => void claim(type)}
-            />
-          ))}
-        </ul>
-        <p className="px-1 text-[11px] leading-snug text-slate-500">
-          {t('rewards.paidTo', {
-            currency: summary.payout.currency_code,
-            network: summary.payout.network_code,
-          })}
-        </p>
-      </>
+      <ul className="flex flex-col gap-2.5 lg:gap-[calc(var(--u)*10)]">
+        {visible.map((reward) => (
+          <RewardRow
+            key={reward.type}
+            reward={reward}
+            currency={summary.currency}
+            clockOffset={clockOffset}
+            claiming={claiming}
+            onClaim={(type) => void claim(type)}
+          />
+        ))}
+      </ul>
     );
   };
 
@@ -201,32 +200,16 @@ const RewardPanel: FC = () => {
   }, []);
 
   return (
-    <>
-      <PanelHeader
-        title={t('nav.rewards')}
-        action={
-          summary?.tier ? (
-            <span className="rounded-full bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-300">
-              {summary.tier.name}
-            </span>
-          ) : undefined
-        }
-      />
-
-      <div className="max-h-[26rem] space-y-2.5 overflow-y-auto thin-scrollbar px-4 pb-3">
-        <RaffleCard />
-        {body()}
-      </div>
-
-      <div className="border-t border-slate-700 p-3">
-        <Link
-          href="/rewards"
-          className="flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-500 transition-colors"
-        >
-          {t('rewards.allRewards')}
-        </Link>
-      </div>
-    </>
+    <div className="thin-scrollbar max-h-[calc(100dvh-140px)] overflow-y-auto p-4 pb-[26px] lg:p-[calc(var(--u)*16)] lg:pb-[calc(var(--u)*26)]">
+      <RaffleCard />
+      <div className="mt-3.5 lg:mt-[calc(var(--u)*14)]">{body()}</div>
+      <Link
+        href="/rewards"
+        className="mt-[18px] flex h-14 items-center justify-center rounded-full bg-[#f9d028] text-[18px] font-medium leading-7 text-[#07080a] transition-[filter] hover:brightness-110 lg:mt-[calc(var(--u)*18)] lg:h-[calc(var(--u)*56)] lg:text-[length:max(min(11px,18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]"
+      >
+        {t('rewards.allRewards')}
+      </Link>
+    </div>
   );
 };
 

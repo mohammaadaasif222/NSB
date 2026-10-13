@@ -28,6 +28,22 @@ export const MONTHS = [
 ] as const;
 
 /**
+ * `MONTHS` with each label in the player's language, via Intl. Falls back to
+ * the English labels above if the runtime cannot format the locale.
+ */
+export function localizedMonths(locale: string): { value: string; label: string }[] {
+  try {
+    const fmt = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' });
+    return MONTHS.map((m) => ({
+      value: m.value,
+      label: fmt.format(new Date(Date.UTC(2000, Number(m.value) - 1, 1))),
+    }));
+  } catch {
+    return MONTHS.map((m) => ({ value: m.value, label: m.label }));
+  }
+}
+
+/**
  * Years a player could plausibly have been born in.
  *
  * Starts at "this year minus 18" so the picker cannot offer a year that is
@@ -91,11 +107,7 @@ export function ageOn(dob: string, asOf: Date = new Date()): number | null {
   if (!y || !m || !d) return null;
 
   const birth = new Date(Date.UTC(y, m - 1, d));
-  if (
-    birth.getUTCFullYear() !== y ||
-    birth.getUTCMonth() !== m - 1 ||
-    birth.getUTCDate() !== d
-  ) {
+  if (birth.getUTCFullYear() !== y || birth.getUTCMonth() !== m - 1 || birth.getUTCDate() !== d) {
     return null;
   }
 

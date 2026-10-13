@@ -1,5 +1,6 @@
 import type { FC, ReactElement } from 'react';
 import { categoryHref } from '@/constants/games';
+import type { TranslationKey } from '@/i18n/locales';
 import {
   WhatsappMark,
   InstagramMark,
@@ -15,8 +16,8 @@ import {
 } from '@/components/player/footer/footerIcons';
 
 /**
- * Everything the footer says, apart from the two headings it takes from the
- * dictionary.
+ * Everything the footer says, as dictionary keys — the sections translate
+ * them where they render.
  *
  * Held here rather than inside the sections so the three cards stay layout —
  * adding a link, or pointing one at a route that now exists, is an edit to this
@@ -44,11 +45,11 @@ export const SOCIALS: { Mark: FC; label: string; href: string }[] = [
 /* Who to write to                                                       */
 /* ==================================================================== */
 
-export const CONTACTS: { Icon: () => ReactElement; label: string; email: string }[] = [
-  { Icon: QuestionsIcon, label: 'Questions', email: 'support@rolluck.com' },
-  { Icon: BugReportIcon, label: 'BugBounty Reports', email: 'bugbounty@rolluck.com' },
-  { Icon: PartnerIcon, label: 'Become Partner', email: 'affiliate@rolluck.com' },
-  { Icon: MarketingIcon, label: 'Marketing', email: 'pr@rolluck.com' },
+export const CONTACTS: { Icon: () => ReactElement; label: TranslationKey; email: string }[] = [
+  { Icon: QuestionsIcon, label: 'lobby.footer.contactQuestions', email: 'support@rolluck.com' },
+  { Icon: BugReportIcon, label: 'lobby.footer.contactBugBounty', email: 'bugbounty@rolluck.com' },
+  { Icon: PartnerIcon, label: 'lobby.footer.contactPartner', email: 'affiliate@rolluck.com' },
+  { Icon: MarketingIcon, label: 'lobby.footer.contactMarketing', email: 'pr@rolluck.com' },
 ];
 
 /* ==================================================================== */
@@ -56,40 +57,40 @@ export const CONTACTS: { Icon: () => ReactElement; label: string; email: string 
 /* ==================================================================== */
 
 export interface FooterLink {
-  label: string;
+  label: TranslationKey;
   /** Absent for destinations that do not exist yet — rendered inert. */
   href?: string;
 }
 
 export const CASINO_LINKS: FooterLink[] = [
-  { label: 'All games', href: '/casino' },
-  { label: 'Rolluck originals', href: categoryHref('originals') },
-  { label: 'Slots', href: categoryHref('slots') },
-  { label: 'Live casino' },
-  { label: 'Table Games' },
-  { label: 'Providers' },
+  { label: 'browse.filterAll', href: '/casino' },
+  { label: 'nav.originals', href: categoryHref('originals') },
+  { label: 'dash.slots', href: categoryHref('slots') },
+  { label: 'dash.liveCasino' },
+  { label: 'dash.tableGames' },
+  { label: 'lobby.footer.providers' },
 ];
 
 export const SPORTS_LINKS: FooterLink[] = [
-  { label: 'Home', href: '/sports' },
-  { label: 'Live', href: '/sports#live-games' },
-  { label: 'Soccer' },
-  { label: 'Tennis' },
-  { label: 'Basketball' },
-  { label: 'Counter-Strike' },
+  { label: 'nav.home', href: '/sports' },
+  { label: 'lobby.footer.live', href: '/sports#live-games' },
+  { label: 'lobby.sport.soccer' },
+  { label: 'lobby.sport.tennis' },
+  { label: 'lobby.sport.basketball' },
+  { label: 'lobby.sport.counterStrike' },
 ];
 
 export const EARN_LINKS: FooterLink[] = [
-  { label: 'Rolluck Drops', href: '/rewards' },
-  { label: 'Referral System', href: '/profile' },
-  { label: 'Affiliate System', href: '/affiliate' },
-  { label: 'Swap Crypto' },
+  { label: 'lobby.footer.drops', href: '/rewards' },
+  { label: 'lobby.footer.referral', href: '/profile' },
+  { label: 'lobby.footer.affiliate', href: '/affiliate' },
+  { label: 'lobby.footer.swapCrypto' },
 ];
 
 export const HELP_LINKS: FooterLink[] = [
-  { label: 'Report Bug', href: 'mailto:bugbounty@rolluck.com' },
-  { label: 'Privacy Policy', href: '/privacy-policy' },
-  { label: 'Terms of Service', href: '/terms-of-service' },
+  { label: 'lobby.footer.reportBug', href: 'mailto:bugbounty@rolluck.com' },
+  { label: 'lobby.footer.privacy', href: '/privacy-policy' },
+  { label: 'lobby.footer.terms', href: '/terms-of-service' },
 ];
 
 /** Help's second column. The design heads the pair once and runs it wide. */
@@ -97,7 +98,7 @@ export const LEGAL_LINKS: FooterLink[] = [
   /* This used to deep-link `#sports-betting`. The Terms the design ships have
      no sports-betting section at all, so the anchor would land nowhere; it
      points at the document instead until that section exists. */
-  { label: 'Sportsbetting T&S', href: '/terms-of-service' },
-  { label: 'Live Support' },
-  { label: 'Responsible Gambling', href: '/responsible-gambling' },
+  { label: 'lobby.footer.sportsTerms', href: '/terms-of-service' },
+  { label: 'menu.liveSupport' },
+  { label: 'menu.responsibleGambling', href: '/responsible-gambling' },
 ];

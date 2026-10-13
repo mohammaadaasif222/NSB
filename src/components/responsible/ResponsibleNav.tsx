@@ -29,15 +29,15 @@ import budgetIcon from '@/assets/responsible/nav-budget.svg';
 
 /** Each glyph at the size the design exports it, inside the pill's 24px box. */
 export const RESPONSIBLE_SECTIONS = [
-  { key: 'faqs', labelKey: 'rg.navFaqs', icon: faqsIcon, w: 19.5504, h: 19.5504 },
-  { key: 'assessment', labelKey: 'rg.navAssessment', icon: assessmentIcon, w: 21.0833, h: 16 },
-  { key: 'limits', labelKey: 'rg.navLimits', icon: limitsIcon, w: 23, h: 23 },
+  { key: 'faqs', labelKey: 'rgc.navFaqs', icon: faqsIcon, w: 19.5504, h: 19.5504 },
+  { key: 'assessment', labelKey: 'rgc.navAssessment', icon: assessmentIcon, w: 21.0833, h: 16 },
+  { key: 'limits', labelKey: 'rgc.navLimits', icon: limitsIcon, w: 23, h: 23 },
   // 24 rather than the 19.55 the others carry: this one exports as the whole
   // icon frame. Figma served the FAQ bubble for this slot from every asset URL
   // on the rail and the button node; the real glyph only came back from the
   // icon node's own path.
-  { key: 'exclusion', labelKey: 'rg.navExclusion', icon: exclusionIcon, w: 24, h: 24 },
-  { key: 'budget', labelKey: 'rg.navBudget', icon: budgetIcon, w: 17.8167, h: 20.8438 },
+  { key: 'exclusion', labelKey: 'rgc.navExclusion', icon: exclusionIcon, w: 24, h: 24 },
+  { key: 'budget', labelKey: 'rgc.navBudget', icon: budgetIcon, w: 17.8167, h: 20.8438 },
 ] as const satisfies readonly {
   key: string;
   labelKey: TranslationKey;
@@ -99,7 +99,7 @@ const ResponsibleNav: FC<Props> = ({ active, onSelect }) => {
   // AccountNav: without it the grid column grows to the full width of every
   // tab and the page scrolls sideways instead of the strip scrolling itself.
   return (
-    <nav className="flex min-w-0 flex-col gap-[14px] lg:h-full" aria-label={t('rg.title')}>
+    <nav className="flex min-w-0 flex-col gap-[14px] lg:h-full" aria-label={t('rgc.title')}>
       {/* Onest Regular 20/28 in Gray 4 — the design's own, not the white/80 at
           18 this carried before.
 
@@ -107,7 +107,7 @@ const ResponsibleNav: FC<Props> = ({ active, onSelect }) => {
           do not fit the 180 rail a laptop gets, and it was silently wrapping to
           two lines there while the design keeps it on one. */}
       <h2 className="hidden px-1 text-[16px] leading-6 font-normal whitespace-nowrap text-[#9da2b4] lg:block 2xl:text-[20px] 2xl:leading-7">
-        {t('rg.title')}
+        {t('rgc.title')}
       </h2>
 
       {/* 12 between pills — the design stacks them on a 60px pitch at 48 tall. */}

@@ -13,11 +13,13 @@ import {
 import KycVerifyModal from '@/components/modals/profile/KycVerifyModal';
 import KycLevel1Form from '@/components/profile/kyc/KycLevel1Form';
 import ContactCards from '@/components/profile/kyc/ContactCards';
+import { countryName } from '@/constants/countries';
 import kycApi from '@/services/kyc.api';
 import { resolveKycGateState, getKycRejectReason } from '@/utils/kyc-status';
 import { analytics } from '@/services/analytics';
 import type { ApiUser } from '@/types/profile';
 import type { PlayerKycProfile, PlayerKycTiers } from '@/types/kyc';
+import type { TranslationKey } from '@/i18n/locales';
 
 /** Longest gap between checks once a verdict is clearly not imminent. */
 const POLL_MAX_MS = 120_000;
@@ -39,17 +41,31 @@ interface Props {
 const UPPER_TIERS = [
   {
     tier: 3,
-    title: 'Proof of Address',
-    subtitle: 'Utility bill or bank statement verification',
-    body: 'Proof of your current residential address — a utility bill or official bank statement dated within the last 3 months.',
+    title: 'acct.verify.tier3Title',
+    subtitle: 'acct.verify.tier3Subtitle',
+    body: 'acct.verify.tier3Body',
   },
   {
     tier: 4,
-    title: 'Source of Funds',
-    subtitle: 'Evidence of where your funds come from',
-    body: 'Evidence of your source of funds — recent payslips, business accounts, or records of crypto holdings.',
+    title: 'acct.verify.tier4Title',
+    subtitle: 'acct.verify.tier4Subtitle',
+    body: 'acct.verify.tier4Body',
   },
-] as const;
+] as const satisfies readonly {
+  tier: number;
+  title: TranslationKey;
+  subtitle: TranslationKey;
+  body: TranslationKey;
+}[];
+
+/** Sumsub's document types, as a player would name them. Unknown types fall back to the raw value. */
+const DOC_TYPE_LABELS: Record<string, TranslationKey> = {
+  PASSPORT: 'acct.verify.docPassport',
+  ID_CARD: 'acct.verify.docIdCard',
+  DRIVERS: 'acct.verify.docDrivers',
+  DRIVERS_LICENSE: 'acct.verify.docDrivers',
+  RESIDENCE_PERMIT: 'acct.verify.docResidencePermit',
+};
 
 /*
  * The account area's shared shapes, pulled out so this tab reads as part of it
@@ -86,7 +102,7 @@ const ACTION =
   'inline-flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*8)] rounded-full px-[calc(var(--u)*22)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium';
 
 const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [kycProfile, setKycProfile] = useState<PlayerKycProfile | null>(null);
   const [tiers, setTiers] = useState<PlayerKycTiers | null>(null);
   /** Which upper tier's Sumsub widget is open, if any. */
@@ -262,10 +278,12 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                   {isLevel1Complete ? (
                     <span className={`${BADGE} bg-[#35d07f]/15 text-[#35d07f]`}>
                       <CheckIcon size={12} />
-                      Complete
+                      {t('acct.verify.complete')}
                     </span>
                   ) : (
-                    <span className={`${BADGE} bg-[#fcd535]/15 text-[#fcd535]`}>Required</span>
+                    <span className={`${BADGE} bg-[#fcd535]/15 text-[#fcd535]`}>
+                      {t('acct.verify.required')}
+                    </span>
                   )}
                   <span
                     className={`text-[#9da2b4] transition-transform duration-200 ${level1Open ? 'rotate-180' : ''}`}
@@ -319,7 +337,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                     <span className="flex items-baseline gap-[calc(var(--u)*8)]">
                       <span className={`truncate ${LEVEL_TITLE}`}>{t('kyc.level2Title')}</span>
                       {!isLevel1Complete && (
-                        <span className={`shrink-0 ${LEVEL_HINT}`}>(Unlock after Level 1)</span>
+                        <span className={`shrink-0 ${LEVEL_HINT}`}>
+                          {t('acct.verify.unlockAfter1')}
+                        </span>
                       )}
                     </span>
                     <span className={`block truncate ${LEVEL_HINT}`}>{t('kyc.level2Hint')}</span>
@@ -364,10 +384,12 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                   ) : !isLevel1Complete ? (
                     <span className={`${BADGE} bg-white/10 text-[#9da2b4]`}>
                       <LockIcon size={11} />
-                      Locked
+                      {t('acct.verify.locked')}
                     </span>
                   ) : (
-                    <span className={`${BADGE} bg-[#4da3ff]/15 text-[#4da3ff]`}>Ready</span>
+                    <span className={`${BADGE} bg-[#4da3ff]/15 text-[#4da3ff]`}>
+                      {t('acct.verify.ready')}
+                    </span>
                   )}
                   <span
                     className={`text-[#9da2b4] transition-transform duration-200 ${level2Open ? 'rotate-180' : ''}`}
@@ -392,8 +414,17 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                         </span>
                         <span className={`block ${BODY}`}>
                           {kycProfile?.docType
-                            ? `${kycProfile.docType.replace(/_/g, ' ')} (${kycProfile.docCountry || 'Verified'})`
-                            : 'Government Document Verified'}
+                            ? `${
+                                DOC_TYPE_LABELS[kycProfile.docType]
+                                  ? t(DOC_TYPE_LABELS[kycProfile.docType])
+                                  : kycProfile.docType.replace(/_/g, ' ')
+                              } (${
+                                kycProfile.docCountry
+                                  ? (countryName(kycProfile.docCountry, locale) ??
+                                    kycProfile.docCountry)
+                                  : t('kyc.statusVerified')
+                              })`
+                            : t('acct.verify.govDocVerified')}
                         </span>
                       </span>
                     </div>
@@ -430,8 +461,8 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                       <span className="flex items-center gap-[calc(var(--u)*8)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#fcd535]">
                         <ClockIcon size={16} />
                         {kycProfile?.holdReason === 'IDENTITY_MISMATCH'
-                          ? 'Your details do not match your document'
-                          : 'Your documents are with our team'}
+                          ? t('acct.verify.mismatchTitle')
+                          : t('acct.verify.withTeamTitle')}
                       </span>
 
                       {/*
@@ -445,11 +476,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                       */}
                       {kycProfile?.holdReason === 'IDENTITY_MISMATCH' ? (
                         <>
-                          <p className={BODY}>
-                            The name or date of birth on your account does not match the document
-                            you uploaded, so a member of our team is reviewing it. These are the
-                            details you gave us:
-                          </p>
+                          <p className={BODY}>{t('acct.verify.mismatchBody')}</p>
                           <div className="space-y-[calc(var(--u)*2)] rounded-2xl bg-white/6 px-[calc(var(--u)*16)] py-[calc(var(--u)*12)]">
                             <p className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
                               {[kycProfile?.firstName, kycProfile?.lastName]
@@ -457,59 +484,43 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                                 .join(' ') || '—'}
                             </p>
                             <p className="text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] text-[#9da2b4]">
-                              Date of birth: {kycProfile?.dob || '—'}
+                              {t('auth.dateOfBirth')}: {kycProfile?.dob || '—'}
                             </p>
                           </div>
-                          <p className={BODY}>
-                            They must match your ID exactly, including middle names and the spelling
-                            as printed. If something above is wrong, contact Customer Support — for
-                            your protection these cannot be edited once documents have been
-                            submitted.
-                          </p>
+                          <p className={BODY}>{t('acct.verify.mismatchAdvice')}</p>
                         </>
                       ) : (
-                        <p className={BODY}>
-                          We have received your ID and selfie. This one needs a person to look at it
-                          rather than an automated check, so it will not update on its own. We will
-                          email you as soon as it is done — there is nothing further for you to do
-                          here. If it has been more than a working day, contact Customer Support.
-                        </p>
+                        <p className={BODY}>{t('acct.verify.withTeamBody')}</p>
                       )}
                     </div>
                   ) : gateState === 'REJECTED_RETRY' ? (
                     <div className={`${PANEL} space-y-[calc(var(--u)*12)] bg-[#ef4462]/8`}>
                       <span className="flex items-center gap-[calc(var(--u)*8)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#ef4462]">
                         <AlertTriangleIcon size={16} />
-                        {getKycRejectReason(kycProfile) || t('kyc.rejectedRetry')}
+                        {getKycRejectReason(kycProfile, t('kyc.rejectedRetry'))}
                       </span>
                       <button
                         type="button"
                         onClick={() => setModalOpen(true)}
                         className={`${ACTION} rl-chip-danger text-[#ef4462]`}
                       >
-                        Resubmit Documents
+                        {t('acct.verify.resubmitDocuments')}
                       </button>
                     </div>
                   ) : gateState === 'REJECTED_FINAL' ? (
                     <div className={`${PANEL} space-y-[calc(var(--u)*8)] bg-[#ef4462]/12`}>
                       <span className="flex items-center gap-[calc(var(--u)*8)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#ef4462]">
                         <AlertTriangleIcon size={16} />
-                        Verification permanently declined
+                        {t('acct.verify.declinedTitle')}
                       </span>
                       <p className={BODY}>
-                        {getKycRejectReason(kycProfile) ||
-                          'Your identity verification could not be approved.'}{' '}
-                        This decision cannot be retried from here — please contact Customer Support
-                        if you believe it is a mistake.
+                        {getKycRejectReason(kycProfile, t('acct.verify.declinedReason'))}{' '}
+                        {t('acct.verify.declinedBody')}
                       </p>
                     </div>
                   ) : (
                     <div className={`${PANEL} space-y-[calc(var(--u)*12)] bg-white/6`}>
-                      <p className={BODY}>
-                        Please have your official Government ID (Passport, National ID card, or
-                        Driver's License) ready. You will also be asked to take a quick interactive
-                        3D selfie.
-                      </p>
+                      <p className={BODY}>{t('acct.verify.prepareId')}</p>
                       <button
                         type="button"
                         onClick={() => setModalOpen(true)}
@@ -560,9 +571,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                       </span>
                       <span className="min-w-0">
                         <span className={`block truncate ${LEVEL_TITLE}`}>
-                          Level {meta.tier} — {meta.title}
+                          {t('acct.verify.levelTitle', { level: meta.tier, title: t(meta.title) })}
                         </span>
-                        <span className={`block truncate ${LEVEL_HINT}`}>{meta.subtitle}</span>
+                        <span className={`block truncate ${LEVEL_HINT}`}>{t(meta.subtitle)}</span>
                       </span>
                     </span>
 
@@ -583,7 +594,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                           {t('kyc.statusActionRequired')}
                         </span>
                       ) : required ? (
-                        <span className={`${BADGE} bg-[#fcd535]/15 text-[#fcd535]`}>Required</span>
+                        <span className={`${BADGE} bg-[#fcd535]/15 text-[#fcd535]`}>
+                          {t('acct.verify.required')}
+                        </span>
                       ) : (
                         <span className={`${BADGE} bg-white/10 text-[#9da2b4]`}>
                           <LockIcon size={11} />
@@ -602,17 +615,14 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                     <div
                       className={`space-y-[calc(var(--u)*8)] border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)] ${BODY}`}
                     >
-                      <p>{meta.body}</p>
+                      <p>{t(meta.body)}</p>
 
                       {required && state?.requiredReason && (
                         <p className="text-[#fcd535]">{state.requiredReason}</p>
                       )}
 
                       {rejected && (
-                        <p className="text-[#ef4462]">
-                          The document submitted for this level was not accepted. Reopen the
-                          verification to see what was wrong and upload a replacement.
-                        </p>
+                        <p className="text-[#ef4462]">{t('acct.verify.tierRejected')}</p>
                       )}
 
                       {state?.canSubmit && !verified && (
@@ -627,22 +637,20 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                         >
                           <ShieldCheckIcon size={16} />
                           {rejected
-                            ? 'Resubmit documents'
+                            ? t('acct.verify.resubmitDocuments')
                             : inReview
-                              ? 'Continue verification'
-                              : `Start Level ${meta.tier} verification`}
+                              ? t('acct.kycGate.ctaContinue')
+                              : t('acct.verify.startLevel', { level: meta.tier })}
                         </button>
                       )}
 
-                      {required && !state?.canSubmit && (
-                        <p>Our compliance team will contact you with what to send and how.</p>
-                      )}
+                      {required && !state?.canSubmit && <p>{t('acct.verify.complianceContact')}</p>}
 
                       {!required && !verified && !rejected && !inReview && (
                         <p>
                           {tiers?.enabled
-                            ? 'Only requested for higher-volume accounts. We will let you know if it applies to you.'
-                            : 'Not currently required on this account.'}
+                            ? t('acct.verify.higherVolumeOnly')
+                            : t('acct.verify.notRequired')}
                         </p>
                       )}
                     </div>

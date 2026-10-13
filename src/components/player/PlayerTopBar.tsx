@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
-import wordmark from '@/assets/lobby/footer/logo.webp';
+import { ROLLUCK_LOGO as wordmark } from '@/constants/cdn';
 import menuGlyph from '@/assets/lobby/rail/bar-menu.svg';
 import searchGlyph from '@/assets/lobby/rail/bar-search.svg';
 import walletGlyph from '@/assets/lobby/rail/bar-wallet.svg';
@@ -13,13 +12,11 @@ import profileChevron from '@/assets/lobby/rail/bar-chevron-profile.svg';
 import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import { useAuth } from '@/context/AuthContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
-import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useAuthModal } from '@/context/AuthModalContext';
-import ThemeModal from '@/components/modals/profile/ThemeModal';
-import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
+import ProfileMenu from '@/components/player/ProfileMenu';
 import BalanceMenu from '@/components/player/BalanceMenu';
 import WalletModal from '@/components/wallet/WalletModal';
 import WalletSettingsModal from '@/components/wallet/WalletSettingsModal';
@@ -103,22 +100,32 @@ const IconButton: FC<IconButtonProps> = ({
  * that width only one of them fits.
  */
 const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
-  const { token, logout } = useAuth();
+  const { token } = useAuth();
   const { rewards: rewardsOn } = usePlatformFeatures();
-  const { me, updateMe } = useMe();
-  const { theme, applyTheme } = useTheme();
-  const router = useRouter();
+  const { me } = useMe();
   const { t } = useTranslation();
   const { internalChatEnabled } = useSupportChat();
   const { openLogin, openRegister } = useAuthModal();
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [themeOpen, setThemeOpen] = useState(false);
-  const [logoutOpen, setLogoutOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Publish the bar's height on the stage, for screens that open beneath it
+  // (the phone's notification sheet). It changes with the signed-in phone
+  // bar's second row, so it is measured rather than assumed.
+  useEffect(() => {
+    const header = headerRef.current;
+    const stage = header?.closest<HTMLElement>('[data-player-stage]');
+    if (!header || !stage) return;
+    const publish = (): void =>
+      stage.style.setProperty('--player-bar-h', `${header.getBoundingClientRect().height}px`);
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
 
   /**
    * One panel at a time. Three separate booleans would let a click on the bell
@@ -129,26 +136,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const togglePanel = (next: Exclude<HeaderPanel, null>): void =>
     setPanel((current) => (current === next ? null : next));
 
-  /**
-   * Land on the public lobby after logging out. Without the push, a user
-   * logging out from a guarded page (/profile) would be bounced to /login.
-   */
-  const confirmLogout = (): void => {
-    setLogoutOpen(false);
-    logout();
-    router.push('/');
-  };
-
-  useEffect(() => {
-    const handler = (e: MouseEvent): void => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
   const name = me ? me.display_name || fullNameOf(me) : '';
 
   return (
@@ -157,7 +144,10 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
           signed in, a second row under it for the balance and wallet.
           Desktop: the design's 80px glass bar, floating beside the rail.
           Sized in `--u` (PlayerLayout). */}
-      <header className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]">
+      <header
+        ref={headerRef}
+        className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]"
+      >
         <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.09)]">
           {/* --- Brand, search, language --------------------------------- */}
           {/* Collapses the rail to icons. The phone opens its drawer from the
@@ -283,6 +273,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                     open={panel === 'rewards'}
                     onClose={closePanel}
                     label={t('nav.rewards')}
+                    width="w-[min(415px,calc(100vw-2rem))] lg:w-[calc(var(--u)*415)]"
                     className="order-2 lg:order-none"
                     trigger={
                       <button
@@ -312,6 +303,12 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   open={panel === 'notifications'}
                   onClose={closePanel}
                   label={t('nav.notifications')}
+                  width="w-[min(464px,calc(100vw-2rem))] lg:w-[calc(var(--u)*464)]"
+                  tone="deep"
+                  dim
+                  phoneSheet
+                  // The design hangs the panel 41px past the bell's end.
+                  panelClassName="lg:-end-[calc(var(--u)*41)]"
                   trigger={
                     <IconButton
                       label={t('nav.notifications')}
@@ -331,7 +328,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                     </IconButton>
                   }
                 >
-                  <NotificationPanel />
+                  <NotificationPanel onClose={closePanel} />
                 </HeaderPopover>
 
                 {/* The platform's own chat. Independent of the Intercom
@@ -361,75 +358,34 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             )}
 
             {token ? (
-              // Below `sm` the design's bar has no avatar; the menu drawer
-              // carries Profile and Logout there (see PlayerSidebar).
-              <div className="relative order-3 hidden sm:block lg:order-none" ref={ref}>
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((v) => !v)}
-                  aria-haspopup="menu"
-                  aria-expanded={menuOpen}
-                  aria-label={name || t('account.account')}
-                  className="flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*11)] rounded-full border border-white/10 bg-black/40 backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-auto lg:pl-[calc(var(--u)*8)] lg:pr-[calc(var(--u)*12)]"
-                >
-                  <img
-                    src={me?.avatar_url || defaultAvatar.src}
-                    alt=""
-                    className="h-7 w-7 flex-shrink-0 rounded-full bg-[#666666] object-cover lg:h-[calc(var(--u)*32)] lg:w-[calc(var(--u)*32)] lg:rounded-[calc(var(--u)*4)]"
-                  />
-                  <img
-                    src={profileChevron.src}
-                    alt=""
-                    className={`hidden h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] transition-transform lg:block ${menuOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
-
-                {menuOpen && (
-                  <div
-                    role="menu"
-                    className="rl-menu absolute right-0 top-[calc(100%+8px)] z-40 w-52 overflow-hidden rounded-2xl py-1"
-                  >
-                    {me && (
-                      <div className="border-b border-white/[0.08] px-3 py-2">
-                        <p className="truncate text-xs font-semibold text-white">{name}</p>
-                        <p className="truncate text-[11px] text-white/45">{me.email}</p>
-                      </div>
-                    )}
+              // Below `sm` the design's bar has no avatar; the phone opens the
+              // same menu from its Profile tab (see MobileTabBar).
+              <div className="order-3 hidden sm:block lg:order-none">
+                <ProfileMenu
+                  placement="below"
+                  trigger={({ open, toggle, menuId }) => (
                     <button
                       type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push('/profile');
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm text-white/75 transition-colors hover:bg-white/5 hover:text-white"
+                      onClick={toggle}
+                      aria-haspopup="menu"
+                      aria-expanded={open}
+                      aria-controls={open ? menuId : undefined}
+                      aria-label={name || t('account.account')}
+                      className="flex h-10 items-center gap-[calc(var(--u)*11)] rounded-full bg-black/40 pe-3 ps-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:pe-[calc(var(--u)*12)] lg:ps-[calc(var(--u)*8)]"
                     >
-                      {t('account.profile')}
+                      <img
+                        src={me?.avatar_url || defaultAvatar.src}
+                        alt=""
+                        className="h-8 w-8 flex-shrink-0 rounded-full bg-[#666666] object-cover lg:h-[calc(var(--u)*32)] lg:w-[calc(var(--u)*32)]"
+                      />
+                      <img
+                        src={profileChevron.src}
+                        alt=""
+                        className={`h-4 w-4 transition-transform lg:h-[calc(var(--u)*16)] lg:w-[calc(var(--u)*16)] ${open ? 'rotate-180' : ''}`}
+                      />
                     </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setThemeOpen(true);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm text-white/75 transition-colors hover:bg-white/5 hover:text-white"
-                    >
-                      {t('account.appearance')}
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setLogoutOpen(true);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm text-[#ef4462] transition-colors hover:bg-[#ef4462]/10"
-                    >
-                      {t('account.logout')}
-                    </button>
-                  </div>
-                )}
+                  )}
+                />
               </div>
             ) : (
               <div className="hidden items-center gap-[calc(var(--u)*9)] lg:flex">
@@ -454,21 +410,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
       </header>
 
       {searchOpen && <GameSearchModal onClose={() => setSearchOpen(false)} />}
-
-      {themeOpen && (
-        <ThemeModal
-          currentTheme={theme}
-          onClose={() => setThemeOpen(false)}
-          onSaved={(next) => {
-            applyTheme(next);
-            updateMe({ theme: next });
-          }}
-        />
-      )}
-
-      {logoutOpen && (
-        <LogoutConfirmModal onConfirm={confirmLogout} onCancel={() => setLogoutOpen(false)} />
-      )}
 
       <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
       <WalletSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />

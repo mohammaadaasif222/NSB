@@ -5,13 +5,15 @@ import Image, { type StaticImageData } from 'next/image';
 import { UserIcon } from '@/components/icons';
 import CountdownBar, { type Countdown } from '@/components/promotions/CountdownBar';
 import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 
 export interface Tournament {
   id: string;
   /** Tournament artwork. Becomes a URL from the API once tournaments are served. */
   image: StaticImageData;
   active: boolean;
-  title: string;
+  /** An i18n key while the copy is the design's placeholder. */
+  title: TranslationKey;
   /** Already formatted — "$40 000". */
   prizePool: string;
   /** Seats taken and seats total, as the design's "15/50". */
@@ -45,7 +47,7 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
 
       <div className="flex flex-1 flex-col px-5 pb-4 lg:px-[calc(var(--u)*20)] lg:pb-[calc(var(--u)*15)]">
         <h3 className="mt-3 text-[20px] font-semibold leading-7 text-[#f0f1f5] lg:mt-[calc(var(--u)*14)] lg:text-[length:max(14px,calc(var(--u)*24))] lg:leading-[calc(var(--u)*32)]">
-          {tournament.title}
+          {t(tournament.title)}
         </h3>
 
         {/* The prize block and the seat count share a top edge in the design,

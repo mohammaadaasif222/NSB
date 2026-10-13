@@ -4,11 +4,12 @@ import { useFavourites } from '@/context/FavouritesContext';
 import { getMyGamesProps, type MyGamesPageProps } from '@/services/myGames.server';
 
 /**
- * The player's favourite games, newest-hearted first. The same list drives
- * every heart, so unhearting a tile here takes it off the page at once.
+ * What the player has hearted — their studios, then their games, newest
+ * first. The same lists drive every heart on the site, so unhearting a tile
+ * or a plate here takes it off the page at once.
  */
 const Favourites: FC<MyGamesPageProps> = ({ winnerGames }) => {
-  const { games, failed } = useFavourites();
+  const { games, failed, providers } = useFavourites();
 
   return (
     <MyGamesPage
@@ -17,6 +18,7 @@ const Favourites: FC<MyGamesPageProps> = ({ winnerGames }) => {
       surface="favourites"
       games={games}
       failed={failed}
+      providers={providers}
       winnerGames={winnerGames}
     />
   );

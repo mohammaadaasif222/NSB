@@ -6,13 +6,15 @@ import Image, { type StaticImageData } from 'next/image';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
-import { ARROW_CLASS } from '@/components/player/GameRow';
+import { ARROW_CLASS } from '@/components/player/ShelfHeading';
 import { ChevronLeftIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
+import type { TranslationKey } from '@/i18n/locales';
 import { ARTICLE, findPost } from '@/constants/blogs';
 
 interface Props {
-  title: string;
+  /** An i18n key while the copy is the design's placeholder. */
+  title: TranslationKey;
   image: StaticImageData;
 }
 
@@ -25,12 +27,17 @@ interface Props {
  * when they are real; nothing here has to change.
  */
 const BlogDetailPage: FC<Props> = ({ title, image }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const heading = t(title);
+  const publishedOn = new Date(ARTICLE.publishedOn).toLocaleDateString(locale, {
+    dateStyle: 'medium',
+    timeZone: 'UTC',
+  });
 
   return (
     <PlayerLayout>
       <Head>
-        <title>{`${title} · ROLLUCK`}</title>
+        <title>{`${heading} · ROLLUCK`}</title>
       </Head>
 
       <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
@@ -44,7 +51,7 @@ const BlogDetailPage: FC<Props> = ({ title, image }) => {
               <ChevronLeftIcon size={20} />
             </Link>
             <h1 className="min-w-0 text-[20px] font-semibold leading-7 tracking-[-0.02em] text-[#f0f1f5] lg:text-[max(16px,calc(var(--u)*44))] lg:leading-[calc(var(--u)*52)]">
-              {title}
+              {heading}
             </h1>
           </div>
 
@@ -63,7 +70,7 @@ const BlogDetailPage: FC<Props> = ({ title, image }) => {
           <div className="mt-8 lg:mt-[calc(var(--u)*41)] lg:flex lg:gap-[calc(var(--u)*43)]">
             <div className="min-w-0 lg:w-[calc(var(--u)*1156)]">
               <p className="text-[16px] font-medium leading-7 text-[#f0f1f5] lg:text-[max(13px,calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
-                {t('blogs.publishedBy', { date: ARTICLE.publishedOn, author: ARTICLE.author })}
+                {t('blogs.publishedBy', { date: publishedOn, author: ARTICLE.author })}
               </p>
 
               <div className="mt-4 space-y-6 lg:mt-[calc(var(--u)*17)] lg:space-y-[calc(var(--u)*24)]">
@@ -72,7 +79,7 @@ const BlogDetailPage: FC<Props> = ({ title, image }) => {
                     key={i}
                     className="whitespace-pre-line text-[14px] leading-6 text-[#9da2b4] lg:text-[max(11px,calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]"
                   >
-                    {para}
+                    {t(para)}
                   </p>
                 ))}
               </div>

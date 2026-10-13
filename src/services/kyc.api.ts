@@ -1,4 +1,5 @@
 import apiService from './api';
+import { translate } from '@/i18n/translate';
 import type {
   PlayerKycProfile,
   PlayerKycTiers,
@@ -13,7 +14,7 @@ export const kycApi = {
   submitLevel1: async (payload: SubmitLevel1Payload): Promise<PlayerKycProfile> => {
     const res = await apiService.post<PlayerKycProfile>('/kyc/level-1', payload);
     if (!res.success || !res.data) {
-      throw new Error(res.message || 'Failed to submit personal details');
+      throw new Error(res.message || translate('misc.kyc.submitFailed'));
     }
     return res.data;
   },
@@ -26,7 +27,7 @@ export const kycApi = {
       source: domain,
     });
     if (!res.success || !res.data) {
-      throw new Error(res.message || 'Failed to generate verification token');
+      throw new Error(res.message || translate('misc.kyc.tokenFailed'));
     }
     return res.data;
   },
@@ -73,7 +74,7 @@ export const kycApi = {
   getTierToken: async (tier: number): Promise<SumsubTokenResponse> => {
     const res = await apiService.post<SumsubTokenResponse>(`/kyc/tiers/${tier}/token`);
     if (!res.success || !res.data) {
-      throw new Error(res.message || 'Could not start this verification level');
+      throw new Error(res.message || translate('misc.kyc.levelFailed'));
     }
     return res.data;
   },

@@ -38,11 +38,11 @@ const SelfAssessmentModal: FC<Props> = ({ onClose, onSubmit, saving = false }) =
 
   return (
     <RgModalShell
-      title={t('rg.assessmentTitle')}
-      lead={t('rg.assessmentModalLead')}
+      title={t('rgc.assessmentTitle')}
+      lead={t('rgc.assessmentModalLead')}
       onClose={onClose}
       onSubmit={() => onSubmit(ticked.size)}
-      submitLabel={t('rg.assessmentSeeResult')}
+      submitLabel={t('rgc.assessmentSeeResult')}
       loading={saving}
       scrollBody
     >
@@ -80,7 +80,7 @@ const SelfAssessmentModal: FC<Props> = ({ onClose, onSubmit, saving = false }) =
 
                 <span className="min-w-0 flex-1 text-sm leading-6 text-[#f0f1f5]">
                   <span className="me-1.5 text-[#9da2b4] tabular-nums">{index + 1}.</span>
-                  {q.text}
+                  {t(q.textKey)}
                 </span>
               </label>
             </li>
@@ -88,7 +88,7 @@ const SelfAssessmentModal: FC<Props> = ({ onClose, onSubmit, saving = false }) =
         })}
       </ul>
 
-      <p className="mt-4 text-xs leading-5 text-[#9da2b4]">{t('rg.assessmentDisclaimer')}</p>
+      <p className="mt-4 text-xs leading-5 text-[#9da2b4]">{t('rgc.assessmentDisclaimer')}</p>
     </RgModalShell>
   );
 };

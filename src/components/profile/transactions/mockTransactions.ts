@@ -19,7 +19,7 @@ export type TxCategory = 'deposit' | 'withdrawal' | 'reward';
 
 export interface Transaction {
   id: string;
-  /** Pre-formatted. A real API should send an ISO timestamp instead. */
+  /** ISO date (`YYYY-MM-DD`); the table formats it in the player's language. */
   date: string;
   usd: string;
   crypto: string;
@@ -45,7 +45,6 @@ export const STATUS_LABEL: Record<TxStatus, TranslationKey> = {
   failed: 'tx.failed',
 };
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const STATUSES: TxStatus[] = ['completed', 'pending', 'completed', 'failed', 'completed'];
 const CATEGORIES: TxCategory[] = ['deposit', 'withdrawal', 'deposit', 'reward', 'deposit'];
 
@@ -75,7 +74,7 @@ const build = (): Transaction[] =>
 
     return {
       id: idFor(i),
-      date: `${MONTHS[month % 12]} ${day}, 2025`,
+      date: new Date(Date.UTC(2025, month % 12, day)).toISOString().slice(0, 10),
       usd: `$${usdValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
       crypto: `${amount} BTC`,
       status,

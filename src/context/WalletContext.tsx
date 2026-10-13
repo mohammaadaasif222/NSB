@@ -12,6 +12,7 @@ import {
 import { toast } from 'react-toastify';
 
 import { useAuth } from './AuthContext';
+import { translate } from '@/i18n/translate';
 import {
   getCurrencies,
   getDisplayCurrencies,
@@ -137,7 +138,7 @@ export const WalletProvider: FC<Props> = ({ children }) => {
     } catch (err) {
       // 401 clears the token on the axios interceptor — no toast needed
       // there. Any other failure is worth surfacing once.
-      const message = err instanceof Error ? err.message : 'Failed to load wallet';
+      const message = err instanceof Error ? err.message : translate('acct.wallet.loadFailed');
       setError(message);
       return null;
     } finally {
@@ -225,13 +226,13 @@ export const WalletProvider: FC<Props> = ({ children }) => {
       // laggy for a change that never fails in practice.
       const previous = summary.preferences;
       setSummary((current) =>
-        current ? { ...current, preferences: { ...current.preferences, ...patch } } : current,
+        current ? { ...current, preferences: { ...current.preferences, ...patch } } : current
       );
 
       try {
         const res = await updatePreferences(patch);
         if (!res?.success || !res.data) {
-          throw new Error(res?.message || 'Failed to update preferences');
+          throw new Error(res?.message || translate('acct.wallet.prefsFailed'));
         }
         // Sync canonical preference row back onto the summary.
         setSummary((current) => (current ? { ...current, preferences: res.data! } : current));
@@ -251,15 +252,13 @@ export const WalletProvider: FC<Props> = ({ children }) => {
 
         return res.data;
       } catch (err) {
-        setSummary((current) =>
-          current ? { ...current, preferences: previous } : current,
-        );
-        const message = err instanceof Error ? err.message : 'Failed to update preferences';
+        setSummary((current) => (current ? { ...current, preferences: previous } : current));
+        const message = err instanceof Error ? err.message : translate('acct.wallet.prefsFailed');
         toast.error(message);
         return null;
       }
     },
-    [summary, fetchSummary],
+    [summary, fetchSummary]
   );
 
   /* ── Derived state ──────────────────────────────────────────────── */
@@ -298,7 +297,7 @@ export const WalletProvider: FC<Props> = ({ children }) => {
       activeBalance,
       beginPolling,
       endPolling,
-    ],
+    ]
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;

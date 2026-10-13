@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import SetLimitModal from '@/components/modals/responsible/SetLimitModal';
 import { getLimits, setLimit } from '@/services/responsible';
 import type { LimitKind, LimitPeriod, LimitSet } from '@/types/responsible';
+import type { TranslationKey } from '@/i18n/locales';
 
 /**
  * Gambling limits.
@@ -16,10 +17,10 @@ import type { LimitKind, LimitPeriod, LimitSet } from '@/types/responsible';
  *
  * The copy is the design's, including the em dash in the second line.
  */
-const PARAGRAPHS: readonly string[] = [
-  'Take control of your play by setting loss or wagering limits. You can cap the maximum amount you lose or wager over a daily, weekly, monthly, or quarterly period.',
-  'Removing a limit — takes effect at 00:00 (UTC+0) following a cooling-off period of at least 24 hours.',
-  'Active limits reset automatically at 00:00 (UTC+0) at the end of each period.',
+const PARAGRAPHS: readonly TranslationKey[] = [
+  'rgc.limitsPara1',
+  'rgc.limitsPara2',
+  'rgc.limitsPara3',
 ];
 
 const GamblingLimitsSection: FC = () => {
@@ -60,13 +61,13 @@ const GamblingLimitsSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rg.limitsTitle')}</h2>
+      <h2 className="rl-h-section">{t('rgc.limitsTitle')}</h2>
 
       {/* White, not the Gray 4 the Self-Assessment page uses for the same size
           of copy — the design inks this one at full strength. */}
       <div className="mt-5 space-y-7 text-[18px] leading-7 text-white 2xl:text-[20px]">
         {PARAGRAPHS.map((p) => (
-          <p key={p}>{p}</p>
+          <p key={p}>{t(p)}</p>
         ))}
       </div>
 
@@ -75,7 +76,7 @@ const GamblingLimitsSection: FC = () => {
           // Nothing to set without an account, so the button goes to sign-in
           // rather than opening a form that cannot save.
           <Link href="/auth/login" className={BUTTON}>
-            {t('rg.limitsSet')}
+            {t('rgc.limitsSet')}
           </Link>
         ) : (
           <button
@@ -84,7 +85,7 @@ const GamblingLimitsSection: FC = () => {
             disabled={!hydrated}
             className={BUTTON}
           >
-            {t('rg.limitsSet')}
+            {t('rgc.limitsSet')}
           </button>
         )}
       </div>
