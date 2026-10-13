@@ -8,23 +8,11 @@ import api from '@/services/api';
 
 type BuyCryptoStep = 'step1' | 'step2';
 
-// Common fiat currencies for payment. `name` is the English fallback; the
-// picker shows the name in the player's language via Intl.DisplayNames.
-const FIAT_CURRENCIES = [
+// Fallback currency for initial display
+const FALLBACK_FIAT_CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
   { code: 'EUR', name: 'Euro', symbol: '€' },
   { code: 'GBP', name: 'British Pound', symbol: '£' },
-  { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
-  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
-  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
-  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
-  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
-  { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
-  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
-  { code: 'MXN', name: 'Mexican Peso', symbol: '$' },
-  { code: 'NGN', name: 'Nigerian Naira', symbol: '₦' },
-  { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
-  { code: 'TRY', name: 'Turkish Lira', symbol: '₺' },
 ];
 
 /** Localised currency name, falling back to the English one when Intl cannot help. */
@@ -366,7 +354,7 @@ const BuyCryptoTab: FC = () => {
 
                 {showFiatDropdown && (
                   <div className="absolute right-0 mt-1 w-48 bg-[#1a1b2e] border border-white/20 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-                    {FIAT_CURRENCIES.map((fiat) => (
+                    {(displayCurrencies.length > 0 ? displayCurrencies : FALLBACK_FIAT_CURRENCIES).map((fiat) => (
                       <button
                         key={fiat.code}
                         onClick={() => {
@@ -381,7 +369,7 @@ const BuyCryptoTab: FC = () => {
                       >
                         <div className="font-medium text-white">{fiat.code}</div>
                         <div className="text-xs text-white/60">
-                          {currencyName(fiat.code, fiat.name, locale)}
+                          {fiat.name || currencyName(fiat.code, fiat.code, locale)}
                         </div>
                       </button>
                     ))}
