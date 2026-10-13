@@ -88,44 +88,66 @@ const LocalCurrencyTab: FC = () => {
     fetchPaymentMethods();
   }, [currency, displayCurrencies]);
 
-  const handleDeposit = async () => {
-    if (!amount || Number(amount) <= 0) {
-      toast.error(t('acct.wallet.invalidAmount'));
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await createD24Deposit({
-        amount,
-        currency,
-        payment_method: selectedMethod || undefined,
-      });
-
-      console.log('[D24] Response received:', res);
-      console.log('[D24] Full data:', JSON.stringify(res?.data));
-
-      // D24 API response can have nested data structure: res.data.data.address or res.data.address
-      const redirectUrl = res?.data?.data?.address || res?.data?.address;
-
-      if (redirectUrl) {
-        console.log('[D24] Redirecting to:', redirectUrl);
-        // Redirect to D24 hosted checkout page
-        window.location.href = redirectUrl;
-      } else {
-        console.error('[D24] No redirect URL in response. Data:', res?.data);
-        toast.error(t('acct.wallet.depositNoUrl'));
+  // Auto-call deposit API when payment method is selected (if all validations pass)
+  useEffect(() => {
+    const callDepositApi = async () => {
+      // Validate all 3 required fields
+      if (!amount || Number(amount) <= 0) {
+        toast.error(t('acct.wallet.invalidAmount'));
+        setSelectedMethod(null);
+        return;
       }
-    } catch (err: unknown) {
-      const message =
-        typeof err === 'object' && err && 'message' in err
-          ? String((err as { message: string }).message)
-          : t('acct.wallet.depositFailed');
-      toast.error(message);
-    } finally {
-      setLoading(false);
+
+      if (!currency) {
+        toast.error(t('acct.wallet.selectCurrency') || 'Please select a currency');
+        setSelectedMethod(null);
+        return;
+      }
+
+      if (!selectedMethod) {
+        return; // Payment method not selected yet
+      }
+
+      // All validations passed, call the API
+      setLoading(true);
+      try {
+        const res = await createD24Deposit({
+          amount,
+          currency,
+          payment_method: selectedMethod,
+        });
+
+        console.log('[D24] Response received:', res);
+        console.log('[D24] Full data:', JSON.stringify(res?.data));
+
+        // D24 API response can have nested data structure: res.data.data.address or res.data.address
+        const redirectUrl = res?.data?.data?.address || res?.data?.address;
+
+        if (redirectUrl) {
+          console.log('[D24] Redirecting to:', redirectUrl);
+          // Redirect to D24 hosted checkout page
+          window.location.href = redirectUrl;
+        } else {
+          console.error('[D24] No redirect URL in response. Data:', res?.data);
+          toast.error(t('acct.wallet.depositNoUrl'));
+          setSelectedMethod(null);
+        }
+      } catch (err: unknown) {
+        const message =
+          typeof err === 'object' && err && 'message' in err
+            ? String((err as { message: string }).message)
+            : t('acct.wallet.depositFailed');
+        toast.error(message);
+        setSelectedMethod(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (selectedMethod) {
+      callDepositApi();
     }
-  };
+  }, [selectedMethod, amount, currency, t]);
 
   return (
     <div className="space-y-4">
@@ -172,8 +194,30 @@ const LocalCurrencyTab: FC = () => {
         </select>
       </div>
 
+      {/* Payment Methods Loading */}
+      {loadingMethods && (
+        <div>
+          <label className="text-xs font-semibold text-slate-300 mb-3 block">
+            Payment Method
+          </label>
+          <div className="flex justify-center py-8">
+            <div className="text-center">
+              <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <p className="text-sm text-slate-400">{t('acct.buy.processing')}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment Methods selector */}
-      {paymentMethods.length > 0 && (
+      {!loadingMethods && paymentMethods.length > 0 && (
         <div>
           <label className="text-xs font-semibold text-slate-300 mb-3 block">
             Payment Method
@@ -184,7 +228,7 @@ const LocalCurrencyTab: FC = () => {
                 key={method.code}
                 type="button"
                 onClick={() => setSelectedMethod(method.code)}
-                disabled={loadingMethods}
+                disabled={loadingMethods || loading}
                 className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                   selectedMethod === method.code
                     ? 'border-emerald-500 bg-emerald-500/10'
@@ -207,53 +251,39 @@ const LocalCurrencyTab: FC = () => {
         </div>
       )}
 
-      {loadingMethods && (
-        <div className="flex justify-center py-4">
-          <svg className="w-5 h-5 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+      {/* No Payment Methods Found */}
+      {!loadingMethods && paymentMethods.length === 0 && (
+        <div>
+          <label className="text-xs font-semibold text-slate-300 mb-3 block">
+            Payment Method
+          </label>
+          <div className="flex justify-center py-8">
+            <div className="text-center">
+              <svg className="w-12 h-12 text-slate-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm text-slate-400">No payment methods available</p>
+              <p className="text-xs text-slate-500 mt-1">for {currency || 'selected currency'}</p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Start Deposit button */}
-      <button
-        type="button"
-        onClick={handleDeposit}
-        disabled={loading || loadingCurrencies || loadingMethods || !amount || Number(amount) <= 0 || !currency || !selectedMethod}
-        className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-          loading || loadingCurrencies || loadingMethods || !amount || Number(amount) <= 0 || !currency || !selectedMethod
-            ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg hover:shadow-emerald-500/30'
-        }`}
-      >
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
+      {loading && (
+        <div className="flex justify-center py-6">
+          <div className="text-center">
+            <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path
                 className="opacity-75"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            {t('acct.buy.processing')}
-          </span>
-        ) : (
-          t('acct.wallet.startDeposit')
-        )}
-      </button>
+            <p className="text-sm text-slate-400">{t('acct.buy.processing')}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
