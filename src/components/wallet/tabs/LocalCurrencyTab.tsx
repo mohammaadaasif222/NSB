@@ -3,7 +3,10 @@ import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
+import { useMe } from '@/context/UserContext';
 import { createD24Deposit, getDisplayCurrencies, getD24PaymentMethods } from '@/services/wallet';
+import { useChangellyBuyCrypto } from '@/hooks/useChangellyBuyCrypto';
+import api from '@/services/api';
 
 /**
  * Fiat (Local Currency) deposit tab - D24 Hosted Checkout.
@@ -18,8 +21,23 @@ import { createD24Deposit, getDisplayCurrencies, getD24PaymentMethods } from '@/
  *
  * No hardcoded currency list - D24 API returns supported currencies dynamically.
  */
+// Payment method logo mapping (same as BuyCryptoTab)
+const PAYMENT_METHOD_LOGOS: Record<string, { name: string; logo: string }> = {
+  card: { name: 'Visa / Mastercard', logo: '/payment-logos/visa.png' },
+  google_pay: { name: 'Google Pay', logo: '/payment-logos/gpay.png' },
+  apple_pay: { name: 'Apple Pay', logo: '/payment-logos/apay.png' },
+  pay_pal: { name: 'PayPal', logo: '/payment-logos/paypal.png' },
+  ebay: { name: 'eBay', logo: '/payment-logos/ebay.png' },
+  mastercard: { name: 'Mastercard', logo: '/payment-logos/mastercard.png' },
+};
+
+const FALLBACK_AMOUNT = 10000; // Default demo amount
+
 const LocalCurrencyTab: FC = () => {
   const { t } = useTranslation();
+  const { me } = useMe();
+  const { offers, loadingOffers, fetchOffers, createOrder, creatingOrder } = useChangellyBuyCrypto();
+
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,6 +48,11 @@ const LocalCurrencyTab: FC = () => {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showAmountInput, setShowAmountInput] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const [useChangellyFallback, setUseChangellyFallback] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [toAddress, setToAddress] = useState<string | null>(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Fetch enabled display currencies
@@ -56,6 +79,52 @@ const LocalCurrencyTab: FC = () => {
     fetchCurrencies();
   }, []);
 
+  // Fetch wallet address for Changelly fallback
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (!me) return;
+
+      try {
+        // Fetch currency details to get available networks
+        const currencyResponse = await api.get<{
+          code: string;
+          name: string;
+          networks: Array<{ code: string; name: string }>;
+        }>('/wallet/currencies/ETH');
+
+        const currencyDetails = currencyResponse?.data;
+        const defaultNetwork = currencyDetails?.networks?.[0];
+
+        if (!defaultNetwork) {
+          setToAddress(`deposit_ETH_${me.id}`);
+          return;
+        }
+
+        // Fetch deposit address
+        const addressResponse = await api.post<{
+          address: string;
+          currency_code: string;
+          network_code: string;
+        }>('/wallet/deposit/address', {
+          currency: 'ETH',
+          network: defaultNetwork.code,
+        });
+
+        const address = addressResponse?.data?.address;
+        const networkCode = addressResponse?.data?.network_code;
+        setToAddress(address || null);
+        setSelectedNetwork(networkCode || null);
+      } catch (error) {
+        console.error('Failed to fetch wallet address:', error);
+        setToAddress(`deposit_ETH_${me.id}`);
+      }
+    };
+
+    if (useChangellyFallback && me) {
+      fetchAddress();
+    }
+  }, [useChangellyFallback, me]);
+
   // Fetch payment methods when currency changes
   useEffect(() => {
     const fetchPaymentMethods = async () => {
@@ -64,6 +133,7 @@ const LocalCurrencyTab: FC = () => {
       setLoadingMethods(true);
       setPaymentMethods([]);
       setSelectedMethod(null);
+      setUseChangellyFallback(false);
 
       try {
         // Get country code from display currency data
@@ -80,17 +150,34 @@ const LocalCurrencyTab: FC = () => {
           // Don't auto-select - user must manually choose a payment method
         } else {
           setPaymentMethods([]);
+          // No D24 methods available - fetch Changelly offers as fallback
+          setUseChangellyFallback(true);
+
+          // Get country and state for Changelly API (US needs state)
+          const country = selectedCurrency?.country_code || 'US';
+          const state = country === 'US' ? 'CA' : undefined;
+
+          // Fetch Changelly offers for ETH with default amount
+          await fetchOffers(
+            FALLBACK_AMOUNT,
+            currency,
+            'ETH',
+            country,
+            state
+          );
         }
       } catch (error) {
         console.error('Failed to fetch payment methods:', error);
         setPaymentMethods([]);
+        // On error, also try Changelly fallback
+        setUseChangellyFallback(true);
       } finally {
         setLoadingMethods(false);
       }
     };
 
     fetchPaymentMethods();
-  }, [currency, displayCurrencies]);
+  }, [currency, displayCurrencies, fetchOffers]);
 
   // Listen for iframe messages (D24 payment completion)
   useEffect(() => {
@@ -151,12 +238,52 @@ const LocalCurrencyTab: FC = () => {
     toast.info(`${methodInfo.name} provider will be implemented soon`);
   };
 
+  // Handle Changelly fallback payment method selection - directly create order on click
+  const handleChangellyFallback = async (paymentMethod: string) => {
+    if (!paymentMethod || !currency || !toAddress || !selectedNetwork || offers.length === 0) {
+      toast.error('Missing required information');
+      return;
+    }
+
+    try {
+      const selectedCurrency = displayCurrencies.find((c) => c.code === currency);
+      const country = selectedCurrency?.country_code || 'US';
+      const state = country === 'US' ? 'CA' : undefined;
+
+      setSelectedPaymentMethod(paymentMethod);
+
+      const order = await createOrder(
+        FALLBACK_AMOUNT,
+        currency,
+        'ETH',
+        offers[0].providerCode,
+        country,
+        toAddress,
+        selectedNetwork,
+        paymentMethod,
+        state
+      );
+
+      if (order) {
+        console.log('[Changelly Fallback] Order created:', order);
+        setIframeUrl(order.iframeUrl);
+      } else {
+        toast.error('Failed to create order');
+      }
+    } catch (error) {
+      console.error('[Changelly Fallback] Error:', error);
+      toast.error('Error creating order');
+    }
+  };
+
   // Go back to currency/method selection or from checkout
   const handleGoBack = () => {
     setShowAmountInput(false);
     setSelectedMethod(null);
     setAmount('');
     setCheckoutUrl(null);
+    setIframeUrl(null);
+    setSelectedPaymentMethod(null);
   };
 
   // Deposit API call (triggered by deposit button, not automatic)
@@ -270,8 +397,59 @@ const LocalCurrencyTab: FC = () => {
     document.body
   );
 
+  // Render Changelly iframe portal
+  const changellyPortal = iframeUrl && createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center overflow-hidden p-2 sm:p-4">
+      {/* Modal container - Responsive width and height */}
+      <div className="relative w-full h-full sm:h-[85vh] md:h-[80vh] md:w-[80vw] lg:w-[64vw] bg-slate-900 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-full">
+        {/* Close button - Responsive size */}
+        <button
+          onClick={handleGoBack}
+          disabled={creatingOrder}
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-slate-300 hover:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-slate-800/80 hover:bg-slate-700 p-1.5 sm:p-2 rounded-lg"
+        >
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* iframe - no scrollbar */}
+        <iframe
+          src={iframeUrl}
+          className="w-full h-full border-0 overflow-hidden"
+          title="Payment Checkout"
+          allow="payment"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        />
+
+        {/* Loading overlay */}
+        {creatingOrder && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
+            <div className="text-center">
+              <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <p className="text-sm text-slate-300 mt-2">Processing...</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  );
+
   if (checkoutUrl) {
     return checkoutPortal;
+  }
+
+  if (iframeUrl) {
+    return changellyPortal;
   }
 
   return (
@@ -337,30 +515,95 @@ const LocalCurrencyTab: FC = () => {
                     type="button"
                     onClick={() => handleMethodSelect(method.code)}
                     disabled={loadingMethods || loading}
-                    className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                    className={`aspect-square rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed ${
                       selectedMethod === method.code
-                        ? 'border-emerald-500 bg-emerald-500/10'
+                        ? 'border-emerald-500 bg-emerald-500/20'
                         : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
-                    } disabled:opacity-60 disabled:cursor-not-allowed`}
+                    }`}
                   >
                     {method.logo && (
                       <img
                         src={method.logo}
                         alt={method.name}
-                        className="w-6 h-6 object-contain"
+                        className="w-24 h-24 object-contain"
                       />
                     )}
-                    <span className="text-xs text-slate-400 text-center line-clamp-1">
-                      {method.name}
-                    </span>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* No Payment Methods Found */}
-          {!loadingMethods && paymentMethods.length === 0 && (
+          {/* No D24 Payment Methods - Show Changelly Fallback */}
+          {!loadingMethods && paymentMethods.length === 0 && useChangellyFallback && (
+            <div>
+              <label className="text-xs font-semibold text-slate-300 mb-3 block">
+                Payment Method (Changelly Alternative)
+              </label>
+
+              {loadingOffers && (
+                <div className="flex justify-center py-8">
+                  <div className="text-center">
+                    <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    <p className="text-sm text-slate-400">Loading payment options...</p>
+                  </div>
+                </div>
+              )}
+
+              {!loadingOffers && offers.length > 0 && offers[0]?.paymentMethodOffer && (
+                <div className="grid grid-cols-3 gap-2">
+                  {offers[0].paymentMethodOffer.map((method) => {
+                    const methodKey = method.method.toLowerCase();
+                    const methodInfo = PAYMENT_METHOD_LOGOS[methodKey] || { name: method.methodName, logo: '/payment-logos/default.png' };
+
+                    return (
+                      <button
+                        key={method.offerId}
+                        onClick={() => handleChangellyFallback(method.method)}
+                        disabled={creatingOrder}
+                        className={`aspect-square rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed ${
+                          selectedPaymentMethod === method.method
+                            ? 'border-emerald-500 bg-emerald-500/20'
+                            : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                        }`}
+                      >
+                        <img
+                          src={methodInfo.logo}
+                          alt={methodInfo.name}
+                          className="w-24 h-24 object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {!loadingOffers && (offers.length === 0 || !offers[0]?.paymentMethodOffer) && (
+                <div className="flex justify-center py-8">
+                  <div className="text-center">
+                    <svg className="w-12 h-12 text-slate-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-slate-400">No payment methods available</p>
+                    <p className="text-xs text-slate-500 mt-1">for {currency || 'selected currency'}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* No Payment Methods - Neither D24 nor Changelly */}
+          {!loadingMethods && paymentMethods.length === 0 && !useChangellyFallback && (
             <div>
               <label className="text-xs font-semibold text-slate-300 mb-3 block">
                 Payment Method

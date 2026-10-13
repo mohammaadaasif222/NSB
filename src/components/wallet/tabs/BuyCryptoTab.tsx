@@ -721,7 +721,7 @@ const BuyCryptoTab: FC = () => {
               ref={iframeRef}
               src={iframeUrl}
               className="w-full h-full border-0 overflow-hidden"
-              title="Changelly Payment Checkout"
+              title="Payment Checkout"
               allow="payment"
               sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
