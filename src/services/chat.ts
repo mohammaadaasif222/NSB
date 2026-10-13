@@ -26,6 +26,18 @@ export interface ReactionSummary {
 export const NO_REACTIONS: ReactionSummary = { up: 0, down: 0, mine: null };
 
 /** One line in a room. The same shape from history and from the socket. */
+export type MessageKind = 'text' | 'voice';
+
+export interface MentionRef {
+  user_id: string;
+  name: string;
+}
+
+export interface VoiceClip {
+  url: string;
+  duration_ms: number;
+}
+
 export interface ChatMessage {
   id: string;
   room: string;
@@ -33,9 +45,10 @@ export interface ChatMessage {
   name: string;
   avatar_url: string | null;
   body: string;
-  /** ISO 8601, set by the server. */
+  kind?: MessageKind;
+  voice?: VoiceClip | null;
+  mentions?: MentionRef[];
   at: string;
-  /** Absent on a message arriving live — a brand-new line has none yet. */
   reactions?: ReactionSummary;
 }
 
@@ -61,8 +74,18 @@ export interface ChatHistory {
   limits: ChatLimits;
 }
 
-/** The room the header panel opens. */
-export const DEFAULT_CHAT_ROOM = 'global';
+export const CHAT_ROOMS = ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'] as const;
+
+export type ChatRoom = (typeof CHAT_ROOMS)[number];
+
+export const DEFAULT_CHAT_ROOM: ChatRoom = 'en';
+
+export const isChatRoom = (value: string): value is ChatRoom =>
+  (CHAT_ROOMS as readonly string[]).includes(value);
+
+export const MAX_VOICE_MS = 60_000;
+
+export const MIN_VOICE_MS = 700;
 
 /**
  * The socket event a new message arrives on.
@@ -91,7 +114,9 @@ export const CHAT_LIMITS_DEFAULT: ChatLimits = {
 };
 
 /** A room's recent messages, plus the channel to go live on. */
-export const fetchChatHistory = async (room = DEFAULT_CHAT_ROOM): Promise<ChatHistory | null> => {
+export const fetchChatHistory = async (
+  room: ChatRoom = DEFAULT_CHAT_ROOM
+): Promise<ChatHistory | null> => {
   const res = await apiService.get<ChatHistory>(`/chat/${room}/messages`);
   return res?.success && res.data ? res.data : null;
 };
@@ -105,7 +130,7 @@ export const fetchChatHistory = async (room = DEFAULT_CHAT_ROOM): Promise<ChatHi
  */
 export const sendChatMessage = async (
   body: string,
-  room = DEFAULT_CHAT_ROOM
+  room: ChatRoom = DEFAULT_CHAT_ROOM
 ): Promise<ChatMessage | null> => {
   const res = await apiService.post<ChatMessage>(`/chat/${room}/messages`, { body });
   return res?.success && res.data ? res.data : null;
@@ -122,11 +147,27 @@ export const sendChatMessage = async (
 export const setChatReaction = async (
   messageId: string,
   reaction: ReactionKind | null,
-  room = DEFAULT_CHAT_ROOM
+  room: ChatRoom = DEFAULT_CHAT_ROOM
 ): Promise<ReactionSummary | null> => {
   const res = await apiService.post<ReactionSummary>(
     `/chat/${room}/messages/${messageId}/reactions`,
     { reaction }
   );
+  return res?.success && res.data ? res.data : null;
+};
+
+export const sendVoiceMessage = async (
+  clip: Blob,
+  durationMs: number,
+  room: ChatRoom = DEFAULT_CHAT_ROOM
+): Promise<ChatMessage | null> => {
+  const form = new FormData();
+  form.append('file', clip, 'voice.webm');
+  form.append('duration_ms', String(Math.round(durationMs)));
+
+  const res = await apiService.post<ChatMessage>(`/chat/${room}/voice`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
   return res?.success && res.data ? res.data : null;
 };

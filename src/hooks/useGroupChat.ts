@@ -8,9 +8,11 @@ import {
   NO_REACTIONS,
   fetchChatHistory,
   sendChatMessage,
+  sendVoiceMessage,
   setChatReaction,
   type ChatLimits,
   type ChatMessage,
+  type ChatRoom,
   type ReactionKind,
   type ReactionSummary,
   type ReactionUpdate,
@@ -75,6 +77,7 @@ interface GroupChat {
    * sending the one already held clears it, and the server decides that.
    */
   react: (messageId: string, reaction: ReactionKind) => Promise<void>;
+  sendVoice: (clip: Blob, durationMs: number) => Promise<boolean>;
 }
 
 /**
@@ -212,7 +215,7 @@ const predict = (held: ReactionSummary, clicked: ReactionKind): ReactionSummary 
   return next;
 };
 
-export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
+export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
   const { t } = useTranslation();
   const tRef = useRef(t);
   tRef.current = t;
@@ -233,6 +236,13 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
    * before the fetch — the response is authoritative and replaces it.
    */
   const [channelName, setChannelName] = useState(`private-chat.${room}`);
+
+  useEffect(() => {
+    setChannelName(`private-chat.${room}`);
+    setMessages([]);
+    setLoading(true);
+    setError(null);
+  }, [room]);
 
   /**
    * When this account may post again, as an epoch ms, or 0.
@@ -454,5 +464,44 @@ export const useGroupChat = (room: string = DEFAULT_CHAT_ROOM): GroupChat => {
     [room]
   );
 
-  return { messages, loading, error, connection, limits, sending, cooldownMs, send, react };
+  const sendVoice = useCallback(
+    async (clip: Blob, durationMs: number): Promise<boolean> => {
+      if (sending) return false;
+
+      setSending(true);
+      setError(null);
+
+      try {
+        const message = await sendVoiceMessage(clip, durationMs, room);
+        if (message) setMessages((current) => merge(current, [message]));
+        startCooldown(limits.slow_mode_ms);
+        return true;
+      } catch (err) {
+        const failure = err as { message?: string; status?: number; retry_after_ms?: number };
+
+        if (failure?.status === 429) {
+          startCooldown(failure.retry_after_ms ?? limits.slow_mode_ms);
+        }
+
+        setError(failure?.message || 'Could not send your voice message');
+        return false;
+      } finally {
+        setSending(false);
+      }
+    },
+    [room, sending, limits.slow_mode_ms, startCooldown]
+  );
+
+  return {
+    messages,
+    loading,
+    error,
+    connection,
+    limits,
+    sending,
+    cooldownMs,
+    send,
+    react,
+    sendVoice,
+  };
 };

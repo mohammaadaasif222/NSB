@@ -26,6 +26,7 @@ import HeaderPopover from '@/components/player/HeaderPopover';
 import NotificationPanel from '@/components/player/NotificationPanel';
 import ChatPanel from '@/components/player/ChatPanel';
 import ChatDrawer from '@/components/player/ChatDrawer';
+import { DEFAULT_CHAT_ROOM, isChatRoom, type ChatRoom } from '@/services/chat';
 import RewardPanel from '@/components/player/RewardPanel';
 import GameSearchModal from '@/components/player/GameSearchModal';
 import { fullNameOf } from '@/types/profile';
@@ -103,7 +104,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const { token } = useAuth();
   const { rewards: rewardsOn } = usePlatformFeatures();
   const { me } = useMe();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { internalChatEnabled } = useSupportChat();
   const { openLogin, openRegister } = useAuthModal();
 
@@ -132,6 +133,9 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
    * leave the rewards tray open underneath it, and the two would overlap.
    */
   const [panel, setPanel] = useState<HeaderPanel>(null);
+  const [chatRoom, setChatRoom] = useState<ChatRoom>(() =>
+    isChatRoom(locale) ? locale : DEFAULT_CHAT_ROOM
+  );
   const closePanel = useCallback(() => setPanel(null), []);
   const togglePanel = (next: Exclude<HeaderPanel, null>): void =>
     setPanel((current) => (current === next ? null : next));
@@ -420,7 +424,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
           condition — `panel` can only become 'chat' from the button above,
           which already is. */}
       <ChatDrawer open={panel === 'chat'} onClose={closePanel} label={t('nav.liveChat')}>
-        <ChatPanel onClose={closePanel} />
+        <ChatPanel onClose={closePanel} room={chatRoom} onRoomChange={setChatRoom} />
       </ChatDrawer>
     </>
   );

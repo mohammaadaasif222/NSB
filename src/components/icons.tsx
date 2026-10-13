@@ -570,6 +570,35 @@ export const ChevronRightIcon: FC<IconProps> = (p) => (
   </Svg>
 );
 
+export const PlayIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <polygon points="6 3 20 12 6 21 6 3" />
+  </Svg>
+);
+
+export const MicIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+    <line x1="12" y1="19" x2="12" y2="22" />
+  </Svg>
+);
+
+export const InfoIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="16" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12.01" y2="8" />
+  </Svg>
+);
+
+export const TrashIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </Svg>
+);
+
 export const PauseIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <rect x="7" y="5" width="3.5" height="14" rx="1" />
