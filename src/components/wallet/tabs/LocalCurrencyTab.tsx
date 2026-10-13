@@ -2,24 +2,20 @@ import { useState, useEffect, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
-import { createD24Deposit, getD24Currencies } from '@/services/wallet';
+import { createD24Deposit, getDisplayCurrencies, getD24PaymentMethods } from '@/services/wallet';
 
-/** Currencies offered in the picker, with the English name as a fallback label. */
-const LOCAL_CURRENCIES = [
-  { code: 'USD', name: 'US Dollar' },
-  { code: 'EUR', name: 'Euro' },
-  { code: 'GBP', name: 'British Pound' },
-  { code: 'INR', name: 'Indian Rupee' },
-  { code: 'BRL', name: 'Brazilian Real' },
-];
-
-/** Localised currency name, falling back to the English one when Intl cannot help. */
-const currencyName = (code: string, fallback: string, locale: string): string => {
-  try {
-    return new Intl.DisplayNames([locale], { type: 'currency' }).of(code) ?? fallback;
-  } catch {
-    return fallback;
-  }
+// Map display currency codes to country codes for D24
+const CURRENCY_TO_COUNTRY: Record<string, string> = {
+  USD: 'US',
+  EUR: 'DE',
+  GBP: 'GB',
+  INR: 'IN',
+  BRL: 'BR',
+  JPY: 'JP',
+  AUD: 'AU',
+  CAD: 'CA',
+  CHF: 'CH',
+  CNY: 'CN',
 };
 
 /**
@@ -36,25 +32,32 @@ const currencyName = (code: string, fallback: string, locale: string): string =>
  * No hardcoded currency list - D24 API returns supported currencies dynamically.
  */
 const LocalCurrencyTab: FC = () => {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingCurrencies, setLoadingCurrencies] = useState(true);
+  const [displayCurrencies, setDisplayCurrencies] = useState<any[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [loadingMethods, setLoadingMethods] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
 
+  // Fetch enabled display currencies
   useEffect(() => {
     const fetchCurrencies = async () => {
       try {
-        const response = await getD24Currencies();
-        const currencyList = response?.data && response.data.length > 0 ? response.data : [
-          { code: 'BRL', name: 'Brazilian Real', min_deposit: '10', min_payout: '10', deposit_fee_percent: '0', payout_fee_percent: '1.5', precision: 2, methods: [] }
-        ];
-        // Set default to first available currency
-        setCurrency(currencyList[0].code);
+        const response = await getDisplayCurrencies();
+        const enabledCurrencies = response?.data || [];
+        setDisplayCurrencies(enabledCurrencies);
+
+        if (enabledCurrencies.length > 0) {
+          setCurrency(enabledCurrencies[0].code);
+        } else {
+          setCurrency('USD');
+        }
       } catch (error) {
-        console.error('Failed to fetch D24 currencies:', error);
-        // Use BRL as fallback
-        setCurrency('BRL');
+        console.error('Failed to fetch display currencies:', error);
+        setCurrency('USD');
       } finally {
         setLoadingCurrencies(false);
       }
@@ -62,6 +65,39 @@ const LocalCurrencyTab: FC = () => {
 
     fetchCurrencies();
   }, []);
+
+  // Fetch payment methods when currency changes
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      if (!currency) return;
+
+      setLoadingMethods(true);
+      setPaymentMethods([]);
+      setSelectedMethod(null);
+
+      try {
+        const countryCode = CURRENCY_TO_COUNTRY[currency] || 'BR';
+        const response = await getD24PaymentMethods(countryCode);
+
+        // API returns { success, data: { success, data: [...] }, message, timestamp }
+        const methods = response?.data?.data || response?.data || [];
+
+        if (Array.isArray(methods) && methods.length > 0) {
+          setPaymentMethods(methods);
+          setSelectedMethod(methods[0].code);
+        } else {
+          setPaymentMethods([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch payment methods:', error);
+        setPaymentMethods([]);
+      } finally {
+        setLoadingMethods(false);
+      }
+    };
+
+    fetchPaymentMethods();
+  }, [currency]);
 
   const handleDeposit = async () => {
     if (!amount || Number(amount) <= 0) {
@@ -74,6 +110,7 @@ const LocalCurrencyTab: FC = () => {
       const res = await createD24Deposit({
         amount,
         currency,
+        payment_method: selectedMethod || undefined,
       });
 
       console.log('[D24] Response received:', res);
@@ -115,6 +152,11 @@ const LocalCurrencyTab: FC = () => {
             {currency === 'GBP' && '£'}
             {currency === 'INR' && '₹'}
             {currency === 'BRL' && 'R$'}
+            {currency === 'JPY' && '¥'}
+            {currency === 'AUD' && 'A$'}
+            {currency === 'CAD' && 'C$'}
+            {currency === 'CHF' && 'CHF'}
+            {currency === 'CNY' && '¥'}
           </span>
           <input
             type="text"
@@ -135,16 +177,68 @@ const LocalCurrencyTab: FC = () => {
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          disabled={loadingCurrencies}
+          disabled={loadingCurrencies || displayCurrencies.length === 0}
           className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {LOCAL_CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.code} - {currencyName(c.code, c.name, locale)}
-            </option>
-          ))}
+          {displayCurrencies.length > 0 ? (
+            displayCurrencies.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.code} - {c.name}
+              </option>
+            ))
+          ) : (
+            <option value="USD">USD - US Dollar</option>
+          )}
         </select>
       </div>
+
+      {/* Payment Methods selector */}
+      {paymentMethods.length > 0 && (
+        <div>
+          <label className="text-xs font-semibold text-slate-300 mb-3 block">
+            Payment Method
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {paymentMethods.map((method) => (
+              <button
+                key={method.code}
+                type="button"
+                onClick={() => setSelectedMethod(method.code)}
+                disabled={loadingMethods}
+                className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                  selectedMethod === method.code
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                } disabled:opacity-60 disabled:cursor-not-allowed`}
+              >
+                {method.logo && (
+                  <img
+                    src={method.logo}
+                    alt={method.name}
+                    className="w-6 h-6 object-contain"
+                  />
+                )}
+                <span className="text-xs text-slate-400 text-center line-clamp-1">
+                  {method.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {loadingMethods && (
+        <div className="flex justify-center py-4">
+          <svg className="w-5 h-5 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        </div>
+      )}
 
       {/* Start Deposit button */}
       <button
