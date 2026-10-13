@@ -7,7 +7,6 @@ export const en = {
   'acct.wallet.tabBuyCrypto': 'Buy Crypto',
   'acct.wallet.tabTip': 'Tip',
   'acct.wallet.tabRedeem': 'Redeem',
-  'acct.wallet.total': 'Wallet Total',
   'acct.wallet.tipAmount': 'Tip amount',
   'acct.wallet.tipWallet': 'Wallet',
   'acct.wallet.tipTo': 'To Username',
@@ -22,9 +21,6 @@ export const en = {
   'acct.wallet.redeemTerms':
     'By redeeming a promotional code or gift card code you acknowledge that you have read and agree to our {terms}',
   'acct.wallet.redeemTermsLink': 'Terms of Service',
-  'acct.wallet.comingSoonTitle': '{title} — coming soon',
-  'acct.wallet.comingSoonBody':
-    "We're wiring this tab up. For now, use Deposit and Withdraw for crypto.",
   'acct.wallet.displayCurrency': 'Display Currency',
   'acct.wallet.displayCurrencyNote':
     'By switching display currency, your balance will be converted to the selected currency using current exchange rates.',

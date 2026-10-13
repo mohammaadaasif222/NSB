@@ -33,9 +33,6 @@ export const en = {
   'misc.api.rejected': 'The server rejected the request but gave no reason.',
 
   // KYC fallbacks
-  'misc.kyc.required': 'Identity verification is required before you can continue.',
-  'misc.kyc.rejectedDefault':
-    'Verification could not be approved with the provided documents. Please try again with clearer photos.',
   'misc.kyc.submitFailed': 'Could not submit your personal details. Please try again.',
   'misc.kyc.tokenFailed': 'Could not start verification. Please try again.',
   'misc.kyc.levelFailed': 'Could not start this verification level',

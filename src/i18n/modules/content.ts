@@ -8,30 +8,7 @@ export const en = {
   /* Shared by the promotion detail page and every tournament card. */
   'content.sample.wagerRace': 'Endorphina Wager Race',
 
-  'content.promo.clutchTitle': '$20,000 - Clutch Up!',
-  'content.promo.clutchBody':
-    'Get your selections settled early if the team you back goes 2 goals up',
-  'content.promo.detailsBody':
-    "Discover our exclusive casino promotion designed to bring you unbeatable value and thrilling rewards like never before. Enjoy a generous welcome bonus of up to 200% on your first deposit, plus 50 free spins on our most popular slot games. Loyal members unlock VIP perks including cashback offers, priority withdrawals, and access to high-stakes tournament events every weekend. Whether you're spinning the reels, hitting the blackjack tables, or trying your luck at live dealer games — this limited-time offer is crafted to maximize your winnings and elevate every moment of play.",
   'content.promo.starsOutOf5': '{value} out of 5',
-  'content.promo.review1':
-    'The promotion was easy to join and the bonus was credited instantly. Ended up winning more than I expected.',
-  'content.promo.review2':
-    'Super smooth sign-up process. The bonus made my week! Highly recommend.',
-  'content.promo.review3':
-    "Didn't expect to win, but this promotion really paid off. Instant credit too.",
-  'content.promo.review4':
-    'Joining was straightforward and I appreciated how quickly the bonus showed up.',
-  'content.promo.review5':
-    'Great promotion with instant rewards. It boosted my experience significantly.',
-  'content.promo.review6':
-    'The ease of entry and quick bonus credit made this my favorite promotion yet.',
-  'content.promo.review7':
-    'Fast and reliable! The bonus was credited right away and helped me win big.',
-  'content.promo.review8':
-    'A hassle-free promotion with instant bonuses. I ended up winning more than expected.',
-  'content.promo.review9':
-    'Smooth process and quick bonus credit. Definitely participating again next time.',
 
   'content.tournament.hidden': 'Hidden',
 
