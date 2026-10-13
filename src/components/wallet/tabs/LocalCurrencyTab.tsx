@@ -69,7 +69,7 @@ const LocalCurrencyTab: FC = () => {
         const response = await getD24PaymentMethods(countryCode);
 
         // API returns { success, data: { success, data: [...] }, message, timestamp }
-        const methods = response?.data?.data || response?.data || [];
+        const methods = (response as any)?.data?.data || (response as any)?.data || [];
 
         if (Array.isArray(methods) && methods.length > 0) {
           setPaymentMethods(methods);
