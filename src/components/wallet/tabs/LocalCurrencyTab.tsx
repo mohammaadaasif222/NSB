@@ -31,7 +31,7 @@ const PAYMENT_METHOD_LOGOS: Record<string, { name: string; logo: string }> = {
   mastercard: { name: 'Mastercard', logo: '/payment-logos/mastercard.png' },
 };
 
-const FALLBACK_AMOUNT = 10000; // Default demo amount
+const FALLBACK_AMOUNT = 5000; // Default demo amount for initial offers
 
 const LocalCurrencyTab: FC = () => {
   const { t } = useTranslation();
@@ -53,6 +53,8 @@ const LocalCurrencyTab: FC = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
   const [toAddress, setToAddress] = useState<string | null>(null);
   const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
+  const [offersAmountCached, setOffersAmountCached] = useState<string>('');
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Fetch enabled display currencies
@@ -238,9 +240,69 @@ const LocalCurrencyTab: FC = () => {
     toast.info(`${methodInfo.name} provider will be implemented soon`);
   };
 
-  // Handle Changelly fallback payment method selection - directly create order on click
-  const handleChangellyFallback = async (paymentMethod: string) => {
-    if (!paymentMethod || !currency || !toAddress || !selectedNetwork || offers.length === 0) {
+  // Handle Changelly fallback payment method selection - show amount input with default amount
+  const handleChangellyFallback = (paymentMethod: string) => {
+    setSelectedPaymentMethod(paymentMethod);
+    setShowAmountInput(true);
+    const defaultAmount = FALLBACK_AMOUNT.toString();
+    setAmount(defaultAmount);
+    setOffersAmountCached(defaultAmount); // Cache the amount offers were fetched for
+  };
+
+  // Handle Changelly fallback amount change - fetch new offers with debounce
+  const handleChangellyAmountChange = async (newAmount: string) => {
+    setAmount(newAmount);
+
+    // Clear previous debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    if (!newAmount || Number(newAmount) <= 0 || !currency || !useChangellyFallback) {
+      return;
+    }
+
+    // Set new debounce timer (500ms delay)
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        const selectedCurrency = displayCurrencies.find((c) => c.code === currency);
+        const country = selectedCurrency?.country_code || 'US';
+        const state = country === 'US' ? 'CA' : undefined;
+
+        // Fetch new offers for the entered amount
+        await fetchOffers(
+          Number(newAmount),
+          currency,
+          'ETH',
+          country,
+          state
+        );
+
+        // Update cached amount after successful fetch
+        setOffersAmountCached(newAmount);
+      } catch (error) {
+        console.error('[Changelly Fallback] Error fetching offers:', error);
+      }
+    }, 500);
+  };
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Handle Changelly fallback deposit - create order with entered amount
+  const handleChangellyDeposit = async () => {
+    if (!amount || Number(amount) <= 0) {
+      toast.error('Please enter an amount');
+      return;
+    }
+
+    if (!selectedPaymentMethod || !currency || !toAddress || !selectedNetwork || offers.length === 0) {
       toast.error('Missing required information');
       return;
     }
@@ -250,17 +312,15 @@ const LocalCurrencyTab: FC = () => {
       const country = selectedCurrency?.country_code || 'US';
       const state = country === 'US' ? 'CA' : undefined;
 
-      setSelectedPaymentMethod(paymentMethod);
-
       const order = await createOrder(
-        FALLBACK_AMOUNT,
+        Number(amount),
         currency,
         'ETH',
         offers[0].providerCode,
         country,
         toAddress,
         selectedNetwork,
-        paymentMethod,
+        selectedPaymentMethod,
         state
       );
 
@@ -538,7 +598,7 @@ const LocalCurrencyTab: FC = () => {
           {!loadingMethods && paymentMethods.length === 0 && useChangellyFallback && (
             <div>
               <label className="text-xs font-semibold text-slate-300 mb-3 block">
-                Payment Method (Changelly Alternative)
+                Payment Method 
               </label>
 
               {loadingOffers && (
@@ -622,24 +682,31 @@ const LocalCurrencyTab: FC = () => {
         </>
       )}
 
-      {/* Amount input section - shown only after payment method is selected */}
-      {showAmountInput && selectedMethod && (
+      {/* Amount input section - shown only after payment method is selected (D24 or Changelly) */}
+      {showAmountInput && (selectedMethod || (selectedPaymentMethod && useChangellyFallback)) && (
         <div className="space-y-3">
           {/* Selected Method Display */}
           {(() => {
-            const selectedMethodInfo = getSelectedMethodInfo();
-            return selectedMethodInfo ? (
+            let methodInfo: any;
+            let provider = '';
+
+            if (useChangellyFallback && selectedPaymentMethod) {
+              // Changelly fallback method
+              const methodKey = selectedPaymentMethod.toLowerCase();
+              methodInfo = PAYMENT_METHOD_LOGOS[methodKey];
+              provider = offers[0]?.providerCode || 'Changelly';
+            } else if (selectedMethod) {
+              // D24 method
+              methodInfo = getSelectedMethodInfo();
+              provider = methodInfo?.provider || 'D24';
+            }
+
+            return methodInfo ? (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
-                {selectedMethodInfo.logo && (
-                  <img
-                    src={selectedMethodInfo.logo}
-                    alt={selectedMethodInfo.name}
-                    className="w-10 h-10 object-contain"
-                  />
-                )}
                 <div className="flex-1">
                   <p className="text-xs font-semibold text-slate-300">Selected Method</p>
-                  <p className="text-sm text-slate-100">{selectedMethodInfo.name}</p>
+                  <p className="text-sm text-slate-100">{methodInfo.name || methodInfo.methodName}</p>
+                  <p className="text-xs text-slate-400 mt-1">Provider: {provider}</p>
                 </div>
               </div>
             ) : null;
@@ -658,47 +725,111 @@ const LocalCurrencyTab: FC = () => {
                 type="text"
                 inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
+                onChange={(e) => {
+                  const newAmount = e.target.value.replace(/[^\d.]/g, '');
+                  if (useChangellyFallback) {
+                    handleChangellyAmountChange(newAmount);
+                  } else {
+                    setAmount(newAmount);
+                  }
+                }}
                 placeholder={t('acct.wallet.enterAmountPlain')}
                 className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 pl-8 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
 
+          {/* Changelly Fallback: Show only errors, not offer details */}
+          {useChangellyFallback && amount && Number(amount) > 0 && offers.length > 0 && (() => {
+            const firstOffer = offers[0];
+
+            // Check for error in offer
+            if (firstOffer?.errorType) {
+              return (
+                <div className="space-y-2">
+                  {/* Error message */}
+                  {firstOffer.errorType === 'limits' && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-xs">
+                      <p className="font-semibold mb-1">⚠️ Amount Limit</p>
+                      <p>{firstOffer.errorMessage}</p>
+                      {firstOffer.errorDetails && firstOffer.errorDetails.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {firstOffer.errorDetails.map((detail: any) => (
+                            <p key={detail.cause}>
+                              {detail.cause === 'min' && `Minimum: ${detail.value} ${currency}`}
+                              {detail.cause === 'max' && `Maximum: ${detail.value} ${currency}`}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {firstOffer.errorType === 'currency' && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 text-yellow-300 text-xs">
+                      <p className="font-semibold mb-1">⚠️ Exchange Not Available</p>
+                      <p>{firstOffer.errorMessage || 'This currency pair is not available'}</p>
+                    </div>
+                  )}
+
+                  {firstOffer.errorType && firstOffer.errorType !== 'limits' && firstOffer.errorType !== 'currency' && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 text-yellow-300 text-xs">
+                      <p className="font-semibold mb-1">⚠️ Error</p>
+                      <p>{firstOffer.errorMessage}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return null;
+          })()}
+
           {/* Deposit button */}
-          <button
-            type="button"
-            onClick={handleDeposit}
-            disabled={loading || !amount || Number(amount) <= 0}
-            className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-              loading || !amount || Number(amount) <= 0
-                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-            }`}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Processing...
-              </span>
-            ) : (
-              'Deposit'
-            )}
-          </button>
+          {(() => {
+            const hasError = useChangellyFallback && offers.length > 0 && !!offers[0]?.errorType;
+            const isChangellyLoading = useChangellyFallback && loadingOffers;
+            // For Changelly: disable if amount changed from cached amount (user is editing)
+            const amountChanged = useChangellyFallback && amount !== offersAmountCached;
+            const isDisabled = loading || creatingOrder || isChangellyLoading || !amount || Number(amount) <= 0 || hasError || amountChanged;
+            const isProcessing = loading || creatingOrder || isChangellyLoading;
+
+            return (
+              <button
+                type="button"
+                onClick={useChangellyFallback ? handleChangellyDeposit : handleDeposit}
+                disabled={isDisabled}
+                className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
+                  isDisabled
+                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                    : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                }`}
+              >
+                {isProcessing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    {isChangellyLoading ? 'Calculating...' : 'Processing...'}
+                  </span>
+                ) : (
+                  'Deposit'
+                )}
+              </button>
+            );
+          })()}
 
           {/* Back button */}
           <button
