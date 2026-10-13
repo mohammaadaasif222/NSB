@@ -166,6 +166,7 @@ export const useChangellyBuyCrypto = () => {
       country: string,
       toAddress: string,
       network: string,
+      paymentMethod?: string,
       state?: string,
     ): Promise<CreateOrderResponse | null> => {
       try {
@@ -188,6 +189,7 @@ export const useChangellyBuyCrypto = () => {
           country,
           toAddress,
           network,
+          ...(paymentMethod ? { paymentMethod } : {}),
           ...(state ? { state } : {}),
         });
 

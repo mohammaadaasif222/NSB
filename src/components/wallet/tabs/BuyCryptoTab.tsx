@@ -70,6 +70,7 @@ const BuyCryptoTab: FC = () => {
   const [displayCurrencies, setDisplayCurrencies] = useState<any[]>([]);
   const [minAmount, setMinAmount] = useState<number | null>(null);
   const [maxAmount, setMaxAmount] = useState<number | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(''); // Payment method code (e.g., "card", "google_pay")
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Fetch display currencies on mount
@@ -213,6 +214,7 @@ const BuyCryptoTab: FC = () => {
       console.log('[Changelly] Skipping offers fetch - missing required fields');
       setSelectedProvider('');
       setSelectedOfferId('');
+      setSelectedPaymentMethod('');
       setMinAmount(null);
       setMaxAmount(null);
       return;
@@ -234,7 +236,9 @@ const BuyCryptoTab: FC = () => {
       setSelectedProvider(offers[0].providerCode);
       // Auto-select first payment method if available
       if (offers[0].paymentMethodOffer && offers[0].paymentMethodOffer.length > 0) {
-        setSelectedOfferId(offers[0].paymentMethodOffer[0].offerId);
+        const firstMethod = offers[0].paymentMethodOffer[0];
+        setSelectedOfferId(firstMethod.offerId);
+        setSelectedPaymentMethod(firstMethod.method);
       }
     }
   }, [offers, selectedProvider]);
@@ -279,8 +283,8 @@ const BuyCryptoTab: FC = () => {
     if (!selectedCrypto || !selectedProvider || !toAddress || !selectedNetwork) return;
 
     try {
-      console.log('[Changelly] Creating order...', { fiatCurrency, country, state });
-      // Create order with selected provider
+      console.log('[Changelly] Creating order...', { fiatCurrency, country, selectedPaymentMethod, state });
+      // Create order with selected provider and payment method
       const order = await createOrder(
         Number(amount),
         fiatCurrency,
@@ -289,6 +293,7 @@ const BuyCryptoTab: FC = () => {
         country,
         toAddress,
         selectedNetwork, // Pass the network code (e.g., 'ETHEREUM', 'SOLANA')
+        selectedPaymentMethod, // Pass the selected payment method code (e.g., 'card', 'google_pay')
         state, // US: 'CA', Others: undefined
       );
 
@@ -310,6 +315,7 @@ const BuyCryptoTab: FC = () => {
     setIframeUrl(null);
     setExpectedAmount(null);
     setSelectedOfferId('');
+    setSelectedPaymentMethod('');
   };
 
   return (
@@ -515,6 +521,7 @@ const BuyCryptoTab: FC = () => {
                       key={method.offerId}
                       onClick={() => {
                         setSelectedOfferId(method.offerId);
+                        setSelectedPaymentMethod(method.method); // Store payment method code
                       }}
                       className={`w-full text-left px-4 py-3 border rounded-lg transition-all ${
                         selectedOfferId === method.offerId
@@ -579,7 +586,7 @@ const BuyCryptoTab: FC = () => {
               (maxAmount && Number(amount) > maxAmount) ||
               !selectedCrypto ||
               !selectedProvider ||
-              !selectedOfferId ||
+              !selectedPaymentMethod ||
               !toAddress ||
               !selectedNetwork ||
               offers.length === 0
