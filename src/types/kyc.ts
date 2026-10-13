@@ -124,6 +124,15 @@ export interface PlayerKycTier {
   required: boolean;
   requiredReason: string | null;
   approvedAt: string | null;
+  /**
+   * Player-safe refusal text. Mapped from the tier's `moderation_comment` —
+   * the only comment Sumsub permits showing the applicant.
+   */
+  rejectionReason: string | null;
+  /** Someone here has to act; the player need do nothing. */
+  onHold: boolean;
+  /** When a granted level stops counting and will be asked for again. */
+  expiresAt: string | null;
   /** There is a configured Sumsub level and the level below is held. */
   canSubmit: boolean;
 }

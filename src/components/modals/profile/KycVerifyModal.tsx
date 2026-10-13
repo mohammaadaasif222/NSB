@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import dynamic from 'next/dynamic';
 import kycApi from '@/services/kyc.api';
 import { useTranslation } from '@/context/I18nContext';
@@ -54,6 +54,14 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
   const [profile, setProfile] = useState<PlayerKycProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** True when the error is something the player can act on, not an outage. */
+  const [errorActionable, setErrorActionable] = useState(false);
+  /**
+   * Every path through `resolveStep` ends at a billable token mint, so a
+   * double-clicked Retry must not reach it twice. A ref, not state: it has to
+   * be true for the second click immediately, not after a re-render.
+   */
+  const inFlight = useRef(false);
 
   /**
    * `keepWidget` is for the SDK's own expiry callback, which asks for a fresh
@@ -74,6 +82,9 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
       return res.token;
     } catch (err: any) {
       const msg = err?.message || t('acct.kycModal.connectFailed');
+      // 400 is the ladder refusing to mint (Level 4 before Level 3), not an
+      // outage: nothing is down and retrying can never succeed.
+      setErrorActionable(err?.status === 400);
       setError(msg);
       setStep('error');
       throw err;
@@ -95,25 +106,30 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
    * every tier below 3 as the Sumsub flow.
    */
   const resolveStep = async (): Promise<void> => {
-    // Levels 3 and 4 sit above an approved Level 2, so Level 1 is settled by
-    // definition. The backend still checks; no reason to ask twice.
-    if (isUpperTier) {
+    if (inFlight.current) return;
+    inFlight.current = true;
+
+    try {
+      // Levels 3 and 4 sit above an approved Level 2, so Level 1 is settled by
+      // definition. The backend still checks; no reason to ask twice.
+      if (isUpperTier) {
+        await fetchToken().catch(() => undefined);
+        return;
+      }
+
+      setStep('resolving');
+      const me = await kycApi.getKycMe();
+      setProfile(me);
+
+      if (isLevel1Only || !me?.isLevel1Complete) {
+        setStep('level1');
+        return;
+      }
+
       await fetchToken().catch(() => undefined);
-      return;
+    } finally {
+      inFlight.current = false;
     }
-
-    setStep('resolving');
-    // Resolves to null when the player has no profile yet — a first-time
-    // player, which is exactly the case that needs the form.
-    const me = await kycApi.getKycMe();
-    setProfile(me);
-
-    if (isLevel1Only || !me?.isLevel1Complete) {
-      setStep('level1');
-      return;
-    }
-
-    await fetchToken().catch(() => undefined);
   };
 
   useEffect(() => {
@@ -208,8 +224,16 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
               <ShieldCheckIcon size={18} />
             </div>
             <div className="min-w-0">
+              {/* Named for the level being opened: 3 and 4 are a proof of
+                  address and a questionnaire, not identity verification. */}
               <h2 id="kyc-verify-title" className="rl-h-card truncate text-[#f0f1f5]">
-                {step === 'level1' ? t('acct.kycModal.personalInfo') : t('acct.kycModal.identity')}
+                {step === 'level1'
+                  ? t('acct.kycModal.personalInfo')
+                  : tier === 3
+                    ? t('acct.verify.tier3Title')
+                    : tier === 4
+                      ? t('acct.verify.tier4Title')
+                      : t('acct.kycModal.identity')}
               </h2>
               {/* Sumsub is not involved in the details form, so crediting them
                   there would be both wrong and faintly alarming — the player
@@ -255,23 +279,46 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
 
           {step === 'error' && (
             <div className="flex h-96 flex-col items-center justify-center space-y-4 px-4 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#ef4462]/12 text-[#ef4462]">
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-full ${
+                  errorActionable
+                    ? 'bg-(--rl-gold)/15 text-(--rl-gold)'
+                    : 'bg-[#ef4462]/12 text-[#ef4462]'
+                }`}
+              >
                 <AlertTriangleIcon size={24} />
               </div>
               <div>
-                <h3 className="text-base font-medium text-[#f0f1f5]">
-                  {t('acct.kycModal.unavailable')}
-                </h3>
-                <p className="mt-1 max-w-sm text-sm leading-6 text-[#9da2b4]">{error}</p>
+                {errorActionable ? (
+                  <h3 className="max-w-sm text-base font-medium text-[#f0f1f5]">{error}</h3>
+                ) : (
+                  <>
+                    <h3 className="text-base font-medium text-[#f0f1f5]">
+                      {t('acct.kycModal.unavailable')}
+                    </h3>
+                    <p className="mt-1 max-w-sm text-sm leading-6 text-[#9da2b4]">{error}</p>
+                  </>
+                )}
               </div>
-              <button
-                type="button"
-                onClick={() => void resolveStep()}
-                className="rl-btn-gold inline-flex h-12 items-center gap-2 rounded-[34px] px-6 text-base font-medium"
-              >
-                <RefreshCwIcon size={15} />
-                <span>{t('acct.retry')}</span>
-              </button>
+              {/* Retry only where retrying can work. */}
+              {errorActionable ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rl-btn-gold inline-flex h-12 items-center gap-2 rounded-[34px] px-6 text-base font-medium"
+                >
+                  <span>{t('rgc.close')}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void resolveStep()}
+                  className="rl-btn-gold inline-flex h-12 items-center gap-2 rounded-[34px] px-6 text-base font-medium"
+                >
+                  <RefreshCwIcon size={15} />
+                  <span>{t('acct.retry')}</span>
+                </button>
+              )}
             </div>
           )}
 

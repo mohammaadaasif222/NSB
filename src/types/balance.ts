@@ -81,6 +81,8 @@ export interface WalletSummary {
    * than letting a missing flag wave a withdrawal through.
    */
   kyc_mandatory_for_withdrawal?: boolean;
+  /** Configurable 1–4. Absent on older responses; callers fall back to 2. */
+  kyc_withdrawal_min_level?: number;
 }
 
 /* ── Currency catalogue (deposit / withdraw pickers) ─────────────── */

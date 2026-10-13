@@ -621,8 +621,12 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                         <p className="text-[#fcd535]">{state.requiredReason}</p>
                       )}
 
+                      {/* `rejectionReason` is the player-safe provider text;
+                          the generic line covers a rejection without one. */}
                       {rejected && (
-                        <p className="text-[#ef4462]">{t('acct.verify.tierRejected')}</p>
+                        <p className="text-[#ef4462]">
+                          {state?.rejectionReason || t('acct.verify.tierRejected')}
+                        </p>
                       )}
 
                       {state?.canSubmit && !verified && (
