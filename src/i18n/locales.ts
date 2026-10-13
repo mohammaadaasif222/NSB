@@ -81,12 +81,9 @@ const coreEn = {
   'kyc.syncChecking': 'Checking…',
   'kyc.pollingStopped':
     'This is taking longer than usual, so we have stopped checking automatically. Use Sync Status above, or come back later — we will email you when there is a result.',
-  'kyc.complianceHold':
-    'Your verification is with our compliance team. Nothing further is needed from you; we will be in touch.',
   'kyc.rejectedRetry': 'Verification was not approved. Please upload clearer documents.',
 
   // Auth — method chooser
-  'auth.methodRegister': 'Register with',
   'auth.methodLogin': 'Login with',
   'auth.methodGmail': 'Gmail',
   'auth.methodTelegram': 'Telegram',
@@ -105,10 +102,8 @@ const coreEn = {
   'otp.sentTo': 'Enter the 6-digit verification code sent to {target}',
   'otp.notReceived': "Didn't receive the code?",
   'otp.resend': 'Resend OTP',
-  'otp.submit': 'Verify OTP',
   'otp.incomplete': 'Enter all 6 digits',
   'otp.verified': 'Account verified — you can log in now',
-  'register.usernameIssued': 'Account created — your username is {username}',
 
   // Auth — Google sign-in
   'auth.googleFailed': 'Google sign-in failed. Please try again.',
@@ -131,22 +126,11 @@ const coreEn = {
   'login.subtitle': 'Log in to explore premium games, bonuses, tournaments, and daily rewards.',
   'login.forgot': 'Forgot your password?',
   'login.submit': 'Log in',
-  'login.noAccount': "Don't have an account?",
   'login.register': 'Register',
   'login.success': 'Welcome back!',
 
   // Register
-  'register.title': 'Register',
-  'register.subtitle':
-    'Create your account to explore slots, live casino, and exciting tournaments.',
-  'register.passwordHint': 'Minimum {min} characters required',
-  'register.mobilePlaceholder': '10–15 digits',
-  'register.marketing': 'I agree to receive marketing emails, promotions, and exclusive offers.',
-  'register.terms': 'I agree to the Terms & Conditions and confirm I am 18+',
-  'register.submit': 'Register',
-  'register.haveAccount': 'Already have an account?',
   'register.login': 'Login',
-  'register.success': 'Account created — please log in',
 
   // Register modal
   'registerModal.title': 'Register',
@@ -242,7 +226,6 @@ const coreEn = {
   'nav.recents': 'Recent',
   'nav.favourites': 'Favourites',
   'nav.myBets': 'My Bets',
-  'nav.featuredGames': 'Featured Games',
   'nav.originals': 'Rolluck Originals',
   'nav.games': 'Games',
   'nav.vipClub': 'VIP Club',
@@ -296,7 +279,6 @@ const coreEn = {
   'promo.removeReview': 'Remove my review',
   'promo.reviewFailed': "Couldn't submit your review. Please try again.",
   'promo.reviewsFailed': "Couldn't load the reviews. Please try again in a moment.",
-  'promo.reviewsOff': 'Reviews are switched off right now.',
   'nav.rolluckOath': 'Rolluck Oath',
   'nav.tournaments': 'Tournaments',
   'tournament.active': 'Active',
@@ -320,7 +302,6 @@ const coreEn = {
   'nav.expand': 'Expand',
   'nav.rewards': 'Rewards',
   'nav.collapse': 'Collapse',
-  'nav.openMenu': 'Open menu',
   'nav.menu': 'Menu',
   'nav.chat': 'Chat',
   'nav.theme': 'Theme',
@@ -329,24 +310,14 @@ const coreEn = {
   // Account menu
   'account.account': 'Account',
   'account.profile': 'Profile',
-  'account.appearance': 'Appearance',
   'account.logout': 'Log out',
   'account.logoutTitle': 'Log out?',
   'account.logoutMessage': 'You will need to log in again to access your account.',
   'account.logoutConfirm': 'Log out',
-  'account.logoutCancel': 'Cancel',
   'account.login': 'Login',
   'account.register': 'Register',
 
   // Dashboard
-  'dash.welcomeBack': 'Welcome back',
-  'dash.player': 'player',
-  'dash.level': 'Level',
-  'dash.xpToNext': '{xp} XP to next level',
-  'dash.casino': 'Casino',
-  'dash.sportsbook': 'Sportsbook',
-  'dash.recentBigWin': 'Recent Big Win',
-  'dash.continuePlaying': 'Continue playing',
   'dash.originals': 'Originals',
   'dash.newReleases': 'New Releases',
   'dash.featuredGames': 'Featured Lobby',
@@ -429,39 +400,21 @@ const coreEn = {
   'dash.catalogueUnavailable': 'Games are unavailable right now. Please try again shortly.',
 
   // Wallet
-  'wallet.balance': 'Balance',
   'wallet.real': 'Real Balance',
   'wallet.bonus': 'Bonus Balance',
-  'wallet.bonusShort': 'Bonus',
-  'wallet.total': 'Total',
-  'wallet.switchFailed': 'Could not switch wallet',
 
   // Generic
   'common.language': 'Language',
-  'common.required': 'Email and password are required',
 
   // Lobby, catalogue and profile
   'role.player': 'Player',
   'role.vip': 'VIP Player',
-  'dash.heroTitle': 'Play. Win. Repeat.',
-  'dash.heroSubtitle':
-    'ROLLUCK Originals, new releases, featured games and slots, all in one lobby.',
-  'dash.browseGames': 'Browse games',
-  'dash.joinNow': 'Join now',
   'dash.categories': 'Categories',
   'dash.gamesCount': '{count} games',
   'dash.viewAll': 'View All',
-  'dash.memberSince': 'Member since {date}',
-  'dash.quickProfile': 'My profile',
   'dash.online': '{count} Online',
-  'dash.welcomeBonus': 'Welcome Bonus',
-  'dash.claimNow': 'Claim now',
-  'dash.playNow': 'Play now',
-  'dash.betNow': 'Bet now',
-  'dash.sportsCount': '{count} sports',
   'dash.providers': 'Provider',
   'dash.liveStreamers': 'Games Loved by Live Streamers',
-  'dash.recentWins': 'Recent big wins',
   'dash.faqTitle': 'Frequently asked questions',
   'games.empty': 'No games in this category yet.',
   'games.showing': 'Showing {from}–{to} of {total}',
@@ -469,7 +422,6 @@ const coreEn = {
   'games.prev': 'Previous',
   'games.next': 'Next',
   'game.provider': 'Provider',
-  'game.category': 'Category',
   'game.rtp': 'RTP',
   'game.minBet': 'Min bet',
   'game.maxBet': 'Max bet',
@@ -485,9 +437,7 @@ const coreEn = {
   'game.betLimits': 'Bet limits',
   'game.details': 'Full details',
   'game.new': 'New',
-  'game.play': 'Play now',
   'game.loginToPlay': 'Log in to play',
-  'game.launchSoon': 'Game launch is coming soon',
   'game.moreFrom': 'More from {category}',
   'game.backToLobby': 'Back to lobby',
   'game.notFound': 'This game is not available.',
@@ -505,10 +455,6 @@ const coreEn = {
   'game.fullscreen': 'Full screen',
   'game.insufficientFunds': 'Not enough balance for this bet.',
 
-  // 404.
-  // `notFound.body1` reads as though a word is missing — "the page you are
-  // trying to" — and it is the design's own copy, carried verbatim rather
-  // than quietly corrected. "trying to reach" is the obvious fix when the
   // client wants one.
   'notFound.eyebrow': 'Page not found',
   'notFound.title': 'This page is outside of the universe',
@@ -565,22 +511,12 @@ const coreEn = {
   'profile.personal': 'Personal information',
   'profile.security': 'Security',
   'profile.wallet': 'Wallet',
-  'profile.name': 'Name',
   'profile.email': 'Email',
   'profile.username': 'Username',
-  'profile.mobile': 'Mobile',
   'profile.timezone': 'Time zone',
-  'profile.theme': 'Appearance theme',
   'profile.password': 'Password',
-  'profile.twoFactor': 'Two-factor authentication',
-  'profile.enabled': 'Enabled',
-  'profile.disabled': 'Disabled',
   'profile.change': 'Change',
   'profile.notSet': 'Not set',
-  'profile.status': 'Account status',
-  'profile.active': 'Active',
-  'profile.inactive': 'Inactive',
-  'profile.activeWallet': 'Active wallet',
   'profile.loadFailed': 'Could not load your profile',
   'profile.retry': 'Try again',
   'profile.emailVerified': 'Verified',
@@ -595,13 +531,11 @@ const coreEn = {
   'nav.wallet': 'Wallet',
   'nav.notifications': 'Notifications',
   'nav.liveChat': 'Live chat',
-  'dash.guest': 'Guest',
   'dash.wageringProgress': 'Wagering Progress',
   'dash.percentComplete': '{percent}% Complete',
   'dash.wagered': '{amount} Wagered',
   'dash.remainingToUnlock': '{amount} remaining to unlock your bonus',
   'dash.remainingToUnlockShort': 'remaining to unlock your bonus',
-  'dash.bonusRemaining': '{amount} remaining to unlock your bonus',
   'dash.unlockBonus': 'Unlock your welcome bonus',
 
   // Header game search
@@ -646,8 +580,6 @@ const coreEn = {
   'profile.id': 'ID',
   'profile.editAvatar': 'Change picture',
   'profile.language': 'Language',
-  'profile.noTransactions': 'No transactions yet.',
-  'profile.referralCode': 'Referral code',
   'profile.contactSupport': 'Contact support',
 
   'avatar.title': 'Profile picture',
@@ -714,8 +646,6 @@ const coreEn = {
   // The Affiliate page
   'aff.title': 'Affiliate',
   'aff.getCode': 'Get Your Affiliate Code',
-  // The design's own copy reads "Share Rainbet with your friends" — Rainbet is
-  // a different operator, so that is a paste left in the file rather than the
   // line anyone meant to ship. Our own name is used here.
   'aff.shareBlurb': 'Share Rolluck with your friends and earn as they play',
   'aff.copyLink': 'Copy affiliate link',
@@ -790,7 +720,6 @@ const coreEn = {
   'rewards.subtitle':
     'Rakeback, cashback and bonuses earned from your play. Claim them before they expire.',
   'rewards.allRewards': 'All Rewards',
-  // Shown when the rewards engine is switched off platform-wide. Reached only
   // by a bookmark or a typed URL — every link to it is hidden in that state.
   'rewards.switchedOff': 'Rewards are currently unavailable',
   'rewards.switchedOffNote':
@@ -824,23 +753,11 @@ const coreEn = {
 
   // Bonuses — the six bonus flows. Mirrors src/constants/bonus.ts.
   'bonus.title': 'Bonuses',
-  'bonus.subtitle':
-    'Deposit matches, free spins and bonus cash. Claim one, wager it through, and it becomes yours to withdraw.',
-  'bonus.paidTo': 'Bonus funds are credited to your {currency} wallet on {network}.',
-  'bonus.loginPrompt': 'Log in to see and claim your bonuses.',
   'bonus.loadFailed': 'Could not load your bonuses',
-  'bonus.retry': 'Try again',
   'bonus.haveACode': 'Have a bonus code?',
   'bonus.haveACodeHint': 'Enter a code you were given to claim the bonus behind it.',
   'bonus.codePlaceholder': 'WELCOME100',
   'bonus.redeem': 'Redeem',
-  'bonus.switchedOff':
-    'New bonus claims are paused right now. Bonuses you already hold keep running and can still be completed.',
-  'bonus.yourBonuses': 'Your bonuses',
-  'bonus.slotsRemaining': '{count} more can be claimed',
-  'bonus.available': 'Available bonuses',
-  'bonus.noneAvailable': 'No bonuses on offer right now. Check back soon.',
-  'bonus.history': 'Finished bonuses',
   'bonus.claim': 'Claim',
   'bonus.claimed': '{amount} credited from {bonus}',
   'bonus.claimedNoCash': '{bonus} claimed',
@@ -853,7 +770,6 @@ const coreEn = {
   'bonus.unavailable': 'Not available',
   'bonus.winUpTo': 'Win up to',
   'bonus.youGet': 'You get',
-  'bonus.joinToClaim': 'Join to claim',
   'bonus.welcomeTitle': 'WELCOME TO BONUSES',
   'bonus.welcomeSubtitle': 'Claim your Welcome Pack and boost your starting bankroll',
   'bonus.claimNow': 'Claim Now',
@@ -872,7 +788,6 @@ const coreEn = {
   'bonus.special.reloadBody': '20% reload boost every Tuesday on any gaming account refresh.',
   'bonus.special.cashback': 'Cashback Program',
   'bonus.special.cashbackBody': 'Earn 10% back on all weekly slot and original plays.',
-  'bonus.basedOnDeposit': 'Based on your latest qualifying deposit',
   'bonus.spinsCount': '{count} spins',
   'bonus.wageringProgress': 'Wagering progress',
   'bonus.remaining': '{amount} left to wager',
@@ -882,12 +797,7 @@ const coreEn = {
   'bonus.maxBet': 'Max bet',
   'bonus.expiresIn': 'Expires in',
   'bonus.expiringNow': 'Expiring now',
-  'bonus.terms.match': '{percent}% of your deposit',
-  'bonus.terms.minDeposit': 'Deposit at least {amount}',
-  'bonus.terms.maxBonus': 'Up to {amount}',
   'bonus.terms.wagering': 'Wager {multiplier}x the bonus',
-  'bonus.terms.maxBet': 'Max bet {amount} while active',
-  'bonus.terms.spins': '{count} free spins',
   'bonus.type.depositMatch': 'Deposit Match',
   'bonus.type.depositFreeSpins': 'Deposit + Free Spins',
   'bonus.type.freeSpins': 'Free Spins',
@@ -940,188 +850,6 @@ const coreEn = {
   'rewards.col.cashback': 'Cashback',
   'rewards.currentTier': 'Current',
   'rewards.tiersEmpty': 'No VIP tiers have been set up yet.',
-
-  // Responsible Gambling — the player-protection tools.
-  //
-  // English only, on the same reasoning as the KYC block above: the other
-  // eight locales are human-translated, and machine-translating harm-reduction
-  // copy into eight languages and presenting it as done would be worse than
-  // the honest English fallback `t()` already gives. These keys exist so a
-  // translator has something to work from — and this is the block to
-  // prioritise, because somebody reading it may be in trouble.
-  'rg.title': 'Responsible Gambling',
-  'rg.metaDescription':
-    'Set deposit, loss, wager and time limits, take a break with self-exclusion, check your budget, or take a short self-assessment.',
-
-  'rg.navFaqs': 'FAQ’s',
-  'rg.navAssessment': 'Self-Assessment',
-  'rg.navLimits': 'Gambling Limits',
-  'rg.navExclusion': 'Self-exclusion',
-  'rg.navBudget': 'Budget Calculator',
-
-  'rg.supportTitle': 'Independent help',
-  'rg.supportLead':
-    'These organisations have nothing to do with us. They are free, confidential, and talking to them does not commit you to anything.',
-
-  // FAQs
-  // "FAQ's" with the apostrophe is how the design writes it, in the panel
-  // heading and in the rail, and it is reproduced on instruction. It is not
-  // correct English — the word is a plural, not a possessive — so it is the
-  // one thing on this page worth changing if anyone ever wants to.
-  'rg.faqsTitle': 'FAQ’s',
-  'rg.faqsLead':
-    'What the tools on this page do, what they cost you, and what we will and will not do for you.',
-
-  // Self-assessment
-  // Capital A, matching the rail and the design's own panel heading.
-  'rg.assessmentTitle': 'Self-Assessment',
-  'rg.assessmentLead':
-    'Ten questions, about a minute. They are the ones support services normally start with.',
-  'rg.assessmentNotDxTitle': 'This is not a diagnosis',
-  'rg.assessmentNotDxBody':
-    'It cannot tell you whether you have a gambling problem, and it is not a medical assessment. It can only show you how your own answers look written down. Anyone qualified to say more is listed at the bottom of this page.',
-  'rg.assessmentModalLead':
-    'Tick anything that has applied to you in the last 12 months. Leave the rest.',
-  'rg.assessmentDisclaimer':
-    'Your answers are counted, not stored against your name for any other purpose, and are never used to decide what marketing you receive.',
-  'rg.assessmentSeeResult': 'See my result',
-  'rg.assessmentStartTitle': 'Take the self-assessment',
-  'rg.assessmentStartBody':
-    '{count} short questions about the last year. Nobody sees your answers but you.',
-  'rg.assessmentStart': 'Start',
-  'rg.assessmentYourResult': 'Your result',
-  'rg.assessmentTicked': 'ticked',
-  'rg.assessmentSetLimit': 'Set a limit',
-  'rg.assessmentTakeBreak': 'Take a break',
-  'rg.assessmentRetake': 'Take it again',
-
-  // Limits
-  // Capital L, matching the rail and the design's own panel heading.
-  'rg.limitsTitle': 'Gambling Limits',
-  // The design's own button label on this panel.
-  'rg.limitsSet': 'Set Gambling Limit',
-  'rg.limitsLead':
-    'Decide in advance what you are willing to spend, lose and play — then let the account hold you to it.',
-  'rg.limitsRuleTitle': 'Lowering is instant. Raising is not.',
-  'rg.limitsRuleBody':
-    'A new or tighter limit applies the moment you confirm it. Raising one waits {hours} hours first, because the moment you most want to raise a limit is usually the moment it is working. You can cancel a pending increase at any time before it lands.',
-  'rg.limitNotSet': 'No limit set',
-  'rg.limitSet': 'Set limit',
-  'rg.limitSetTitle': 'Set a limit',
-  'rg.limitChange': 'Change',
-  'rg.limitChangeTitle': 'Change this limit',
-  'rg.limitUpdate': 'Update limit',
-  // The three field labels and the action, worded as the dialog draws them.
-  'rg.limitTypeLabel': 'Limit Type',
-  'rg.limitAdd': 'Add Limit',
-  'rg.limitPeriod': 'Limit Period',
-  'rg.limitAmount': 'Limit Amount',
-  'rg.limitAmountMinutes': 'Minutes',
-  'rg.limitMinutes': 'min',
-  'rg.limitCurrently': 'Currently',
-  'rg.limitOf': 'of',
-  'rg.limitResets': 'Resets',
-  'rg.limitRemaining': 'Remaining',
-  'rg.limitDelayTitle': 'This increase will not apply yet',
-  'rg.limitDelayBody':
-    'Your current limit stays in force for the next {hours} hours. After that the new figure applies on its own — you do not have to come back and confirm it.',
-  'rg.limitImmediateTitle': 'This applies immediately',
-  'rg.limitImmediateBody': 'The new limit takes effect as soon as you confirm it.',
-  'rg.limitPendingTitle': 'Increase pending',
-  'rg.limitPendingBody': 'Your limit rises to {amount} {when}. Until then the current one applies.',
-  'rg.limitPendingCancel': 'Cancel this increase',
-
-  // Self-exclusion
-  'rg.exclusionTitle': 'Self-exclusion',
-  // The design's own two paragraphs for this panel.
-  'rg.exclusionLead':
-    'Are you seeking a break from Rolluck? Initiate the automated self-exclusion process by establishing a limit, and you will be temporarily barred from accessing your account for the selected period. Please be aware that during this time, you will not have access to any products on the website, and any remaining balances will also be unavailable.',
-  'rg.exclusionEmailNote': 'You will receive an email to confirm your request.',
-  'rg.exclusionAlternativeTitle': 'If you are not sure, start smaller',
-  'rg.exclusionAlternativeBody':
-    'A deposit or loss limit does most of the same work and can be tightened whenever you like. Self-exclusion is the option for when you have decided that should not be up to you any more.',
-  'rg.exclusionAlternativeAction': 'Set a limit instead',
-  // The two step cards, the consent line and the action, as the design words
-  // them. The design writes "self-exclusionand" in the consent — a missing
-  // space, not a phrase — so the space is put back.
-  'rg.exclusionStep1': 'Step 1: Take a 24 Hours Cooldown',
-  'rg.exclusionStep2': 'Step 2: Self-Exclusion',
-  'rg.exclusionConsent':
-    'By requesting self-exclusion, I acknowledge the rules of self-exclusion and take full responsibility',
-  'rg.exclusionContinueAction': 'Continue',
-  'rg.exclusionChoosePeriod': 'Choose how long',
-  'rg.exclusionReason': 'Reason (optional)',
-  'rg.exclusionReasonPlaceholder':
-    'Only if you want to tell us. You do not have to, and leaving it empty changes nothing.',
-  'rg.exclusionContinue': 'Choose a period to continue',
-  'rg.exclusionContinueWith': 'Continue — exclude me for {period}',
-  // The confirm dialog, as the design writes it.
-  //
-  // NOTE: the design states that a player CAN still log in and withdraw during
-  // an exclusion, and only betting is blocked. The terms this section shipped
-  // with said the opposite — signed out immediately, no withdrawals. Both
-  // cannot be true; the design is taken as the policy here, and whatever
-  // enforces exclusions has to match it.
-  'rg.exclusionBreakPeriod': 'Break period',
-  'rg.exclusionConfirmBody':
-    'During the self-exclusion period, you can still log in and withdraw your available balance. However, any amount requiring wagering (e.g., bonus or promotional credits) cannot be withdrawn until the exclusion period ends and the wagering requirements are fulfilled.',
-  'rg.exclusionUnderstand': 'By clicking confirm, I understand that:',
-  'rg.exclusionPoint1': 'I will STRICTLY NOT be able to cancel the {period}.',
-  'rg.exclusionPoint2': 'I will still be able to access my account and make withdrawals.',
-  'rg.exclusionPoint3': 'I will NOT be able to place any bets during {period}.',
-  'rg.exclusionPoint4': 'I will have my host automatically unassigned.',
-  'rg.exclusionConfirmWith': 'Confirm {period}',
-  'rg.exclusionToday': 'Today',
-  'rg.exclusionConfirmTitle': 'Self-exclusion ({period})',
-  'rg.exclusionConfirmAction': 'Confirm self-exclusion',
-  'rg.exclusionIrreversibleTitle': 'This cannot be undone',
-  'rg.exclusionIrreversibleBody':
-    'You are about to close your account to yourself for {period}. No one at ROLLUCK can shorten or lift it once it starts, whatever the reason you give later.',
-  'rg.exclusionTermsTitle': 'What happens when you confirm',
-  'rg.exclusionAcknowledge':
-    'I understand that this lasts {period}, that it starts immediately, and that it cannot be reversed.',
-  'rg.exclusionTypeToConfirm': 'Type {phrase} to confirm',
-  'rg.exclusionActiveTitle': 'Self-exclusion',
-  'rg.exclusionActiveHeading': 'Your self-exclusion is active',
-  'rg.exclusionActiveBody':
-    'You cannot deposit, bet, or open another account for the duration. This cannot be lifted early — please do not contact support to ask, because they are not able to do it.',
-  'rg.exclusionPeriod': 'Period',
-  'rg.exclusionEnds': 'Ends',
-  'rg.exclusionNever': 'Never',
-
-  // Budget calculator
-  // Capital C, matching the rail and the design's own panel heading.
-  'rg.budgetTitle': 'Budget Calculator',
-  'rg.budgetExpenses': 'Expenses',
-  'rg.budgetTotalIncome': 'Total income',
-  'rg.budgetTotalExpenses': 'Total expenses',
-  'rg.budgetDisposable': 'Disposable income',
-  'rg.budgetLead':
-    'Work out what is genuinely left at the end of your month, before you decide what any of it is for.',
-  'rg.budgetPrivacy':
-    'This runs entirely in your browser. Nothing you type is sent to us, saved to your account, or kept when you leave the page.',
-  'rg.budgetYourMonth': 'Your month',
-  'rg.budgetOutgoings': 'What goes out',
-  'rg.budgetReset': 'Clear',
-  'rg.budgetResult': 'What is left',
-  'rg.budgetIncome': 'Income',
-  'rg.budgetEssentials': 'Essentials',
-  'rg.budgetLeftOver': 'Left over',
-  'rg.budgetAdviceTitle': 'Before you decide what to do with it',
-  'rg.budgetAdviceBody':
-    'Anything you gamble should come out of this figure and never out of the lines above it. Treat it as money already spent — if losing all of it would change your month, it is too much.',
-  'rg.budgetOverdrawnTitle': 'There is nothing left to gamble with',
-  'rg.budgetOverdrawnBody':
-    'Your outgoings meet or exceed what comes in. On these numbers there is no amount that is safe to gamble, and no run of luck fixes a shortfall. The services below give free, confidential money advice.',
-  'rg.budgetSetLimit': 'Set a deposit limit',
-
-  // The sign-in gate on the two account-bound tools
-  'rg.signInTitle': 'Log in to use this',
-  'rg.signInLimits':
-    'Limits are set on your account, so we need to know whose account to set them on. Everything else on this page is open without logging in.',
-  'rg.signInExclusion':
-    'Self-exclusion applies to your account, so you need to be logged in to set it. If you have already excluded yourself and cannot log in, that is working as intended — please contact support rather than opening a new account.',
-  'rg.signInReadInstead': 'Read the FAQs instead',
 } as const;
 
 const en = {

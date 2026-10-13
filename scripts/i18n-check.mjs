@@ -3,10 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const I18N = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'i18n');
+const APP = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const I18N = path.join(APP, 'src', 'i18n');
 const LOCALES = ['ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'];
 const MODULES = ['lobby', 'account', 'rg', 'legal', 'content', 'misc'];
 const listMissing = process.argv.includes('--list');
+const findUnused = process.argv.includes('--unused');
 
 const parse = (file) =>
   ts.createSourceFile(file, fs.readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
@@ -33,6 +35,31 @@ const english = [
   ...MODULES.flatMap((m) => keysOf(findObject(parse(path.join(I18N, 'modules', `${m}.ts`)), 'en'))),
 ];
 const englishKeys = new Set(english);
+
+const sourceFiles = (dir, out = []) => {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== 'translations') sourceFiles(full, out);
+      continue;
+    }
+    if (!/\.(ts|tsx)$/.test(entry.name)) continue;
+    const rel = path.relative(APP, full).replace(/\\/g, '/');
+    if (rel === 'src/i18n/locales.ts' || rel.startsWith('src/i18n/modules/')) continue;
+    out.push(full);
+  }
+  return out;
+};
+
+const unused = () => {
+  const blob = sourceFiles(path.join(APP, 'src'))
+    .map((file) => fs.readFileSync(file, 'utf8'))
+    .join('\n');
+  return english.filter(
+    (key) =>
+      !blob.includes(`'${key}'`) && !blob.includes(`"${key}"`) && !blob.includes(`\`${key}\``)
+  );
+};
 
 const rows = [];
 let errors = 0;
@@ -82,6 +109,19 @@ for (const locale of LOCALES) {
 
 if (listMissing) console.log('');
 console.table(rows);
+
+if (findUnused) {
+  const dead = unused();
+  if (dead.length === 0) {
+    console.log(`\nEvery one of the ${englishKeys.size} keys is referenced.`);
+  } else {
+    console.log(`\n${dead.length} key(s) referenced nowhere in src/:`);
+    for (const key of dead) console.log(`   ${key}`);
+    console.log(
+      '\nA key reached only through a computed name would be listed here too — check before deleting.'
+    );
+  }
+}
 
 if (errors > 0) {
   console.error(`\n${errors} problem(s) found.`);
