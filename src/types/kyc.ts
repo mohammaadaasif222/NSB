@@ -125,6 +125,14 @@ export interface PlayerKycTier {
   requiredReason: string | null;
   approvedAt: string | null;
   /**
+   * When the player actually sent documents for this level.
+   *
+   * `IN_PROGRESS` only means the widget was opened — minting its token sets
+   * that — so this is what separates a level someone is waiting on from one
+   * they opened and closed again.
+   */
+  submittedAt?: string | null;
+  /**
    * Player-safe refusal text. Mapped from the tier's `moderation_comment` —
    * the only comment Sumsub permits showing the applicant.
    */

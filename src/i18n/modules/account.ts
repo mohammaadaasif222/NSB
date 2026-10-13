@@ -317,6 +317,15 @@ export const en = {
   'acct.verify.levelTitle': 'Level {level} — {title}',
   'acct.verify.tierRejected':
     'The document submitted for this level was not accepted. Reopen the verification to see what was wrong and upload a replacement.',
+  // Level-neutral on purpose: the Level 2 wording names the ID and selfie,
+  // which would be wrong for a proof of address or a source-of-funds review.
+  'acct.verify.tierOnHold':
+    'This level needs a person to review it rather than an automated check, so it will not update on its own. We will email you as soon as it is done — there is nothing further for you to do here.',
+  // Opened the widget and sent nothing. "In Review" was being shown here,
+  // which told the player to wait for a verdict on an empty submission.
+  'acct.verify.tierUnfinished': 'Not finished',
+  'acct.verify.tierUnfinishedBody':
+    'You started this level but did not finish it. Nothing has been submitted yet — reopen it when you are ready and continue where you left off.',
   'acct.verify.startLevel': 'Start Level {level} verification',
   'acct.verify.complianceContact':
     'Our compliance team will contact you with what to send and how.',

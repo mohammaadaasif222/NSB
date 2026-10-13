@@ -1,22 +1,11 @@
 import { useEffect, useRef, useState, type FC } from 'react';
-import dynamic from 'next/dynamic';
+import SumsubWebSdk from '@sumsub/websdk-react';
 import kycApi from '@/services/kyc.api';
 import { useTranslation } from '@/context/I18nContext';
-import { translate } from '@/i18n/translate';
 import KycLevel1Form from '@/components/profile/kyc/KycLevel1Form';
 import type { PlayerKycProfile } from '@/types/kyc';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { CloseIcon, AlertTriangleIcon, RefreshCwIcon, ShieldCheckIcon } from '@/components/icons';
-
-const SumsubWebSdk = dynamic(() => import('@sumsub/websdk-react'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-96 flex-col items-center justify-center space-y-3 text-[#9da2b4]">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--rl-gold) border-t-transparent" />
-      <p className="text-sm font-medium">{translate('acct.kycModal.initializing')}</p>
-    </div>
-  ),
-});
 
 interface Props {
   onClose: () => void;
@@ -161,19 +150,34 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
   };
 
   /**
-   * Events that mean the player actually finished a step. `idCheck.applicantStatus`
-   * is deliberately NOT here — the SDK emits it whenever applicant status loads,
-   * including on first render, which would close the modal before the player starts.
+   * The player actually finished a step in THIS session.
+   *
+   * `idCheck.applicantStatus` is deliberately absent: the SDK emits it
+   * whenever applicant status loads, which would close the modal before the
+   * player starts.
    */
   const COMPLETION_EVENTS = [
     'idCheck.onApplicantSubmitted',
     'idCheck.applicantSubmitted',
     'idCheck.onApplicantVerificationCompleted',
-    'idCheck.onApplicantStatusChanged',
   ];
 
+  /**
+   * A status change only means something once the player has submitted here.
+   *
+   * It carries the CURRENT status, so reopening a level that already has a
+   * verdict — a rejected proof of address being resubmitted — fires it while
+   * the widget is still initialising. Treated as completion, it closed the
+   * dialog before the form had rendered, and the player could never get back
+   * in to replace the document.
+   */
+  const STATUS_EVENTS = ['idCheck.onApplicantStatusChanged'];
+  const submittedHere = useRef(false);
+
   const handleMessage = (type: string, _payload: unknown) => {
-    if (COMPLETION_EVENTS.includes(type)) {
+    if (COMPLETION_EVENTS.includes(type)) submittedHere.current = true;
+
+    if (COMPLETION_EVENTS.includes(type) || (STATUS_EVENTS.includes(type) && submittedHere.current)) {
       // Level 2 only. This modal is also opened for Levels 3 and 4, and the
       // applicant has been moved onto that level by then — so a Level 2 sync
       // here asks the API to read a proof-of-address verdict into the
