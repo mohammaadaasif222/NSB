@@ -98,7 +98,7 @@ const EmptyState: FC<{ message: string }> = ({ message }) => (
 
 /** A round glass control in the panel's header — back on a phone, settings everywhere. */
 const ROUND =
-  'flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black/20 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]';
+  'flex h-10 w-10 flex-shrink-0 items-center justify-center rl-glass-btn rounded-full lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]';
 
 /**
  * The notification centre, as both designs draw it: the title with a

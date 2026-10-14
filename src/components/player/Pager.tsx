@@ -9,9 +9,9 @@ interface Props {
   hrefFor: (page: number) => string;
 }
 
-const BUTTON = 'inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium';
-const ACTIVE = 'rl-btn-ghost';
-const DISABLED = 'rl-glass cursor-default text-white/20';
+/** The same pale pill as the numbered pagers' Previous / Next (`PageNumbers`). */
+const BUTTON =
+  'rl-pager-step inline-flex h-12 items-center justify-center px-[13px] text-[14px] font-medium leading-5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*104)] lg:px-0 lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 
 /** Previous / "Page X of Y" / Next for a server-rendered listing. */
 const Pager: FC<Props> = ({ page, totalPages, hrefFor }) => {
@@ -26,30 +26,30 @@ const Pager: FC<Props> = ({ page, totalPages, hrefFor }) => {
 
   return (
     <nav
-      className="flex items-center gap-2"
+      className="flex items-center gap-2 lg:gap-[calc(var(--u)*20)]"
       aria-label={t('games.page', { page, total: totalPages })}
     >
       {hasPrev ? (
-        <Link href={hrefFor(page - 1)} className={`${BUTTON} ${ACTIVE}`}>
-          ‹ {t('games.prev')}
+        <Link href={hrefFor(page - 1)} className={BUTTON}>
+          {t('games.prev')}
         </Link>
       ) : (
-        <span aria-hidden="true" className={`${BUTTON} ${DISABLED}`}>
-          ‹ {t('games.prev')}
+        <span aria-hidden="true" aria-disabled="true" className={BUTTON}>
+          {t('games.prev')}
         </span>
       )}
 
-      <span className="px-1 text-xs tabular-nums text-white/50">
+      <span className="px-1 text-[14px] tabular-nums text-white/50 lg:text-[length:max(min(11px,16px),calc(var(--u)*16))]">
         {t('games.page', { page, total: totalPages })}
       </span>
 
       {hasNext ? (
-        <Link href={hrefFor(page + 1)} className={`${BUTTON} ${ACTIVE}`}>
-          {t('games.next')} ›
+        <Link href={hrefFor(page + 1)} className={BUTTON}>
+          {t('games.next')}
         </Link>
       ) : (
-        <span aria-hidden="true" className={`${BUTTON} ${DISABLED}`}>
-          {t('games.next')} ›
+        <span aria-hidden="true" aria-disabled="true" className={BUTTON}>
+          {t('games.next')}
         </span>
       )}
     </nav>

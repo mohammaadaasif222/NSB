@@ -8,9 +8,9 @@ interface Props {
   onPage: (page: number) => void;
 }
 
-/** The glass rim every control on the row shares. */
+/** The shape every control on the row shares; the fills are the `rl-pager-*` utilities. */
 const BASE =
-  'flex h-11 items-center justify-center rounded-full border border-white/10 text-[15px] font-medium text-[#f0f1f5] transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-[calc(var(--u)*48)] lg:text-[max(12px,calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+  'flex h-11 items-center justify-center text-[15px] font-medium lg:h-[calc(var(--u)*48)] lg:text-[max(12px,calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 
 /**
  * Previous / 1 2 3 4 / Next — the design's 500×48 row, centred under the grid.
@@ -32,7 +32,7 @@ const BlogPagination: FC<Props> = ({ page, totalPages, onPage }) => {
         type="button"
         onClick={() => onPage(page - 1)}
         disabled={page <= 1}
-        className={`${BASE} bg-white/15 px-5 hover:bg-white/20 lg:w-[calc(var(--u)*104)] lg:px-0`}
+        className={`${BASE} rl-pager-step px-5 lg:w-[calc(var(--u)*104)] lg:px-0`}
       >
         {t('blogs.previous')}
       </button>
@@ -46,8 +46,8 @@ const BlogPagination: FC<Props> = ({ page, totalPages, onPage }) => {
           aria-label={t('blogs.page', { page: n })}
           className={`${BASE} w-11 lg:w-[calc(var(--u)*48)] ${
             n === page
-              ? 'bg-[#f9d028]/20 shadow-[0_0_14px_rgba(249,208,40,0.55)]'
-              : 'bg-white/5 hover:bg-white/10'
+              ? 'rl-pager-page-on'
+              : 'rl-pager-page'
           }`}
         >
           {n}
@@ -58,7 +58,7 @@ const BlogPagination: FC<Props> = ({ page, totalPages, onPage }) => {
         type="button"
         onClick={() => onPage(page + 1)}
         disabled={page >= totalPages}
-        className={`${BASE} bg-white/15 px-5 hover:bg-white/20 lg:w-[calc(var(--u)*104)] lg:px-0`}
+        className={`${BASE} rl-pager-step px-5 lg:w-[calc(var(--u)*104)] lg:px-0`}
       >
         {t('blogs.next')}
       </button>

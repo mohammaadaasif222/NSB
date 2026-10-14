@@ -2,12 +2,12 @@ import type { ButtonHTMLAttributes, FC, ReactNode } from 'react';
 import ButtonLoader from '@/components/ButtonLoader';
 
 type Variant = 'gold' | 'option';
-type Size = 'md' | 'lg';
+type Size = 'sm' | 'md' | 'lg' | 'row';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** `gold` = primary action (Continue, Login); `option` = a glass choice row. */
   variant?: Variant;
-  /** `md` = 48px pill, `lg` = 56px pill. */
+  /** `sm` = 40px pill, `md` = 48px pill, `lg` = 56px pill, `row` = an auth method row. */
   size?: Size;
   fullWidth?: boolean;
   /** Swaps the label for a spinner and blocks clicks. */
@@ -21,8 +21,10 @@ const VARIANT: Record<Variant, string> = {
 };
 
 const SIZE: Record<Size, string> = {
+  sm: 'h-10 px-6 text-base',
   md: 'h-11 px-6 text-[15px] sm:h-12 sm:px-9 sm:text-base',
   lg: 'h-13 px-6 text-base sm:h-14 sm:text-lg',
+  row: 'h-13 px-6 text-base sm:h-14',
 };
 
 const Button: FC<ButtonProps> = ({

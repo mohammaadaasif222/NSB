@@ -139,7 +139,7 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
   const { t } = useTranslation();
 
   return (
-    <article className="rl-liquid relative flex h-[calc(var(--u)*495)] flex-col overflow-hidden rounded-[calc(var(--u)*34)] shadow-[0_8px_40px_rgba(0,0,0,0.2)]">
+    <article className="rl-liquid relative flex h-[calc(var(--u)*495)] flex-col overflow-hidden rounded-[calc(var(--u)*34)]">
       <div className="relative h-[calc(var(--u)*222)] flex-shrink-0 overflow-hidden rounded-t-[calc(var(--u)*34)]">
         <Image
           src={tournament.art}

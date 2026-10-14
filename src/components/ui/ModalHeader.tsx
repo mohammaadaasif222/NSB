@@ -13,7 +13,7 @@ interface ModalHeaderProps {
   onBack?: () => void;
   backLabel?: string;
   /**
-   * `hero` = large bold title (first step); `compact` = one-line step title;
+   * `hero` = large title (first step), centred on the close control; `compact` = one-line step title;
    * `section` = the 24px semibold title of a short chooser (Register with);
    * `title` = the 28px semibold title of a tabbed dialog (Wallet);
    * `panel` = the 20px medium title at the start edge, no back slot (Select
@@ -55,7 +55,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
         id={id}
         className={`min-w-0 flex-1 text-white ${variant === 'panel' ? 'text-start' : 'text-center'} ${
           variant === 'hero'
-            ? 'pt-3 text-[32px] font-bold leading-tight sm:pt-5 sm:text-[40px]'
+            ? 'text-[28px] font-medium leading-tight sm:text-[32px]'
             : variant === 'section'
               ? 'text-[24px] font-semibold leading-8 text-[#f0f1f5]'
               : variant === 'title'
@@ -69,10 +69,10 @@ const ModalHeader: FC<ModalHeaderProps> = ({
       </h2>
 
       <div
-        className={`flex w-10 shrink-0 justify-end sm:w-12 ${variant === 'hero' ? 'self-start' : ''}`}
+        className="flex w-10 shrink-0 justify-end sm:w-12"
       >
         <CircleIconButton label={closeLabel} onClick={onClose}>
-          {variant === 'title' || variant === 'panel' ? (
+          {variant === 'title' || variant === 'panel' || variant === 'hero' ? (
             // The glass dialogs' cross: 16.7px across in 2px strokes.
             <CloseIcon size={33} strokeWidth={1.45} />
           ) : (

@@ -51,7 +51,7 @@ const PAYMENTS: { mark: StaticImageData; label: string }[] = [
 
 /** The design's small dark glass disc, behind the socials, contacts and controls. */
 const DISC =
-  'flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/40 backdrop-blur-md';
+  'flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] flex-shrink-0 items-center justify-center rl-glass-btn rounded-full';
 
 /* ==================================================================== */
 /* Link columns                                                          */
@@ -239,7 +239,7 @@ const SiteFooter: FC = () => {
         <span
           key={label}
           title={label}
-          className="flex h-[calc(var(--u)*32.4)] w-[calc(var(--u)*45.6)] items-center justify-center rounded-[calc(var(--u)*10)] border border-white/10 bg-black/40 lg:h-[calc(var(--u)*54)] lg:w-[calc(var(--u)*76)] lg:rounded-[calc(var(--u)*16)]"
+          className="flex h-[calc(var(--u)*32.4)] w-[calc(var(--u)*45.6)] items-center justify-center rl-plate rounded-[calc(var(--u)*10)] lg:h-[calc(var(--u)*54)] lg:w-[calc(var(--u)*76)] lg:rounded-[calc(var(--u)*16)]"
         >
           <Image
             src={mark}
