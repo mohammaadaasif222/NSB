@@ -10,6 +10,8 @@ export interface D24PaymentDetails {
   payment_method: string;
   currency: string;
   amount: string;
+  checkout_type?: string;
+  redirect_url?: string;
   payment_details: {
     type: 'QR_CODE' | 'BANK_TRANSFER' | 'CARD';
     qr_code?: string;
@@ -234,6 +236,43 @@ const D24EmbeddedDeposit: FC<Props> = ({
   }
 
   const pd = details.payment_details;
+
+  // If D24 returned a HOSTED checkout with redirect_url, show it in an iframe
+  if (details.checkout_type === 'HOSTED' && details.redirect_url) {
+    console.log('[D24EmbeddedDeposit] Opening HOSTED checkout iframe:', details.redirect_url);
+
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-900/40 to-slate-800 p-4 rounded-lg border border-purple-600/30">
+          <p className="text-purple-400 text-sm font-semibold mb-1">
+            💳 {paymentMethod} Checkout
+          </p>
+          <p className="text-slate-300 text-2xl font-bold">
+            {amount} {currency}
+          </p>
+        </div>
+
+        {/* D24 Hosted Checkout Iframe */}
+        <div className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 shadow-lg">
+          <iframe
+            src={details.redirect_url}
+            title="D24 Payment Checkout"
+            className="w-full h-screen md:h-96"
+            sandbox="allow-same-origin allow-forms allow-popups allow-scripts"
+          />
+        </div>
+
+        {/* Back Button */}
+        <button
+          onClick={onBack}
+          className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition text-sm font-medium"
+        >
+          ← Back
+        </button>
+      </div>
+    );
+  }
 
   // Validate payment details are complete
   if (!pd || !pd.type) {
