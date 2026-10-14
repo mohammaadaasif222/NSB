@@ -24,14 +24,19 @@ export interface PaymentMethod {
 
 export interface Offer {
   providerCode: string;
-  offerId: string;
-  rate: string;
-  invertedRate: string;
-  fee: string;
-  amountFrom: string;
-  amountExpectedTo: string;
-  paymentMethodOffer: PaymentMethod[];
-  additionalData: Record<string, any>;
+  offerId?: string;
+  rate?: string;
+  invertedRate?: string;
+  fee?: string;
+  amountFrom?: string;
+  amountExpectedTo?: string;
+  paymentMethodOffer?: PaymentMethod[];
+  additionalData?: Record<string, any>;
+  errorType?: string;
+  errorMessage?: string;
+  errorDetails?: Array<{ cause: string; value: string }>;
+  minAmount?: string | number;
+  maxAmount?: string | number;
 }
 
 export interface CreateOrderResponse {
@@ -161,6 +166,7 @@ export const useChangellyBuyCrypto = () => {
       country: string,
       toAddress: string,
       network: string,
+      paymentMethod?: string,
       state?: string,
     ): Promise<CreateOrderResponse | null> => {
       try {
@@ -183,6 +189,7 @@ export const useChangellyBuyCrypto = () => {
           country,
           toAddress,
           network,
+          ...(paymentMethod ? { paymentMethod } : {}),
           ...(state ? { state } : {}),
         });
 
