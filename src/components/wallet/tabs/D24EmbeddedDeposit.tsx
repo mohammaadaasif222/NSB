@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, useRef, type FC } from 'react';
 import { toast } from 'react-toastify';
 import api from '@/services/api';
 import { useTranslation } from '@/context/I18nContext';
@@ -52,6 +52,7 @@ interface Props {
     };
   };
   onBack: () => void;
+  onHostedCheckout?: (redirectUrl: string) => void;
 }
 
 /**
@@ -72,11 +73,14 @@ const D24EmbeddedDeposit: FC<Props> = ({
   paymentMethod,
   payer,
   onBack,
+  onHostedCheckout,
 }) => {
   const { t } = useTranslation();
   const [details, setDetails] = useState<D24PaymentDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasCalledHostedCheckout = useRef(false);
+  const hasApiBeenCalled = useRef(false);
 
   // Fetch payment details on mount
   useEffect(() => {
@@ -129,13 +133,15 @@ const D24EmbeddedDeposit: FC<Props> = ({
       }
     };
 
-    // Only fetch if payer has minimum required fields
-    if (payer?.first_name && payer?.last_name && payer?.email) {
+    // Only fetch if payer has minimum required fields and API hasn't been called yet
+    if (payer?.first_name && payer?.last_name && payer?.email && !hasApiBeenCalled.current) {
+      hasApiBeenCalled.current = true;
+      console.log('[D24EmbeddedDeposit] Calling API to fetch payment details');
       fetchDetails();
-    } else {
+    } else if (!payer?.first_name || !payer?.last_name || !payer?.email) {
       setError('Missing required payer information');
     }
-  }, [amount, currency, paymentMethod, payer]);
+  }, []);
 
   if (loading) {
     return (
@@ -237,39 +243,39 @@ const D24EmbeddedDeposit: FC<Props> = ({
 
   const pd = details.payment_details;
 
-  // If D24 returned a HOSTED checkout with redirect_url, show it in an iframe
+  // If D24 returned a HOSTED checkout with redirect_url, open it in full-screen modal
   if (details.checkout_type === 'HOSTED' && details.redirect_url) {
-    console.log('[D24EmbeddedDeposit] Opening HOSTED checkout iframe:', details.redirect_url);
+    console.log('[D24EmbeddedDeposit] Opening HOSTED checkout in modal:', details.redirect_url);
+
+    // Trigger the parent component to open the full-screen modal (only once)
+    if (onHostedCheckout && !hasCalledHostedCheckout.current) {
+      console.log('[D24EmbeddedDeposit] Calling onHostedCheckout callback');
+      hasCalledHostedCheckout.current = true;
+      onHostedCheckout(details.redirect_url);
+    }
 
     return (
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-900/40 to-slate-800 p-4 rounded-lg border border-purple-600/30">
-          <p className="text-purple-400 text-sm font-semibold mb-1">
-            💳 {paymentMethod} Checkout
-          </p>
-          <p className="text-slate-300 text-2xl font-bold">
-            {amount} {currency}
-          </p>
-        </div>
-
-        {/* D24 Hosted Checkout Iframe */}
-        <div className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 shadow-lg">
-          <iframe
-            src={details.redirect_url}
-            title="D24 Payment Checkout"
-            className="w-full h-screen md:h-96"
-            sandbox="allow-same-origin allow-forms allow-popups allow-scripts"
-          />
-        </div>
-
-        {/* Back Button */}
-        <button
-          onClick={onBack}
-          className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition text-sm font-medium"
+      <div className="flex flex-col items-center justify-center py-12">
+        <svg
+          className="w-8 h-8 animate-spin text-emerald-500 mb-4"
+          fill="none"
+          viewBox="0 0 24 24"
         >
-          ← Back
-        </button>
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
+        </svg>
+        <p className="text-slate-400 text-sm">Opening D24 Checkout...</p>
       </div>
     );
   }

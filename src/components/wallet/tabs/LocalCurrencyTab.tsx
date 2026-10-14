@@ -8,6 +8,7 @@ import { createD24Deposit, getDisplayCurrencies, getD24PaymentMethods } from '@/
 import { useChangellyBuyCrypto } from '@/hooks/useChangellyBuyCrypto';
 import api from '@/services/api';
 import D24EmbeddedDeposit from './D24EmbeddedDeposit';
+import D24CheckoutModal from './D24CheckoutModal';
 
 /**
  * Fiat (Local Currency) deposit tab - D24 Hosted Checkout.
@@ -54,6 +55,7 @@ const LocalCurrencyTab: FC = () => {
   const [depositMode, setDepositMode] = useState<'selection' | 'payer-form' | 'embedded' | 'iframe' | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const [d24CheckoutUrl, setD24CheckoutUrl] = useState<string | null>(null);
   const [useChangellyFallback, setUseChangellyFallback] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
   const [toAddress, setToAddress] = useState<string | null>(null);
@@ -824,13 +826,22 @@ const LocalCurrencyTab: FC = () => {
   // Embedded D24 deposit UI
   if (depositMode === 'embedded') {
     return (
-      <D24EmbeddedDeposit
-        amount={amount}
-        currency={currency}
-        paymentMethod={selectedMethod || ''}
-        payer={payer}
-        onBack={handleGoBack}
-      />
+      <>
+        <D24EmbeddedDeposit
+          amount={amount}
+          currency={currency}
+          paymentMethod={selectedMethod || ''}
+          payer={payer}
+          onBack={handleGoBack}
+          onHostedCheckout={(url) => setD24CheckoutUrl(url)}
+        />
+        {d24CheckoutUrl && (
+          <D24CheckoutModal
+            redirectUrl={d24CheckoutUrl}
+            onClose={() => setD24CheckoutUrl(null)}
+          />
+        )}
+      </>
     );
   }
 
