@@ -71,6 +71,15 @@ export const kycApi = {
    * switched on", "Level 2 must be complete first") is what the player needs
    * to see.
    */
+  /** The widget token for a liveness re-check staff asked for. */
+  getLivenessToken: async (): Promise<SumsubTokenResponse> => {
+    const res = await apiService.post<SumsubTokenResponse>('/kyc/liveness/token');
+    if (!res.success || !res.data) {
+      throw new Error(res.message || translate('misc.kyc.levelFailed'));
+    }
+    return res.data;
+  },
+
   getTierToken: async (tier: number): Promise<SumsubTokenResponse> => {
     const res = await apiService.post<SumsubTokenResponse>(`/kyc/tiers/${tier}/token`);
     if (!res.success || !res.data) {

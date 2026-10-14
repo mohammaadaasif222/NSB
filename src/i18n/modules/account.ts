@@ -308,6 +308,10 @@ export const en = {
   'acct.verify.withTeamBody':
     'We have received your ID and selfie. This one needs a person to look at it rather than an automated check, so it will not update on its own. We will email you as soon as it is done — there is nothing further for you to do here. If it has been more than a working day, contact Customer Support.',
   'acct.verify.resubmitDocuments': 'Resubmit Documents',
+  'acct.verify.livenessTitle': "Liveness check",
+  'acct.verify.livenessBody': "Our team has asked you for a quick selfie to confirm it is still you using this account. Your verification levels are not affected.",
+  'acct.verify.livenessStart': "Take the selfie",
+  'acct.verify.livenessFailed': "We could not confirm it was you. Our team is reviewing it and will contact you.",
   'acct.verify.declinedTitle': 'Verification permanently declined',
   'acct.verify.declinedReason': 'Your identity verification could not be approved.',
   'acct.verify.declinedBody':

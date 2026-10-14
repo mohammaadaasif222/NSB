@@ -107,6 +107,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
   const [tiers, setTiers] = useState<PlayerKycTiers | null>(null);
   /** Which upper tier's Sumsub widget is open, if any. */
   const [tierModal, setTierModal] = useState<number | null>(null);
+  const [livenessOpen, setLivenessOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -206,6 +207,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
   }, []);
 
   const gateState = resolveKycGateState(kycProfile);
+  // Level 1 or 2 asked of this player by our compliance team. The server drops
+  // it once the level is held.
+  const operatorDemand = tiers?.operatorDemand ?? null;
   const [pollingStopped, setPollingStopped] = useState(false);
   // Single source of truth: the same flag the backend gates Level 2 on.
   const isLevel1Complete = Boolean(kycProfile?.isLevel1Complete);
@@ -364,6 +368,13 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
 
               {level1Open && (
                 <div className="border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)]">
+                  {/* Level 1 is the first step of either level an operator can
+                      push here, so it says why before the form. */}
+                  {!isLevel1Complete && operatorDemand && (
+                    <p className={`${BODY} mb-[calc(var(--u)*12)] text-[#fcd535]`}>
+                      {operatorDemand.reason}
+                    </p>
+                  )}
                   <KycLevel1Form
                     profile={kycProfile}
                     onSuccess={(updated) => {
@@ -474,6 +485,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
 
               {level2Open && isLevel1Complete && (
                 <div className="space-y-[calc(var(--u)*16)] border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)]">
+                  {operatorDemand?.level === 2 && gateState !== 'APPROVED' && (
+                    <p className={`${BODY} text-[#fcd535]`}>{operatorDemand.reason}</p>
+                  )}
                   {gateState === 'APPROVED' ? (
                     <div
                       className={`${PANEL} flex items-center gap-[calc(var(--u)*12)] bg-[#35d07f]/8`}
@@ -499,6 +513,20 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                               })`
                             : t('acct.verify.govDocVerified')}
                         </span>
+                        {kycProfile?.refreshDueAt && kycProfile.refreshReason && (
+                          <span className={`mt-[calc(var(--u)*6)] block ${BODY} text-[#fcd535]`}>
+                            {kycProfile.refreshReason}
+                          </span>
+                        )}
+                        {kycProfile?.refreshDueAt && (
+                          <button
+                            type="button"
+                            onClick={() => setModalOpen(true)}
+                            className={`${ACTION} mt-[calc(var(--u)*8)] rl-chip-success text-[#35d07f]`}
+                          >
+                            {t('acct.verify.resubmitDocuments')}
+                          </button>
+                        )}
                       </span>
                     </div>
                   ) : gateState === 'IN_REVIEW' ? (
@@ -608,6 +636,31 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
               )}
             </div>
 
+            {/* A liveness re-check staff asked for (answer 13). Above the
+                levels, because it is the one thing being asked right now. */}
+            {tiers?.liveness && (
+              <div className={`${LEVEL_CARD} space-y-[calc(var(--u)*8)] p-[calc(var(--u)*18)]`}>
+                <p className={`${LEVEL_TITLE} flex items-center gap-[calc(var(--u)*8)]`}>
+                  <ShieldCheckIcon size={16} />
+                  {t('acct.verify.livenessTitle')}
+                </p>
+                {tiers.liveness.status === 'FAILED' ? (
+                  <p className={`${BODY} text-[#fcd535]`}>{t('acct.verify.livenessFailed')}</p>
+                ) : (
+                  <>
+                    <p className={BODY}>{t('acct.verify.livenessBody')}</p>
+                    <button
+                      type="button"
+                      onClick={() => setLivenessOpen(true)}
+                      className={`${ACTION} rl-chip-success text-[#35d07f]`}
+                    >
+                      {t('acct.verify.livenessStart')}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* LEVELS 3 & 4: driven by real tier state, not markup */}
             {UPPER_TIERS.map((meta) => {
               const state = tiers?.tiers.find((t) => t.tier === meta.tier);
@@ -632,6 +685,8 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
               // verification" — which reopens the widget, mints a billable
               // token and changes nothing.
               const onHold = Boolean(state?.onHold) && !verified;
+              /** Verified, with a current document asked for by a date. */
+              const refreshing = verified && Boolean(state?.refreshDueAt);
 
               return (
                 <div
@@ -713,6 +768,10 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                         <p className="text-[#fcd535]">{state.requiredReason}</p>
                       )}
 
+                      {refreshing && state?.refreshReason && (
+                        <p className="text-[#fcd535]">{state.refreshReason}</p>
+                      )}
+
                       {/* `rejectionReason` is the player-safe provider text;
                           the generic line covers a rejection without one. */}
                       {rejected && (
@@ -736,7 +795,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                           thing an abandoned level has to be clear about. */}
                       {started && !onHold && <p>{t('acct.verify.tierUnfinishedBody')}</p>}
 
-                      {state?.canSubmit && !verified && !onHold && (
+                      {state?.canSubmit && (!verified || refreshing) && !onHold && (
                         <button
                           type="button"
                           onClick={() => setTierModal(meta.tier)}
@@ -747,7 +806,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                           }`}
                         >
                           <ShieldCheckIcon size={16} />
-                          {rejected
+                          {rejected || refreshing
                             ? t('acct.verify.resubmitDocuments')
                             : inReview || started
                               ? t('acct.kycGate.ctaContinue')
@@ -775,6 +834,20 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
         {/* The contact points the KYC check is judged against. */}
         <ContactCards me={me} onChangeEmail={onChangeEmail} />
       </div>
+
+      {livenessOpen && (
+        <KycVerifyModal
+          liveness
+          onClose={() => {
+            setLivenessOpen(false);
+            void kycApi.syncTiers().then((next) => next && setTiers(next));
+          }}
+          onSubmitted={() => {
+            setLivenessOpen(false);
+            void kycApi.syncTiers().then((next) => next && setTiers(next));
+          }}
+        />
+      )}
 
       {/* Sumsub WebSDK Modal — Level 3 / 4 */}
       {tierModal !== null && (

@@ -20,6 +20,8 @@ interface Props {
    *   3 / 4   their own Sumsub level, which the backend resolves from config.
    */
   tier?: number;
+  /** A liveness re-check staff asked for, on its own Sumsub level. */
+  liveness?: boolean;
 }
 
 /**
@@ -32,12 +34,12 @@ interface Props {
  */
 type Step = 'resolving' | 'level1' | 'sdk' | 'error';
 
-const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
+const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier, liveness = false }) => {
   // Tab stays inside, Escape closes, focus returns where it came from, and a
   // screen reader is told a dialog opened. None of that was true before.
   const dialogRef = useModalA11y(onClose);
   const { t, locale } = useTranslation();
-  const isUpperTier = typeof tier === 'number' && tier > 2;
+  const isUpperTier = liveness || (typeof tier === 'number' && tier > 2);
   const isLevel1Only = tier === 1;
   const [step, setStep] = useState<Step>('resolving');
   const [profile, setProfile] = useState<PlayerKycProfile | null>(null);
@@ -63,9 +65,11 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
     try {
       if (!opts.keepWidget) setStep('resolving');
       setError(null);
-      const res = isUpperTier
-        ? await kycApi.getTierToken(tier as number)
-        : await kycApi.getSumsubToken();
+      const res = liveness
+        ? await kycApi.getLivenessToken()
+        : isUpperTier
+          ? await kycApi.getTierToken(tier as number)
+          : await kycApi.getSumsubToken();
       setToken(res.token);
       setStep('sdk');
       return res.token;
@@ -233,7 +237,9 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier }) => {
               <h2 id="kyc-verify-title" className="rl-h-card truncate text-[#f0f1f5]">
                 {step === 'level1'
                   ? t('acct.kycModal.personalInfo')
-                  : tier === 3
+                  : liveness
+                    ? t('acct.verify.livenessTitle')
+                    : tier === 3
                     ? t('acct.verify.tier3Title')
                     : tier === 4
                       ? t('acct.verify.tier4Title')

@@ -103,8 +103,9 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
   // declared identity on file at all: there the lock would be a trap, since
   // the profile is held for review precisely because that data is missing
   // and this form is the only way to provide it.
+  // Once Level 2 has been approved it stays locked through any redo or reset.
   const identityLocked =
-    Boolean(profile?.isSubmitted || profile?.status === 'APPROVED') &&
+    Boolean(profile?.identityLocked || profile?.isSubmitted || profile?.status === 'APPROVED') &&
     profile?.hasIdentityBaseline !== false;
   const [isEditing, setIsEditing] = useState(!isAlreadyDone);
 
