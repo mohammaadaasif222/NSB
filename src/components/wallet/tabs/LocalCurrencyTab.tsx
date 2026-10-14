@@ -7,6 +7,7 @@ import { useMe } from '@/context/UserContext';
 import { createD24Deposit, getDisplayCurrencies, getD24PaymentMethods } from '@/services/wallet';
 import { useChangellyBuyCrypto } from '@/hooks/useChangellyBuyCrypto';
 import api from '@/services/api';
+import D24EmbeddedDeposit from './D24EmbeddedDeposit';
 
 /**
  * Fiat (Local Currency) deposit tab - D24 Hosted Checkout.
@@ -32,6 +33,9 @@ const PAYMENT_METHOD_LOGOS: Record<string, { name: string; logo: string }> = {
 };
 
 const FALLBACK_AMOUNT = 5000; // Default demo amount for initial offers
+// D24 payment method codes that support embedded checkout (without redirect URL)
+// Includes both standard names and D24's actual code variations (e.g., "IX" for PIX)
+const EMBEDDED_METHODS = ['PIX', 'IX', 'ACH', 'SEPA', 'NEFT', 'WIRE', 'FASTER_PAYMENTS', 'UPI'];
 
 const LocalCurrencyTab: FC = () => {
   const { t } = useTranslation();
@@ -47,6 +51,7 @@ const LocalCurrencyTab: FC = () => {
   const [loadingMethods, setLoadingMethods] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showAmountInput, setShowAmountInput] = useState(false);
+  const [depositMode, setDepositMode] = useState<'selection' | 'payer-form' | 'embedded' | 'iframe' | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [useChangellyFallback, setUseChangellyFallback] = useState(false);
@@ -56,6 +61,28 @@ const LocalCurrencyTab: FC = () => {
   const [offersAmountCached, setOffersAmountCached] = useState<string>('');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Payer information state (for embedded D24 deposits)
+  const [payer, setPayer] = useState({
+    document: '',
+    document_type: '',
+    first_name: me?.first_name || '',
+    last_name: me?.last_name || '',
+    email: me?.email || '',
+    phone: '',
+    birth_date: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      zip_code: '',
+    },
+  });
+
+  // Country-specific document types
+  const [countryDocumentTypes, setCountryDocumentTypes] = useState<any[]>([]);
+  const [countryConfig, setCountryConfig] = useState<any>(null);
+  const [loadingDocTypes, setLoadingDocTypes] = useState(false);
 
   // Fetch enabled display currencies
   useEffect(() => {
@@ -126,6 +153,42 @@ const LocalCurrencyTab: FC = () => {
       fetchAddress();
     }
   }, [useChangellyFallback, me]);
+
+  // Fetch country-specific document types when payer form opens
+  useEffect(() => {
+    const fetchDocumentTypes = async () => {
+      if (depositMode !== 'payer-form' || !displayCurrencies.length) return;
+
+      setLoadingDocTypes(true);
+      try {
+        // Get country code from display currency
+        const selectedCurrency = displayCurrencies.find((c) => c.code === currency);
+        const countryCode = selectedCurrency?.country_code;
+
+        if (!countryCode) {
+          console.warn('[D24] No country code found for currency:', currency);
+          return;
+        }
+
+        const response = await api.get(`/wallet/deposit/d24/document-types?country=${countryCode}`);
+        const docConfig = response?.data?.data;
+
+        if (docConfig) {
+          setCountryDocumentTypes(docConfig.document_types || []);
+          setCountryConfig(docConfig);
+          console.log('[D24] Document types loaded for country:', countryCode, docConfig);
+        }
+      } catch (error) {
+        console.error('[D24] Error fetching document types:', error);
+        setCountryDocumentTypes([]);
+        setCountryConfig(null);
+      } finally {
+        setLoadingDocTypes(false);
+      }
+    };
+
+    fetchDocumentTypes();
+  }, [depositMode, currency, displayCurrencies]);
 
   // Fetch payment methods when currency changes
   useEffect(() => {
@@ -344,6 +407,23 @@ const LocalCurrencyTab: FC = () => {
     setCheckoutUrl(null);
     setIframeUrl(null);
     setSelectedPaymentMethod(null);
+    setDepositMode(null);
+    // Reset payer form
+    setPayer({
+      document: '',
+      document_type: '',
+      first_name: me?.first_name || '',
+      last_name: me?.last_name || '',
+      email: me?.email || '',
+      phone: '',
+      birth_date: '',
+      address: {
+        street: '',
+        city: '',
+        state: '',
+        zip_code: '',
+      },
+    });
   };
 
   // Deposit API call (triggered by deposit button, not automatic)
@@ -364,6 +444,27 @@ const LocalCurrencyTab: FC = () => {
       return;
     }
 
+    // Determine if we should use embedded deposit or iframe fallback
+    const method = (selectedMethod || '').toUpperCase();
+
+    // Check if method contains any of the embedded method keywords
+    const useEmbedded = EMBEDDED_METHODS.some(embeddedMethod =>
+      method.includes(embeddedMethod)
+    );
+
+    console.log('[D24] handleDeposit - selectedMethod:', selectedMethod, 'normalized:', method, 'useEmbedded:', useEmbedded, 'EMBEDDED_METHODS:', EMBEDDED_METHODS);
+
+    if (useEmbedded) {
+      // For embedded deposits, show payer form first
+      console.log('[D24] Using embedded deposit for method:', method);
+      setDepositMode('payer-form');
+      setShowAmountInput(false);
+      return;
+    }
+
+    // Fallback to iframe for CARD or other methods
+    console.log('[D24] Using iframe fallback for method:', method);
+    setDepositMode('iframe');
     setLoading(true);
     try {
       const res = await createD24Deposit({
@@ -385,13 +486,14 @@ const LocalCurrencyTab: FC = () => {
       console.log('[D24] All response fields:', Object.keys(responseData || {}));
 
       if (checkoutAddress) {
-        console.log('[D24] Showing embedded checkout in iframe');
+        console.log('[D24] Showing checkout in iframe');
         // Show checkout in iframe
         setCheckoutUrl(checkoutAddress);
         setShowAmountInput(false); // Hide form when showing checkout
       } else {
         console.error('[D24] No checkout URL in response. Full response:', res?.data);
         toast.error(t('acct.wallet.depositNoUrl'));
+        setDepositMode(null);
       }
     } catch (err: unknown) {
       const message =
@@ -399,6 +501,7 @@ const LocalCurrencyTab: FC = () => {
           ? String((err as { message: string }).message)
           : t('acct.wallet.depositFailed');
       toast.error(message);
+      setDepositMode(null);
     } finally {
       setLoading(false);
     }
@@ -407,6 +510,27 @@ const LocalCurrencyTab: FC = () => {
   // Get the selected payment method object for displaying its info
   const getSelectedMethodInfo = () => {
     return paymentMethods.find((m) => m.code === selectedMethod);
+  };
+
+  // Handle payer form submission - validate and proceed to embedded deposit
+  const handlePayerFormSubmit = () => {
+    // Validate required payer fields (document/document_type are optional - some payment methods may not need them)
+    if (!payer.first_name) {
+      toast.error('First name is required');
+      return;
+    }
+    if (!payer.last_name) {
+      toast.error('Last name is required');
+      return;
+    }
+    if (!payer.email) {
+      toast.error('Email is required');
+      return;
+    }
+
+    console.log('[D24] Payer form validated, moving to embedded deposit with payer:', payer);
+    // Move to embedded deposit mode - D24EmbeddedDeposit will fetch payment details with payer info
+    setDepositMode('embedded');
   };
 
   // Render checkout in portal (separate from wallet modal) - Responsive for mobile, tablet, desktop
@@ -503,6 +627,214 @@ const LocalCurrencyTab: FC = () => {
     </div>,
     document.body
   );
+
+  // Payer information form (for embedded D24 deposits)
+  if (depositMode === 'payer-form') {
+    return (
+      <div className="space-y-4">
+        {/* Deposit summary */}
+        <div className="bg-gradient-to-r from-emerald-900/40 to-slate-800 p-4 rounded-lg border border-emerald-600/30">
+          <p className="text-emerald-400 text-sm font-semibold mb-2">
+            💚 {selectedMethod} Deposit
+          </p>
+          <p className="text-slate-300 text-2xl font-bold">
+            {amount} {currency}
+          </p>
+        </div>
+
+        {/* Payer form header */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+          <h3 className="text-sm font-semibold text-slate-100 mb-1">Complete Your Profile</h3>
+          <p className="text-xs text-slate-400">Minimum required: Name and Email</p>
+        </div>
+
+        {/* Info message */}
+        <div className="bg-blue-900/30 border border-blue-600/30 p-3 rounded-lg">
+          <p className="text-blue-300 text-xs">
+            ℹ️ Document and address fields are optional
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {/* Document Type - Dynamically loaded based on country */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-2 block">
+              Document Type {countryDocumentTypes.length > 0 ? '' : '(Optional)'}
+            </label>
+            {loadingDocTypes ? (
+              <div className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 flex items-center justify-center">
+                <svg className="w-4 h-4 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
+            ) : countryDocumentTypes.length > 0 ? (
+              <>
+                <select
+                  value={payer.document_type}
+                  onChange={(e) => setPayer({ ...payer, document_type: e.target.value })}
+                  className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="">Select document type</option>
+                  {countryDocumentTypes.map((docType: any) => (
+                    <option key={docType.code} value={docType.code}>
+                      {docType.name} ({docType.code})
+                    </option>
+                  ))}
+                </select>
+                {payer.document_type && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Format: {countryDocumentTypes.find((d: any) => d.code === payer.document_type)?.validation}
+                  </p>
+                )}
+              </>
+            ) : (
+              <input
+                type="text"
+                value={payer.document_type}
+                onChange={(e) => setPayer({ ...payer, document_type: e.target.value })}
+                placeholder="Document type (optional)"
+                className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+              />
+            )}
+          </div>
+
+          {/* Document ID */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-2 block">
+              Document ID / Number {countryDocumentTypes.length > 0 ? '(Optional)' : ''}
+            </label>
+            <input
+              type="text"
+              value={payer.document}
+              onChange={(e) => setPayer({ ...payer, document: e.target.value })}
+              placeholder="Enter your document number"
+              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+            {payer.document_type && (
+              <p className="text-xs text-slate-400 mt-1">
+                Example: {countryDocumentTypes.find((d: any) => d.code === payer.document_type)?.example}
+              </p>
+            )}
+          </div>
+
+          {/* First Name */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-2 block">
+              First Name *
+            </label>
+            <input
+              type="text"
+              value={payer.first_name}
+              onChange={(e) => setPayer({ ...payer, first_name: e.target.value })}
+              placeholder="Enter your first name"
+              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          {/* Last Name */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-2 block">
+              Last Name *
+            </label>
+            <input
+              type="text"
+              value={payer.last_name}
+              onChange={(e) => setPayer({ ...payer, last_name: e.target.value })}
+              placeholder="Enter your last name"
+              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-2 block">
+              Email
+            </label>
+            <input
+              type="email"
+              value={payer.email}
+              onChange={(e) => setPayer({ ...payer, email: e.target.value })}
+              placeholder="your@email.com"
+              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          {/* Phone (optional) */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-2 block">
+              Phone (optional)
+            </label>
+            <input
+              type="tel"
+              value={payer.phone}
+              onChange={(e) => setPayer({ ...payer, phone: e.target.value })}
+              placeholder="+1 (555) 123-4567"
+              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          {/* Birth Date (optional) */}
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-2 block">
+              Birth Date (optional) - YYYYMMDD
+            </label>
+            <input
+              type="text"
+              value={payer.birth_date}
+              onChange={(e) => setPayer({ ...payer, birth_date: e.target.value })}
+              placeholder="19900115"
+              maxLength={8}
+              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          {/* Deposit button */}
+          <button
+            type="button"
+            onClick={handlePayerFormSubmit}
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-emerald-500 hover:bg-emerald-600 text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Fetching Payment Details...
+              </span>
+            ) : (
+              'Deposit'
+            )}
+          </button>
+
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={handleGoBack}
+            disabled={loading}
+            className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Please wait...' : 'Back'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Embedded D24 deposit UI
+  if (depositMode === 'embedded') {
+    return (
+      <D24EmbeddedDeposit
+        amount={amount}
+        currency={currency}
+        paymentMethod={selectedMethod || ''}
+        payer={payer}
+        onBack={handleGoBack}
+      />
+    );
+  }
 
   if (checkoutUrl) {
     return checkoutPortal;
@@ -785,7 +1117,7 @@ const LocalCurrencyTab: FC = () => {
             return null;
           })()}
 
-          {/* Deposit button */}
+          {/* Continue/Deposit button - Label depends on payment flow */}
           {(() => {
             const hasError = useChangellyFallback && offers.length > 0 && !!offers[0]?.errorType;
             const isChangellyLoading = useChangellyFallback && loadingOffers;
@@ -793,6 +1125,11 @@ const LocalCurrencyTab: FC = () => {
             const amountChanged = useChangellyFallback && amount !== offersAmountCached;
             const isDisabled = loading || creatingOrder || isChangellyLoading || !amount || Number(amount) <= 0 || hasError || amountChanged;
             const isProcessing = loading || creatingOrder || isChangellyLoading;
+
+            // Check if this is an embedded method (needs payer form next)
+            const method = selectedMethod?.toUpperCase() || '';
+            const isEmbeddedMethod = EMBEDDED_METHODS.some(m => method.includes(m));
+            const buttonLabel = isEmbeddedMethod ? 'Continue' : 'Deposit';
 
             return (
               <button
@@ -825,7 +1162,7 @@ const LocalCurrencyTab: FC = () => {
                     {isChangellyLoading ? 'Calculating...' : 'Processing...'}
                   </span>
                 ) : (
-                  'Deposit'
+                  buttonLabel
                 )}
               </button>
             );
