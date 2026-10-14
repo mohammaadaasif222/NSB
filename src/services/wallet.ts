@@ -45,6 +45,12 @@ export interface DisplayCurrencyOption {
   symbol: string;
   is_enabled: boolean;
   sort_order: number;
+  country_code: string;
+  language: string;
+  min_deposit: string;
+  max_deposit: string;
+  min_withdrawal: string;
+  max_withdrawal: string;
   color?: string | null;
 }
 
