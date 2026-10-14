@@ -69,8 +69,6 @@ const LocalCurrencyTab: FC = () => {
     first_name: me?.first_name || '',
     last_name: me?.last_name || '',
     email: me?.email || '',
-    phone: '',
-    birth_date: '',
     address: {
       street: '',
       city: '',
@@ -415,8 +413,6 @@ const LocalCurrencyTab: FC = () => {
       first_name: me?.first_name || '',
       last_name: me?.last_name || '',
       email: me?.email || '',
-      phone: '',
-      birth_date: '',
       address: {
         street: '',
         city: '',
@@ -790,34 +786,6 @@ const LocalCurrencyTab: FC = () => {
             />
           </div>
 
-          {/* Phone (optional) */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              Phone (optional)
-            </label>
-            <input
-              type="tel"
-              value={payer.phone}
-              onChange={(e) => setPayer({ ...payer, phone: e.target.value })}
-              placeholder="+1 (555) 123-4567"
-              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          {/* Birth Date (optional) */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              Birth Date (optional) - YYYYMMDD
-            </label>
-            <input
-              type="text"
-              value={payer.birth_date}
-              onChange={(e) => setPayer({ ...payer, birth_date: e.target.value })}
-              placeholder="19900115"
-              maxLength={8}
-              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
 
           {/* Deposit button */}
           <button
