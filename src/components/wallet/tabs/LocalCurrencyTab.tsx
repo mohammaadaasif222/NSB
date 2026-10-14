@@ -462,45 +462,75 @@ const LocalCurrencyTab: FC = () => {
       return;
     }
 
-    // Fallback to iframe for CARD or other methods
-    console.log('[D24] Using iframe fallback for method:', method);
+    // Fallback to iframe for CARD or other hosted checkout methods
+    console.log('[D24-CARD] Using iframe checkout for method:', method);
+    console.log('[D24-CARD] Amount:', amount, 'Currency:', currency, 'Method:', selectedMethod);
+
     setDepositMode('iframe');
     setLoading(true);
+
     try {
+      console.log('[D24-CARD] Requesting hosted checkout from D24...');
+
       const res = await createD24Deposit({
         amount,
         currency,
         payment_method: selectedMethod,
       });
 
-      console.log('[D24] Response received:', res);
-      console.log('[D24] Full response:', JSON.stringify(res, null, 2));
-      console.log('[D24] Response data:', JSON.stringify(res?.data, null, 2));
+      console.log('[D24-CARD] Response received:', res);
 
       // D24 API response can have nested data structure
       const responseData = res?.data?.data || res?.data;
-      console.log('[D24] Extracted responseData:', JSON.stringify(responseData, null, 2));
 
-      const checkoutAddress = responseData?.address;
-      console.log('[D24] Checkout address:', checkoutAddress);
-      console.log('[D24] All response fields:', Object.keys(responseData || {}));
+      if (!responseData) {
+        console.error('[D24-CARD] No response data received');
+        throw new Error('Empty response from server');
+      }
+
+      const checkoutAddress = responseData?.address || responseData?.checkout_url;
+
+      console.log('[D24-CARD] Checkout URL:', checkoutAddress ? '✓ Received' : '✗ Missing');
+      console.log('[D24-CARD] Deposit ID:', responseData?.deposit_id);
+      console.log('[D24-CARD] Checkout Type:', responseData?.checkout_type);
 
       if (checkoutAddress) {
-        console.log('[D24] Showing checkout in iframe');
-        // Show checkout in iframe
+        console.log('[D24-CARD] ✓ Showing D24 hosted checkout in iframe');
+        toast.info('Opening payment page...');
+
+        // Store deposit info for reference
+        sessionStorage.setItem('d24_current_deposit', JSON.stringify({
+          method: selectedMethod,
+          amount,
+          currency,
+          depositId: responseData?.deposit_id,
+          timestamp: new Date().toISOString(),
+        }));
+
         setCheckoutUrl(checkoutAddress);
-        setShowAmountInput(false); // Hide form when showing checkout
+        setShowAmountInput(false);
       } else {
-        console.error('[D24] No checkout URL in response. Full response:', res?.data);
-        toast.error(t('acct.wallet.depositNoUrl'));
+        console.error('[D24-CARD] ✗ No checkout URL in response', responseData);
+        toast.error('Failed to load payment page. Please try again.');
         setDepositMode(null);
       }
-    } catch (err: unknown) {
-      const message =
-        typeof err === 'object' && err && 'message' in err
-          ? String((err as { message: string }).message)
-          : t('acct.wallet.depositFailed');
-      toast.error(message);
+    } catch (err: any) {
+      console.error('[D24-CARD] ✗ Error:', err);
+
+      let errorMessage = 'Payment request failed. Please try again.';
+
+      if (err?.response?.status === 400) {
+        errorMessage = err?.response?.data?.message || 'Invalid payment information';
+      } else if (err?.response?.status === 503) {
+        errorMessage = 'Payment service is temporarily unavailable. Please try again later.';
+      } else if (err?.message?.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection.';
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+
+      console.error('[D24-CARD] Final error message:', errorMessage);
+      toast.error(errorMessage);
       setDepositMode(null);
     } finally {
       setLoading(false);
