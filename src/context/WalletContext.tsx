@@ -148,15 +148,73 @@ export const WalletProvider: FC<Props> = ({ children }) => {
 
   const fetchCatalogue = useCallback(async (): Promise<void> => {
     try {
-      const [currRes, rateRes, fiatRes] = await Promise.all([
+      // Fetch currencies and display currencies first (these shouldn't fail)
+      const [currRes, fiatRes] = await Promise.all([
         getCurrencies(),
-        getRates((summary?.preferences.active_currency ?? 'USD') as DisplayFiat),
         getDisplayCurrencies(),
       ]);
+
       if (currRes?.success && currRes.data) setCurrencies(currRes.data);
-      if (rateRes?.success && rateRes.data) setRates(rateRes.data);
-      if (fiatRes?.success && fiatRes.data) setDisplayCurrencies(fiatRes.data);
-    } catch {
+      if (fiatRes?.success && fiatRes.data) {
+        // Filter to show only enabled currencies in the UI
+        const enabledFiats = fiatRes.data.filter((f) => f.is_enabled);
+        console.log('Setting display currencies (enabled only):', enabledFiats);
+        setDisplayCurrencies(enabledFiats);
+
+        // Fetch rates separately - if active currency is disabled, auto-switch to first enabled
+        let activeCurrency = 'USD' as DisplayFiat;
+        try {
+          const rateRes = await getRates(activeCurrency);
+          console.log('Rate response:', rateRes);
+
+          if (rateRes?.success && rateRes.data) {
+            console.log('Rates fetched successfully for:', activeCurrency);
+            setRates(rateRes.data);
+          } else {
+            // Rate fetch failed - currency is probably disabled
+            throw new Error('Rate fetch returned non-success response');
+          }
+        } catch (rateErr) {
+          console.error('Rate fetch error:', rateErr);
+
+          // Auto-switch to first enabled currency if current one is disabled
+          if (enabledFiats.length > 0) {
+            const firstEnabledCurrency = enabledFiats[0];
+            const fallbackCurrency = firstEnabledCurrency.code as DisplayFiat;
+            console.log(
+              `Active currency ${activeCurrency} is disabled, auto-switching to ${fallbackCurrency}`,
+            );
+
+            try {
+              // Automatically update user's preference to the first enabled currency
+              const prefRes = await updatePreferences({ active_currency: fallbackCurrency });
+              console.log('✅ Auto-switch preference update successful:', prefRes);
+
+              // Fetch rates for the new active currency
+              const fallbackRateRes = await getRates(fallbackCurrency);
+              if (fallbackRateRes?.success && fallbackRateRes.data) {
+                console.log('✅ Rates fetched for fallback currency:', fallbackCurrency);
+                setRates(fallbackRateRes.data);
+              }
+            } catch (switchErr) {
+              console.error('❌ Failed to auto-switch currency:', switchErr);
+              // Still try to fetch rates even if preference update fails
+              try {
+                const fallbackRateRes = await getRates(enabledFiats[0].code as DisplayFiat);
+                if (fallbackRateRes?.success && fallbackRateRes.data) {
+                  setRates(fallbackRateRes.data);
+                }
+              } catch (e) {
+                console.warn('Could not fetch fallback rates:', e);
+              }
+            }
+          } else {
+            console.warn('No enabled fiats available for fallback');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('fetchCatalogue error:', err);
       /* leave catalogue empty — the modal handles empty picker lists */
     }
     // We intentionally do NOT depend on `summary` here — the catalogue
