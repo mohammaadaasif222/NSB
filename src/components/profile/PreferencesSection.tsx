@@ -4,6 +4,7 @@ import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import type { ApiUser } from '@/types/profile';
 import PersonalGroup from '@/components/profile/preferences/PersonalGroup';
 import LanguageGroup from '@/components/profile/preferences/LanguageGroup';
+import SoundGroup from '@/components/profile/preferences/SoundGroup';
 import PrefGroupView from '@/components/profile/preferences/PrefGroupView';
 import {
   GROUPS_ABOVE_LANGUAGE,
@@ -19,9 +20,9 @@ interface Props {
 /**
  * Account preferences.
  *
- * Two of these are real: the display name and time zone persist through
- * PATCH /users/me, and the language is a client-side choice the i18n provider
- * stores locally. Everything else is inert — see `preferenceGroups.ts`, which
+ * Three of these are real: the display name and time zone persist through
+ * PATCH /users/me, and the language and sound effects are client-side choices
+ * their providers store locally. Everything else is inert — see `preferenceGroups.ts`, which
  * is the one file to replace when those fields exist.
  *
  * The theme picker the old version carried is not in the design; it stays
@@ -46,6 +47,8 @@ const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone 
         ))}
 
         <LanguageGroup />
+
+        <SoundGroup />
 
         {GROUPS_BELOW_LANGUAGE.map((group) => (
           <PrefGroupView key={group.key} group={group} />

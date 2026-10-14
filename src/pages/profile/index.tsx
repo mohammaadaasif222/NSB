@@ -140,7 +140,9 @@ const ProfilePage: FC = () => {
           shell's 13 while the nav-to-panel side stays at 31. Scaled, the cap
           is 1006 against a 1043 column, the slack is back in proportion, and
           both gaps land on 48 x --u together. */}
-      <div className="@container mx-auto max-w-[calc(var(--u)*1544)] pb-2">
+      {/* The design starts the area 40 under the bar — 24 more than the
+          shell's own 16. */}
+      <div className="@container mx-auto max-w-[calc(var(--u)*1544)] pb-2 lg:pt-[calc(var(--u)*24)]">
         {/* 228 of rail and a 48 channel, in `--u` — the shell's design pixel.
             This replaced a two-step ladder (180/20 below 1440, 228/48 above),
             and the step was the problem rather than the numbers: the shell's
@@ -165,7 +167,10 @@ const ProfilePage: FC = () => {
               634–1842), in `--u` with the rest. The phone keeps a flat 20 —
               below `lg` the unit is 1px and 30 is more than a 390 screen can
               spare on each side. */}
-          <div className="@container rl-panel min-w-0 p-5 lg:p-[calc(var(--u)*30)]">
+          {/* The design's panel has no wash of its own (its fill is switched
+              off): the stage shows through, and the shared card polish draws
+              the rim (see `index.css`). */}
+          <div className="@container rl-panel min-w-0 p-5 [--panel-fill:transparent] lg:p-[calc(var(--u)*30)]">
             {!me ? (
               <div className="py-16 text-center">
                 {error && !loading ? (
@@ -199,7 +204,9 @@ const ProfilePage: FC = () => {
         </div>
       </div>
 
-      <div className="mx-auto mt-10 max-w-[1600px] lg:mt-[calc(var(--u)*80)]">
+      {/* The footer in the account column, 168 under the panel (8 of it the
+          column's own foot). */}
+      <div className="mx-auto mt-10 max-w-[1600px] lg:mt-[calc(var(--u)*160)] lg:max-w-[calc(var(--u)*1544)]">
         <SiteFooter />
       </div>
 

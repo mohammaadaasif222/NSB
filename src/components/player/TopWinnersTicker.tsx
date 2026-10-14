@@ -66,19 +66,40 @@ const Chip: FC<(typeof SAMPLE_WINNERS)[number] & { size: ChipSize }> = ({
 const ROW = Array.from({ length: 8 }, (_, i) => ({ ...SAMPLE_WINNERS[i % 3], id: `w${i}` }));
 
 /**
- * The top bar's strip. It overflows on narrow bars by design, so it is a
- * horizontal scroller rather than something that wraps or truncates; the mask
- * fades the last chip out at the trailing edge instead of slicing it mid-glyph.
+ * A row of chips that runs on its own, like a live feed.
+ *
+ * The chips are drawn twice, back to back, and the track slides by exactly
+ * one copy before starting over (`rl-marquee` in index.css), so the loop has
+ * no seam. Each copy ends in the same space that sits between chips, which is
+ * what makes "one copy" exactly half the track. Pauses under the pointer;
+ * stands still, as a plain scroller, for anyone who asks for reduced motion.
  */
-const TopWinnersTicker: FC = () => (
+const Marquee: FC<{ size: ChipSize; gap: string; seconds: number; className?: string }> = ({
+  size,
+  gap,
+  seconds,
+  className = '',
+}) => (
   <div
-    className="scrollbar-none flex items-center gap-[calc(var(--u)*11)] overflow-x-auto [mask-image:linear-gradient(to_right,transparent_0,#000_16px,#000_calc(100%-16px),transparent_100%)]"
+    className={`rl-marquee min-w-0 [mask-image:linear-gradient(to_right,transparent_0,#000_16px,#000_calc(100%-16px),transparent_100%)] ${className}`}
+    style={{ ['--rl-marquee-duration' as string]: `${seconds}s` }}
     aria-hidden="true"
   >
-    {SAMPLE_WINNERS.map((w) => (
-      <Chip key={w.name} {...w} size="bar" />
-    ))}
+    <div className="rl-marquee-track flex w-max">
+      {[0, 1].map((copy) => (
+        <div key={copy} className={`flex ${gap}`} style={{ paddingInlineEnd: 'var(--rl-gap)' }}>
+          {ROW.map((w) => (
+            <Chip key={w.id} {...w} size={size} />
+          ))}
+        </div>
+      ))}
+    </div>
   </div>
+);
+
+/** The top bar's strip, shown signed out. */
+const TopWinnersTicker: FC = () => (
+  <Marquee size="bar" gap="gap-[var(--rl-gap)] [--rl-gap:calc(var(--u)*11)]" seconds={40} />
 );
 
 /**
@@ -87,17 +108,19 @@ const TopWinnersTicker: FC = () => (
  * content column.
  */
 export const WinnersStrip: FC = () => (
-  <div aria-hidden="true">
-    <div className="rl-shelf -mx-4 flex gap-[3px] px-4 lg:hidden">
-      {ROW.map((w) => (
-        <Chip key={w.id} {...w} size="strip" />
-      ))}
-    </div>
-    <div className="rl-shelf hidden gap-[calc(var(--u)*10)] lg:flex">
-      {ROW.map((w) => (
-        <Chip key={w.id} {...w} size="bar" />
-      ))}
-    </div>
+  <div>
+    <Marquee
+      size="strip"
+      gap="gap-[var(--rl-gap)] [--rl-gap:3px]"
+      seconds={28}
+      className="-mx-4 lg:hidden"
+    />
+    <Marquee
+      size="bar"
+      gap="gap-[var(--rl-gap)] [--rl-gap:calc(var(--u)*10)]"
+      seconds={40}
+      className="hidden lg:block"
+    />
   </div>
 );
 

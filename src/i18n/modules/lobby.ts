@@ -4,7 +4,7 @@
  */
 export const en = {
   // Lobby hero (signed out)
-  'lobby.hero.title': 'READY TO ROLL YOUR LUCK',
+  'lobby.hero.title': 'Rolluck — Where Trust Meets\nPremium Gaming',
   'lobby.hero.dialCode': 'Country calling code',
   'lobby.hero.continueWith': 'Continue with {method}',
   'lobby.hero.continueWithEmail': 'Continue with Email',

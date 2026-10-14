@@ -49,11 +49,12 @@ export const GAME_CATEGORIES = GAME_SHELVES.filter(
 );
 
 /**
- * The shelves each lobby shows, in order. The signed-out page leads with the
- * shelves the aggregator catalogue fills on its own; Originals, New Releases
- * and Featured stay empty until games are assigned to them in the console.
+ * The shelves each lobby shows, in order, as the designs draw them. The
+ * signed-out page's are Originals, New Releases and Featured Lobby — all three
+ * curated, so each shows once games are assigned to it in the console and is
+ * left out while it is empty.
  */
-export const LOBBY_SHELF_KEYS: readonly GameShelfKey[] = ['slots', 'popular', 'trending'];
+export const LOBBY_SHELF_KEYS: readonly GameShelfKey[] = ['originals', 'new', 'featured'];
 export const PLAYER_SHELF_KEYS: readonly GameShelfKey[] = [
   'originals',
   'slots',

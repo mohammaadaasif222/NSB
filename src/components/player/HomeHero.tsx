@@ -92,7 +92,8 @@ const SectionTile: FC<{
 
 /**
  * The remaining amount as the design's odometer: a dollar cell and six glass
- * digit cells on a dark plate with a slate rim, lit from behind.
+ * digit cells, each with a polished edge lit from below (`rl-odo-cell`), on a
+ * dark plate with a thin slate rim, lit from behind.
  */
 const Odometer: FC<{ value: number }> = ({ value }) => {
   const digits = String(Math.max(0, Math.round(value)))
@@ -100,11 +101,11 @@ const Odometer: FC<{ value: number }> = ({ value }) => {
     .slice(-6)
     .split('');
   const cell =
-    'flex h-[calc(var(--u)*61)] items-center justify-center rounded-[calc(var(--u)*3)] bg-white/10 font-bold text-[#f0f1f5] shadow-[inset_0_1px_1px_rgba(255,255,255,0.22),inset_0_-2px_2px_rgba(0,0,0,0.3)]';
+    'rl-odo-cell flex h-[calc(var(--u)*61)] items-center justify-center rounded-[calc(var(--u)*3)] font-bold text-[#f0f1f5]';
 
   return (
     <div
-      className="flex h-[calc(var(--u)*68)] w-[calc(var(--u)*342)] items-center gap-[calc(var(--u)*2)] rounded-[calc(var(--u)*10)] border-[length:calc(var(--u)*2.5)] border-[#6a7287] bg-[#14191c] px-[calc(var(--u)*1.5)] shadow-[0_0_35px_rgba(255,255,255,0.2)]"
+      className="flex h-[calc(var(--u)*68)] w-[calc(var(--u)*342)] items-center gap-[calc(var(--u)*2)] rounded-[calc(var(--u)*10)] border-[length:calc(var(--u)*1.5)] border-[#6a7287] bg-[#14191c] px-[calc(var(--u)*2)] shadow-[0_0_35px_rgba(255,255,255,0.2)]"
       aria-label={`$${value}`}
     >
       <span
@@ -198,7 +199,7 @@ const PlayerPanel: FC = () => {
       <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[21px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*17)]">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-[calc(var(--u)*4)]">
-            <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
+            <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:font-normal lg:leading-[calc(var(--u)*24)]">
               {t('dash.wageringProgress')}
             </span>
             <span className="hidden h-[calc(var(--u)*16)] items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[calc(var(--u)*5)] text-[length:max(min(var(--tf,11px),10px),calc(var(--u)*10))] leading-none text-[#03b739] lg:inline-flex">

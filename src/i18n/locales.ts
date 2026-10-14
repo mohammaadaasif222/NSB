@@ -682,6 +682,9 @@ const coreEn = {
   'pref.disableTipsNote':
     "You'll still receive tips and win, but you won't get notifications or emails about them.",
   'pref.receiveMarketing': 'Receive Marketing Offers',
+  'pref.sound': 'Sound',
+  'pref.soundEffects': 'Sound Effects',
+  'pref.soundEffectsNote': 'Plays a click when you tap buttons, cards, menus and fields. Saved on this device.',
 
   // Account area: the Security section
   'sec.changePassword': 'Change Password',

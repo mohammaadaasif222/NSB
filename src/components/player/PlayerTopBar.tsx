@@ -147,7 +147,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
         ref={headerRef}
         className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]"
       >
-        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:rl-drop-pane">
+        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-white/[0.01] lg:px-[calc(var(--u)*16)] lg:rl-glass-bar">
           {/* --- Brand, search, language --------------------------------- */}
           {/* Collapses the rail to icons. The phone opens its drawer from the
               tab bar instead, so this is desktop only. */}
@@ -281,7 +281,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                         aria-haspopup="dialog"
                         aria-expanded={panel === 'rewards'}
                         aria-label={t('nav.rewards')}
-                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rl-glass-btn rounded-full text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:w-auto lg:bg-transparent lg:[--tw-inset-shadow:0_0_#0000] lg:px-[calc(var(--u)*19)]"
+                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rl-glass-btn rounded-full text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:w-auto lg:bg-transparent lg:bg-none lg:[--tw-inset-shadow:0_0_#0000] lg:px-[calc(var(--u)*19)]"
                       >
                         <img
                           src={giftGlyph.src}

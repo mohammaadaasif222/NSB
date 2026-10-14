@@ -89,7 +89,8 @@ const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
       className="flex min-w-0 flex-col gap-[calc(var(--u)*14)] lg:h-full"
       aria-label={t('profile.account')}
     >
-      <h2 className="hidden px-1 text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[1.4] font-normal text-white/80 lg:block">
+      {/* The design's 20px label, flush with the rows and 20 above them. */}
+      <h2 className="hidden text-[length:max(min(11px,20px),calc(var(--u)*20))] leading-[calc(var(--u)*28)] font-normal text-[#9da2b4] lg:mb-[calc(var(--u)*6)] lg:block">
         {t('profile.account')}
       </h2>
 
