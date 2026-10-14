@@ -6,6 +6,8 @@ import Link from 'next/link';
 import PlayerLayout from '@/layout/PlayerLayout';
 import GameTile from '@/components/player/GameTile';
 import Pager from '@/components/player/Pager';
+import RecentWinners from '@/components/player/RecentWinners';
+import SiteFooter from '@/components/player/SiteFooter';
 import { CATEGORY_ICONS } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
 import {
@@ -16,6 +18,7 @@ import {
   shelfFor,
 } from '@/constants/games';
 import { fetchShelfList, parsePageParam } from '@/services/games.server';
+import { fetchWinnerGames } from '@/services/myGames.server';
 import type { Game, GamePagination, GameShelfKey } from '@/types';
 
 interface Props {
@@ -23,6 +26,8 @@ interface Props {
   games: Game[];
   pagination: GamePagination;
   failed: boolean;
+  /** Real games for the Recent Winners row under the grid. */
+  winnerGames: Game[];
 }
 
 /**
@@ -33,7 +38,7 @@ interface Props {
  * (`/games/slots?page=3`), so it survives a refresh and works with the back
  * button; the pager links are plain navigations.
  */
-const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed }) => {
+const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winnerGames }) => {
   const { t } = useTranslation();
   const def = shelfFor(categoryKey);
   const title = t(def.titleKey);
@@ -116,6 +121,11 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed }) => 
         )}
 
         {pagination.totalPages > 1 && <div className="flex justify-center pt-2">{pager}</div>}
+
+        <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
+          <RecentWinners games={winnerGames} tabs="player" />
+          <SiteFooter />
+        </div>
       </div>
     </PlayerLayout>
   );
@@ -136,6 +146,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, qu
       games: result.data,
       pagination: result.pagination,
       failed: result.failed,
+      winnerGames: await fetchWinnerGames(result.data),
     },
   };
 };

@@ -67,13 +67,19 @@ const SelectGameModal: FC<Props> = ({ open, onClose }) => {
       title={t('lobby.selectGame.title')}
       // Drawn straight over the page: nothing dims or blurs behind it.
       backdrop="none"
-      // The design's 20 / 26 insets, less the rim's pixel.
-      className="max-w-[654px] px-3 pb-4 pt-3 sm:px-[19px] sm:pb-[25px] sm:pt-[19px]"
+      // The design's 20 / 26 insets, less the rim's pixel; and the heavier
+      // rim this dialog is drawn with (see `rl-dialog-glass`).
+      className="max-w-[654px] px-3 pb-4 pt-3 [--dialog-rim-width:1.5px] [--dialog-rim:rgba(255,255,255,0.38)] sm:px-[19px] sm:pb-[25px] sm:pt-[19px]"
     >
-      {/* Room beside and above the grid for the chosen tile's glow, which
-          the scroller would otherwise clip; on desktop exactly two rows
-          (2 × 261 + 10) in view, the third a scroll away. */}
-      <div className="no-scrollbar -mx-3 mt-[10px] max-h-[62vh] overflow-y-auto p-3 sm:-mt-[2px] sm:max-h-[544px]">
+      {/* Room round the grid for the chosen tile's glow, which the scroller
+          would otherwise clip. The glow runs ~24px out, so the scroller reaches
+          out to the card's rim at the sides and 24px past the grid above and
+          below, with negative margins holding the grid and the button exactly
+          where the design puts them. Too little room and the glow
+          is cut off flat, which reads as a square halo round a notched card.
+          On desktop exactly two rows (2 × 261 + 10) in view, the third a
+          scroll away. */}
+      <div className="no-scrollbar -mx-3 -mb-3 -mt-[2px] max-h-[62vh] overflow-y-auto px-3 py-6 sm:-mx-[19px] sm:-mt-[14px] sm:max-h-[568px] sm:px-[19px]">
         {error ? (
           <p className="py-16 text-center text-[14px] text-[#9da2b4]">{error}</p>
         ) : (

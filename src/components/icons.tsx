@@ -451,6 +451,35 @@ export const RefreshIcon: FC<IconProps> = (p) => (
   </Svg>
 );
 
+/**
+ * Chat reactions. Drawn with `fill="currentColor"` applied by the caller when
+ * the viewer has reacted — a filled thumb reads as "pressed" at 14px, where a
+ * colour change alone is easy to miss.
+ */
+export const ThumbsUpIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M7 10v12" />
+    <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+  </Svg>
+);
+
+export const ThumbsDownIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M17 14V2" />
+    <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
+  </Svg>
+);
+
+/** Opens the emoji picker. */
+export const SmileIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+    <line x1="9" y1="9" x2="9.01" y2="9" />
+    <line x1="15" y1="9" x2="15.01" y2="9" />
+  </Svg>
+);
+
 export const SendIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <line x1="22" y1="2" x2="11" y2="13" />
@@ -538,6 +567,35 @@ export const ChevronLeftIcon: FC<IconProps> = (p) => (
 export const ChevronRightIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <polyline points="9 18 15 12 9 6" />
+  </Svg>
+);
+
+export const PlayIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <polygon points="6 3 20 12 6 21 6 3" />
+  </Svg>
+);
+
+export const MicIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+    <line x1="12" y1="19" x2="12" y2="22" />
+  </Svg>
+);
+
+export const InfoIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="16" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12.01" y2="8" />
+  </Svg>
+);
+
+export const TrashIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </Svg>
 );
 

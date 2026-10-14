@@ -45,11 +45,20 @@ export interface DisplayCurrencyOption {
   symbol: string;
   is_enabled: boolean;
   sort_order: number;
+  country_code: string;
+  language: string;
+  min_deposit: string;
+  max_deposit: string;
+  min_withdrawal: string;
+  max_withdrawal: string;
   color?: string | null;
 }
 
 export const getDisplayCurrencies = () =>
   apiService.get<DisplayCurrencyOption[]>('/wallet/display-currencies');
+
+export const getD24PaymentMethods = (country: string) =>
+  apiService.get<any[]>('/wallet/deposit/d24/payment-methods', { country });
 
 /** Every currency the platform accepts, each with its enabled networks. */
 export const getCurrencies = () => apiService.get<Currency[]>('/wallet/currencies');
@@ -98,7 +107,7 @@ export const getDepositAddress = (
  * Create a D24 fiat deposit. Returns a DepositAddress with the D24 checkout URL.
  * D24 handles currency/payment method selection on their hosted page.
  */
-export const createD24Deposit = (input: { amount: string; currency: string }) =>
+export const createD24Deposit = (input: { amount: string; currency: string; payment_method?: string }) =>
   apiService.post<DepositAddress>('/wallet/deposit/d24', input);
 
 export const getDepositHistory = (page = 1, limit = 10) =>

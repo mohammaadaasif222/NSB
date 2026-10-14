@@ -6,6 +6,8 @@ import Image from 'next/image';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import GameRow from '@/components/player/GameRow';
+import RecentWinners from '@/components/player/RecentWinners';
+import SiteFooter from '@/components/player/SiteFooter';
 import DiceGame from '@/components/dice/DiceGame';
 import { CATEGORY_ICONS } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
@@ -14,6 +16,7 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import { DICE_SLUG } from '@/constants/dice';
 import { categoryForEnum, categoryHref, playHref } from '@/constants/games';
 import { fetchDiceConfig, fetchGameBySlug, fetchShelfList } from '@/services/games.server';
+import { fetchWinnerGames } from '@/services/myGames.server';
 import type { DiceConfig, Game } from '@/types';
 
 interface Props {
@@ -27,6 +30,8 @@ interface Props {
    * the game in place of the details view.
    */
   dice: DiceConfig | null;
+  /** Real games for the Recent Winners row at the foot of the page. */
+  winnerGames: Game[];
 }
 
 /**
@@ -91,7 +96,7 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
   );
 };
 
-const GamePage: FC<Props> = ({ game, related, failed, dice }) => {
+const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames }) => {
   const { t } = useTranslation();
 
   if (!game) {
@@ -220,6 +225,11 @@ const GamePage: FC<Props> = ({ game, related, failed, dice }) => {
             shelfKey={def.key}
           />
         )}
+
+        <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
+          <RecentWinners games={winnerGames} tabs="player" />
+          <SiteFooter />
+        </div>
       </div>
     </PlayerLayout>
   );
@@ -239,7 +249,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
   }
 
   if (lookup.status === 'failed') {
-    return { props: { game: null, related: [], failed: true, dice: null } };
+    return { props: { game: null, related: [], failed: true, dice: null, winnerGames: [] } };
   }
 
   const { category } = lookup.game;
@@ -251,7 +261,15 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
   ]);
   const related = shelf ? shelf.data.filter((g) => g.slug !== lookup.game.slug).slice(0, 10) : [];
 
-  return { props: { game: lookup.game, related, failed: false, dice } };
+  return {
+    props: {
+      game: lookup.game,
+      related,
+      failed: false,
+      dice,
+      winnerGames: await fetchWinnerGames(related),
+    },
+  };
 };
 
 export default GamePage;

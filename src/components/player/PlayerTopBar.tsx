@@ -25,6 +25,8 @@ import LanguagePicker from '@/components/LanguagePicker';
 import HeaderPopover from '@/components/player/HeaderPopover';
 import NotificationPanel from '@/components/player/NotificationPanel';
 import ChatPanel from '@/components/player/ChatPanel';
+import ChatDrawer from '@/components/player/ChatDrawer';
+import { DEFAULT_CHAT_ROOM, isChatRoom, type ChatRoom } from '@/services/chat';
 import RewardPanel from '@/components/player/RewardPanel';
 import GameSearchModal from '@/components/player/GameSearchModal';
 import { fullNameOf } from '@/types/profile';
@@ -48,7 +50,7 @@ interface Props {
  * the order they are written in). Each usage supplies its own instead.
  */
 const ICON_BUTTON =
-  'h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/80 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]';
+  'rl-glass-btn h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white/80 hover:text-white lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]';
 
 interface IconButtonProps {
   label: string;
@@ -102,7 +104,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const { token } = useAuth();
   const { rewards: rewardsOn } = usePlatformFeatures();
   const { me } = useMe();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { internalChatEnabled } = useSupportChat();
   const { openLogin, openRegister } = useAuthModal();
 
@@ -131,6 +133,9 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
    * leave the rewards tray open underneath it, and the two would overlap.
    */
   const [panel, setPanel] = useState<HeaderPanel>(null);
+  const [chatRoom, setChatRoom] = useState<ChatRoom>(() =>
+    isChatRoom(locale) ? locale : DEFAULT_CHAT_ROOM
+  );
   const closePanel = useCallback(() => setPanel(null), []);
   const togglePanel = (next: Exclude<HeaderPanel, null>): void =>
     setPanel((current) => (current === next ? null : next));
@@ -147,7 +152,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
         ref={headerRef}
         className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]"
       >
-        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.09)]">
+        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:rl-drop-pane">
           {/* --- Brand, search, language --------------------------------- */}
           {/* Collapses the rail to icons. The phone opens its drawer from the
               tab bar instead, so this is desktop only. */}
@@ -244,14 +249,14 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => openLogin()}
-                  className="inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] font-bold leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
+                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] font-bold leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
                 </button>
                 <button
                   type="button"
                   onClick={() => openRegister()}
-                  className="inline-flex h-10 items-center rounded-full bg-[#f9d028] px-[11px] text-[14px] font-bold leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
+                  className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-[11px] text-[14px] font-bold leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
                 </button>
@@ -281,7 +286,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                         aria-haspopup="dialog"
                         aria-expanded={panel === 'rewards'}
                         aria-label={t('nav.rewards')}
-                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rounded-full border border-white/10 bg-black/40 text-[#f0f1f5] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:w-auto lg:border-0 lg:bg-[#07080a] lg:px-[calc(var(--u)*19)]"
+                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rl-glass-btn rounded-full text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:w-auto lg:bg-transparent lg:[--tw-inset-shadow:0_0_#0000] lg:px-[calc(var(--u)*19)]"
                       >
                         <img
                           src={giftGlyph.src}
@@ -332,30 +337,26 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
                 {/* The platform's own chat. Independent of the Intercom
                     bubble: an operator can run either, both, or neither from
-                    System config. */}
+                    System config.
+
+                    Just the button here — unlike the trays beside it, chat is
+                    a full-height drawer rather than a dropdown, so it is
+                    rendered outside the bar (and portalled out of it; see
+                    ChatDrawer) instead of hanging off this trigger. */}
                 {internalChatEnabled && (
-                  <HeaderPopover
-                    open={panel === 'chat'}
-                    onClose={closePanel}
+                  <IconButton
                     label={t('nav.liveChat')}
-                    className="hidden lg:block"
-                    trigger={
-                      <IconButton
-                        label={t('nav.liveChat')}
-                        onClick={() => togglePanel('chat')}
-                        aria-expanded={panel === 'chat'}
-                        className="inline-flex"
-                      >
-                        <img
-                          src={chatGlyph.src}
-                          alt=""
-                          className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
-                        />
-                      </IconButton>
-                    }
+                    onClick={() => togglePanel('chat')}
+                    aria-expanded={panel === 'chat'}
+                    aria-haspopup="dialog"
+                    className="hidden lg:inline-flex"
                   >
-                    <ChatPanel onClose={closePanel} />
-                  </HeaderPopover>
+                    <img
+                      src={chatGlyph.src}
+                      alt=""
+                      className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
+                    />
+                  </IconButton>
                 )}
               </>
             )}
@@ -374,7 +375,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                       aria-expanded={open}
                       aria-controls={open ? menuId : undefined}
                       aria-label={name || t('account.account')}
-                      className="flex h-10 items-center gap-[calc(var(--u)*11)] rounded-full bg-black/40 pe-3 ps-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] backdrop-blur-md transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*48)] lg:pe-[calc(var(--u)*12)] lg:ps-[calc(var(--u)*8)]"
+                      className="rl-glass-btn flex h-10 items-center gap-[calc(var(--u)*11)] rounded-full pe-3 ps-1 lg:h-[calc(var(--u)*48)] lg:pe-[calc(var(--u)*12)] lg:ps-[calc(var(--u)*8)]"
                     >
                       <img
                         src={me?.avatar_url || defaultAvatar.src}
@@ -395,14 +396,14 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => openLogin()}
-                  className="inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*108)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#07080a] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
+                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*108)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#07080a] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
                 </button>
                 <button
                   type="button"
                   onClick={() => openRegister()}
-                  className="inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*148)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
+                  className="rl-cta-shine inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*148)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
                 </button>
@@ -416,6 +417,15 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
       <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
       <WalletSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {/* Out here rather than beside the button: the drawer is full-height and
+          portals to the body, and the bar is a bad place to read that from.
+          It is NOT gated on `internalChatEnabled && token` as a separate
+          condition — `panel` can only become 'chat' from the button above,
+          which already is. */}
+      <ChatDrawer open={panel === 'chat'} onClose={closePanel} label={t('nav.liveChat')}>
+        <ChatPanel onClose={closePanel} room={chatRoom} onRoomChange={setChatRoom} />
+      </ChatDrawer>
     </>
   );
 };

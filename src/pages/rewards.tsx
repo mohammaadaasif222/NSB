@@ -2,6 +2,7 @@ import { useEffect, useState, type FC } from 'react';
 import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
+import SiteFooter from '@/components/player/SiteFooter';
 import RewardCard from '@/components/rewards/RewardCard';
 import TierCard from '@/components/rewards/TierCard';
 import RewardHistory from '@/components/rewards/RewardHistory';
@@ -151,6 +152,9 @@ const RewardsPage: FC = () => {
               {t('rewards.switchedOffNote')}
             </p>
           </section>
+          <div className="mt-10 lg:mt-[calc(var(--u)*80)]">
+            <SiteFooter />
+          </div>
         </div>
       </PlayerLayout>
     );
@@ -211,6 +215,10 @@ const RewardsPage: FC = () => {
           currency={summary?.currency ?? 'USD'}
           loading={tiersLoading}
         />
+
+        <div className="mt-10 lg:mt-[calc(var(--u)*80)]">
+          <SiteFooter />
+        </div>
       </div>
     </PlayerLayout>
   );

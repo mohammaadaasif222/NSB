@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import PlayerLayout from '@/layout/PlayerLayout';
+import SiteFooter from '@/components/player/SiteFooter';
 import ProtectedRoute from '@/routes/ProtectedRoute';
 import AccountNav, { isAccountSection, type AccountSection } from '@/components/profile/AccountNav';
 import ProfileSection from '@/components/profile/ProfileSection';
@@ -196,6 +197,10 @@ const ProfilePage: FC = () => {
             {t('account.logout')}
           </button>
         </div>
+      </div>
+
+      <div className="mx-auto mt-10 max-w-[1600px] lg:mt-[calc(var(--u)*80)]">
+        <SiteFooter />
       </div>
 
       {me && activeModal === 'avatar' && (

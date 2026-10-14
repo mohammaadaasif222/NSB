@@ -4,6 +4,7 @@ import { DISPLAY_CURRENCY_SYMBOL, LIMIT_DEFINITIONS } from '@/components/respons
 import type { LimitKind, LimitPeriod, LimitSet } from '@/types/responsible';
 import type { TranslationKey } from '@/i18n/locales';
 import { CloseIcon } from '@/components/icons';
+import { useDialogFit } from '@/hooks/useDialogFit';
 import RlSelect, { type RlOption } from '@/components/inputs/RlSelect';
 
 /**
@@ -94,6 +95,10 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
     }
   }, [kind, limits]);
 
+  // Zoomed to the page's scale, with the room it has worked out after the
+  // zoom — see useDialogFit.
+  const { scale, tier, maxHeight } = useDialogFit(true);
+
   const parsed = Number(amount);
   const valid = kind !== '' && amount.trim() !== '' && Number.isFinite(parsed) && parsed > 0;
   const isMinutes = LIMIT_DEFINITIONS.find((d) => d.kind === kind)?.unit === 'minutes';
@@ -113,14 +118,15 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
            this one is only 484 tall and fits a laptop today, but with no cap at
            all a shorter window would push it off the screen with no way to
            reach the button. The cap never bites at the design's 1080. */
-        className="rl-modal-glass flex max-h-[92vh] w-full max-w-[581px] flex-col p-7"
+        className="rl-modal-glass flex w-full max-w-[581px] flex-col p-7"
+        style={{ zoom: scale, maxHeight: maxHeight(0.92) }}
       >
         {/* 48px glass circle, 28 in from the top right — the same mark the rail
             and the footer use. */}
         <div className="flex shrink-0 items-start">
           <h2
             id="rg-limit-title"
-            className="min-w-0 flex-1 text-center text-[22px] leading-8 font-semibold tracking-[-0.56px] text-[#f0f1f5] sm:text-[28px] sm:leading-9"
+            className="min-w-0 flex-1 text-center text-[22px] leading-8 font-medium tracking-[-0.56px] text-[#f0f1f5] sm:text-[28px] sm:leading-9"
           >
             {t('rgc.limitsSet')}
           </h2>
@@ -129,9 +135,9 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
             type="button"
             onClick={onClose}
             aria-label={t('rgc.close')}
-            className="rl-chip -mt-2 flex h-12 w-12 shrink-0 items-center justify-center text-[#f0f1f5]"
+            className="rl-circle-btn -mt-2 flex h-12 w-12 shrink-0 items-center justify-center"
           >
-            <CloseIcon size={18} />
+            <CloseIcon size={33} strokeWidth={1.45} />
           </button>
         </div>
 
@@ -201,7 +207,7 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
             )
           }
           disabled={!valid || saving}
-          className="rl-btn-gold mt-6.25 flex h-14 shrink-0 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium disabled:cursor-not-allowed disabled:opacity-50 [@media(max-height:820px)]:mt-4"
+          className={`rl-btn-gold ${tier === 'full' ? 'mt-6.25' : 'mt-4'} flex h-14 shrink-0 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {saving ? t('rgc.saving') : t('rgc.limitAdd')}
         </button>

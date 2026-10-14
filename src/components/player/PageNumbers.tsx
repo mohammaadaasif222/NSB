@@ -9,15 +9,16 @@ interface Props {
   window?: number;
 }
 
-/** Previous / Next: the design's pale glass pills. */
+/** Previous / Next: the design's pale pills, set level at 104 on desktop so
+    the row stays symmetrical about the numbers. */
 const STEP =
-  'inline-flex h-12 items-center justify-center rounded-full bg-white/20 px-[13px] text-[14px] font-medium leading-5 text-[#f0f1f5] backdrop-blur-md transition-colors enabled:hover:bg-white/25 disabled:cursor-default disabled:opacity-40 lg:h-[calc(var(--u)*48)] lg:px-[calc(var(--u)*20)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+  'rl-pager-step inline-flex h-12 items-center justify-center px-[13px] text-[14px] font-medium leading-5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*104)] lg:px-0 lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 
 /** A page number: a 48px disc, gold and glowing when it is the current page. */
 const NUMBER =
-  'inline-flex h-12 w-12 items-center justify-center rounded-full text-[14px] font-medium leading-5 text-[#f0f1f5] backdrop-blur-md transition-colors lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
-const NUMBER_ON = 'bg-[#f9d028]/20 shadow-[0_0_14px_rgba(249,208,40,0.55)]';
-const NUMBER_IDLE = 'bg-white/5 hover:bg-white/10';
+  'inline-flex h-12 w-12 items-center justify-center text-[14px] font-medium leading-5 tabular-nums lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+const NUMBER_ON = 'rl-pager-page-on';
+const NUMBER_IDLE = 'rl-pager-page';
 
 /**
  * The design's numbered pager for a list paged in the browser: Previous, a

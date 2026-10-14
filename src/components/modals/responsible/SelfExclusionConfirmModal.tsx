@@ -8,6 +8,7 @@ import {
 } from '@/components/responsible/rgContent';
 import type { TranslationKey } from '@/i18n/locales';
 import { CloseIcon } from '@/components/icons';
+import { useDialogFit } from '@/hooks/useDialogFit';
 import checkFill from '@/assets/responsible/check-fill.svg';
 
 /**
@@ -95,9 +96,22 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
    * height, rather than waiting for the screen to be short enough.
    */
   const tight = needsPhrase;
-  const ICON = tight ? 'size-6' : 'size-8.75 [@media(max-height:700px)]:size-6';
-  const TEXT_PT = tight ? 'pt-0' : 'pt-1.5 [@media(max-height:700px)]:pt-0';
-  const FIELD_H = tight ? 'min-h-12' : 'min-h-14 [@media(max-height:700px)]:min-h-12';
+
+  /**
+   * Drawn at the design's sizes and zoomed to the page's scale, so on a laptop
+   * it sits in proportion with the page instead of standing over it at full
+   * size. The vertical rhythm closes up by how much room the *zoomed* card has
+   * (`tier`), not by raw window height — see useDialogFit.
+   */
+  const { scale, tier, maxHeight } = useDialogFit(true);
+  const short = tier === 'short';
+  const compact = tight || short;
+  const ICON = compact ? 'size-6' : 'size-8.75';
+  const TEXT_PT = compact ? 'pt-0' : 'pt-1.5';
+  const FIELD_H = compact ? 'min-h-12' : 'min-h-14';
+  /** The rhythm's three steps, at sm and up: the design's, closer, closest. */
+  const step = (full: string, mid: string, low: string): string =>
+    tier === 'full' ? full : tier === 'mid' ? mid : low;
 
   // Escape closes, and the page behind does not scroll while this is open.
   useEffect(() => {
@@ -133,7 +147,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
     t('rgc.exclusionPoint4'),
   ];
 
-  const BUTTON = `flex ${tight ? 'h-12' : 'h-14 [@media(max-height:700px)]:h-12'} w-full items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium`;
+  const BUTTON = `flex ${compact ? 'h-12' : 'h-14'} w-full items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium`;
 
   return (
     <div
@@ -146,25 +160,27 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
         aria-modal="true"
         aria-labelledby="rg-exclusion-title"
         onClick={(e) => e.stopPropagation()}
-        /* 718 tall in the design, drawn on a 1080 frame — and a laptop gives
-           the browser roughly 650 to 710. Two things keep it usable there
-           without touching the 1080 layout:
+        /* 718 tall in the design, drawn on a 1080 frame. Three things keep it
+           in proportion and usable on a laptop without touching that layout:
 
-           1. Below 820 of viewport height the vertical rhythm closes up (the
-              `max-height` variants below). That saves about 75px, which is
-              enough for the whole dialog to fit at 768 and 720 — so it does not
-              scroll at all on a normal laptop, it just sits tighter.
-           2. If the screen is shorter still, only the middle scrolls. The title
-              and both buttons are outside that box and stay put.
+           1. It is zoomed to the page's scale, so at 1366 it is drawn at about
+              0.71 — the size the design intends there, and short enough to fit
+              a laptop window as drawn.
+           2. Only when even the zoomed card is short of room (`tier`, worked
+              out after the zoom) does the vertical rhythm close up — about
+              75px saved, without the dialog scrolling.
+           3. If the window is shorter still, only the middle scrolls. The
+              title and both buttons are outside that box and stay put.
 
            Scrolling is the fallback here, not the plan. A dialog whose actions
            have to be hunted for is not responsive, it is just reachable. */
-        className="rl-modal-glass flex max-h-[96vh] w-full max-w-[581px] flex-col p-5 sm:max-h-[92vh] sm:p-7 [&:has(#rg-exclusion-phrase)]:sm:max-h-[96vh] [@media(min-height:701px)_and_(max-height:820px)]:sm:p-5 [@media(max-height:700px)]:sm:p-5 [@media(max-height:700px)]:sm:max-h-[96vh]"
+        className={`rl-modal-glass flex w-full max-w-[581px] flex-col p-5 ${step('sm:p-7', 'sm:p-5', 'sm:p-5')}`}
+        style={{ zoom: scale, maxHeight: maxHeight(tight || short ? 0.96 : 0.92) }}
       >
         <div className="flex shrink-0 items-start">
           <h2
             id="rg-exclusion-title"
-            className="min-w-0 flex-1 text-center text-[20px] leading-7 font-semibold tracking-[-0.56px] text-[#f0f1f5] sm:text-[28px] sm:leading-9"
+            className="min-w-0 flex-1 text-center text-[20px] leading-7 font-medium tracking-[-0.56px] text-[#f0f1f5] sm:text-[28px] sm:leading-9"
           >
             {t('rgc.exclusionConfirmTitle', { period: periodLabel })}
           </h2>
@@ -173,9 +189,9 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
             type="button"
             onClick={onClose}
             aria-label={t('rgc.close')}
-            className="rl-chip -mt-2 flex h-12 w-12 shrink-0 items-center justify-center text-[#f0f1f5]"
+            className="rl-circle-btn -mt-2 flex h-12 w-12 shrink-0 items-center justify-center"
           >
-            <CloseIcon size={18} />
+            <CloseIcon size={33} strokeWidth={1.45} />
           </button>
         </div>
 
@@ -184,28 +200,34 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
             it this grows instead and pushes the actions out of the dialog. */}
         <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto">
           {/* ── The dates the break covers ────────────────────────────── */}
-          <p className="mt-4 sm:mt-7.5 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-4 [@media(max-height:700px)]:sm:mt-2.5 text-sm leading-5 font-medium text-[#f0f1f5]">
+          <p
+            className={`mt-4 ${step('sm:mt-7.5', 'sm:mt-4', 'sm:mt-2.5')} text-sm leading-5 font-medium text-[#f0f1f5]`}
+          >
             {t('rgc.exclusionBreakPeriod')}
           </p>
           {/* 56 tall on a desktop, where the line fits. It grows rather than
             truncates on a narrow screen: these dates are the thing being
             confirmed, and half a date is worse than two lines. */}
           <p
-            className={`rl-modal-field mt-1.75 [@media(max-height:700px)]:mt-1 flex ${FIELD_H} items-center px-6 py-2 text-[18px] leading-6 font-bold text-[#f0f1f5]`}
+            className={`rl-modal-field ${short ? 'mt-1' : 'mt-1.75'} flex ${FIELD_H} items-center px-6 py-2 text-[18px] leading-6 font-medium text-[#f0f1f5]`}
           >
             {range}
           </p>
 
-          <p className="mt-3.5 [@media(max-height:700px)]:mt-2 text-base leading-6 text-[#9da2b4]">
+          <p className={`${short ? 'mt-2' : 'mt-3.5'} text-base leading-6 text-[#9da2b4]`}>
             {t('rgc.exclusionConfirmBody')}
           </p>
 
-          <p className="mt-4 sm:mt-7.5 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-4 [@media(max-height:700px)]:sm:mt-2.5 text-base leading-6 text-[#f0f1f5]">
+          <p
+            className={`mt-4 ${step('sm:mt-7.5', 'sm:mt-4', 'sm:mt-2.5')} text-base leading-6 text-[#f0f1f5]`}
+          >
             {t('rgc.exclusionUnderstand')}
           </p>
 
           {/* 35px mark, 39 to the text, 48 between rows — the design's list. */}
-          <ul className="mt-3.5 [@media(max-height:700px)]:mt-2 space-y-2 sm:space-y-3.25 [@media(min-height:701px)_and_(max-height:820px)]:sm:space-y-2 [@media(max-height:700px)]:sm:space-y-1.5">
+          <ul
+            className={`${short ? 'mt-2' : 'mt-3.5'} space-y-2 ${step('sm:space-y-3.25', 'sm:space-y-2', 'sm:space-y-1.5')}`}
+          >
             {points.map((point) => (
               <li key={point} className="flex items-start gap-1">
                 <Image
@@ -216,9 +238,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
                   className={`${ICON} shrink-0`}
                   aria-hidden="true"
                 />
-                <span
-                  className={`min-w-0 flex-1 ${TEXT_PT} text-base leading-6 font-medium text-[#f0f1f5]`}
-                >
+                <span className={`min-w-0 flex-1 ${TEXT_PT} text-base leading-6 text-[#f0f1f5]`}>
                   {point}
                 </span>
               </li>
@@ -252,7 +272,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
           type="button"
           onClick={onConfirm}
           disabled={!ready || saving}
-          className={`rl-btn-gold ${BUTTON} mt-4 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-7.25 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-4 [@media(max-height:700px)]:sm:mt-3`}
+          className={`rl-btn-gold ${BUTTON} mt-4 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 ${step('sm:mt-7.25', 'sm:mt-4', 'sm:mt-3')}`}
         >
           {saving ? t('rgc.saving') : t('rgc.exclusionConfirmWith', { period: periodLabel })}
         </button>
@@ -260,7 +280,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
         <button
           type="button"
           onClick={onClose}
-          className={`${BUTTON} mt-2.5 [@media(max-height:700px)]:mt-2 shrink-0 bg-white/10 text-[#f0f1f5] transition-colors hover:bg-white/15 sm:mt-3.25 [@media(min-height:701px)_and_(max-height:820px)]:sm:mt-2.5 [@media(max-height:700px)]:sm:mt-2`}
+          className={`${BUTTON} ${short ? 'mt-2' : 'mt-2.5'} shrink-0 bg-white/10 text-[#f0f1f5] transition-colors hover:bg-white/15 ${step('sm:mt-3.25', 'sm:mt-2.5', 'sm:mt-2')}`}
         >
           {t('rgc.cancel')}
         </button>
