@@ -14,7 +14,7 @@ import {
 } from 'react';
 import { toast } from 'react-toastify';
 import { useTranslation } from '@/context/I18nContext';
-import { removeAvatar, uploadAvatar } from '@/services/profile';
+import { uploadAvatar } from '@/services/profile';
 import {
   AVATAR_ACCEPT,
   MAX_AVATAR_BYTES,
@@ -25,8 +25,18 @@ import {
   megabytes,
   type LoadedImage,
 } from '@/lib/avatarImage';
-import { CameraIcon } from '@/components/icons';
-import ProfileModalShell from './ProfileModalShell';
+import { CameraIcon, CheckIcon, CloseIcon } from '@/components/icons';
+import Button from '@/components/ui/Button';
+import CircleIconButton from '@/components/ui/CircleIconButton';
+import Modal from '@/components/ui/Modal';
+import { useStageScale } from '@/hooks/useStageScale';
+import zeus from '@/assets/profile/avatars/zeus.webp';
+import lion from '@/assets/profile/avatars/lion.webp';
+import monkey from '@/assets/profile/avatars/monkey.webp';
+import dragon from '@/assets/profile/avatars/dragon.webp';
+import jester from '@/assets/profile/avatars/jester.webp';
+import pharaoh from '@/assets/profile/avatars/pharaoh.webp';
+import cowboy from '@/assets/profile/avatars/cowboy.webp';
 
 interface Props {
   currentAvatarUrl: string | null;
@@ -54,6 +64,35 @@ interface Metrics {
 
 const UNMEASURED: Frame = { zoom: MIN_ZOOM, x: 0, y: 0 };
 
+/** The design's avatars, in its order after the upload tile. */
+const PRESETS = [
+  { key: 'zeus', image: zeus },
+  { key: 'lion', image: lion },
+  { key: 'monkey', image: monkey },
+  { key: 'dragon', image: dragon },
+  { key: 'jester', image: jester },
+  { key: 'pharaoh', image: pharaoh },
+  { key: 'cowboy', image: cowboy },
+] as const;
+
+type PresetKey = (typeof PRESETS)[number]['key'];
+
+/** The design's chosen-tile mark: a 2px gold ring and a gold check badge. */
+const Chosen: FC = () => (
+  <>
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 rounded-full border-2 border-[#f9d028]"
+    />
+    <span
+      aria-hidden="true"
+      className="absolute right-[2.6%] top-[2.6%] flex aspect-square w-[27.6%] items-center justify-center rounded-full bg-[#f9d028] text-[#07080a]"
+    >
+      <CheckIcon size={18} strokeWidth={3} className="h-[56%] w-[56%]" />
+    </span>
+  </>
+);
+
 const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) => {
   const { t } = useTranslation();
   const zoomId = useId();
@@ -70,6 +109,10 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
   const [dropping, setDropping] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  // A picked avatar; an uploaded photo is `source` instead. The last one
+  // chosen wins — picking either clears the other.
+  const [preset, setPreset] = useState<PresetKey | null>(null);
+  const scale = useStageScale(true);
 
   useEffect(
     () => () => {
@@ -157,21 +200,6 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
     [measured, side]
   );
 
-  const recentre = useCallback((): void => {
-    const size = measured(UNMEASURED);
-
-    if (!size) {
-      setFrame(UNMEASURED);
-      return;
-    }
-
-    setFrame({
-      zoom: MIN_ZOOM,
-      x: (side - size.width) / 2,
-      y: (side - size.height) / 2,
-    });
-  }, [measured, side]);
-
   const accept = useCallback(
     async (file: File): Promise<void> => {
       setError('');
@@ -195,6 +223,7 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
 
         loaded.current = next;
         unframed.current = true;
+        setPreset(null);
         setSource(next);
         setFrame(UNMEASURED);
       } catch (err) {
@@ -333,9 +362,43 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
     }
   };
 
+  const choosePreset = (key: PresetKey): void => {
+    setError('');
+    setPreset(key);
+    setSource(null);
+  };
+
+  /** Uploads a picked avatar the way a photo goes up — the image itself. */
+  const savePreset = async (key: PresetKey): Promise<void> => {
+    const chosen = PRESETS.find((p) => p.key === key);
+    if (!chosen) return;
+    setBusy(true);
+    setError('');
+    try {
+      const blob = await (await fetch(chosen.image.src)).blob();
+      const res = await uploadAvatar(blob, `${key}.webp`);
+      if (res?.success && res.data) {
+        toast.success(t('avatar.saved'));
+        onSaved(res.data.avatar_url ?? null);
+        onClose();
+        return;
+      }
+      setError(res?.message || t('avatar.errUpload'));
+    } catch (err) {
+      setError((err as { message?: string })?.message || t('avatar.errUpload'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const save = async (): Promise<void> => {
+    if (preset) {
+      await savePreset(preset);
+      return;
+    }
+    // Nothing new chosen: Confirm keeps the picture as it is.
     if (!source) {
-      fileInput.current?.click();
+      onClose();
       return;
     }
 
@@ -377,37 +440,18 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
     }
   };
 
-  const discard = async (): Promise<void> => {
-    setBusy(true);
-    setError('');
-
-    try {
-      const res = await removeAvatar();
-
-      if (res?.success) {
-        toast.success(t('avatar.removed'));
-        onSaved(null);
-        onClose();
-        return;
-      }
-
-      setError(res?.message || t('avatar.errRemove'));
-    } catch (err) {
-      setError((err as { message?: string })?.message || t('avatar.errRemove'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const size = measured(frame);
+  const picked = PRESETS.find((p) => p.key === preset);
 
   return (
-    <ProfileModalShell
-      title={t('avatar.title')}
+    <Modal
+      open
       onClose={onClose}
-      onSubmit={() => void save()}
-      loading={busy}
-      submitLabel={source ? t('avatar.save') : t('avatar.choose')}
+      ariaLabel={t('avatar.title')}
+      surface="rl-dialog-glass"
+      style={{ zoom: scale }}
+      // The design's 28 / 36 / 29 insets, less the rim's pixel.
+      className="max-w-[581px] px-4 pb-5 pt-6 sm:px-[27px] sm:pb-[28px] sm:pt-[35px]"
     >
       <input
         ref={fileInput}
@@ -419,80 +463,79 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
         aria-hidden="true"
       />
 
-      {source ? (
-        <div className="space-y-4">
-          <div className="flex justify-center">
-            <div
-              ref={viewport}
-              role="group"
-              tabIndex={0}
-              aria-label={t('avatar.cropArea')}
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              onWheel={onWheel}
-              onKeyDown={onKeyDown}
-              className={`relative aspect-square w-full max-w-[320px] touch-none overflow-hidden rounded-2xl bg-black/40 outline-none select-none focus-visible:ring-2 focus-visible:ring-white/40 ${
-                dragging ? 'cursor-grabbing' : 'cursor-grab'
-              }`}
-            >
-              {size && (
-                <img
-                  src={source.url}
-                  alt=""
-                  draggable={false}
-                  style={{
-                    width: `${size.width}px`,
-                    height: `${size.height}px`,
-                    transform: `translate3d(${frame.x}px, ${frame.y}px, 0)`,
-                  }}
-                  className="absolute top-0 left-0 max-w-none origin-top-left"
-                />
-              )}
+      <CircleIconButton
+        label={t('common.close')}
+        onClick={onClose}
+        className="absolute right-3 top-3 z-10 sm:right-[27px] sm:top-[16px]"
+      >
+        <CloseIcon size={33} strokeWidth={1.45} />
+      </CircleIconButton>
 
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 rounded-full border border-white/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]"
-              />
-            </div>
-          </div>
+      {/* The picture as it will be: the picked avatar, the photo being framed
+          (drag to place it, wheel or keys to zoom), or the current one. */}
+      <div
+        ref={viewport}
+        role={source ? 'group' : undefined}
+        tabIndex={source ? 0 : undefined}
+        aria-label={source ? t('avatar.cropArea') : undefined}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onWheel={onWheel}
+        onKeyDown={onKeyDown}
+        className={`relative mx-auto h-[120px] w-[120px] overflow-hidden rounded-full bg-[#1a1a1a] outline-none select-none focus-visible:ring-2 focus-visible:ring-white/40 sm:h-[163px] sm:w-[163px] ${
+          source ? `touch-none ${dragging ? 'cursor-grabbing' : 'cursor-grab'}` : ''
+        }`}
+      >
+        {source && size ? (
+          <img
+            src={source.url}
+            alt=""
+            draggable={false}
+            style={{
+              width: `${size.width}px`,
+              height: `${size.height}px`,
+              transform: `translate3d(${frame.x}px, ${frame.y}px, 0)`,
+            }}
+            className="absolute left-0 top-0 max-w-none origin-top-left"
+          />
+        ) : picked || currentAvatarUrl ? (
+          <img
+            src={picked ? picked.image.src : (currentAvatarUrl ?? '')}
+            alt={picked ? '' : t('avatar.current')}
+            className="h-full w-full object-cover"
+          />
+        ) : null}
+      </div>
 
-          <p className="text-center text-sm leading-5 text-[#9da2b4]">{t('avatar.cropHint')}</p>
-
-          <div className="flex items-center gap-3">
-            <label htmlFor={zoomId} className="text-sm leading-5 font-medium text-[#f0f1f5]">
-              {t('avatar.zoom')}
-            </label>
-            <input
-              id={zoomId}
-              type="range"
-              min={MIN_ZOOM}
-              max={MAX_ZOOM}
-              step={ZOOM_STEP}
-              value={frame.zoom}
-              onChange={(e) => zoomTo(Number(e.target.value))}
-              className="h-1.5 flex-1 cursor-pointer rounded-full bg-white/15 accent-[#f0f1f5]"
-            />
-            <button
-              type="button"
-              onClick={recentre}
-              className="rl-chip h-9 shrink-0 px-3 text-xs font-semibold text-[#f0f1f5]"
-            >
-              {t('avatar.reset')}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => fileInput.current?.click()}
-            className="w-full text-center text-sm leading-5 font-medium text-[#9da2b4] underline-offset-4 hover:text-[#f0f1f5] hover:underline"
-          >
-            {t('avatar.pickAnother')}
-          </button>
+      {/* Zooming a photo needs a control on touch, where there is no wheel. */}
+      {source && (
+        <div className="mx-auto mt-3 flex w-[163px] items-center">
+          <input
+            id={zoomId}
+            type="range"
+            min={MIN_ZOOM}
+            max={MAX_ZOOM}
+            step={ZOOM_STEP}
+            value={frame.zoom}
+            onChange={(e) => zoomTo(Number(e.target.value))}
+            aria-label={t('avatar.zoom')}
+            className="h-1.5 flex-1 cursor-pointer rounded-full bg-white/15 accent-[#f9d028]"
+          />
         </div>
-      ) : (
-        <div className="space-y-4">
+      )}
+
+      <p
+        className={`text-[15px] leading-6 text-[#f0f1f5] sm:text-[16px] ${
+          source ? 'mt-6 sm:mt-[23px]' : 'mt-8 sm:mt-[50px]'
+        }`}
+      >
+        {t('avatar.pick')}
+      </p>
+
+      <ul className="mt-3 grid grid-cols-4 gap-3 sm:mt-[14px] sm:gap-[20px]">
+        <li>
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
@@ -502,51 +545,47 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
             }}
             onDragLeave={() => setDropping(false)}
             onDrop={onDrop}
-            className={`flex w-full flex-col items-center gap-3 rounded-2xl border border-dashed px-5 py-10 transition-colors ${
-              dropping
-                ? 'border-white/50 bg-white/10'
-                : 'border-white/20 bg-white/5 hover:bg-white/8'
+            aria-label={t('avatar.upload')}
+            aria-pressed={!!source}
+            className={`rl-circle-btn relative flex aspect-square w-full items-center justify-center rounded-full text-[#f0f1f5] ${
+              dropping ? 'bg-white/10' : ''
             }`}
           >
-            {currentAvatarUrl ? (
-              <img
-                src={currentAvatarUrl}
-                alt={t('avatar.current')}
-                className="h-20 w-20 rounded-full object-cover"
-              />
-            ) : (
-              <span className="flex h-20 w-20 items-center justify-center rounded-full bg-white/7 text-[#f0f1f5]">
-                <CameraIcon size={28} strokeWidth={1.5} />
-              </span>
-            )}
-
-            <span className="text-base leading-6 font-semibold text-[#f0f1f5]">
-              {t('avatar.dropTitle')}
-            </span>
-            <span className="text-sm leading-5 text-[#9da2b4]">
-              {t('avatar.dropHint', { max: megabytes(MAX_AVATAR_BYTES) })}
-            </span>
+            <CameraIcon size={49} strokeWidth={1.3} className="h-[42%] w-[42%]" />
+            {source && <Chosen />}
           </button>
-
-          {currentAvatarUrl && (
+        </li>
+        {PRESETS.map((p, i) => (
+          <li key={p.key}>
             <button
               type="button"
-              onClick={() => void discard()}
-              disabled={busy}
-              className="w-full text-center text-sm leading-5 font-medium text-[#ef4462] underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => choosePreset(p.key)}
+              aria-pressed={preset === p.key}
+              aria-label={t('avatar.preset', { n: i + 1 })}
+              className="relative block aspect-square w-full rounded-full transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
-              {t('avatar.remove')}
+              <img
+                src={p.image.src}
+                alt=""
+                className="h-full w-full rounded-full object-cover"
+                draggable={false}
+              />
+              {preset === p.key && <Chosen />}
             </button>
-          )}
-        </div>
-      )}
+          </li>
+        ))}
+      </ul>
 
       {error && (
-        <p role="alert" className="text-center text-sm leading-5 text-[#ef4462]">
+        <p role="alert" className="mt-3 text-[13px] leading-5 text-[#ef4462]">
           {error}
         </p>
       )}
-    </ProfileModalShell>
+
+      <Button fullWidth onClick={() => void save()} loading={busy} className="mt-6 sm:mt-[34px]">
+        {t('avatar.confirm')}
+      </Button>
+    </Modal>
   );
 };
 

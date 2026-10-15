@@ -139,6 +139,8 @@ export const en = {
   'lobby.streams.paused': 'Paused',
   'lobby.streams.open': 'Open stream',
   'lobby.streams.share': 'Share',
+  'lobby.streams.play': "Play",
+  'lobby.streams.copied': "Link copied",
 
   // Header balance menu
   'lobby.balance.label': 'Wallet balance',

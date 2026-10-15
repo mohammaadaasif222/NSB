@@ -19,7 +19,6 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import ProfileMenu from '@/components/player/ProfileMenu';
 import BalanceMenu from '@/components/player/BalanceMenu';
 import WalletModal from '@/components/wallet/WalletModal';
-import WalletSettingsModal from '@/components/wallet/WalletSettingsModal';
 import TopWinnersTicker from '@/components/player/TopWinnersTicker';
 import LanguagePicker from '@/components/LanguagePicker';
 import HeaderPopover from '@/components/player/HeaderPopover';
@@ -110,7 +109,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
 
   // Publish the bar's height on the stage, for screens that open beneath it
@@ -214,7 +212,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             {/* Signed in: the balance and the wallet, centred in the bar. */}
             {token && (
               <div className="flex min-w-0 items-center gap-2.5 lg:gap-[calc(var(--u)*16)]">
-                <BalanceMenu onOpenWallet={() => setSettingsOpen(true)} />
+                <BalanceMenu />
                 <button
                   type="button"
                   onClick={() => setWalletOpen(true)}
@@ -278,6 +276,9 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                     onClose={closePanel}
                     label={t('nav.rewards')}
                     width="w-[min(415px,calc(100vw-2rem))] lg:w-[calc(var(--u)*415)]"
+                    // The notification centre's glass, over the same dimmed page.
+                    tone="frost"
+                    dim
                     className="order-2 lg:order-none"
                     trigger={
                       <button
@@ -308,7 +309,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   onClose={closePanel}
                   label={t('nav.notifications')}
                   width="w-[min(464px,calc(100vw-2rem))] lg:w-[calc(var(--u)*464)]"
-                  tone="deep"
+                  tone="frost"
                   dim
                   phoneSheet
                   // The design hangs the panel 41px past the bell's end.
@@ -416,7 +417,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
       {searchOpen && <GameSearchModal onClose={() => setSearchOpen(false)} />}
 
       <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
-      <WalletSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       {/* Out here rather than beside the button: the drawer is full-height and
           portals to the body, and the bar is a bad place to read that from.

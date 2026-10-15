@@ -160,30 +160,36 @@ const CrashPreview: FC = () => {
     <section className="rl-glass-deep overflow-hidden rounded-[calc(var(--u)*34)] lg:grid lg:h-[var(--crash-h,calc(var(--u)*586))] lg:grid-cols-[minmax(0,1fr)_calc(var(--uw,var(--u))*385)]">
       {/* --- Chart side ------------------------------------------------- */}
       <div className="relative flex flex-col">
-        <div className="flex flex-wrap items-center justify-between gap-x-[calc(var(--u)*17)] gap-y-[calc(var(--u)*15)] px-[calc(var(--u)*16)] pt-[calc(var(--u)*20)] lg:flex-nowrap lg:justify-start lg:px-[calc(var(--u)*30)] lg:pt-[calc(var(--u)*27)]">
-          {/* The game picker: Select Game, over the page. */}
-          <button
-            type="button"
-            onClick={() => setPicking(true)}
-            aria-haspopup="dialog"
-            aria-expanded={picking}
-            className="flex h-[calc(var(--u)*50)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*12.5)] border border-white/[0.07] bg-[#1b1d28] px-[calc(var(--u)*15)] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f5f6f9] transition-colors hover:bg-[#232634]"
-          >
-            Crash
-            <img
-              src={chevronSmall.src}
-              alt=""
-              className="h-[calc(var(--u)*18)] w-[calc(var(--u)*18)]"
-            />
-          </button>
+        <div className="flex flex-wrap items-center justify-center gap-x-[calc(var(--u)*17)] gap-y-[calc(var(--u)*15)] px-[calc(var(--u)*16)] pt-[calc(var(--u)*20)] lg:flex-nowrap lg:justify-start lg:px-[calc(var(--u)*30)] lg:pt-[calc(var(--u)*27)]">
+          <div className="flex items-center justify-center gap-[calc(var(--u)*17)]">
+            {/* The game picker: Select Game, over the page. */}
+            <button
+              type="button"
+              onClick={() => setPicking(true)}
+              aria-haspopup="dialog"
+              aria-expanded={picking}
+              className="flex h-[calc(var(--u)*50)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*12.5)] border border-white/[0.07] bg-[#1b1d28] px-[calc(var(--u)*15)] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f5f6f9] transition-colors hover:bg-[#232634]"
+            >
+              Crash
+              <img
+                src={chevronSmall.src}
+                alt=""
+                className="h-[calc(var(--u)*18)] w-[calc(var(--u)*18)]"
+              />
+            </button>
 
-          <span className="inline-flex items-center gap-[calc(var(--u)*7.5)] text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#5c6178]">
-            <span
-              className="h-[calc(var(--u)*9)] w-[calc(var(--u)*9)] rounded-full bg-[#2ed573] shadow-[0_0_0_3.8px_rgba(46,213,115,0.18)]"
-              aria-hidden="true"
-            />
-            {t('lobby.crash.playing', { count: '1,284' })}
-          </span>
+            {/* The live dot is sized off the line's own text — the design's
+                9px dot, 3.77 of halo and 8 of gap against 16px type — so it
+                keeps its place beside the words when the text stops at its
+                floor on a scaled-down panel. */}
+            <span className="inline-flex items-center gap-[0.5em] text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] leading-[1.5] text-[#5c6178]">
+              <span
+                className="h-[0.5625em] w-[0.5625em] shrink-0 rounded-full bg-[#2ed573] shadow-[0_0_0_0.236em_rgba(46,213,115,0.18)]"
+                aria-hidden="true"
+              />
+              {t('lobby.crash.playing', { count: '1,284' })}
+            </span>
+          </div>
 
           <div className="rl-shelf flex w-full gap-[calc(var(--u)*8.8)] lg:ms-auto lg:w-auto">
             {HISTORY.map((h) => (

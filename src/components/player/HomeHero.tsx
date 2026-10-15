@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react';
+import type { CSSProperties, FC, ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMe } from '@/context/UserContext';
@@ -62,6 +62,19 @@ const useDisplayName = (): string => {
 };
 
 /**
+ * The Casino and Sports tiles' rim — this hero's only, overriding the shared
+ * card polish (`--rl-tile-rim` in index.css) on these two tiles alone: a white
+ * hairline lit on the diagonal. Change the two numbers to make it stronger or
+ * fainter — the first is the top-start corner, the second the bottom-end
+ * (0 = none, 1 = solid white). The rim's thickness is the `before:p-[1px]` on
+ * the tile.
+ */
+const TILE_RIM = {
+  '--rl-tile-rim':
+    'linear-gradient(to  bottom right, rgba(232,236,244,0.10) 10%, rgba(232,236,244,0.60) 30%, rgba(232,236,244,0) 60%, rgba(232,236,244,0.70) 100%) ',
+} as CSSProperties;
+
+/**
  * A section shortcut in the panel. Desktop: the design's 125×158 glass tile
  * with the section's 3D render and its glow. Phone: a 174×110 tile with the
  * line mark.
@@ -74,7 +87,8 @@ const SectionTile: FC<{
 }> = ({ href, label, art, mark }) => (
   <Link
     href={href}
-    className="rl-liquid group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0"
+    style={TILE_RIM}
+    className={`rl-liquid before:p-[1px] group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0`}
   >
     <img src={mark} alt="" className="h-[49px] w-[49px] lg:hidden" />
     {/* The render carries its glow, so the image is the art plus a 34px
@@ -100,16 +114,27 @@ const Odometer: FC<{ value: number }> = ({ value }) => {
     .padStart(6, '0')
     .slice(-6)
     .split('');
+  // Cell widths and gaps land on whole pixels: at a scaled-down size the
+  // design's 44 and 2 come out fractional, and cells sitting on different
+  // sub-pixel offsets anti-alias differently, which reads as uneven spacing.
+  // As drawn: the sign and the last digit 50 wide, the others 44; square
+  // cells, but the two ends follow the plate's curve on their outer side.
+  // The plate: a hairline slate rim (1px — a browser draws the design's 1.33
+  // as 1 anyway, and rounds a scaled-down one up to 1), the cells centred in
+  // it so the rounding never eats the space under them, 4 in from the start,
+  // and the glass's light catching it along the bottom and end — a thin white
+  // edge on the diagonal.
   const cell =
-    'rl-odo-cell flex h-[calc(var(--u)*61)] items-center justify-center rounded-[calc(var(--u)*3)] font-bold text-[#f0f1f5]';
+    'rl-odo-cell flex h-[calc(var(--u)*61)] items-center justify-center font-bold text-[#f0f1f5]';
 
   return (
     <div
-      className="flex h-[calc(var(--u)*68)] w-[calc(var(--u)*342)] items-center gap-[calc(var(--u)*2)] rounded-[calc(var(--u)*10)] border-[length:calc(var(--u)*1.5)] border-[#6a7287] bg-[#14191c] px-[calc(var(--u)*2)] shadow-[0_0_35px_rgba(255,255,255,0.2)]"
+      style={{ border: '0.1px solid #6a7287' }}
+      className="flex h-[calc(var(--u)*68)] w-max items-center gap-[round(calc(var(--u)*2),1px)] rounded-[calc(var(--u)*10)] bg-[#14191c] pl-[calc(var(--u)*2.67)] pr-[calc(var(--u)*1.67)] shadow-[calc(var(--u)*0.75)_calc(var(--u)*0.75)_0_rgba(255,255,255,0.5),0_0_35px_rgba(255,255,255,0.2)]"
       aria-label={`$${value}`}
     >
       <span
-        className={`${cell} w-[calc(var(--u)*50)] text-[length:max(min(var(--tf,11px),36px),calc(var(--u)*36))] leading-[calc(var(--u)*44)] tracking-[-0.02em]`}
+        className={`${cell} w-[round(calc(var(--u)*50),1px)] rounded-l-[calc(var(--u)*7)] text-[length:max(min(var(--tf,11px),36px),calc(var(--u)*36))] leading-[calc(var(--u)*44)] tracking-[-0.02em]`}
       >
         $
       </span>
@@ -117,7 +142,11 @@ const Odometer: FC<{ value: number }> = ({ value }) => {
         <span
           // Positional digits: the index is their identity.
           key={i}
-          className={`${cell} flex-1 text-[length:max(min(var(--tf,11px),48px),calc(var(--u)*48))] leading-[calc(var(--u)*52)] tracking-[-0.02em]`}
+          className={`${cell} ${
+            i === digits.length - 1
+              ? 'w-[round(calc(var(--u)*50),1px)] rounded-r-[calc(var(--u)*7)]'
+              : 'w-[round(calc(var(--u)*44),1px)]'
+          } text-[length:max(min(var(--tf,11px),48px),calc(var(--u)*48))] leading-[calc(var(--u)*52)] tracking-[-0.02em]`}
         >
           {d}
         </span>
@@ -143,9 +172,15 @@ const ProgressBar: FC<{ percent: number; label: string }> = ({ percent, label })
   </div>
 );
 
-/** A pale pill under the progress: "$350 remaining to unlock your bonus". */
+/**
+ * A pale pill under the progress: "$350 remaining to unlock your bonus".
+ * On desktop it is sized off its own text (the design's 34 tall, 18 in, round
+ * 12px type), as the percent badge is: on a short window the panel scales down
+ * but its text stops at a readable floor, and a box drawn in the panel's unit
+ * would then be too small for the words in it.
+ */
 const RemainingPill: FC<{ children: ReactNode }> = ({ children }) => (
-  <span className="inline-flex h-[38px] items-center rounded-[24px] bg-white/10 px-[38px] text-[12px] leading-5 text-white lg:h-[calc(var(--u)*34)] lg:rounded-[calc(var(--u)*24)] lg:px-[calc(var(--u)*18)] lg:text-[length:max(min(var(--tf,11px),12px),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
+  <span className="inline-flex h-[38px] items-center rounded-[24px] bg-white/10 px-[38px] text-[10px] leading-5 text-white lg:h-[2.833em] lg:rounded-full lg:px-[1.5em] lg:text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
     {children}
   </span>
 );
@@ -196,20 +231,24 @@ const PlayerPanel: FC = () => {
       </div>
 
       {/* --- Wagering --------------------------------------------------- */}
-      <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[21px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*17)]">
+      <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[21px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*16)]">
+        {/* The small print here keeps the design's proportions to the 16px
+            heading when the panel is scaled down: its floor is the heading's
+            floor in the same ratio (10/16, 12/16), not the shared one, so the
+            badge and the line beside it never outgrow the heading. */}
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-[calc(var(--u)*4)]">
             <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:font-normal lg:leading-[calc(var(--u)*24)]">
               {t('dash.wageringProgress')}
             </span>
-            <span className="hidden h-[calc(var(--u)*16)] items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[calc(var(--u)*5)] text-[length:max(min(var(--tf,11px),10px),calc(var(--u)*10))] leading-none text-[#03b739] lg:inline-flex">
+            <span className="hidden items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[0.5em] text-[length:max(calc(var(--tf,11px)*0.625),calc(var(--u)*10))] leading-[calc(1.6em-2px)] text-[#03b739] lg:inline-flex">
               {percent}%
             </span>
           </span>
           <span className="text-[12px] font-medium leading-5 text-white lg:hidden">
             {t('dash.percentComplete', { percent })}
           </span>
-          <span className="hidden text-[length:max(min(var(--tf,11px),12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
+          <span className="hidden text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
             {t('dash.wagered', { amount: usd(wagered, locale) })}
           </span>
         </div>

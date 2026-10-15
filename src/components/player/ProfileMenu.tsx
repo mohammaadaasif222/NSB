@@ -6,7 +6,6 @@ import type { StaticImageData } from 'next/image';
 import Glyph from '@/components/player/Glyph';
 import { POPUP_SURFACE } from '@/components/player/popupSurface';
 import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
-import WalletModal from '@/components/wallet/WalletModal';
 import { useAuth } from '@/context/AuthContext';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useTranslation } from '@/context/I18nContext';
@@ -42,8 +41,8 @@ interface Leaf {
   labelKey: TranslationKey;
   icon: StaticImageData;
   href?: string;
-  /** An action instead of a link — the wallet, live support. */
-  action?: 'wallet' | 'support';
+  /** An action instead of a link — live support. */
+  action?: 'support';
   /** In the design with nothing behind it yet: shown dimmed, tagged "Soon". */
   soon?: boolean;
   /** Drawn on the phone's menu only. */
@@ -90,7 +89,7 @@ const AFFILIATE: Group = {
 };
 
 const LEAVES: Leaf[] = [
-  { labelKey: 'nav.wallet', icon: walletIcon, action: 'wallet' },
+  { labelKey: 'nav.wallet', icon: walletIcon, href: '/wallet' },
   { labelKey: 'menu.vault', icon: walletIcon, soon: true, phoneOnly: true },
   { labelKey: 'menu.bonusesRewards', icon: bonusesIcon, href: '/bonuses' },
   { labelKey: 'menu.promotions', icon: promotionsIcon, href: '/promotions' },
@@ -229,7 +228,6 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
   const { logout } = useAuth();
   const { openIntercom } = useSupportChat();
   const [open, setOpen] = useState(false);
-  const [walletOpen, setWalletOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -258,7 +256,6 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
 
   const onAction = (leaf: Leaf): void => {
     setOpen(false);
-    if (leaf.action === 'wallet') setWalletOpen(true);
     if (leaf.action === 'support') openIntercom();
   };
 
@@ -316,7 +313,6 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
           </nav>
         )}
 
-      <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
       {logoutOpen && (
         <LogoutConfirmModal onConfirm={confirmLogout} onCancel={() => setLogoutOpen(false)} />
       )}

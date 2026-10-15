@@ -48,7 +48,10 @@ const TABS: { key: Tab; label: TranslationKey }[] = [
 
 /**
  * One announcement: its artwork across the top, then the title, two lines of
- * the message and when it was sent — the design's 424×255 card.
+ * the message and when it was sent — the design's 424×255 card, a 10% white
+ * glass over the panel. On a scaled-down desktop the text keeps the design's
+ * 16 / 14 / 12 proportions: each stops at the shared floor in that ratio,
+ * not all at the same size.
  */
 export const NoticeCard: FC<{ notice: Notice }> = ({ notice }) => {
   const { t, locale } = useTranslation();
@@ -66,13 +69,13 @@ export const NoticeCard: FC<{ notice: Notice }> = ({ notice }) => {
         />
       </div>
       <div className="px-[14px] pb-[18px] pt-[11px] lg:px-[calc(var(--u)*16)] lg:pb-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*13)]">
-        <h3 className="truncate text-[16px] font-medium leading-6 text-[#f0f1f5] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
+        <h3 className="truncate text-[16px] font-medium leading-6 text-[#f0f1f5] lg:text-[length:max(var(--tf,11px),calc(var(--u)*16))] lg:leading-[1.5]">
           {t(notice.title)}
         </h3>
-        <p className="mt-2 line-clamp-2 max-w-[349px] text-[14px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*8)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))] lg:max-w-[calc(var(--u)*349)] lg:leading-[calc(var(--u)*20)] lg:text-[#c8ccd8]">
+        <p className="mt-2 line-clamp-2 max-w-[349px] text-[14px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*8)] lg:text-[length:max(calc(var(--tf,11px)*0.875),calc(var(--u)*14))] lg:max-w-[calc(var(--u)*349)] lg:leading-[1.43] lg:text-[#c8ccd8]">
           {t(notice.body)}
         </p>
-        <p className="mt-[11px] text-[12px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*11)] lg:text-[length:max(min(11px,12px),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
+        <p className="mt-[11px] text-[12px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*11)] lg:text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] lg:leading-[1.67]">
           {notice.sentAt.toLocaleString(locale, {
             year: '2-digit',
             month: '2-digit',
@@ -122,7 +125,7 @@ const NotificationPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
         >
           <img src={chevronLeft.src} alt="" className="h-5 w-5" />
         </button>
-        <h2 className="min-w-0 flex-1 truncate text-[24px] font-medium leading-8 text-[#f0f1f5] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:leading-[calc(var(--u)*28)]">
+        <h2 className="min-w-0 flex-1 truncate text-[24px] font-medium leading-8 text-[#f0f1f5] lg:text-[length:max(calc(var(--tf,11px)*1.25),calc(var(--u)*20))] lg:leading-[1.4]">
           {title}
         </h2>
         <Link
