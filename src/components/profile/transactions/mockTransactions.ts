@@ -1,21 +1,28 @@
+import api from '@/services/api';
 import type { TranslationKey } from '@/i18n/locales';
 
 /**
  * The ledger behind the Transactions tab.
  *
- * NOT WIRED — every row is generated here. The backend exposes balances
- * (`GET /balance/me`) but keeps no transaction history, so there is nothing to
- * list: this needs a paginated ledger endpoint that accepts the category and
- * search terms the UI already tracks.
- *
- * Generated rather than hand-written so the pager has something to page
- * through, and generated *deterministically* — a `Math.random()` here would
- * produce different rows on the server and on the client, which React reports
- * as a hydration mismatch.
+ * Fetches transaction data from the API endpoint: GET /wallet/transactions
+ * Supports filtering by type (all, deposit, withdrawal, rewards) and
+ * searching by transaction ID with pagination support.
  */
 
-export type TxStatus = 'completed' | 'pending' | 'failed';
-export type TxCategory = 'deposit' | 'withdrawal' | 'reward';
+export type TxStatus =
+  | 'DEPOSIT_PENDING'
+  | 'DEPOSIT_DETECTED'
+  | 'DEPOSIT_CONFIRMED'
+  | 'DEPOSIT_FAILED'
+  | 'WITHDRAW_PENDING_RISK'
+  | 'WITHDRAW_RISK_APPROVED'
+  | 'WITHDRAW_APPROVED'
+  | 'WITHDRAW_PROCESSING'
+  | 'WITHDRAW_COMPLETED'
+  | 'WITHDRAW_REJECTED'
+  | 'WITHDRAW_FAILED';
+
+export type TxCategory = 'DEPOSIT' | 'WITHDRAWAL' | 'REWARD';
 
 export interface Transaction {
   id: string;
@@ -40,50 +47,27 @@ export const TX_FILTERS = [
 export type TxFilter = (typeof TX_FILTERS)[number]['key'];
 
 export const STATUS_LABEL: Record<TxStatus, TranslationKey> = {
-  completed: 'tx.completed',
-  pending: 'tx.pending',
-  failed: 'tx.failed',
+  DEPOSIT_PENDING: 'tx.depositPending',
+  DEPOSIT_DETECTED: 'tx.depositDetected',
+  DEPOSIT_CONFIRMED: 'tx.depositConfirmed',
+  DEPOSIT_FAILED: 'tx.depositFailed',
+  WITHDRAW_PENDING_RISK: 'tx.withdrawPendingRisk',
+  WITHDRAW_RISK_APPROVED: 'tx.withdrawRiskApproved',
+  WITHDRAW_APPROVED: 'tx.withdrawApproved',
+  WITHDRAW_PROCESSING: 'tx.withdrawProcessing',
+  WITHDRAW_COMPLETED: 'tx.withdrawCompleted',
+  WITHDRAW_REJECTED: 'tx.withdrawRejected',
+  WITHDRAW_FAILED: 'tx.withdrawFailed',
 };
 
-const STATUSES: TxStatus[] = ['completed', 'pending', 'completed', 'failed', 'completed'];
-const CATEGORIES: TxCategory[] = ['deposit', 'withdrawal', 'deposit', 'reward', 'deposit'];
+export const CATEGORY_LABEL: Record<TxCategory, TranslationKey> = {
+  DEPOSIT: 'tx.deposits',
+  WITHDRAWAL: 'tx.withdrawals',
+  REWARD: 'tx.rewards',
+};
 
-/** Knuth's multiplicative hash — a stable pseudo-random id from an index. */
-const idFor = (i: number): string =>
-  `TXN-${(((i + 1) * 2654435761) % 0xffffffff).toString(16).toUpperCase().padStart(8, '0')}`;
-
-const ROW_COUNT = 44;
 /** Rows per page, matching what the design fits in the table. */
 export const PAGE_SIZE = 11;
-
-const build = (): Transaction[] =>
-  Array.from({ length: ROW_COUNT }, (_, i) => {
-    const status = STATUSES[i % STATUSES.length];
-    const category = CATEGORIES[i % CATEGORIES.length];
-
-    // Spread across a few months from a fixed start, so nothing depends on
-    // today's date.
-    const dayIndex = 18 + i;
-    const month = 6 + Math.floor(dayIndex / 31);
-    const day = (dayIndex % 31) + 1;
-
-    const usdValue = 500 + ((i * 317) % 2600);
-    const cryptoValue = 0.0086 + ((i * 193) % 2500) / 100000;
-    const outgoing = category === 'withdrawal';
-    const amount = cryptoValue.toFixed(4);
-
-    return {
-      id: idFor(i),
-      date: new Date(Date.UTC(2025, month % 12, day)).toISOString().slice(0, 10),
-      usd: `$${usdValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
-      crypto: `${amount} BTC`,
-      status,
-      category,
-      effect: `${outgoing ? '-' : '+'}${amount} BTC`,
-    };
-  });
-
-const ALL_TRANSACTIONS: readonly Transaction[] = build();
 
 /* ==================================================================== */
 /* The request                                                           */
@@ -102,42 +86,84 @@ export interface TxQuery {
 export interface TxPage {
   rows: readonly Transaction[];
   total: number;
+  totalPages: number;
 }
 
 /**
- * Stands in for `GET /transactions?query=&filter=&page=&pageSize=`.
- *
- * Async and paged on purpose, even though it resolves immediately off an array
- * in memory: the section that calls it already tracks a request's loading
- * state and takes its page count from `total` rather than counting rows it
- * holds. Wiring the real endpoint is then a change to this function's body and
- * nothing else — where filtering in the component would have meant rewriting
- * its state to move the work to the server.
+ * Fetches transactions from the API endpoint: GET /wallet/transactions
+ * Transforms the API response to match the Transaction interface.
  */
-export const queryTransactions = ({ query, filter, page, pageSize }: TxQuery): Promise<TxPage> => {
-  const needle = query.trim().toLowerCase();
+export const queryTransactions = async ({ query, filter, page, pageSize }: TxQuery): Promise<TxPage> => {
+  try {
+    // Build query string manually to avoid nested params issue
+    const queryParts: string[] = [];
 
-  const matches = ALL_TRANSACTIONS.filter((tx) => {
-    if (filter !== 'all' && tx.category !== filter) {
-      return false;
+    queryParts.push(`page=${page}`);
+    queryParts.push(`limit=${pageSize}`);
+
+    if (filter !== 'all') {
+      queryParts.push(`type=${filter}`);
     }
-    if (!needle) {
-      return true;
+
+    if (query.trim()) {
+      queryParts.push(`search=${encodeURIComponent(query.trim())}`);
     }
-    return (
-      tx.id.toLowerCase().includes(needle) ||
-      tx.date.toLowerCase().includes(needle) ||
-      tx.usd.toLowerCase().includes(needle) ||
-      tx.crypto.toLowerCase().includes(needle)
-    );
-  });
 
-  // A filter that shortens the list can strand the pager past the end.
-  const lastPage = Math.max(1, Math.ceil(matches.length / pageSize));
-  const safePage = Math.min(page, lastPage);
+    const queryString = queryParts.join('&');
+    const response = await api.get(`/wallet/transactions?${queryString}`) as any;
 
-  return Promise.resolve({
-    rows: matches.slice((safePage - 1) * pageSize, safePage * pageSize),
-    total: matches.length,
-  });
+    const apiData = response.data?.data || response.data;
+    const transactions = apiData.transactions || [];
+    const total = apiData.pagination?.total || 0;
+
+    // Transform API response to UI Transaction format
+    const rows = transactions.map((tx: any) => {
+      const isOutgoing = tx.type === 'WITHDRAWAL';
+      const categoryMap: Record<string, TxCategory> = {
+        DEPOSIT: 'DEPOSIT',
+        WITHDRAWAL: 'WITHDRAWAL',
+        REWARD: 'REWARD',
+      };
+
+      const amount = tx.display_amount || tx.amount || '0';
+      const currency = tx.currency_code || 'BTC';
+      const usdValue = tx.amount_usd || tx.display_amount || '0';
+
+      // Determine wallet effect based on transaction status
+      let effectAmount: string;
+      if (tx.status === 'WITHDRAW_REJECTED') {
+        // Rejected withdrawals show 0 effect
+        effectAmount = '0';
+      } else if (tx.status === 'DEPOSIT_CONFIRMED') {
+        // Confirmed deposits show USD amount
+        effectAmount = `+${parseFloat(usdValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      } else {
+        // Other transactions show crypto amount
+        effectAmount = isOutgoing ? `-${amount}` : `+${amount}`;
+      }
+
+      return {
+        id: tx.id,
+        date: new Date(tx.created_at).toISOString().slice(0, 10),
+        usd: `$${parseFloat(usdValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        crypto: `${amount} ${currency}`,
+        status: tx.status as TxStatus,
+        category: categoryMap[tx.type] as TxCategory || 'DEPOSIT',
+        effect: effectAmount,
+      };
+    });
+
+    return {
+      rows,
+      total,
+      totalPages: apiData.pagination?.total_pages || Math.ceil(total / pageSize),
+    };
+  } catch (error) {
+    console.error('Failed to fetch transactions:', error);
+    return {
+      rows: [],
+      total: 0,
+      totalPages: 0,
+    };
+  }
 };
