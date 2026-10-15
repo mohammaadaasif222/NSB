@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { RG_FAQS } from '@/components/responsible/rgContent';
 import { ChevronDownIcon } from '@/components/icons';
+import type { HelpItem } from '@/components/responsible/helpContent';
 
 /**
  * The questions, on native `<details>`.
@@ -19,8 +20,21 @@ import { ChevronDownIcon } from '@/components/icons';
  * the resting one, and a custom utility against a variant utility is a bet on
  * which order Tailwind happens to emit them in; two plain utilities are not.
  */
-const FaqSection: FC = () => {
+/**
+ * `items` are the FAQs written in the console (question as title, answer as
+ * text). With none, the built-in copy is used.
+ */
+const FaqSection: FC<{ items?: readonly HelpItem[] }> = ({ items }) => {
   const { t } = useTranslation();
+
+  const faqs: { key: string; question: string; answer: string }[] =
+    items && items.length > 0
+      ? items.map((i) => ({ key: i.id, question: i.title, answer: i.content }))
+      : RG_FAQS.map((faq) => ({
+          key: faq.question,
+          question: t(faq.question),
+          answer: t(faq.answer),
+        }));
 
   return (
     <div>
@@ -28,9 +42,9 @@ const FaqSection: FC = () => {
 
       {/* 60 tall closed, 16 apart, 34 of radius — the design's own row. */}
       <div className="mt-6 space-y-4">
-        {RG_FAQS.map((faq, i) => (
+        {faqs.map((faq, i) => (
           <details
-            key={faq.question}
+            key={faq.key}
             open={i === 0}
             className="group overflow-hidden rounded-[34px] bg-white/5 open:bg-white/10"
           >
@@ -39,7 +53,7 @@ const FaqSection: FC = () => {
                   it draws, and a question that turns yellow under the cursor
                   was an invention of the first pass. */}
               <h3 className="rl-h-card min-w-0 tracking-normal text-[#f0f1f5]">
-                {t(faq.question)}
+                {faq.question}
               </h3>
               <ChevronDownIcon
                 size={22}
@@ -50,8 +64,8 @@ const FaqSection: FC = () => {
             {/* The answer starts 2px under the 60px band and closes 25 above
                 the card's foot — the design's 170 for a three-line answer. */}
             <div className="px-6 pt-0.5 pb-6.25">
-              <p className="pe-1 text-base leading-7 font-medium text-[#9da2b4] 2xl:text-[18px]">
-                {t(faq.answer)}
+              <p className="pe-1 text-base leading-7 font-medium whitespace-pre-line text-[#9da2b4] 2xl:text-[18px]">
+                {faq.answer}
               </p>
             </div>
           </details>

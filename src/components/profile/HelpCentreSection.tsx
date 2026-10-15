@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { FieldGroup, IconTile, SettingRow } from '@/components/profile/SectionShell';
 import { LifeBuoyIcon, ShieldIcon, SparklesIcon } from '@/components/icons';
 
@@ -44,6 +45,7 @@ const RowLink: FC<{ href: string; children: string; external?: boolean }> = ({
  */
 const HelpCentreSection: FC = () => {
   const { t } = useTranslation();
+  const { responsible_gambling: responsibleOn } = usePlatformFeatures();
 
   return (
     <div className="space-y-[calc(var(--u)*30)]">
@@ -62,15 +64,17 @@ const HelpCentreSection: FC = () => {
             </RowLink>
           }
         />
-        <SettingRow
-          icon={
-            <IconTile>
-              <ShieldIcon size={20} className={GLYPH} />
-            </IconTile>
-          }
-          title={t('nav.responsiblePlay')}
-          action={<RowLink href="/responsible-gambling">{t('dash.viewAll')}</RowLink>}
-        />
+        {responsibleOn && (
+          <SettingRow
+            icon={
+              <IconTile>
+                <ShieldIcon size={20} className={GLYPH} />
+              </IconTile>
+            }
+            title={t('nav.responsiblePlay')}
+            action={<RowLink href="/responsible-gambling">{t('dash.viewAll')}</RowLink>}
+          />
+        )}
         <SettingRow
           icon={
             <IconTile>
