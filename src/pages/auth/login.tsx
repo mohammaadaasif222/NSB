@@ -20,6 +20,8 @@ import AuthMethods, { type AuthMethodId } from '@/components/auth/AuthMethods';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { useSteamAuth } from '@/hooks/useSteamAuth';
+import { useTwoFactorLogin, type TwoFactorChallenge } from '@/hooks/useTwoFactorLogin';
+import OtpVerification from '@/components/auth/OtpVerification';
 
 import type { ApiError, JwtPayload, LoginResponseData } from '@/types';
 
@@ -38,12 +40,20 @@ const Login: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [step, setStep] = useState<'choose' | 'other' | CredentialMethod>('choose');
 
+  // Set when the password was right and a one-time code is owed (2FA login).
+  const [pending, setPending] = useState<TwoFactorChallenge | null>(null);
+
   const { login } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
   const steam = useSteamAuth();
+
+  const twoFactor = useTwoFactorLogin({
+    onLoggedIn: () => void router.push('/'),
+    onRestart: () => setPending(null),
+  });
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -70,6 +80,24 @@ const Login: FC = () => {
         identifier: identifier.trim(),
         password: securePassword,
       });
+
+      const challenge = response?.data as
+        | (Partial<LoginResponseData> & {
+            otp_required?: boolean;
+            challenge?: string;
+            channel?: 'email' | 'mobile';
+            target?: string;
+          })
+        | undefined;
+      if (response?.success && challenge?.otp_required && challenge.challenge) {
+        setPassword('');
+        setPending({
+          challenge: challenge.challenge,
+          channel: challenge.channel ?? 'mobile',
+          target: challenge.target ?? '',
+        });
+        return;
+      }
 
       if (response?.success) {
         if (response?.data?.token) {
@@ -190,6 +218,25 @@ const Login: FC = () => {
       onChange: setIdentifier,
     },
   };
+
+  if (pending) {
+    return (
+      <AuthShell
+        subtitle={t('registerModal.otpTitle')}
+        onBack={() => setPending(null)}
+        backLabel={t('auth.back')}
+        action={{ href: REGISTER_HREF, label: t('login.register') }}
+        legal={t('auth.legal')}
+      >
+        <OtpVerification
+          channel={pending.channel}
+          target={pending.target}
+          onSubmit={(code) => twoFactor.verify(pending, code)}
+          onResend={() => twoFactor.resend(pending)}
+        />
+      </AuthShell>
+    );
+  }
 
   if (step === 'choose') {
     return (

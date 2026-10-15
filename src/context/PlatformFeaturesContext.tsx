@@ -14,6 +14,10 @@ export interface PlatformFeatures {
   rewards: boolean;
   vip_tiers: boolean;
   promotions: boolean;
+  /** System config, CRM: whether the Terms and conditions page is shown. */
+  terms_page: boolean;
+  /** System config, Security: two-factor login is on, so the profile offers 2FA. */
+  two_factor: boolean;
   promotion_filters: { live: boolean; expired: boolean; casino: boolean; sports: boolean };
 }
 
@@ -23,6 +27,10 @@ const ALL_ON: PlatformFeatures = {
   rewards: true,
   vip_tiers: true,
   promotions: true,
+  terms_page: true,
+  // Off until the API says otherwise: a 2FA switch shown while the platform
+  // ignores it would promise protection that is not there.
+  two_factor: false,
   promotion_filters: { live: true, expired: true, casino: true, sports: true },
 };
 
