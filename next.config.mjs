@@ -8,6 +8,9 @@ const REMOTE_IMAGE_HOSTS = [
   'mediumrare.imgix.net',
   // Alea Play
   'thumbs.alea.com',
+  // Pragmatic Play. Mirrors PP_ICON_BASE_URL in the backend's
+  // `pragmatic-play.config.ts`; if that env var is overridden, add its host too.
+  'common-static.ppgames.net',
   // Our own asset bucket: the site artwork marketing re-exports without a
   // deploy. Mirrors ASSET_CDN in `src/constants/cdn.ts` — the two have to
   // move together, and both still point at the staging bucket.
