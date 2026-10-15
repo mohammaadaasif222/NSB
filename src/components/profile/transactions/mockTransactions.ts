@@ -131,8 +131,8 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
 
       // Determine wallet effect based on transaction status
       let effectAmount: string;
-      if (tx.status === 'WITHDRAW_REJECTED') {
-        // Rejected withdrawals show 0 effect
+      if (tx.status === 'WITHDRAW_REJECTED' || tx.status === 'DEPOSIT_FAILED') {
+        // Rejected/failed transactions show 0 effect
         effectAmount = '0';
       } else if (tx.status === 'DEPOSIT_CONFIRMED') {
         // Confirmed deposits show USD amount
