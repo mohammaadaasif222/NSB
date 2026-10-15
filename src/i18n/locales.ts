@@ -455,6 +455,11 @@ const coreEn = {
   'game.retry': 'Try again',
   'game.fullscreen': 'Full screen',
   'game.insufficientFunds': 'Not enough balance for this bet.',
+  'game.playsIn': 'Plays in {currency}',
+  'game.currencyUnsupported':
+    "{display} isn't available for this game, so it plays in {currency}. Your balance is converted at a fixed rate for this session.",
+  'game.currencyNoRate':
+    'This game plays in {currency} for now: there is no exchange rate for {display} yet. Your balance is converted at a fixed rate for this session.',
 
   // client wants one.
   'notFound.eyebrow': 'Page not found',

@@ -111,4 +111,14 @@ export interface GameLaunch {
   locale: string;
   display_ratio: number | null;
   game: { id: string; slug: string; title: string };
+  /**
+   * What the game shows and takes bets in: the player's display currency
+   * when the game's provider supports it, otherwise USD (the wallet's own).
+   * Same money either way — converted at a rate fixed for the session.
+   */
+  currency: string;
+  /** The player's display currency at launch. */
+  display_currency: string;
+  /** Why `currency` differs from `display_currency`; null when they match. */
+  currency_fallback: 'UNSUPPORTED_BY_PROVIDER' | 'NO_RATE' | null;
 }
