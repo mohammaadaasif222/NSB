@@ -95,6 +95,11 @@ export interface PlayerKycProfile {
    * otherwise a profile held for want of a baseline could never supply one.
    */
   hasIdentityBaseline?: boolean;
+  /** Level 2 has been approved at some point; name and date of birth never reopen. */
+  identityLocked?: boolean;
+  /** A current ID is asked for by this date; Level 2 stays verified until then. */
+  refreshDueAt?: string | null;
+  refreshReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -124,6 +129,26 @@ export interface PlayerKycTier {
   required: boolean;
   requiredReason: string | null;
   approvedAt: string | null;
+  /**
+   * When the player actually sent documents for this level.
+   *
+   * `IN_PROGRESS` only means the widget was opened — minting its token sets
+   * that — so this is what separates a level someone is waiting on from one
+   * they opened and closed again.
+   */
+  submittedAt?: string | null;
+  /**
+   * Player-safe refusal text. Mapped from the tier's `moderation_comment` —
+   * the only comment Sumsub permits showing the applicant.
+   */
+  rejectionReason: string | null;
+  /** Someone here has to act; the player need do nothing. */
+  onHold: boolean;
+  /** When a granted level stops counting and will be asked for again. */
+  expiresAt: string | null;
+  /** A current document is asked for by this date; the level stays verified until then. */
+  refreshDueAt?: string | null;
+  refreshReason?: string | null;
   /** There is a configured Sumsub level and the level below is held. */
   canSubmit: boolean;
 }
@@ -138,4 +163,11 @@ export interface PlayerKycTiers {
   /** True only when tiers are on and the current level has no ceiling. */
   uncapped: boolean;
   tiers: PlayerKycTier[];
+  /**
+   * Level 1 or 2 our compliance team has asked of this player and they do
+   * not yet hold. Absent on an older server.
+   */
+  operatorDemand?: { level: number; reason: string } | null;
+  /** A liveness re-check staff asked for, while it is the player's to do or under review. */
+  liveness?: { status: 'REQUESTED' | 'IN_PROGRESS' | 'FAILED'; requestedAt: string | null } | null;
 }

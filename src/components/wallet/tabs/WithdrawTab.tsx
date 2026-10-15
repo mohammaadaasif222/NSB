@@ -120,13 +120,19 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
     message: string;
   } | null>(null);
 
+  // An approved profile is only Level 2, and the minimum is configurable to
+  // 4 — so the profile alone cannot answer whether this player may withdraw.
+  const [currentLevel, setCurrentLevel] = useState<number | null>(null);
+
   const fetchKyc = useCallback(async () => {
     try {
       setKycLoading(true);
-      const data = await kycApi.getKycMe();
+      const [data, tiers] = await Promise.all([kycApi.getKycMe(), kycApi.getTiers()]);
       setKyc(data);
+      setCurrentLevel(tiers?.currentTier ?? null);
     } catch {
       setKyc(null);
+      setCurrentLevel(null);
     } finally {
       setKycLoading(false);
     }
@@ -137,12 +143,25 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   }, [fetchKyc]);
 
   const isKycMandatory = summary?.kyc_mandatory_for_withdrawal ?? true;
-  const isKycApproved = !isKycMandatory || kyc?.status === 'APPROVED';
+  /** The backend's own default, so a moved baseline is not second-guessed. */
+  const minLevel = summary?.kyc_withdrawal_min_level ?? 2;
+  // Above Level 2 the tier view answers; the profile is the fallback if that
+  // request failed. Either way the backend decides — this picks what to show.
+  const isKycApproved =
+    !isKycMandatory ||
+    (minLevel <= 2
+      ? kyc?.status === 'APPROVED'
+      : currentLevel !== null
+        ? currentLevel >= minLevel
+        : kyc?.status === 'APPROVED');
   /**
    * The profile itself blocks withdrawals. Nothing in the form can change
    * that, so the form is not worth rendering — the gate takes its place.
    */
   const isHardGated = !kycLoading && isKycMandatory && !isKycApproved;
+  // Verified but short of the baseline. Reuses TIER_UPGRADE_REQUIRED so an
+  // approved player is not told to verify their identity again.
+  const gatedByLevel = isHardGated && kyc?.status === 'APPROVED';
   /**
    * A refusal against an otherwise-approved profile: a tier upgrade, or a hold
    * placed after approval. The form STAYS — a tier refusal means the amount
@@ -316,7 +335,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                 action="withdraw"
                 onLeave={onLeave}
                 apiMessage={kycRefusal?.message}
-                errorCode={kycRefusal?.code}
+                errorCode={kycRefusal?.code ?? (gatedByLevel ? 'TIER_UPGRADE_REQUIRED' : undefined)}
               />
               <p className="text-center text-[11px] text-slate-400 pt-1">
                 {t('acct.wallet.withdrawHelp')}

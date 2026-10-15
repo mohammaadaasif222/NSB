@@ -107,6 +107,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
   const [tiers, setTiers] = useState<PlayerKycTiers | null>(null);
   /** Which upper tier's Sumsub widget is open, if any. */
   const [tierModal, setTierModal] = useState<number | null>(null);
+  const [livenessOpen, setLivenessOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -140,20 +141,87 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
     }
   };
 
+  /**
+   * Both halves of the page, which no action only ever touches one of:
+   * approving Level 2 is what unlocks Level 3, and a Level 3 verdict can carry
+   * a hold that belongs to the profile.
+   */
+  const refreshAll = async (applyDefaults = false): Promise<void> => {
+    await Promise.all([
+      fetchProfile(applyDefaults),
+      // Supplementary: resolves to null on failure rather than throwing, so
+      // Levels 1 and 2 still render if the tier endpoint is unavailable.
+      kycApi.getTiers().then((next) => next && setTiers(next)),
+    ]);
+  };
+
   useEffect(() => {
-    void fetchProfile(true);
-    // Supplementary: getTiers resolves to null on failure rather than throwing,
-    // so Levels 1 and 2 still render if the tier endpoint is unavailable.
-    void kycApi.getTiers().then(setTiers);
+    void refreshAll(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * The seconds after the player does something, when one refetch is not
+   * enough.
+   *
+   * Closing the widget refreshes immediately, but the provider's own status
+   * change usually arrives a moment after that call has already returned the
+   * state as it was — so the card settled on "not started" for a level that
+   * had just been submitted, and only a reload corrected it. Three decreasing
+   * nudges cover the gap; the ordinary review poll takes over from there.
+   */
+  const [lastAction, setLastAction] = useState(0);
+
+  useEffect(() => {
+    if (!lastAction) return undefined;
+
+    const timers = [1200, 4000, 10_000].map((ms) => setTimeout(() => void refreshAll(), ms));
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastAction]);
+
+  /** Marks an action as just taken: refresh now, then settle. */
+  const refreshAfterAction = (): void => {
+    void refreshAll();
+    setLastAction((n) => n + 1);
+  };
+
+  /**
+   * Coming back to the tab. An operator can grant, reject or withdraw a level
+   * while the player is looking at another tab, and nothing on this page would
+   * otherwise learn of it until a reload — the poll only runs while something
+   * is awaiting a verdict.
+   */
+  useEffect(() => {
+    const onVisible = (): void => {
+      if (document.visibilityState === 'visible') void refreshAll();
+    };
+
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const gateState = resolveKycGateState(kycProfile);
+  // Level 1 or 2 asked of this player by our compliance team. The server drops
+  // it once the level is held.
+  const operatorDemand = tiers?.operatorDemand ?? null;
   const [pollingStopped, setPollingStopped] = useState(false);
   // Single source of truth: the same flag the backend gates Level 2 on.
   const isLevel1Complete = Boolean(kycProfile?.isLevel1Complete);
 
   // A level 3/4 submission is awaiting a verdict, so the page has something to
   // wait for even when Level 2 is long since approved.
+  //
+  // `IN_PROGRESS` is deliberately included even though the badge no longer
+  // treats it as under review: between the player finishing the widget and
+  // the provider's webhook landing, that is the only state a real submission
+  // has. Narrowing this to submitted levels would leave the page waiting for
+  // an update it had stopped asking for.
   const tierInReview = Boolean(
     tiers?.tiers.some((t) => t.status === 'IN_PROGRESS' || t.status === 'PENDING_REVIEW')
   );
@@ -223,6 +291,11 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
       if (updated) {
         setKycProfile(updated);
       }
+      // The button says "refresh", so it refreshes the whole page's state.
+      // Reconciling the tiers too, because that is the half a missed webhook
+      // strands — and it is the half the player cannot see any other way.
+      const tiersNext = await kycApi.syncTiers();
+      if (tiersNext) setTiers(tiersNext);
     } finally {
       setSyncing(false);
     }
@@ -295,12 +368,23 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
 
               {level1Open && (
                 <div className="border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)]">
+                  {/* Level 1 is the first step of either level an operator can
+                      push here, so it says why before the form. */}
+                  {!isLevel1Complete && operatorDemand && (
+                    <p className={`${BODY} mb-[calc(var(--u)*12)] text-[#fcd535]`}>
+                      {operatorDemand.reason}
+                    </p>
+                  )}
                   <KycLevel1Form
                     profile={kycProfile}
                     onSuccess={(updated) => {
                       setKycProfile(updated);
                       setLevel1Open(false);
                       setLevel2Open(true);
+                      // Completing Level 1 is what makes Level 3 and 4
+                      // answerable at all, and their cards are already on
+                      // screen underneath this form.
+                      refreshAfterAction();
                     }}
                   />
                 </div>
@@ -401,6 +485,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
 
               {level2Open && isLevel1Complete && (
                 <div className="space-y-[calc(var(--u)*16)] border-t border-white/8 px-[calc(var(--u)*18)] pt-[calc(var(--u)*16)] pb-[calc(var(--u)*18)]">
+                  {operatorDemand?.level === 2 && gateState !== 'APPROVED' && (
+                    <p className={`${BODY} text-[#fcd535]`}>{operatorDemand.reason}</p>
+                  )}
                   {gateState === 'APPROVED' ? (
                     <div
                       className={`${PANEL} flex items-center gap-[calc(var(--u)*12)] bg-[#35d07f]/8`}
@@ -426,6 +513,20 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                               })`
                             : t('acct.verify.govDocVerified')}
                         </span>
+                        {kycProfile?.refreshDueAt && kycProfile.refreshReason && (
+                          <span className={`mt-[calc(var(--u)*6)] block ${BODY} text-[#fcd535]`}>
+                            {kycProfile.refreshReason}
+                          </span>
+                        )}
+                        {kycProfile?.refreshDueAt && (
+                          <button
+                            type="button"
+                            onClick={() => setModalOpen(true)}
+                            className={`${ACTION} mt-[calc(var(--u)*8)] rl-chip-success text-[#35d07f]`}
+                          >
+                            {t('acct.verify.resubmitDocuments')}
+                          </button>
+                        )}
                       </span>
                     </div>
                   ) : gateState === 'IN_REVIEW' ? (
@@ -535,6 +636,31 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
               )}
             </div>
 
+            {/* A liveness re-check staff asked for (answer 13). Above the
+                levels, because it is the one thing being asked right now. */}
+            {tiers?.liveness && (
+              <div className={`${LEVEL_CARD} space-y-[calc(var(--u)*8)] p-[calc(var(--u)*18)]`}>
+                <p className={`${LEVEL_TITLE} flex items-center gap-[calc(var(--u)*8)]`}>
+                  <ShieldCheckIcon size={16} />
+                  {t('acct.verify.livenessTitle')}
+                </p>
+                {tiers.liveness.status === 'FAILED' ? (
+                  <p className={`${BODY} text-[#fcd535]`}>{t('acct.verify.livenessFailed')}</p>
+                ) : (
+                  <>
+                    <p className={BODY}>{t('acct.verify.livenessBody')}</p>
+                    <button
+                      type="button"
+                      onClick={() => setLivenessOpen(true)}
+                      className={`${ACTION} rl-chip-success text-[#35d07f]`}
+                    >
+                      {t('acct.verify.livenessStart')}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* LEVELS 3 & 4: driven by real tier state, not markup */}
             {UPPER_TIERS.map((meta) => {
               const state = tiers?.tiers.find((t) => t.tier === meta.tier);
@@ -542,10 +668,25 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
               const setOpen = meta.tier === 3 ? setLevel3Open : setLevel4Open;
 
               const verified = state?.status === 'APPROVED';
+              // `IN_PROGRESS` is set when the widget's token is minted, so a
+              // player who opened Level 4 and closed it without uploading
+              // anything was shown "In Review" for a level nobody had. Same
+              // rule Level 2 already uses: it is under review once something
+              // was actually sent.
               const inReview =
-                state?.status === 'PENDING_REVIEW' || state?.status === 'IN_PROGRESS';
+                state?.status === 'PENDING_REVIEW' ||
+                (state?.status === 'IN_PROGRESS' && Boolean(state?.submittedAt));
               const rejected = state?.status === 'REJECTED';
               const required = Boolean(state?.required) && !verified;
+              /** Opened the widget, sent nothing. Theirs to finish. */
+              const started = state?.status === 'IN_PROGRESS' && !state?.submittedAt;
+              // Someone here has to act; the player need do nothing. Was on
+              // the wire and unused, so a held level still offered "Continue
+              // verification" — which reopens the widget, mints a billable
+              // token and changes nothing.
+              const onHold = Boolean(state?.onHold) && !verified;
+              /** Verified, with a current document asked for by a date. */
+              const refreshing = verified && Boolean(state?.refreshDueAt);
 
               return (
                 <div
@@ -597,6 +738,12 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                         <span className={`${BADGE} bg-[#fcd535]/15 text-[#fcd535]`}>
                           {t('acct.verify.required')}
                         </span>
+                      ) : started ? (
+                        // Not "locked": they are inside this level already, and
+                        // the panel below offers them the way back in.
+                        <span className={`${BADGE} bg-white/10 text-[#9da2b4]`}>
+                          {t('acct.verify.tierUnfinished')}
+                        </span>
                       ) : (
                         <span className={`${BADGE} bg-white/10 text-[#9da2b4]`}>
                           <LockIcon size={11} />
@@ -621,11 +768,34 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                         <p className="text-[#fcd535]">{state.requiredReason}</p>
                       )}
 
-                      {rejected && (
-                        <p className="text-[#ef4462]">{t('acct.verify.tierRejected')}</p>
+                      {refreshing && state?.refreshReason && (
+                        <p className="text-[#fcd535]">{state.refreshReason}</p>
                       )}
 
-                      {state?.canSubmit && !verified && (
+                      {/* `rejectionReason` is the player-safe provider text;
+                          the generic line covers a rejection without one. */}
+                      {rejected && (
+                        <p className="text-[#ef4462]">
+                          {state?.rejectionReason || t('acct.verify.tierRejected')}
+                        </p>
+                      )}
+
+                      {/*
+                        Held for a person here to decide. Deliberately the
+                        generic line and nothing else: on a hold the provider
+                        comment, when there is one, says the provider
+                        ACCEPTED the submission — which contradicts the badge
+                        and would read as approval.
+                      */}
+                      {onHold && !verified && !rejected && (
+                        <p className="text-[#fcd535]">{t('acct.verify.tierOnHold')}</p>
+                      )}
+
+                      {/* Says plainly that nothing was sent, which is the one
+                          thing an abandoned level has to be clear about. */}
+                      {started && !onHold && <p>{t('acct.verify.tierUnfinishedBody')}</p>}
+
+                      {state?.canSubmit && (!verified || refreshing) && !onHold && (
                         <button
                           type="button"
                           onClick={() => setTierModal(meta.tier)}
@@ -636,9 +806,9 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
                           }`}
                         >
                           <ShieldCheckIcon size={16} />
-                          {rejected
+                          {rejected || refreshing
                             ? t('acct.verify.resubmitDocuments')
-                            : inReview
+                            : inReview || started
                               ? t('acct.kycGate.ctaContinue')
                               : t('acct.verify.startLevel', { level: meta.tier })}
                         </button>
@@ -646,7 +816,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
 
                       {required && !state?.canSubmit && <p>{t('acct.verify.complianceContact')}</p>}
 
-                      {!required && !verified && !rejected && !inReview && (
+                      {!required && !verified && !rejected && !inReview && !onHold && !started && (
                         <p>
                           {tiers?.enabled
                             ? t('acct.verify.higherVolumeOnly')
@@ -665,6 +835,20 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
         <ContactCards me={me} onChangeEmail={onChangeEmail} />
       </div>
 
+      {livenessOpen && (
+        <KycVerifyModal
+          liveness
+          onClose={() => {
+            setLivenessOpen(false);
+            void kycApi.syncTiers().then((next) => next && setTiers(next));
+          }}
+          onSubmitted={() => {
+            setLivenessOpen(false);
+            void kycApi.syncTiers().then((next) => next && setTiers(next));
+          }}
+        />
+      )}
+
       {/* Sumsub WebSDK Modal — Level 3 / 4 */}
       {tierModal !== null && (
         <KycVerifyModal
@@ -672,10 +856,12 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
           onClose={() => {
             setTierModal(null);
             void kycApi.syncTiers().then((next) => next && setTiers(next));
+            refreshAfterAction();
           }}
           onSubmitted={() => {
             setTierModal(null);
             void kycApi.syncTiers().then((next) => next && setTiers(next));
+            refreshAfterAction();
           }}
         />
       )}
@@ -686,10 +872,12 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
           onClose={() => {
             setModalOpen(false);
             void handleSync();
+            refreshAfterAction();
           }}
           onSubmitted={() => {
             setModalOpen(false);
             void handleSync();
+            refreshAfterAction();
           }}
         />
       )}
