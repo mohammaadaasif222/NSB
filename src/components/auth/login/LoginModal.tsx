@@ -2,6 +2,7 @@ import { useState, type FC } from 'react';
 
 import { useTranslation } from '@/context/I18nContext';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
+import { useTwoFactorLogin, type TwoFactorChallenge } from '@/hooks/useTwoFactorLogin';
 import { usePasswordReset, type ResetTarget } from '@/hooks/usePasswordReset';
 import { analytics } from '@/services/analytics';
 import AuthModalShell from '@/components/auth/AuthModalShell';
@@ -24,7 +25,7 @@ interface LoginModalProps {
   entry?: LoginEntry;
 }
 
-type Step = 'method' | 'form' | 'forgot' | 'otp' | 'newPassword';
+type Step = 'method' | 'form' | 'forgot' | 'otp' | 'newPassword' | 'twofa';
 
 const FORM_TITLE: Record<LoginMethod, TranslationKey> = {
   username: 'loginModal.withUsername',
@@ -37,6 +38,7 @@ const STEP_TITLE: Record<Exclude<Step, 'form'>, TranslationKey> = {
   forgot: 'loginModal.forgotTitle',
   otp: 'registerModal.otpTitle',
   newPassword: 'loginModal.newPasswordTitle',
+  twofa: 'registerModal.otpTitle',
 };
 
 /**
@@ -55,6 +57,16 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
   const reset = usePasswordReset();
 
   const [step, setStep] = useState<Step>(entry);
+  // Set once the password was accepted and a one-time code is owed. The code
+  // step only exists while this is set.
+  const [pending, setPending] = useState<TwoFactorChallenge | null>(null);
+  const twoFactor = useTwoFactorLogin({
+    onLoggedIn: onClose,
+    onRestart: () => {
+      setPending(null);
+      setStep('form');
+    },
+  });
   const [method, setMethod] = useState<LoginMethod>('mobile');
   // The form mounts once a method is chosen and then stays, hidden, behind
   // the reset steps.
@@ -98,7 +110,9 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
       forgot: entry === 'forgot' ? 'method' : 'form',
       otp: 'forgot',
       newPassword: 'otp',
+      twofa: 'form',
     };
+    if (step === 'twofa') setPending(null);
     setStep(previous[step]);
   };
 
@@ -137,6 +151,10 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
             initialIdentifier={prefill.identifier}
             onForgotPassword={() => setStep('forgot')}
             onLoggedIn={onClose}
+            onTwoFactor={(challenge) => {
+              setPending(challenge);
+              setStep('twofa');
+            }}
           />
         </div>
       )}
@@ -162,6 +180,15 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
             return true;
           }}
           onResend={reset.resendCode}
+        />
+      )}
+
+      {step === 'twofa' && pending && (
+        <OtpVerification
+          channel={pending.channel}
+          target={pending.target}
+          onSubmit={(code) => twoFactor.verify(pending, code)}
+          onResend={() => twoFactor.resend(pending)}
         />
       )}
 

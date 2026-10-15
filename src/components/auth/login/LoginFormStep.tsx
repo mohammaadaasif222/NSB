@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import PhoneField from '@/components/auth/PhoneField';
 import NeedHelpLink from '@/components/auth/NeedHelpLink';
 
+import type { TwoFactorChallenge } from '@/hooks/useTwoFactorLogin';
 import type { LoginMethod } from '@/types';
 
 interface LoginFormStepProps {
@@ -14,6 +15,7 @@ interface LoginFormStepProps {
   initialIdentifier?: string;
   onForgotPassword: () => void;
   onLoggedIn: () => void;
+  onTwoFactor?: (challenge: TwoFactorChallenge) => void;
 }
 
 /**
@@ -25,12 +27,14 @@ const LoginFormStep: FC<LoginFormStepProps> = ({
   initialIdentifier,
   onForgotPassword,
   onLoggedIn,
+  onTwoFactor,
 }) => {
   const { t } = useTranslation();
   const { values, setField, invalid, submitting, submit } = useLoginForm({
     method,
     initialIdentifier,
     onLoggedIn,
+    onTwoFactor,
   });
   const idPrefix = `login-${method}`;
 
