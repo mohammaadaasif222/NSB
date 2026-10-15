@@ -10,7 +10,7 @@ import recentIcon from '@/assets/lobby/rail/nav-recent.svg';
 import favouritesIcon from '@/assets/lobby/rail/nav-favourites.svg';
 import originalsIcon from '@/assets/lobby/rail/nav-originals.svg';
 import betsIcon from '@/assets/lobby/rail/nav-bets.svg';
-import themeIcon from '@/assets/lobby/rail/nav-theme.svg';
+// import themeIcon from '@/assets/lobby/rail/nav-theme.svg';
 import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
 import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
 import promotionIcon from '@/assets/lobby/rail/nav-promotion.svg';
@@ -405,7 +405,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           >
             {t('nav.myBets')}
           </RailLink>
-          <RailLink
+          {/* <RailLink
             onSelect={() => setThemeOpen(true)}
             active={false}
             icon={icon(themeIcon)}
@@ -413,7 +413,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             collapsed={collapsed}
           >
             {t('nav.theme')}
-          </RailLink>
+          </RailLink> */}
           <RailLink
             href="/vip-club"
             active={pathname === '/vip-club'}

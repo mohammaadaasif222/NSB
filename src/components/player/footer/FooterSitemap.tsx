@@ -93,7 +93,7 @@ const Column: FC<{
  */
 const FooterSitemap: FC = () => {
   const { t } = useTranslation();
-  const { rewards: rewardsOn, promotions: promotionsOn } = usePlatformFeatures();
+  const { rewards: rewardsOn, promotions: promotionsOn, terms_page: termsOn } = usePlatformFeatures();
   const soon = t('common.soon');
 
   // "Rolluck Drops" is the rewards page. Dropped from the column while
@@ -102,6 +102,13 @@ const FooterSitemap: FC = () => {
     (link) =>
       (rewardsOn || link.href !== '/rewards') && (promotionsOn || link.href !== '/promotions')
   );
+
+  // The Terms page (and /privacy-policy, which redirects into it) is switched
+  // off from System config → CRM; its links go with it.
+  const legalPages = (link: { href?: string }): boolean =>
+    termsOn || !(link.href?.startsWith('/terms-of-service') || link.href === '/privacy-policy');
+  const help = HELP_LINKS.filter(legalPages);
+  const legal = LEGAL_LINKS.filter(legalPages);
 
   return (
     <div className="rl-panel overflow-hidden">
@@ -113,13 +120,13 @@ const FooterSitemap: FC = () => {
           <Column title={t('nav.casino')} items={CASINO_LINKS} soon={soon} />
           <Column title={t('nav.sports')} items={SPORTS_LINKS} soon={soon} />
           <Column title={t('lobby.footer.earn')} items={earn} soon={soon} />
-          <Column title={t('lobby.footer.help')} items={HELP_LINKS} soon={soon} inset />
+          <Column title={t('lobby.footer.help')} items={help} soon={soon} inset />
           {/* Pinned to the second track at two columns, where the natural flow
               would otherwise drop it under Earn and leave it looking like a
               list nobody headed. From three columns up it falls beside Help on
               its own. */}
           <Column
-            items={LEGAL_LINKS}
+            items={legal}
             soon={soon}
             inset
             className="col-start-2 @xl:col-start-auto"
