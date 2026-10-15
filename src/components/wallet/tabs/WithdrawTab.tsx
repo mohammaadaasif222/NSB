@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 
+import api from '@/services/api';
 import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
@@ -85,6 +86,37 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       setNetwork(enabledNetworks[0].code);
     }
   }, [enabledNetworks, network]);
+
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      if (!currency) {
+        setExchangeRate(null);
+        return;
+      }
+      try {
+        setLoadingRate(true);
+        const response = await api.get(`/wallet/rates?fiat=${displayCurrency}`) as any;
+        const rates = response.data as Array<{ from: string; to: string; rate: string }>;
+        if (rates && Array.isArray(rates)) {
+          const rate = rates.find((r) => r.from === currency && r.to === displayCurrency);
+          if (rate) {
+            setExchangeRate(rate.rate);
+          } else {
+            setExchangeRate(null);
+          }
+        } else {
+          setExchangeRate(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch exchange rate:', err);
+        setExchangeRate(null);
+      } finally {
+        setLoadingRate(false);
+      }
+    };
+
+    void fetchExchangeRate();
+  }, [currency, displayCurrency]);
 
   /* ── Balance (USD-native unified model) ─────────────────────────── */
 
@@ -175,6 +207,8 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   const [toAddress, setToAddress] = useState('');
   const [displayAmount, setDisplayAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<string | null>(null);
+  const [loadingRate, setLoadingRate] = useState(false);
 
   /**
    * A refusal was about the request that produced it. Editing any part of that
@@ -182,6 +216,19 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
    * amount under the cap is still reading why the previous one was refused.
    */
   const clearRefusal = (): void => setKycRefusal(null);
+
+  const calculatedCryptoAmount = useMemo(() => {
+    if (!displayAmount || !exchangeRate || Number(exchangeRate) === 0) return null;
+    try {
+      const displayNum = Number(displayAmount);
+      const rate = Number(exchangeRate);
+      if (!isFinite(displayNum) || !isFinite(rate) || displayNum <= 0) return null;
+      const crypto = displayNum / rate;
+      return crypto.toFixed(8);
+    } catch {
+      return null;
+    }
+  }, [displayAmount, exchangeRate]);
 
   // Handle display amount input
   const handleDisplayChange = (value: string) => {
@@ -389,41 +436,48 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                 />
               </div>
 
-              {/* Amount Input - Display Currency Only */}
+              {/* Amount Input - Display Currency + Crypto Amount */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-[11px] text-slate-400">
-                    {t('acct.wallet.withdrawAmount')}
-                  </label>
-                  <div className="flex gap-3 items-center text-[11px]">
-                    <span className="text-slate-500">
-                      {t('acct.wallet.balanceValue', {
-                        amount: `${availableDisplay} ${displayCurrency}`,
-                      })}
-                    </span>
+                {/* Two Column Layout: Display Currency = Crypto Amount */}
+                <div className="flex items-end gap-2 sm:gap-3">
+                  {/* Display Currency Amount Input */}
+                  <div className="flex-1 space-y-2">
+                    <label className="block text-[10px] text-slate-500">
+                      Amount ({displayCurrency})
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={displayAmount}
+                      onChange={(e) => handleDisplayChange(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full h-12 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
+                    />
                   </div>
-                </div>
 
-                {/* Display Currency Amount Input */}
-                <div>
-                  <label className="block text-[10px] text-slate-500 mb-1">
-                    {t('acct.wallet.currencyAmount', { currency: displayCurrency })}
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={displayAmount}
-                    onChange={(e) => handleDisplayChange(e.target.value)}
-                    placeholder={t('acct.wallet.enterAmount', { currency: displayCurrency })}
-                    className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
-                  />
-                </div>
+                  {/* Equals Sign - Centered in the middle */}
+                  <span className="text-2xl sm:text-3xl text-slate-400 font-light pb-1">
+                    =
+                  </span>
 
-                {/* Info Text */}
-                <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-2.5">
-                  <p className="text-[10px] text-blue-200 leading-relaxed">
-                    ℹ️ {t('acct.wallet.liveRateNote', { currency })}
-                  </p>
+                  {/* Crypto Amount Input (Read-only) */}
+                  <div className="flex-1 space-y-2">
+                    <label className="block text-[10px] text-slate-500">
+                      Amount ({currency})
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        loadingRate
+                          ? 'Loading...'
+                          : !displayAmount
+                            ? '0.00'
+                            : calculatedCryptoAmount || '—'
+                      }
+                      readOnly
+                      className="w-full h-12 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none cursor-not-allowed tabular-nums"
+                    />
+                  </div>
                 </div>
 
                 {/* Quick percentage buttons */}
