@@ -86,6 +86,7 @@ export interface TxQuery {
 export interface TxPage {
   rows: readonly Transaction[];
   total: number;
+  totalPages: number;
 }
 
 /**
@@ -94,14 +95,22 @@ export interface TxPage {
  */
 export const queryTransactions = async ({ query, filter, page, pageSize }: TxQuery): Promise<TxPage> => {
   try {
-    const response = await api.get('/wallet/transactions', {
-      params: {
-        type: filter === 'all' ? 'all' : filter,
-        search: query.trim() || undefined,
-        page,
-        limit: pageSize,
-      },
-    });
+    // Build query string manually to avoid nested params issue
+    const queryParts: string[] = [];
+
+    queryParts.push(`page=${page}`);
+    queryParts.push(`limit=${pageSize}`);
+
+    if (filter !== 'all') {
+      queryParts.push(`type=${filter}`);
+    }
+
+    if (query.trim()) {
+      queryParts.push(`search=${encodeURIComponent(query.trim())}`);
+    }
+
+    const queryString = queryParts.join('&');
+    const response = await api.get(`/wallet/transactions?${queryString}`);
 
     const apiData = response.data?.data || response.data;
     const transactions = apiData.transactions || [];
@@ -147,12 +156,14 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
     return {
       rows,
       total,
+      totalPages: apiData.pagination?.total_pages || Math.ceil(total / pageSize),
     };
   } catch (error) {
     console.error('Failed to fetch transactions:', error);
     return {
       rows: [],
       total: 0,
+      totalPages: 0,
     };
   }
 };

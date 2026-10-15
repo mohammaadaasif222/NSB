@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useState, useRef, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import TransactionFilters from '@/components/profile/transactions/TransactionFilters';
@@ -27,13 +27,29 @@ import { analytics } from '@/services/analytics';
  */
 const TransactionsSection: FC = () => {
   const { t } = useTranslation();
+  const [inputQuery, setInputQuery] = useState('');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<TxFilter>('all');
   const [page, setPage] = useState(1);
 
   const [rows, setRows] = useState<readonly Transaction[]>([]);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const debounceTimer = useRef<NodeJS.Timeout>();
+
+  // Debounce search input (500ms delay)
+  useEffect(() => {
+    debounceTimer.current = setTimeout(() => {
+      setQuery(inputQuery);
+      setPage(1);
+    }, 500);
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [inputQuery]);
 
   // The closest thing to a cashier the app has today. Traffic here is the
   // baseline for the buy/redeem flows when they arrive.
@@ -50,12 +66,14 @@ const TransactionsSection: FC = () => {
       if (!live) return;
       setRows(result.rows);
       setTotal(result.total);
+      setTotalPages(result.totalPages);
       setLoading(false);
     }).catch((error) => {
       console.error('Error fetching transactions:', error);
       if (live) {
         setRows([]);
         setTotal(0);
+        setTotalPages(0);
         setLoading(false);
       }
     });
@@ -65,10 +83,8 @@ const TransactionsSection: FC = () => {
     };
   }, [query, filter, page]);
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  /** Any change to what is being asked for starts again at page one. */
-  const reset =
+  /** Any change to filter starts again at page one. */
+  const resetPage =
     <T,>(set: (value: T) => void) =>
     (value: T) => {
       set(value);
@@ -81,10 +97,10 @@ const TransactionsSection: FC = () => {
 
       <div className="mt-[calc(var(--u)*18)]">
         <TransactionFilters
-          query={query}
-          onQuery={reset(setQuery)}
+          query={inputQuery}
+          onQuery={setInputQuery}
           filter={filter}
-          onFilter={reset(setFilter)}
+          onFilter={resetPage(setFilter)}
         />
       </div>
 
