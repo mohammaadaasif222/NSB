@@ -1,6 +1,6 @@
 # ROLLUCK — player app
 
-The player-facing web app for ROLLUCK: the games lobby, per-category catalogue
+The player facing frontend app for ROLLUCK: the games lobby, per-category catalogue
 pages, game pages and the player's profile. It talks to `rolluck-backend`.
 
 ## Tech stack
