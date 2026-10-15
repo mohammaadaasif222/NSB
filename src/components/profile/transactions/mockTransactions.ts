@@ -110,7 +110,7 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
     }
 
     const queryString = queryParts.join('&');
-    const response = await api.get(`/wallet/transactions?${queryString}`);
+    const response = await api.get(`/wallet/transactions?${queryString}`) as any;
 
     const apiData = response.data?.data || response.data;
     const transactions = apiData.transactions || [];
