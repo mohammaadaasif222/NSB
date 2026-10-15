@@ -164,7 +164,7 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  */
 const SiteFooter: FC = () => {
   const { t } = useTranslation();
-  const { rewards: rewardsOn, promotions: promotionsOn } = usePlatformFeatures();
+  const { rewards: rewardsOn, promotions: promotionsOn, terms_page: termsOn } = usePlatformFeatures();
   const soon = t('common.soon');
 
   const toTop = (): void =>
@@ -209,12 +209,18 @@ const SiteFooter: FC = () => {
   const help: FooterLink[] = [
     { label: t('nav.blogs'), href: '/blogs' },
     { label: t('lobby.footer.reportBug'), href: 'mailto:bugbounty@rolluck.com' },
-    { label: t('lobby.footer.privacy'), href: '/privacy-policy' },
-    { label: t('lobby.footer.terms'), href: '/terms-of-service' },
+    ...(termsOn
+      ? [
+          { label: t('lobby.footer.privacy'), href: '/privacy-policy' },
+          { label: t('lobby.footer.terms'), href: '/terms-of-service' },
+        ]
+      : []),
   ];
 
   const legal: FooterLink[] = [
-    { label: t('lobby.footer.sportsTerms'), href: '/terms-of-service#sports-betting' },
+    ...(termsOn
+      ? [{ label: t('lobby.footer.sportsTerms'), href: '/terms-of-service#sports-betting' }]
+      : []),
     { label: t('menu.liveSupport') },
     { label: t('menu.responsibleGambling'), href: '/responsible-play' },
   ];

@@ -14,6 +14,8 @@ export interface PlatformFeatures {
   rewards: boolean;
   vip_tiers: boolean;
   promotions: boolean;
+  /** System config, CRM: whether the Terms and conditions page is shown. */
+  terms_page: boolean;
   promotion_filters: { live: boolean; expired: boolean; casino: boolean; sports: boolean };
 }
 
@@ -23,6 +25,7 @@ const ALL_ON: PlatformFeatures = {
   rewards: true,
   vip_tiers: true,
   promotions: true,
+  terms_page: true,
   promotion_filters: { live: true, expired: true, casino: true, sports: true },
 };
 
