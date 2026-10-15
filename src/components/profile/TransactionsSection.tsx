@@ -45,12 +45,19 @@ const TransactionsSection: FC = () => {
     let live = true;
     setLoading(true);
 
-    void queryTransactions({ query, filter, page, pageSize: PAGE_SIZE }).then((result) => {
+    queryTransactions({ query, filter, page, pageSize: PAGE_SIZE }).then((result) => {
       // A slower answer to an older query must not overwrite a newer one.
       if (!live) return;
       setRows(result.rows);
       setTotal(result.total);
       setLoading(false);
+    }).catch((error) => {
+      console.error('Error fetching transactions:', error);
+      if (live) {
+        setRows([]);
+        setTotal(0);
+        setLoading(false);
+      }
     });
 
     return () => {
