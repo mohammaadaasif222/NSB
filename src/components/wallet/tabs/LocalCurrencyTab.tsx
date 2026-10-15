@@ -81,7 +81,6 @@ const LocalCurrencyTab: FC = () => {
 
   // Country-specific document types
   const [countryDocumentTypes, setCountryDocumentTypes] = useState<any[]>([]);
-  const [countryConfig, setCountryConfig] = useState<any>(null);
   const [loadingDocTypes, setLoadingDocTypes] = useState(false);
 
   // Fetch enabled display currencies
@@ -170,18 +169,16 @@ const LocalCurrencyTab: FC = () => {
           return;
         }
 
-        const response = await api.get(`/wallet/deposit/d24/document-types?country=${countryCode}`);
+        const response = await api.get(`/wallet/deposit/d24/document-types?country=${countryCode}`) as any;
         const docConfig = response?.data?.data;
 
         if (docConfig) {
           setCountryDocumentTypes(docConfig.document_types || []);
-          setCountryConfig(docConfig);
           console.log('[D24] Document types loaded for country:', countryCode, docConfig);
         }
       } catch (error) {
         console.error('[D24] Error fetching document types:', error);
         setCountryDocumentTypes([]);
-        setCountryConfig(null);
       } finally {
         setLoadingDocTypes(false);
       }
@@ -479,7 +476,7 @@ const LocalCurrencyTab: FC = () => {
       console.log('[D24-CARD] Response received:', res);
 
       // D24 API response can have nested data structure
-      const responseData = res?.data?.data || res?.data;
+      const responseData = (res?.data?.data || res?.data) as any;
 
       if (!responseData) {
         console.error('[D24-CARD] No response data received');
