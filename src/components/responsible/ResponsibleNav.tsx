@@ -90,9 +90,11 @@ const INK_SELECTED = 'text-[#ffe779]';
 interface Props {
   active: ResponsibleSection;
   onSelect: (section: ResponsibleSection) => void;
+  /** The sections the player may see (System config → Help Center). All when omitted. */
+  visible?: readonly ResponsibleSection[];
 }
 
-const ResponsibleNav: FC<Props> = ({ active, onSelect }) => {
+const ResponsibleNav: FC<Props> = ({ active, onSelect, visible }) => {
   const { t } = useTranslation();
 
   // `min-w-0` is load-bearing under `lg` for the same reason it is in
@@ -112,7 +114,8 @@ const ResponsibleNav: FC<Props> = ({ active, onSelect }) => {
 
       {/* 12 between pills — the design stacks them on a 60px pitch at 48 tall. */}
       <ul className="scrollbar-none flex gap-3 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
-        {RESPONSIBLE_SECTIONS.map(({ key, labelKey, icon, w, h }) => {
+        {RESPONSIBLE_SECTIONS.filter(({ key }) => !visible || visible.includes(key)).map(
+          ({ key, labelKey, icon, w, h }) => {
           const selected = key === active;
           return (
             <li key={key} className="shrink-0 lg:shrink">
@@ -131,7 +134,8 @@ const ResponsibleNav: FC<Props> = ({ active, onSelect }) => {
               </button>
             </li>
           );
-        })}
+          }
+        )}
       </ul>
     </nav>
   );

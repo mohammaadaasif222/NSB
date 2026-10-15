@@ -95,7 +95,7 @@ const LEAVES: Leaf[] = [
   { labelKey: 'menu.bonusesRewards', icon: bonusesIcon, href: '/bonuses' },
   { labelKey: 'menu.promotions', icon: promotionsIcon, href: '/promotions' },
   { labelKey: 'menu.responsibleGambling', icon: responsibleIcon, href: '/responsible-gambling' },
-  { labelKey: 'menu.helpCenter', icon: helpIcon, href: profile('help') },
+  // { labelKey: 'menu.helpCenter', icon: helpIcon, href: profile('help') },
   { labelKey: 'menu.liveSupport', icon: supportIcon, action: 'support' },
 ];
 
@@ -160,6 +160,7 @@ const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void }> = ({ leaf, onA
 /** A row that folds its group's rows open beneath it. */
 const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group, onAction }) => {
   const { t } = useTranslation();
+  const { help_center: helpOn } = usePlatformFeatures();
   const [open, setOpen] = useState(false);
   const listId = useId();
 
@@ -182,7 +183,9 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
       </button>
       {open && (
         <ul id={listId} className={LIST}>
-          {group.items.map((leaf) => (
+          {group.items
+            .filter((leaf) => helpOn || leaf.href !== profile('help'))
+            .map((leaf) => (
             <li key={leaf.labelKey}>
               <LeafRow leaf={leaf} onAction={onAction} />
             </li>
@@ -223,7 +226,11 @@ interface Props {
  * phone. Closes on a choice, a click away, Escape, or navigation.
  */
 const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
-  const { promotions: promotionsOn } = usePlatformFeatures();
+  const {
+    promotions: promotionsOn,
+    help_center: helpOn,
+    responsible_gambling: responsibleOn,
+  } = usePlatformFeatures();
   const { t } = useTranslation();
   const router = useRouter();
   const { logout } = useAuth();
@@ -291,7 +298,10 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
               <GroupRow group={AFFILIATE} onAction={onAction} />
               {LEAVES.filter(
                 (leaf) =>
-                  (phone || !leaf.phoneOnly) && (promotionsOn || leaf.href !== '/promotions')
+                  (phone || !leaf.phoneOnly) &&
+                  (promotionsOn || leaf.href !== '/promotions') &&
+                  (responsibleOn || leaf.href !== '/responsible-gambling') &&
+                  (helpOn || leaf.labelKey !== 'menu.helpCenter')
               ).map((leaf) => (
                 <li key={leaf.labelKey}>
                   <LeafRow leaf={leaf} onAction={onAction} />

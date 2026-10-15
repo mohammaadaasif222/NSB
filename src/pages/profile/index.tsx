@@ -24,6 +24,7 @@ import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
 import { useMe } from '@/context/UserContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { DEFAULT_TIMEZONE } from '@/types/profile';
 
 /**
@@ -48,6 +49,7 @@ const ProfilePage: FC = () => {
   const { me, loading, error, refresh, updateMe } = useMe();
   const { logout } = useAuth();
   const { t } = useTranslation();
+  const { help_center: helpCentreOn, loaded: featuresLoaded } = usePlatformFeatures();
   const router = useRouter();
 
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
@@ -61,6 +63,19 @@ const ProfilePage: FC = () => {
       setSection(router.query.section);
     }
   }, [router.isReady, router.query.section]);
+
+  // The Help Centre can be switched off in System config. Its section is then
+  // not a place at all: a typed or bookmarked `?section=help` is dropped from
+  // the URL and the profile shows instead. Waits for the flags to arrive —
+  // before that they are optimistic defaults, not an answer.
+  const helpBlocked = section === 'help' && !helpCentreOn;
+  useEffect(() => {
+    if (!featuresLoaded || helpCentreOn || !router.isReady) return;
+    if (router.query.section === 'help') {
+      void router.replace({ pathname: router.pathname, query: {} }, undefined, { shallow: true });
+    }
+    setSection((current) => (current === 'help' ? 'profile' : current));
+  }, [featuresLoaded, helpCentreOn, router]);
 
   const selectSection = (next: AccountSection): void => {
     setSection(next);
@@ -79,6 +94,12 @@ const ProfilePage: FC = () => {
 
   const body = (): ReactNode => {
     if (!me) {
+      return null;
+    }
+
+    // Never render the Help Centre while it is off — or before we know whether
+    // it is, when it was asked for by URL.
+    if (section === 'help' && (helpBlocked || !featuresLoaded)) {
       return null;
     }
 

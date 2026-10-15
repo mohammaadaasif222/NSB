@@ -164,7 +164,12 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  */
 const SiteFooter: FC = () => {
   const { t } = useTranslation();
-  const { rewards: rewardsOn, promotions: promotionsOn, terms_page: termsOn } = usePlatformFeatures();
+  const {
+    rewards: rewardsOn,
+    promotions: promotionsOn,
+    terms_page: termsOn,
+    responsible_gambling: responsibleOn,
+  } = usePlatformFeatures();
   const soon = t('common.soon');
 
   const toTop = (): void =>
@@ -222,7 +227,9 @@ const SiteFooter: FC = () => {
       ? [{ label: t('lobby.footer.sportsTerms'), href: '/terms-of-service#sports-betting' }]
       : []),
     { label: t('menu.liveSupport') },
-    { label: t('menu.responsibleGambling'), href: '/responsible-play' },
+    ...(responsibleOn
+      ? [{ label: t('menu.responsibleGambling'), href: '/responsible-play' }]
+      : []),
   ];
 
   const groups: Group[] = [

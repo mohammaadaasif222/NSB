@@ -9,6 +9,7 @@ import SelfExclusionConfirmModal from '@/components/modals/responsible/SelfExclu
 import { getSelfExclusion, startSelfExclusion } from '@/services/responsible';
 import type { SelfExclusionState } from '@/types/responsible';
 import { CheckIcon, PauseIcon } from '@/components/icons';
+import { blocksOf, type HelpEntry } from '@/components/responsible/helpContent';
 
 /**
  * Self-exclusion.
@@ -24,7 +25,7 @@ import { CheckIcon, PauseIcon } from '@/components/icons';
  */
 const COOLDOWN_VALUE = '24h';
 
-const SelfExclusionSection: FC = () => {
+const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
   const { t, locale } = useTranslation();
   const { token, hydrated } = useAuth();
   const [state, setState] = useState<SelfExclusionState | null>(null);
@@ -121,11 +122,21 @@ const SelfExclusionSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rgc.exclusionTitle')}</h2>
+      <h2 className="rl-h-section">{entry ? entry.title : t('rgc.exclusionTitle')}</h2>
 
       <div className="mt-5 space-y-7 text-[18px] leading-7 text-[#9da2b4] 2xl:text-[20px]">
-        <p>{t('rgc.exclusionLead')}</p>
-        <p>{t('rgc.exclusionEmailNote')}</p>
+        {entry ? (
+          blocksOf(entry.content).map((lines, i) => (
+            <p key={i} className="whitespace-pre-line">
+              {lines.join('\n')}
+            </p>
+          ))
+        ) : (
+          <>
+            <p>{t('rgc.exclusionLead')}</p>
+            <p>{t('rgc.exclusionEmailNote')}</p>
+          </>
+        )}
       </div>
 
       {/* ── Step 1 ─────────────────────────────────────────────────────── */}
