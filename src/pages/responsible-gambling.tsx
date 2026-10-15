@@ -1,4 +1,5 @@
 import { useEffect, useState, type FC, type ReactNode } from 'react';
+import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -14,6 +15,13 @@ import GamblingLimitsSection from '@/components/responsible/GamblingLimitsSectio
 import SelfExclusionSection from '@/components/responsible/SelfExclusionSection';
 import BudgetCalculatorSection from '@/components/responsible/BudgetCalculatorSection';
 import { useTranslation } from '@/context/I18nContext';
+import { fetchHelpCenterServer } from '@/services/helpCenter.server';
+import { RESPONSIBLE_SECTIONS } from '@/components/responsible/ResponsibleNav';
+import {
+  entryFor,
+  type HelpItem,
+  type HelpSectionKey,
+} from '@/components/responsible/helpContent';
 
 /**
  * Responsible Gambling.
@@ -33,24 +41,36 @@ import { useTranslation } from '@/context/I18nContext';
  */
 const DEFAULT_SECTION: ResponsibleSection = 'faqs';
 
-const ResponsibleGamblingPage: FC = () => {
+interface Props {
+  /** Sections switched on in System config → Help Center, in rail order. */
+  sections: ResponsibleSection[];
+  /** Entries written in CRM → Help Center. Empty falls back to built-in copy. */
+  items: HelpItem[];
+}
+
+const ResponsibleGamblingPage: FC<Props> = ({ sections, items }) => {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const [section, setSection] = useState<ResponsibleSection>(DEFAULT_SECTION);
+  const first = sections[0] ?? DEFAULT_SECTION;
+  const [section, setSection] = useState<ResponsibleSection>(first);
 
   useEffect(() => {
-    if (router.isReady && isResponsibleSection(router.query.section)) {
+    if (
+      router.isReady &&
+      isResponsibleSection(router.query.section) &&
+      sections.includes(router.query.section)
+    ) {
       setSection(router.query.section);
     }
-  }, [router.isReady, router.query.section]);
+  }, [router.isReady, router.query.section, sections]);
 
   const selectSection = (next: ResponsibleSection): void => {
     setSection(next);
     void router.replace(
       {
         pathname: router.pathname,
-        query: next === DEFAULT_SECTION ? {} : { section: next },
+        query: next === first ? {} : { section: next },
       },
       undefined,
       { shallow: true }
@@ -69,15 +89,15 @@ const ResponsibleGamblingPage: FC = () => {
   const body = (): ReactNode => {
     switch (section) {
       case 'faqs':
-        return <FaqSection />;
+        return <FaqSection items={items.filter((i) => i.section === 'faqs')} />;
       case 'assessment':
-        return <SelfAssessmentSection />;
+        return <SelfAssessmentSection entry={entryFor(items, 'assessment')} />;
       case 'limits':
-        return <GamblingLimitsSection />;
+        return <GamblingLimitsSection entry={entryFor(items, 'limits')} />;
       case 'exclusion':
-        return <SelfExclusionSection />;
+        return <SelfExclusionSection entry={entryFor(items, 'exclusion')} />;
       case 'budget':
-        return <BudgetCalculatorSection />;
+        return <BudgetCalculatorSection entry={entryFor(items, 'budget')} />;
     }
   };
 
@@ -101,7 +121,7 @@ const ResponsibleGamblingPage: FC = () => {
             at the deposit, wager and login paths before this section is
             reachable by players. The warning now lives only in that file. */}
         <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-5 @acct:lg:grid-cols-[228px_minmax(0,1fr)] @acct:lg:gap-12">
-          <ResponsibleNav active={section} onSelect={selectSection} />
+          <ResponsibleNav active={section} onSelect={selectSection} visible={sections} />
 
           {/* `@container` so the sections size against the panel rather than
               the window — the rail and the shell take ~492px before the panel
@@ -128,6 +148,35 @@ const ResponsibleGamblingPage: FC = () => {
       </div>
     </PlayerLayout>
   );
+};
+
+/**
+ * Rendered per request: the sections shown, and the text in them, come from
+ * System config and CRM, so an edit or a switch applies without a rebuild.
+ *
+ * The whole page is a 404 when Responsible Gambling is switched off (or every
+ * section is). If the API cannot be reached the page still renders, with every
+ * section and the built-in copy — a safety page should not disappear because
+ * a request failed.
+ */
+export const getServerSideProps: GetServerSideProps<Props> = async ({ res }) => {
+  const all = RESPONSIBLE_SECTIONS.map((s) => s.key) as ResponsibleSection[];
+
+  try {
+    const data = await fetchHelpCenterServer();
+    if (!data.enabled) {
+      return { notFound: true };
+    }
+    res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+    return {
+      props: {
+        sections: all.filter((key) => data.sections[key as HelpSectionKey]),
+        items: data.items,
+      },
+    };
+  } catch {
+    return { props: { sections: all, items: [] } };
+  }
 };
 
 export default ResponsibleGamblingPage;

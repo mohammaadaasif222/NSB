@@ -2,6 +2,7 @@ import { useMemo, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { DISPLAY_CURRENCY_SYMBOL } from '@/components/responsible/rgContent';
 import { BUDGET_KEYS, EXPENSE_LINES, INCOME_LINES } from '@/components/responsible/budgetCopy';
+import { blocksOf, type HelpEntry } from '@/components/responsible/helpContent';
 
 /**
  * Budget calculator.
@@ -86,7 +87,7 @@ const Line: FC<{
   );
 };
 
-const BudgetCalculatorSection: FC = () => {
+const BudgetCalculatorSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
   const { t } = useTranslation();
   const [amounts, setAmounts] = useState<Amounts>(EMPTY);
 
@@ -104,7 +105,18 @@ const BudgetCalculatorSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rgc.budgetTitle')}</h2>
+      <h2 className="rl-h-section">{entry ? entry.title : t('rgc.budgetTitle')}</h2>
+
+      {/* An optional note written in the console; absent in the design. */}
+      {entry && entry.content.trim() && (
+        <div className="mt-3 space-y-3 text-[15px] leading-6 text-[#9da2b4] 2xl:text-[18px] 2xl:leading-7">
+          {blocksOf(entry.content).map((lines, i) => (
+            <p key={i} className="whitespace-pre-line">
+              {lines.join('\n')}
+            </p>
+          ))}
+        </div>
+      )}
 
       {/* 557 and 598 across 1196 with 41 between — two columns that become one
           when the panel can no longer hold a readable pair. */}

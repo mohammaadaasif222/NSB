@@ -18,7 +18,17 @@ export interface PlatformFeatures {
   terms_page: boolean;
   /** System config, Security: two-factor login is on, so the profile offers 2FA. */
   two_factor: boolean;
+  /** System config, Help Center: the profile's Help Centre tab. */
+  help_center: boolean;
+  /** System config, Help Center: the Responsible Gambling pages and links to them. */
+  responsible_gambling: boolean;
   promotion_filters: { live: boolean; expired: boolean; casino: boolean; sports: boolean };
+  /**
+   * True once the API has answered (or failed). Until then every flag is the
+   * optimistic default, so a route that must NOT render while its feature is
+   * off waits for this rather than trusting `true`.
+   */
+  loaded: boolean;
 }
 
 
@@ -31,7 +41,10 @@ const ALL_ON: PlatformFeatures = {
   // Off until the API says otherwise: a 2FA switch shown while the platform
   // ignores it would promise protection that is not there.
   two_factor: false,
+  help_center: true,
+  responsible_gambling: true,
   promotion_filters: { live: true, expired: true, casino: true, sports: true },
+  loaded: false,
 };
 
 const PlatformFeaturesContext = createContext<PlatformFeatures>(ALL_ON);
@@ -42,7 +55,7 @@ export const PlatformFeaturesProvider: FC<{ children: ReactNode }> = ({ children
   useEffect(() => {
     let cancelled = false;
 
-    void (async () => {
+    const load = async (): Promise<void> => {
       try {
         const res = await apiService.get<PlatformFeatures>('/platform/features');
         if (!cancelled && res?.success && res.data) {
@@ -50,14 +63,29 @@ export const PlatformFeaturesProvider: FC<{ children: ReactNode }> = ({ children
             ...ALL_ON,
             ...res.data,
             promotion_filters: { ...ALL_ON.promotion_filters, ...res.data.promotion_filters },
+            loaded: true,
           });
+          return;
         }
       } catch {
+        // Fall through: keep what is shown, but stop reporting "not loaded".
       }
-    })();
+      if (!cancelled) setFeatures((prev) => ({ ...prev, loaded: true }));
+    };
+
+    void load();
+
+    // An operator can switch a feature off while a tab sits open. Re-reading
+    // when the tab comes back keeps the navigation, and the routes that guard
+    // themselves on these flags, from running on a stale answer.
+    const onVisible = (): void => {
+      if (document.visibilityState === 'visible') void load();
+    };
+    document.addEventListener('visibilitychange', onVisible);
 
     return () => {
       cancelled = true;
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
 

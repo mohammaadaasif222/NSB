@@ -93,7 +93,12 @@ const Column: FC<{
  */
 const FooterSitemap: FC = () => {
   const { t } = useTranslation();
-  const { rewards: rewardsOn, promotions: promotionsOn, terms_page: termsOn } = usePlatformFeatures();
+  const {
+    rewards: rewardsOn,
+    promotions: promotionsOn,
+    terms_page: termsOn,
+    responsible_gambling: responsibleOn,
+  } = usePlatformFeatures();
   const soon = t('common.soon');
 
   // "Rolluck Drops" is the rewards page. Dropped from the column while
@@ -108,7 +113,9 @@ const FooterSitemap: FC = () => {
   const legalPages = (link: { href?: string }): boolean =>
     termsOn || !(link.href?.startsWith('/terms-of-service') || link.href === '/privacy-policy');
   const help = HELP_LINKS.filter(legalPages);
-  const legal = LEGAL_LINKS.filter(legalPages);
+  const legal = LEGAL_LINKS.filter(legalPages).filter(
+    (link) => responsibleOn || link.href !== '/responsible-gambling'
+  );
 
   return (
     <div className="rl-panel overflow-hidden">

@@ -6,6 +6,7 @@ import SetLimitModal from '@/components/modals/responsible/SetLimitModal';
 import { getLimits, setLimit } from '@/services/responsible';
 import type { LimitKind, LimitPeriod, LimitSet } from '@/types/responsible';
 import type { TranslationKey } from '@/i18n/locales';
+import { blocksOf, type HelpEntry } from '@/components/responsible/helpContent';
 
 /**
  * Gambling limits.
@@ -23,8 +24,9 @@ const PARAGRAPHS: readonly TranslationKey[] = [
   'rgc.limitsPara3',
 ];
 
-const GamblingLimitsSection: FC = () => {
+const GamblingLimitsSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
   const { t } = useTranslation();
+  const paragraphs = entry ? blocksOf(entry.content).map((lines) => lines.join('\n')) : null;
   const { token, hydrated } = useAuth();
 
   const [limits, setLimits] = useState<LimitSet | null>(null);
@@ -61,14 +63,18 @@ const GamblingLimitsSection: FC = () => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rgc.limitsTitle')}</h2>
+      <h2 className="rl-h-section">{entry ? entry.title : t('rgc.limitsTitle')}</h2>
 
       {/* White, not the Gray 4 the Self-Assessment page uses for the same size
           of copy — the design inks this one at full strength. */}
       <div className="mt-5 space-y-7 text-[18px] leading-7 text-white 2xl:text-[20px]">
-        {PARAGRAPHS.map((p) => (
-          <p key={p}>{t(p)}</p>
-        ))}
+        {paragraphs
+          ? paragraphs.map((p, i) => (
+              <p key={i} className="whitespace-pre-line">
+                {p}
+              </p>
+            ))
+          : PARAGRAPHS.map((p) => <p key={p}>{t(p)}</p>)}
       </div>
 
       <div className="mt-8">

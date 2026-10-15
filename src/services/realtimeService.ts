@@ -3,258 +3,353 @@ import apiService from './api';
 
 type EventHandler = (data: any) => void;
 
-/** What the UI needs to know about the socket, without touching pusher-js. */
 export type ConnectionState =
-  | 'idle'
-  | 'connecting'
-  | 'connected'
-  /** Lost the socket and retrying — pusher-js reconnects on its own. */
-  | 'unavailable'
-  | 'disconnected'
-  /** Gave up: no transport the browser can use. Retrying will not help. */
-  | 'failed';
+  'idle' | 'connecting' | 'connected' | 'unavailable' | 'disconnected' | 'failed';
 
-/**
- * One extra channel beyond the player's own, with the handlers registered for
- * it.
- *
- * The handlers live HERE rather than on the pusher-js Channel because the
- * Channel does not survive sign-out: disconnect() throws the whole Pusher
- * instance away, and the next connect() builds a new one with new Channel
- * objects. Keeping the registry on this side means a caller binds once and
- * stays bound across that, instead of every feature having to notice and
- * re-bind.
- */
 interface JoinedChannel {
-  /** The live pusher-js channel, or null while the socket is down. */
   channel: Channel | null;
-  /** event name -> the handlers registered for it. */
   handlers: Map<string, Set<EventHandler>>;
-  /** Called after every successful (re)subscription — see onChannelReady. */
   ready: Set<() => void>;
-  /** True between subscription_succeeded and the next teardown. */
   subscribed: boolean;
 }
+
+interface PendingBind {
+  eventName: string;
+  handler: EventHandler;
+}
+
+const DEBUG_KEY = 'rlk:realtime-debug';
+
+const debugEnabled = (): boolean => {
+  try {
+    if (typeof window !== 'undefined') {
+      const override = window.localStorage?.getItem(DEBUG_KEY);
+      if (override === '1') return true;
+      if (override === '0') return false;
+    }
+  } catch {
+    /* storage unavailable */
+  }
+
+  return process.env.NEXT_PUBLIC_REALTIME_DEBUG !== 'false';
+};
+
+const log = (...args: unknown[]): void => {
+  if (!debugEnabled()) return;
+  // eslint-disable-next-line no-console
+  console.log('%c[realtime]', 'color:#4a9eff;font-weight:bold', ...args);
+};
+
+const warn = (...args: unknown[]): void => console.warn('[realtime]', ...args);
+
+const fail = (...args: unknown[]): void => console.error('[realtime]', ...args);
+
+const fingerprint = (value: string | undefined): string => {
+  if (!value) return '<missing>';
+  const hex = /^[0-9a-f]+$/i.test(value);
+  return `${value.slice(0, 6)}…${value.slice(-4)} (len ${value.length}${hex ? '' : ', NOT hex'})`;
+};
 
 class RealtimeService {
   private pusher: Pusher | null = null;
   private channel: Channel | null = null;
   private handlers: Map<string, EventHandler[]> = new Map();
   private connected = false;
-  private subscriptionReady = false; // Track when subscription actually succeeds
+  private subscriptionReady = false;
 
-  /** Shared channels (chat rooms), keyed by channel name. See joinChannel. */
+  private pendingBinds: PendingBind[] = [];
+  private demoTimer: ReturnType<typeof setTimeout> | null = null;
+
   private joined: Map<string, JoinedChannel> = new Map();
   private connectionState: ConnectionState = 'idle';
   private connectionWatchers: Set<(state: ConnectionState) => void> = new Set();
 
-  /**
-   * Authorize a private channel subscription through the API.
-   * Uses apiService so auth tokens are automatically included
-   * and session-expired errors go through proper handling.
-   */
   private createAuthorizer(): ChannelAuthorizationHandler {
     return ({ socketId, channelName }, callback) => {
-      console.log(`[REALTIME-AUTH-START] Authorizing channel: ${channelName}`);
+      log('auth requested', { channel: channelName, socketId });
+
       apiService
         .post('/realtime/auth', { socket_id: socketId, channel_name: channelName })
         .then((res: any) => {
           const { auth } = res as unknown as { auth?: string };
-          console.log(`[REALTIME-AUTH-SUCCESS] Channel ${channelName} authorized`);
+
           if (auth) {
+            log('auth granted', channelName);
             callback(null, { auth });
-          } else {
-            console.error(`[REALTIME-AUTH-ERROR] No auth signature in response`);
-            callback(new Error('The API did not sign the subscription'), null);
+            return;
           }
+
+          fail(
+            `auth response for ${channelName} carried no signature — the API answered 2xx but without { auth }`
+          );
+          callback(new Error('The API did not sign the subscription'), null);
         })
-        .catch((error: { message?: string }) => {
-          console.error(
-            `[REALTIME-AUTH-ERROR] Failed to authorize channel ${channelName}: ${error?.message}`
+        .catch((error: { message?: string; status?: number }) => {
+          fail(
+            `auth refused for ${channelName}`,
+            `status=${error?.status ?? 'n/a'}`,
+            error?.message ?? ''
           );
           callback(new Error(error?.message || 'Could not authorise channel subscription'), null);
         });
     };
   }
 
+  private resetJoinedChannels(): void {
+    for (const entry of this.joined.values()) {
+      entry.channel?.unbind_all();
+      entry.channel = null;
+      entry.subscribed = false;
+    }
+  }
+
+  private teardownPusher(): void {
+    if (!this.pusher) return;
+
+    this.pusher.connection.unbind_all();
+    this.pusher.disconnect();
+    this.pusher = null;
+    this.channel = null;
+  }
+
   connect(userId: string, _token: string): void {
-    if (this.connected) {
-      console.log(`[REALTIME-CONNECT-SKIP] Already connected to Soketi`);
+    if (this.pusher) {
+      const state = this.pusher.connection.state;
+
+      if (state === 'connecting' || state === 'connected') {
+        log(`connect() ignored — socket is already ${state}`);
+        return;
+      }
+
+      log(`replacing a stale socket in state "${state}"`);
+      this.teardownPusher();
+      this.resetJoinedChannels();
+    }
+
+    this.connected = false;
+    this.subscriptionReady = false;
+
+    const appKey = process.env.NEXT_PUBLIC_SOKETI_APP_KEY;
+    const host = process.env.NEXT_PUBLIC_SOKETI_HOST;
+    const port = Number(process.env.NEXT_PUBLIC_SOKETI_PORT || '6001');
+    const useTLS = process.env.NEXT_PUBLIC_SOKETI_USE_TLS !== 'false';
+
+    log('connecting', {
+      appKey: fingerprint(appKey),
+      host,
+      port,
+      useTLS,
+      url: `${useTLS ? 'wss' : 'ws'}://${host}:${port}/app/${appKey?.slice(0, 6)}…`,
+      userId,
+    });
+
+    if (!appKey || !host) {
+      fail(
+        'cannot connect — NEXT_PUBLIC_SOKETI_APP_KEY or NEXT_PUBLIC_SOKETI_HOST is missing from this build'
+      );
+      this.setConnectionState('failed');
       return;
     }
 
-    console.log(`[REALTIME-CONNECT-START] Connecting to Soketi...`);
-    console.log(
-      `[REALTIME-CONFIG] App Key: ${process.env.NEXT_PUBLIC_SOKETI_APP_KEY || 'default'}, Host: ${process.env.NEXT_PUBLIC_SOKETI_HOST || 'localhost'}, Port: ${process.env.NEXT_PUBLIC_SOKETI_PORT || '6001'}`
-    );
+    if (!Number.isFinite(port) || port <= 0) {
+      fail(
+        `cannot connect — NEXT_PUBLIC_SOKETI_PORT is not a usable port: "${process.env.NEXT_PUBLIC_SOKETI_PORT}"`
+      );
+      this.setConnectionState('failed');
+      return;
+    }
 
-    this.pusher = new Pusher(process.env.NEXT_PUBLIC_SOKETI_APP_KEY || 'app-key', {
+    const pusher = new Pusher(appKey, {
       cluster: 'soketi',
-      wsHost: process.env.NEXT_PUBLIC_SOKETI_HOST || 'localhost',
-      wsPort: parseInt(process.env.NEXT_PUBLIC_SOKETI_PORT || '6001'),
-      wssPort: parseInt(process.env.NEXT_PUBLIC_SOKETI_PORT || '6001'),
-      forceTLS: process.env.NEXT_PUBLIC_SOKETI_USE_TLS !== 'false',
+      wsHost: host,
+      wsPort: port,
+      wssPort: port,
+      forceTLS: useTLS,
       enabledTransports: ['ws', 'wss'],
       disableStats: true,
-      // Use custom channel authorizer that posts to backend /realtime/auth
       channelAuthorization: {
         customHandler: this.createAuthorizer(),
       },
     });
 
-    // Add Pusher connection event listeners for debugging
-    this.pusher.connection.bind('connected', () => {
-      console.log(`[REALTIME-SOCKET-CONNECTED] WebSocket connected to Soketi`);
+    this.pusher = pusher;
+
+    const live = (): boolean => this.pusher === pusher;
+
+    pusher.connection.bind('state_change', (states: { previous: string; current: string }) => {
+      log(`socket ${states.previous} -> ${states.current}`);
+    });
+
+    pusher.connection.bind('error', (event: any) => {
+      const code = event?.error?.data?.code ?? event?.data?.code;
+      const message = event?.error?.data?.message ?? event?.data?.message ?? '';
+
+      if (code === 4001 || code === 4000) {
+        fail(
+          `the relay rejected this app key (code ${code}): ${message}`,
+          '\nThe key in this build does not match SOKETI_DEFAULT_APP_KEY on the soketi server.',
+          `\nkey sent: ${fingerprint(appKey)}`
+        );
+      } else {
+        fail(`socket error${code ? ` (code ${code})` : ''}`, message || event);
+      }
+    });
+
+    pusher.connection.bind('connected', () => {
+      if (!live()) return;
+      log('connected', { socketId: pusher.connection.socket_id });
+      this.connected = true;
       this.setConnectionState('connected');
     });
 
-    this.pusher.connection.bind('connecting', () => {
+    pusher.connection.bind('connecting', () => {
+      if (!live()) return;
       this.setConnectionState('connecting');
     });
 
-    this.pusher.connection.bind('unavailable', () => {
-      this.setConnectionState('unavailable');
-    });
-
-    this.pusher.connection.bind('disconnected', () => {
-      console.warn(`[REALTIME-SOCKET-DISCONNECTED] WebSocket disconnected from Soketi`);
+    pusher.connection.bind('disconnected', () => {
+      if (!live()) return;
+      warn('socket disconnected');
+      this.connected = false;
+      this.subscriptionReady = false;
       this.setConnectionState('disconnected');
     });
 
-    this.pusher.connection.bind('failed', () => {
-      console.error(`[REALTIME-SOCKET-FAILED] WebSocket connection failed`);
+    pusher.connection.bind('unavailable', () => {
+      if (!live()) return;
+      warn('socket unavailable — the relay could not be reached');
+      this.connected = false;
+      this.subscriptionReady = false;
+      this.setConnectionState('unavailable');
+    });
+
+    pusher.connection.bind('failed', () => {
+      if (!live()) return;
+      fail('socket failed — no usable transport, retrying will not help');
+      this.connected = false;
+      this.subscriptionReady = false;
       this.setConnectionState('failed');
     });
 
     this.setConnectionState('connecting');
 
     const channelName = `private-user.${userId}`;
-    console.log(`[REALTIME-SUBSCRIBE-START] Subscribing to channel: ${channelName}`);
+    log('subscribing', channelName);
 
-    this.channel = this.pusher.subscribe(channelName);
+    const channel = pusher.subscribe(channelName);
+    this.channel = channel;
 
-    // Add channel subscription event listeners
-    this.channel.bind('pusher:subscription_succeeded', () => {
-      console.log(`[REALTIME-SUBSCRIBE-SUCCESS] Successfully subscribed to channel ${channelName}`);
-      this.subscriptionReady = true; // Mark subscription as ready for handler binding
+    channel.bind('pusher:subscription_succeeded', () => {
+      if (!live()) return;
 
-      // Delay demo message request to give EventListeners component time to mount and register handlers.
-      // EventListeners calls realtime.on() in useEffect, which must complete before demo message arrives.
-      // 2000ms is needed to handle both fast hot-reloads AND slower fresh page loads.
-      // Timeline: page load (~50-200ms) + React mount (~50-150ms) + useEffect (~20-100ms) + safety = ~2000ms total
-      setTimeout(() => {
-        console.log(`[REALTIME-DEMO-REQUEST] Requesting demo message from backend...`);
-        import('./api').then(({ default: apiService }) => {
-          // Start 5-second timeout (will be cleared if message arrives)
-          if ((window as any).__startDemoTimeout) {
-            (window as any).__startDemoTimeout();
-          }
-          apiService
-            .get('/realtime/demo-message')
-            .then(() => console.log(`[REALTIME-DEMO-REQUEST-SENT] Demo request sent successfully`))
-            .catch((err) => console.log(`[REALTIME-DEMO-REQUEST-ERROR] ${err.message}`));
-        });
-      }, 2000);
+      log('subscribed', channelName, `flushing ${this.pendingBinds.length} queued handler(s)`);
+      this.subscriptionReady = true;
+      this.flushPendingBinds();
+      this.scheduleDemoMessage(pusher);
     });
 
-    this.channel.bind('pusher:subscription_error', (error: any) => {
-      console.error(
-        `[REALTIME-SUBSCRIBE-ERROR] Failed to subscribe to channel ${channelName}:`,
-        error
-      );
+    channel.bind('pusher:subscription_error', (error: unknown) => {
+      if (!live()) return;
+      fail(`could not subscribe to ${channelName}`, error);
+      this.subscriptionReady = false;
     });
 
-    this.connected = true;
-
-    // Anything that joined while the socket was down — a chat panel opened
-    // before sign-in finished, or still mounted across a sign-out — gets its
-    // subscription back here, with its handlers already registered.
     for (const name of this.joined.keys()) {
       this.openJoinedChannel(name);
     }
 
-    console.log(`[REALTIME-CONNECTED] Connected to Soketi channel ${channelName}`);
+    log('initialised, waiting for socket events');
+  }
+
+  private scheduleDemoMessage(pusher: Pusher): void {
+    if (this.demoTimer) clearTimeout(this.demoTimer);
+
+    this.demoTimer = setTimeout(() => {
+      this.demoTimer = null;
+
+      if (this.pusher !== pusher || !this.subscriptionReady) {
+        log('demo message skipped — the socket changed');
+        return;
+      }
+
+      const startDemoTimeout = (window as any).__startDemoTimeout;
+      if (typeof startDemoTimeout === 'function') startDemoTimeout();
+
+      void apiService
+        .get('/realtime/demo-message')
+        .then(() => log('demo message requested'))
+        .catch((error: { message?: string }) =>
+          warn('demo message request failed', error?.message)
+        );
+    }, 2000);
+  }
+
+  private flushPendingBinds(): void {
+    if (this.pendingBinds.length === 0) return;
+
+    const queued = this.pendingBinds;
+    this.pendingBinds = [];
+
+    for (const { eventName, handler } of queued) {
+      this.on(eventName, handler);
+    }
   }
 
   on(eventName: string, handler: EventHandler): void {
-    // If subscription isn't ready yet, wait for it before binding.
-    // This prevents the "[REALTIME-BIND-FAIL]" error when EventListeners mounts before subscription completes.
-    if (!this.subscriptionReady) {
-      console.log(`[REALTIME-BIND-WAIT] Subscription not ready yet for ${eventName}, waiting...`);
-      // Poll until subscription is ready, then bind
-      const checkReady = setInterval(() => {
-        if (this.subscriptionReady) {
-          clearInterval(checkReady);
-          console.log(`[REALTIME-BIND-RETRY] Subscription ready, retrying bind for ${eventName}`);
-          this.on(eventName, handler); // Retry binding now that subscription is ready
-        }
-      }, 100);
-      return;
-    }
-
-    if (!this.channel) {
-      console.warn(`[REALTIME-BIND-FAIL] Channel not connected, cannot bind ${eventName}`);
+    if (!this.subscriptionReady || !this.channel) {
+      log(`queued "${eventName}" until the subscription is ready`);
+      this.pendingBinds.push({ eventName, handler });
       return;
     }
 
     if (!this.handlers.has(eventName)) {
-      console.log(
-        `[REALTIME-FIRST-HANDLER] First handler for ${eventName}, binding to channel ${this.channel.name}`
-      );
       this.handlers.set(eventName, []);
+
       this.channel.bind(eventName, (data: any) => {
-        console.log(`[REALTIME-EVENT-FIRED] Event ${eventName} fired with data:`, data);
         const handlers = this.handlers.get(eventName);
-        if (handlers) {
-          console.log(
-            `[REALTIME-DISPATCH] Dispatching to ${handlers.length} handlers for ${eventName}`
-          );
-          handlers.forEach((h, index) => {
-            console.log(
-              `[REALTIME-HANDLER-CALL] Calling handler ${index + 1}/${handlers.length} for ${eventName}`
-            );
-            try {
-              h(data);
-              console.log(
-                `[REALTIME-HANDLER-SUCCESS] Handler ${index + 1} completed for ${eventName}`
-              );
-            } catch (err) {
-              console.error(
-                `[REALTIME-HANDLER-ERROR] Handler ${index + 1} threw error for ${eventName}:`,
-                err
-              );
-            }
-          });
-        } else {
-          console.warn(`[REALTIME-NO-HANDLERS] No handlers found for ${eventName}`);
+        if (!handlers || handlers.length === 0) return;
+
+        log(`event "${eventName}"`, data);
+
+        for (const registered of [...handlers]) {
+          try {
+            registered(data);
+          } catch (error) {
+            fail(`a handler for "${eventName}" threw`, error);
+          }
         }
       });
-      console.log(`[REALTIME-BIND-SUCCESS] Bound ${eventName} to channel ${this.channel.name}`);
     }
 
     this.handlers.get(eventName)?.push(handler);
-    console.log(
-      `[REALTIME-HANDLER-REGISTERED] Handler registered for ${eventName}, total handlers: ${this.handlers.get(eventName)?.length || 0}`
-    );
+    log(`bound "${eventName}" (${this.handlers.get(eventName)?.length} handler(s))`);
   }
 
   off(eventName: string, handler: EventHandler): void {
+    this.pendingBinds = this.pendingBinds.filter(
+      (pending) => !(pending.eventName === eventName && pending.handler === handler)
+    );
+
     const handlers = this.handlers.get(eventName);
-    if (handlers) {
-      const index = handlers.indexOf(handler);
-      if (index > -1) handlers.splice(index, 1);
-    }
+    if (!handlers) return;
+
+    const index = handlers.indexOf(handler);
+    if (index > -1) handlers.splice(index, 1);
   }
 
   disconnect(): void {
+    if (this.demoTimer) {
+      clearTimeout(this.demoTimer);
+      this.demoTimer = null;
+    }
+
+    this.pendingBinds = [];
+
     if (this.channel) {
       this.channel.unbind_all();
       this.pusher?.unsubscribe(this.channel.name);
     }
 
-    // The shared channels lose their live Channel but KEEP their handlers and
-    // their place in the registry, so the next connect() restores them. A
-    // caller that genuinely wants out calls leaveChannel().
     for (const entry of this.joined.values()) {
       entry.channel?.unbind_all();
       if (entry.channel) this.pusher?.unsubscribe(entry.channel.name);
@@ -262,42 +357,48 @@ class RealtimeService {
       entry.subscribed = false;
     }
 
-    this.pusher?.disconnect();
-    this.pusher = null;
-    this.channel = null;
+    this.teardownPusher();
     this.handlers.clear();
     this.connected = false;
-    this.subscriptionReady = false; // Reset subscription state
+    this.subscriptionReady = false;
     this.setConnectionState('idle');
 
-    console.log('[Realtime] Disconnected');
+    log('disconnected');
   }
 
   isConnected(): boolean {
     return this.connected;
   }
 
-  /* ------------------------------------------------------------------ *
-   * Shared channels
-   *
-   * The API above is built around ONE channel, the signed-in player's own.
-   * A chat room is the opposite: many people on one channel, and a given
-   * client may be on a room and its own channel at once. These methods add
-   * that without disturbing the single-channel path the wallet listeners
-   * use — same socket, same authorizer, separate registry.
-   * ------------------------------------------------------------------ */
-
-  /** The socket's state right now, for a UI that renders it. */
   getConnectionState(): ConnectionState {
     return this.connectionState;
   }
 
-  /**
-   * Watch the socket's state. Returns an unsubscribe function, and calls the
-   * handler once immediately so a component that mounts mid-connection
-   * renders the state it is already in rather than waiting for a transition
-   * that may never come.
-   */
+  diagnostics(): Record<string, unknown> {
+    return {
+      state: this.connectionState,
+      socketState: this.pusher?.connection.state ?? 'no socket',
+      socketId: this.pusher?.connection.socket_id ?? null,
+      userChannel: this.channel?.name ?? null,
+      subscriptionReady: this.subscriptionReady,
+      queuedBinds: this.pendingBinds.length,
+      boundEvents: [...this.handlers.entries()].map(([event, list]) => `${event} x${list.length}`),
+      rooms: [...this.joined.entries()].map(([name, entry]) => ({
+        name,
+        subscribed: entry.subscribed,
+        open: entry.channel !== null,
+        events: [...entry.handlers.keys()],
+      })),
+      config: {
+        appKey: fingerprint(process.env.NEXT_PUBLIC_SOKETI_APP_KEY),
+        host: process.env.NEXT_PUBLIC_SOKETI_HOST,
+        port: process.env.NEXT_PUBLIC_SOKETI_PORT,
+        useTLS: process.env.NEXT_PUBLIC_SOKETI_USE_TLS !== 'false',
+      },
+      debugLogging: debugEnabled(),
+    };
+  }
+
   onConnectionState(handler: (state: ConnectionState) => void): () => void {
     this.connectionWatchers.add(handler);
     handler(this.connectionState);
@@ -309,22 +410,16 @@ class RealtimeService {
   private setConnectionState(state: ConnectionState): void {
     if (this.connectionState === state) return;
     this.connectionState = state;
+
     for (const watcher of this.connectionWatchers) {
       try {
         watcher(state);
       } catch (error) {
-        console.error('[REALTIME-STATE-HANDLER-ERROR]', error);
+        fail('a connection-state watcher threw', error);
       }
     }
   }
 
-  /**
-   * Join a shared channel, e.g. a chat room.
-   *
-   * Safe before the socket exists and safe to call repeatedly: joining is
-   * reference-free bookkeeping, and the subscription is opened whenever a
-   * connection is available. Pair it with leaveChannel.
-   */
   joinChannel(name: string): void {
     if (!this.joined.has(name)) {
       this.joined.set(name, {
@@ -338,27 +433,18 @@ class RealtimeService {
     this.openJoinedChannel(name);
   }
 
-  /** Stop listening to a shared channel and forget its handlers. */
   leaveChannel(name: string): void {
     const entry = this.joined.get(name);
     if (!entry) return;
 
     entry.channel?.unbind_all();
     if (entry.channel) this.pusher?.unsubscribe(name);
+    entry.handlers.clear();
+    entry.ready.clear();
     this.joined.delete(name);
+    log('left', name);
   }
 
-  /**
-   * Bind a handler to an event on a shared channel. Returns an unbind
-   * function, so a React effect can clean up without having to keep hold of
-   * the handler identity.
-   *
-   * Binding before the channel is subscribed is normal and needs no waiting:
-   * the handler goes into the registry, and the dispatcher that reads it is
-   * attached when the subscription opens. (The single-channel `on()` above
-   * polls for readiness instead; this path does not need to, because the
-   * registry is what the dispatcher reads, not the bind order.)
-   */
   onChannelEvent(name: string, event: string, handler: EventHandler): () => void {
     this.joinChannel(name);
     const entry = this.joined.get(name);
@@ -369,9 +455,6 @@ class RealtimeService {
     if (!handlers) {
       handlers = new Set();
       entry.handlers.set(event, handlers);
-      // One dispatcher per event, attached to whatever Channel is live. It
-      // reads the Set each time it fires, so handlers added later are picked
-      // up without re-binding, and re-subscribing re-attaches exactly one.
       this.bindDispatcher(name, event);
     }
 
@@ -382,17 +465,6 @@ class RealtimeService {
     };
   }
 
-  /**
-   * Run a handler every time this channel's subscription succeeds — on the
-   * first join and again after any reconnect.
-   *
-   * This is the hook for "I may have missed something": soketi has no replay,
-   * so anything published while the socket was away is simply gone (see
-   * soketi/README.md). A subscriber that cares refetches here.
-   *
-   * Fires immediately if the channel is already subscribed, so a late
-   * listener still gets its snapshot.
-   */
   onChannelReady(name: string, handler: () => void): () => void {
     this.joinChannel(name);
     const entry = this.joined.get(name);
@@ -406,62 +478,61 @@ class RealtimeService {
     };
   }
 
-  /** Whether a shared channel's subscription is currently open. */
   isChannelSubscribed(name: string): boolean {
     return this.joined.get(name)?.subscribed === true;
   }
 
-  /**
-   * Open the subscription for a registered channel, if it is not open
-   * already and there is a socket to open it on.
-   */
   private openJoinedChannel(name: string): void {
     const entry = this.joined.get(name);
     if (!entry || !this.pusher || entry.channel) return;
 
-    const channel = this.pusher.subscribe(name);
+    const pusher = this.pusher;
+    const channel = pusher.subscribe(name);
     entry.channel = channel;
 
+    log('subscribing', name);
+
     channel.bind('pusher:subscription_succeeded', () => {
+      if (this.pusher !== pusher) return;
+
       entry.subscribed = true;
+      log('subscribed', name);
+
       for (const handler of entry.ready) {
         try {
           handler();
         } catch (error) {
-          console.error(`[REALTIME-READY-HANDLER-ERROR] ${name}:`, error);
+          fail(`a ready handler for ${name} threw`, error);
         }
       }
     });
 
     channel.bind('pusher:subscription_error', (error: unknown) => {
+      if (this.pusher !== pusher) return;
       entry.subscribed = false;
-      console.error(`[REALTIME-SUBSCRIBE-ERROR] ${name}:`, error);
+      fail(`could not subscribe to ${name}`, error);
     });
 
-    // Re-attach a dispatcher for every event already registered: on a
-    // reconnect the handlers survive but the Channel they were bound to does
-    // not.
     for (const event of entry.handlers.keys()) {
       this.bindDispatcher(name, event);
     }
   }
 
-  /** Attach the single dispatcher for one (channel, event) to the live Channel. */
   private bindDispatcher(name: string, event: string): void {
     const entry = this.joined.get(name);
     if (!entry?.channel) return;
 
     entry.channel.bind(event, (data: any) => {
       const handlers = entry.handlers.get(event);
-      if (!handlers) return;
+      if (!handlers || handlers.size === 0) return;
 
-      // Iterated over a copy: a handler that unbinds itself while the event
-      // is dispatching would otherwise mutate the Set mid-iteration.
+      log(`event "${event}" on ${name}`, data);
+
       for (const handler of [...handlers]) {
         try {
           handler(data);
         } catch (error) {
-          console.error(`[REALTIME-HANDLER-ERROR] ${event} on ${name}:`, error);
+          fail(`a handler for "${event}" on ${name} threw`, error);
         }
       }
     });
@@ -469,3 +540,7 @@ class RealtimeService {
 }
 
 export const realtimeService = new RealtimeService();
+
+if (typeof window !== 'undefined') {
+  (window as any).realtime = realtimeService;
+}
