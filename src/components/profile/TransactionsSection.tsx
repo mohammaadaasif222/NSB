@@ -33,7 +33,6 @@ const TransactionsSection: FC = () => {
   const [page, setPage] = useState(1);
 
   const [rows, setRows] = useState<readonly Transaction[]>([]);
-  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -65,14 +64,12 @@ const TransactionsSection: FC = () => {
       // A slower answer to an older query must not overwrite a newer one.
       if (!live) return;
       setRows(result.rows);
-      setTotal(result.total);
       setTotalPages(result.totalPages);
       setLoading(false);
     }).catch((error) => {
       console.error('Error fetching transactions:', error);
       if (live) {
         setRows([]);
-        setTotal(0);
         setTotalPages(0);
         setLoading(false);
       }

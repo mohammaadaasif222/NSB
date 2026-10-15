@@ -71,7 +71,7 @@ const LocalCurrencyWithdrawalTab: FC = () => {
           const currency = currencies.find((c) => c.code === selectedCurrency);
           const countryCode = currency?.country_code || 'BR';
 
-          const response = await api.get(`/wallet/deposit/d24/payment-methods?country=${countryCode}`);
+          const response = await api.get(`/wallet/deposit/d24/payment-methods?country=${countryCode}`) as any;
           const methods = response.data?.data || response.data?.methods || [];
           setPaymentMethods(methods);
           setSelectedMethod('');
@@ -97,7 +97,7 @@ const LocalCurrencyWithdrawalTab: FC = () => {
           const currency = currencies.find((c) => c.code === selectedCurrency);
           const countryCode = currency?.country_code || 'BR';
 
-          const response = await api.get(`/wallet/withdrawal/d24/banks?country=${countryCode}`);
+          const response = await api.get(`/wallet/withdrawal/d24/banks?country=${countryCode}`) as any;
           setBanks(response.data.banks || []);
           setSelectedBank('');
         } catch (err) {
@@ -121,7 +121,7 @@ const LocalCurrencyWithdrawalTab: FC = () => {
           const currency = currencies.find((c) => c.code === selectedCurrency);
           const countryCode = currency?.country_code || 'BR';
 
-          const response = await api.get(`/wallet/deposit/d24/document-types?country=${countryCode}`);
+          const response = await api.get(`/wallet/deposit/d24/document-types?country=${countryCode}`) as any;
           const docTypesData = response.data?.data?.document_types || [];
           // Extract type codes from objects
           const docTypeCodes = docTypesData.map((type: any) =>
@@ -175,7 +175,7 @@ const LocalCurrencyWithdrawalTab: FC = () => {
         document_id: documentId,
         document_type: documentType,
         email: me?.email,
-      });
+      }) as any;
 
       console.log('[Withdrawal] Cashout created:', response.data);
       setCashoutId(response.data.cashout_id);

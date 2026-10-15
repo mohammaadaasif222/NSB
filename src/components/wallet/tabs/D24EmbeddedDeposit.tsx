@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, type FC } from 'react';
 import { toast } from 'react-toastify';
 import api from '@/services/api';
-import { useTranslation } from '@/context/I18nContext';
-import QRCode from 'qrcode.react';
 
 export interface D24PaymentDetails {
   deposit_id: string;
@@ -75,7 +73,6 @@ const D24EmbeddedDeposit: FC<Props> = ({
   onBack,
   onHostedCheckout,
 }) => {
-  const { t } = useTranslation();
   const [details, setDetails] = useState<D24PaymentDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

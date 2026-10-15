@@ -40,7 +40,7 @@ const WithdrawalTab: FC = () => {
   useEffect(() => {
     const fetchCurrencies = async () => {
       try {
-        const response = await api.get('/wallet/currencies');
+        const response = await api.get('/wallet/currencies') as any;
         const fiats = response.data.currencies.filter((c: any) => c.type === 'fiat');
         setCurrencies(fiats);
         setLoadingCurrencies(false);
@@ -60,7 +60,7 @@ const WithdrawalTab: FC = () => {
       const fetchMethods = async () => {
         try {
           setLoadingMethods(true);
-          const response = await api.get(`/wallet/withdrawal/d24/methods?currency=${selectedCurrency}`);
+          const response = await api.get(`/wallet/withdrawal/d24/methods?currency=${selectedCurrency}`) as any;
           setPaymentMethods(response.data.methods || []);
           setSelectedMethod('');
           setBanks([]);
@@ -85,7 +85,7 @@ const WithdrawalTab: FC = () => {
           const currency = currencies.find((c) => c.code === selectedCurrency);
           const countryCode = currency?.country_code || 'BR';
 
-          const response = await api.get(`/wallet/withdrawal/d24/banks?country=${countryCode}`);
+          const response = await api.get(`/wallet/withdrawal/d24/banks?country=${countryCode}`) as any;
           setBanks(response.data.banks || []);
           setSelectedBank('');
         } catch (err) {
@@ -133,7 +133,6 @@ const WithdrawalTab: FC = () => {
       setLoading(true);
 
       const currency = currencies.find((c) => c.code === selectedCurrency);
-      const bank = banks.find((b) => b.code.toString() === selectedBank);
 
       const response = await api.post('/wallet/withdrawal/d24/cashout', {
         amount,
@@ -148,7 +147,7 @@ const WithdrawalTab: FC = () => {
         document_type: documentType,
         email: me?.email,
         phone,
-      });
+      }) as any;
 
       console.log('[Withdrawal] Cashout created:', response.data);
       setCashoutId(response.data.cashout_id);
