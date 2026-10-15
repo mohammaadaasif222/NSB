@@ -308,6 +308,10 @@ export const en = {
   'acct.verify.withTeamBody':
     'We have received your ID and selfie. This one needs a person to look at it rather than an automated check, so it will not update on its own. We will email you as soon as it is done — there is nothing further for you to do here. If it has been more than a working day, contact Customer Support.',
   'acct.verify.resubmitDocuments': 'Resubmit Documents',
+  'acct.verify.livenessTitle': "Liveness check",
+  'acct.verify.livenessBody': "Our team has asked you for a quick selfie to confirm it is still you using this account. Your verification levels are not affected.",
+  'acct.verify.livenessStart': "Take the selfie",
+  'acct.verify.livenessFailed': "We could not confirm it was you. Our team is reviewing it and will contact you.",
   'acct.verify.declinedTitle': 'Verification permanently declined',
   'acct.verify.declinedReason': 'Your identity verification could not be approved.',
   'acct.verify.declinedBody':
@@ -317,6 +321,15 @@ export const en = {
   'acct.verify.levelTitle': 'Level {level} — {title}',
   'acct.verify.tierRejected':
     'The document submitted for this level was not accepted. Reopen the verification to see what was wrong and upload a replacement.',
+  // Level-neutral on purpose: the Level 2 wording names the ID and selfie,
+  // which would be wrong for a proof of address or a source-of-funds review.
+  'acct.verify.tierOnHold':
+    'This level needs a person to review it rather than an automated check, so it will not update on its own. We will email you as soon as it is done — there is nothing further for you to do here.',
+  // Opened the widget and sent nothing. "In Review" was being shown here,
+  // which told the player to wait for a verdict on an empty submission.
+  'acct.verify.tierUnfinished': 'Not finished',
+  'acct.verify.tierUnfinishedBody':
+    'You started this level but did not finish it. Nothing has been submitted yet — reopen it when you are ready and continue where you left off.',
   'acct.verify.startLevel': 'Start Level {level} verification',
   'acct.verify.complianceContact':
     'Our compliance team will contact you with what to send and how.',
