@@ -9,6 +9,7 @@ import {
   RailGiftIcon,
   RailHelpCircleIcon,
   RailLogOutIcon,
+  RailRolloverIcon,
   RailShieldCheckIcon,
   RailSlidersIcon,
   RailTransactionsIcon,
@@ -25,6 +26,7 @@ export const ACCOUNT_SECTIONS = [
   { key: 'security', labelKey: 'profile.security', icon: RailShieldCheckIcon },
   { key: 'verification', labelKey: 'profile.verification', icon: RailBadgeCheckIcon },
   { key: 'transactions', labelKey: 'profile.transactions', icon: RailTransactionsIcon },
+  { key: 'rollover', labelKey: 'profile.rollover', icon: RailRolloverIcon },
   { key: 'help', labelKey: 'profile.helpCentre', icon: RailHelpCircleIcon },
 ] as const satisfies readonly { key: string; labelKey: TranslationKey; icon: FC<IconProps> }[];
 
@@ -75,7 +77,7 @@ interface Props {
  * The account area's left-hand nav.
  *
  * A horizontal scroller below `lg` — a phone has no room for a fixed column,
- * and stacking nine rows above the content would push the panel off-screen.
+ * and stacking ten rows above the content would push the panel off-screen.
  */
 const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
   const { t } = useTranslation();
@@ -83,7 +85,7 @@ const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
 
   // `min-w-0` below is load-bearing under the breakpoint: the row of tabs is an
   // `overflow-x-auto` flex, and a grid item's automatic minimum is its
-  // min-content — so without it the nav reports the full width of all nine tabs,
+  // min-content — so without it the nav reports the full width of all ten tabs,
   // the grid column grows to match, and the whole account page scrolls sideways
   // by a few hundred pixels instead of the tab strip scrolling inside itself.
   return (

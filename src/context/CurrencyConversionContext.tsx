@@ -117,7 +117,7 @@ export const CurrencyConversionProvider: FC<CurrencyConversionProviderProps> = (
       // Snapshot rates store: currency → USD (e.g., EUR → USD = 0.92)
       // To convert: amountInCurrency ÷ snapshotRate = amountInUSD
       // Then: amountInUSD ÷ displayCurrencySnapshotRate = amountInDisplayCurrency
-      const sourceRate = snapshotRates[cleanCurrency];
+      const sourceRate = cleanCurrency === 'USD' ? '1' : snapshotRates[cleanCurrency];
 
       if (!sourceRate) {
         // Fallback: if no rate found, return original amount
@@ -151,18 +151,7 @@ export const CurrencyConversionProvider: FC<CurrencyConversionProviderProps> = (
         if (displayCurrency === 'USD') {
           displayAmount = amountInUSD;
         } else {
-          const displayRate = snapshotRates[displayCurrency];
-          if (!displayRate) {
-            console.warn(
-              `[CurrencyConversion] No snapshot rate found for display currency ${displayCurrency}`,
-            );
-            return {
-              displayAmount: cleanAmount,
-              currency: displayCurrency,
-              rate: '1',
-              converted: false,
-            };
-          }
+          const displayRate = snapshotRates[displayCurrency] ?? '1';
           // displayRate is display currency → USD (e.g., 1 EUR = 1.1389 USD)
           // To convert USD → displayCurrency: amountInUSD ÷ displayRate
           // If 1 EUR = 1.1389 USD, then 1 USD = 1/1.1389 EUR

@@ -13,6 +13,7 @@ import ReferralSection from '@/components/profile/ReferralSection';
 import SecuritySection from '@/components/profile/SecuritySection';
 import VerificationSection from '@/components/profile/VerificationSection';
 import TransactionsSection from '@/components/profile/TransactionsSection';
+import RolloverSection from '@/components/profile/RolloverSection';
 import HelpCentreSection from '@/components/profile/HelpCentreSection';
 import ChangeAvatarModal from '@/components/modals/profile/ChangeAvatarModal';
 import ChangeEmailModal from '@/components/modals/profile/ChangeEmailModal';
@@ -137,6 +138,8 @@ const ProfilePage: FC = () => {
         return <VerificationSection me={me} onChangeEmail={() => setActiveModal('email')} />;
       case 'transactions':
         return <TransactionsSection />;
+      case 'rollover':
+        return <RolloverSection />;
       case 'help':
         return <HelpCentreSection />;
     }

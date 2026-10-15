@@ -86,6 +86,14 @@ export const RailTransactionsIcon: FC<IconProps> = (p) => (
   </Svg>
 );
 
+export const RailRolloverIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M20 12a8 8 0 1 1-2.343-5.657" />
+    <path d="M20 3v4h-4" />
+    <path d="M12 8v4l3 2" />
+  </Svg>
+);
+
 /** Help Centre. */
 export const RailHelpCircleIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
