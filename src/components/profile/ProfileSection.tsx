@@ -7,6 +7,7 @@ import ProfileIdentity from '@/components/profile/ProfileIdentity';
 import EmailAccountRow from '@/components/profile/EmailAccountRow';
 import LinkedAccountsGroup from '@/components/profile/LinkedAccountsGroup';
 import ToggleSwitch from '@/components/profile/ToggleSwitch';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 
 interface Props {
   me: ApiUser;
@@ -17,6 +18,7 @@ interface Props {
 /** Identity, the email behind the account, 2FA, and third-party links. */
 const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar }) => {
   const { t, locale } = useTranslation();
+  const { two_factor: twoFactorOn } = usePlatformFeatures();
 
   const joined = me.created_at
     ? new Date(me.created_at).toLocaleDateString(locale, {
@@ -46,13 +48,15 @@ const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar }) => {
       <div className="mt-[calc(var(--u)*32)] space-y-[calc(var(--u)*30)]">
         <EmailAccountRow email={me.email} verified={me.is_email_verified} />
 
-        <FieldGroup label={t('profile.twoFactorShort')}>
-          <SettingRow
-            icon={<TwoFactorIcon />}
-            title={t('profile.enable2fa')}
-            action={<ToggleSwitch enabled={me.two_factor_enabled} onToggle={onToggle2FA} />}
-          />
-        </FieldGroup>
+        {twoFactorOn && (
+          <FieldGroup label={t('profile.twoFactorShort')}>
+            <SettingRow
+              icon={<TwoFactorIcon />}
+              title={t('profile.enable2fa')}
+              action={<ToggleSwitch enabled={me.two_factor_enabled} onToggle={onToggle2FA} />}
+            />
+          </FieldGroup>
+        )}
 
         <LinkedAccountsGroup />
       </div>

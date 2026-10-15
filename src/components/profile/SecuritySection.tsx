@@ -8,6 +8,7 @@ import {
 } from '@/components/profile/SectionShell';
 import SessionsGroup from '@/components/profile/security/SessionsGroup';
 import ToggleSwitch from '@/components/profile/ToggleSwitch';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { TwoFactorIcon } from '@/components/profile/profileIcons';
 import { mailHostOf, WALLET_PROVIDERS } from '@/components/profile/providers';
 
@@ -22,6 +23,7 @@ interface Props {
 /** Password, signed-in devices, 2FA and connected wallets. */
 const SecuritySection: FC<Props> = ({ email, twoFactorEnabled, onChangePassword, onToggle2FA }) => {
   const { t } = useTranslation();
+  const { two_factor: twoFactorOn } = usePlatformFeatures();
 
   return (
     <div>
@@ -45,13 +47,15 @@ const SecuritySection: FC<Props> = ({ email, twoFactorEnabled, onChangePassword,
 
         <SessionsGroup />
 
-        <FieldGroup label={t('profile.twoFactorShort')}>
-          <SettingRow
-            icon={<TwoFactorIcon />}
-            title={t('profile.enable2fa')}
-            action={<ToggleSwitch enabled={twoFactorEnabled} onToggle={onToggle2FA} />}
-          />
-        </FieldGroup>
+        {twoFactorOn && (
+          <FieldGroup label={t('profile.twoFactorShort')}>
+            <SettingRow
+              icon={<TwoFactorIcon />}
+              title={t('profile.enable2fa')}
+              action={<ToggleSwitch enabled={twoFactorEnabled} onToggle={onToggle2FA} />}
+            />
+          </FieldGroup>
+        )}
 
         <FieldGroup label={t('sec.connectedWallet')}>
           {WALLET_PROVIDERS.map(({ key, label, mark }) => (

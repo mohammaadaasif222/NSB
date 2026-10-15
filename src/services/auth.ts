@@ -4,6 +4,7 @@ import type {
   LoginResponseData,
   RegisterRequest,
   RegisterResponseData,
+  TwoFactorChallengeData,
   VerifyOtpResponseData,
 } from '@/types';
 
@@ -22,10 +23,17 @@ export const resendSignupOtp = (identifier: string) =>
 
 
 export const loginWithPassword = async (identifier: string, password: string) =>
-  apiService.post<LoginResponseData>('/auth/user/login', {
+  apiService.post<Partial<LoginResponseData> & Partial<TwoFactorChallengeData>>('/auth/user/login', {
     identifier,
     password: await encryptPassword(password),
   });
+
+/** Second step of a two-factor login: the code that was emailed or texted. */
+export const verifyLoginOtp = (challenge: string, code: string) =>
+  apiService.post<LoginResponseData>('/auth/login/verify-otp', { challenge, code });
+
+export const resendLoginOtp = (challenge: string) =>
+  apiService.post('/auth/login/resend-otp', { challenge });
 
 export const requestPasswordReset = (identifier: string) =>
   apiService.post('/auth/forgot-password', { identifier });

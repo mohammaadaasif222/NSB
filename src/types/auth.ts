@@ -30,6 +30,15 @@ export interface LoginResponseData {
   is_new_account?: boolean;
 }
 
+/** A password login that still owes a one-time code — no token yet. */
+export interface TwoFactorChallengeData {
+  otp_required: true;
+  challenge: string;
+  channel: 'email' | 'mobile';
+  target: string;
+  resend_after_seconds: number;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

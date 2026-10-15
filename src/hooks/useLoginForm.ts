@@ -9,6 +9,7 @@ import { analytics, failureReason, type AuthMethod } from '@/services/analytics'
 import { isPlatformRole } from '@/constants/roles';
 import { DIAL_CODES, EMAIL_PATTERN, MOBILE_PATTERN } from '@/constants/auth';
 
+import type { TwoFactorChallenge } from '@/hooks/useTwoFactorLogin';
 import type { TranslationKey } from '@/i18n/locales';
 import type { ApiError, JwtPayload, LoginMethod } from '@/types';
 
@@ -34,6 +35,8 @@ interface Options {
   /** Prefill after a password reset, so the player only types the new password. */
   initialIdentifier?: string;
   onLoggedIn: () => void;
+  /** The password was right and a one-time code was sent; collect it next. */
+  onTwoFactor?: (challenge: TwoFactorChallenge) => void;
 }
 
 const validate = (
@@ -66,7 +69,12 @@ const identifierFor = (method: LoginMethod, v: LoginValues): string => {
  * State, validation and submit for the login modal's password form. The same
  * endpoint serves all three methods; only the identifier field differs.
  */
-export const useLoginForm = ({ method, initialIdentifier = '', onLoggedIn }: Options) => {
+export const useLoginForm = ({
+  method,
+  initialIdentifier = '',
+  onLoggedIn,
+  onTwoFactor,
+}: Options) => {
   const { login } = useAuth();
   const { t } = useTranslation();
 
@@ -102,6 +110,18 @@ export const useLoginForm = ({ method, initialIdentifier = '', onLoggedIn }: Opt
     try {
       const res = await loginWithPassword(identifierFor(method, values), values.password);
       const token = res?.data?.token;
+
+      // Password accepted, code owed: the server has sent it and holds the
+      // session back. Nothing to sign in with yet.
+      if (res?.success && res.data?.otp_required && res.data.challenge && onTwoFactor) {
+        setValues((prev) => ({ ...prev, password: '' }));
+        onTwoFactor({
+          challenge: res.data.challenge,
+          channel: res.data.channel ?? 'mobile',
+          target: res.data.target ?? '',
+        });
+        return;
+      }
 
       if (!res?.success || !token) {
         analytics.auth.loginFailed(
