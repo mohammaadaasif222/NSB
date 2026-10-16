@@ -74,6 +74,8 @@ export interface Transaction {
   tx_type?: string;
   /** Actual amount in session currency */
   tx_amount?: string;
+  /** Blockchain transaction hash for explorer links */
+  tx_hash?: string | null;
 }
 
 /** The filter chips, in the order the design lists them. */
@@ -232,6 +234,7 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         frozen_rate_display_usd: tx.frozen_rate_display_usd ? parseFloat(tx.frozen_rate_display_usd) : undefined,
         tx_type: tx.type,
         tx_amount: amount,
+        tx_hash: tx.tx_hash || null,
       };
     });
 

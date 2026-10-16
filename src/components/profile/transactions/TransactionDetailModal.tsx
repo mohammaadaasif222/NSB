@@ -15,13 +15,13 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
   if (!transaction) return null;
 
   const getExplorerUrl = (): string | null => {
-    if (!transaction.crypto || !transaction.id) return null;
+    if (!transaction.tx_hash) return null;
 
     const cryptoParts = transaction.crypto.split(' ');
     if (cryptoParts.length < 2) return null;
 
     const crypto = cryptoParts[1].toUpperCase();
-    const txHash = transaction.id;
+    const txHash = transaction.tx_hash;
 
     const explorers: Record<string, string> = {
       BTC: `https://www.blockchain.com/btc/tx/${txHash}`,
