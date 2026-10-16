@@ -164,8 +164,8 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </span>
           </div>
 
-          {/* Explorer Link - Only show for crypto deposits with transaction hash */}
-          {explorerUrl && transaction.category === 'DEPOSIT' && (
+          {/* Explorer Link - Show for deposits and withdrawals with transaction hash */}
+          {explorerUrl && (transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && (
             <div className="flex justify-between items-center gap-4">
               <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.explorer')}</span>
               <a
