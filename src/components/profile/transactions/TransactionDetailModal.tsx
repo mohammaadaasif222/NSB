@@ -112,18 +112,18 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </div>
           </div>
 
-          {/* Amount in Crypto */}
+          {/* Crypto Amount */}
           <div className="flex justify-between items-center">
-            <span className="text-sm text-[#8c8c8c]">{t('tx.amount')}</span>
+            <span className="text-sm text-[#8c8c8c]">{t('tx.cryptoAmount')}</span>
             <span className="text-sm font-medium text-white">
               {transaction.crypto}
             </span>
           </div>
 
-          {/* Display Currency Amount */}
+          {/* Amount in Display Currency */}
           <div className="flex justify-between items-center">
             <span className="text-sm text-[#8c8c8c]">
-              {t('tx.displayAmount')}
+              {t('tx.amount')}
             </span>
             <span className="text-sm font-medium text-white">
               {transaction.usd}
@@ -197,20 +197,6 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
           )}
         </div>
 
-        {/* Footer Info */}
-        <div className="border-t border-[#404040] pt-4">
-          <p className="text-xs text-[#8c8c8c] text-center">
-            {t('tx.transactionInfo')}
-          </p>
-        </div>
-
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="w-full px-4 py-2 bg-[#4ade80] hover:bg-[#22c55e] text-black font-medium rounded-lg transition-colors"
-        >
-          {t('common.close')}
-        </button>
       </div>
     </GlassDialog>
   );

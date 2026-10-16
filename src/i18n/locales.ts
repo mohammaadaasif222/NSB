@@ -842,7 +842,7 @@ const coreEn = {
   'tx.next': 'Next',
   'tx.noResults': 'No transactions match your search.',
   'tx.amount': 'Amount',
-  'tx.displayAmount': 'Display Amount',
+  'tx.cryptoAmount': 'Crypto Amount',
   'tx.provider': 'Provider',
   'tx.explorer': 'Explorer',
   'tx.transactionInfo': 'Transaction details are shown based on the most recent conversion rate.',
