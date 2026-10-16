@@ -5,6 +5,7 @@ export * from './game';
 export * from './balance';
 export * from './rewards';
 export * from './bonus';
+export * from './rollover';
 export * from './dice';
 export * from './kyc';
 export * from './intercom';

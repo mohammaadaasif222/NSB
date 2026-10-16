@@ -258,6 +258,11 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
             >
               {mode === 'DEMO' ? t('game.demo') : t('game.realMoney')}
             </span>
+            {mode === 'REAL' && launch && (
+              <span className="flex-shrink-0 rounded-full bg-slate-800 border border-slate-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-300">
+                {t('game.playsIn', { currency: launch.currency })}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -276,6 +281,22 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
             </button>
           </div>
         </div>
+
+        {mode === 'REAL' && launch?.currency_fallback && (
+          // The game cannot play in the player's display currency; say so
+          // before they wonder why the balance in the game looks different.
+          <p
+            role="status"
+            className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+          >
+            {t(
+              launch.currency_fallback === 'NO_RATE'
+                ? 'game.currencyNoRate'
+                : 'game.currencyUnsupported',
+              { currency: launch.currency, display: launch.display_currency }
+            )}
+          </p>
+        )}
 
         <div
           ref={frameRef}
