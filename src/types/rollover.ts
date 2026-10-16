@@ -29,9 +29,12 @@ export interface DepositRollover {
   updated_at: string;
 }
 
+export type RolloverBetSource = 'WAGER' | 'GAME_ROUND';
+
 export interface RolloverProgression {
   id: string;
-  wager_id: string | null;
+  bet_id: string | null;
+  source: RolloverBetSource;
   game_id: string | null;
   bet_amount: string;
   wagering_progress: string;
