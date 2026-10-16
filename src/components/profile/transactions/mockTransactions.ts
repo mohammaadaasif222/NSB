@@ -51,9 +51,11 @@ export type TxStatus =
   | 'WITHDRAW_FAILED'
   | 'BET_PLACED'
   | 'BET_WON'
-  | 'BET_LOST';
+  | 'BET_LOST'
+  | 'TIP_SENT'
+  | 'TIP_RECEIVED';
 
-export type TxCategory = 'DEPOSIT' | 'WITHDRAWAL' | 'REWARD' | 'BET';
+export type TxCategory = 'DEPOSIT' | 'WITHDRAWAL' | 'REWARD' | 'BET' | 'TIP';
 
 export interface Transaction {
   id: string;
@@ -85,6 +87,7 @@ export const TX_FILTERS = [
   { key: 'withdrawal', labelKey: 'tx.withdrawals' },
   { key: 'reward', labelKey: 'tx.rewards' },
   { key: 'bet', labelKey: 'tx.bets' },
+  { key: 'tip', labelKey: 'tx.tips' },
 ] as const satisfies readonly { key: string; labelKey: TranslationKey }[];
 
 export type TxFilter = (typeof TX_FILTERS)[number]['key'];
@@ -104,6 +107,8 @@ export const STATUS_LABEL: Record<TxStatus, TranslationKey> = {
   BET_PLACED: 'tx.betPlaced',
   BET_WON: 'tx.betWon',
   BET_LOST: 'tx.betLost',
+  TIP_SENT: 'tx.tipSent',
+  TIP_RECEIVED: 'tx.tipReceived',
 };
 
 export const CATEGORY_LABEL: Record<TxCategory, TranslationKey> = {
@@ -111,6 +116,7 @@ export const CATEGORY_LABEL: Record<TxCategory, TranslationKey> = {
   WITHDRAWAL: 'tx.withdrawals',
   REWARD: 'tx.rewards',
   BET: 'tx.bets',
+  TIP: 'tx.tips',
 };
 
 /** Rows per page, matching what the design fits in the table. */
@@ -165,13 +171,14 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
 
     // Transform API response to UI Transaction format
     const rows = transactions.map((tx: any) => {
-      const isOutgoing = tx.type === 'WITHDRAWAL';
+      const isOutgoing = tx.type === 'WITHDRAWAL' || tx.status === 'TIP_SENT';
       const categoryMap: Record<string, TxCategory> = {
         DEPOSIT: 'DEPOSIT',
         WITHDRAWAL: 'WITHDRAWAL',
         REWARD: 'REWARD',
         BET: 'BET',
         WIN: 'BET', // WIN transactions show under BET category
+        TIP: 'TIP',
       };
 
       const cryptoAmount = tx.amount || '0';
@@ -200,6 +207,14 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
       if (tx.status === 'WITHDRAW_REJECTED' || tx.status === 'WITHDRAW_FAILED' || tx.status === 'DEPOSIT_FAILED') {
         // Rejected/failed transactions show 0 effect
         effectAmount = '0';
+      } else if (tx.status === 'TIP_SENT') {
+        // Tips sent show as debit (negative) in display currency
+        effectSign = '-';
+        effectAmount = `${effectSign}${currencySymbol}${effectValue}`;
+      } else if (tx.status === 'TIP_RECEIVED') {
+        // Tips received show as credit (positive) in display currency
+        effectSign = '+';
+        effectAmount = `${effectSign}${currencySymbol}${effectValue}`;
       } else if (tx.status === 'DEPOSIT_CONFIRMED' || tx.status === 'BET_WON') {
         // Deposits and wins show positive display currency value
         effectSign = '+';
@@ -225,7 +240,9 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         id: tx.id,
         date: new Date(tx.created_at).toISOString().slice(0, 10),
         usd: `${currencySymbol}${formattedDisplayValue}`, // Show in user's display currency
-        crypto: `${cryptoAmount} ${currency}`,
+        crypto: tx.type === 'TIP'
+          ? (tx.status === 'TIP_SENT' ? tx.to_address : tx.from_address) || 'Unknown'
+          : `${cryptoAmount} ${currency}`,
         status: tx.status as TxStatus,
         category: categoryMap[tx.type] as TxCategory || 'DEPOSIT',
         effect: effectAmount,

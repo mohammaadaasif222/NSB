@@ -67,7 +67,7 @@ const TipTab: FC = () => {
       setAmount('');
       setUsername('');
     } catch (error: any) {
-      const message = error?.response?.data?.message || t('acct.wallet.tipFailed');
+      const message = error?.message || t('acct.wallet.tipFailed');
       toast.error(message);
     } finally {
       setLoading(false);
