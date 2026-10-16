@@ -105,7 +105,9 @@ const BudgetCalculatorSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{entry ? entry.title : t('rgc.budgetTitle')}</h2>
+      <h2 className="text-[16px] leading-6 font-medium text-[#f0f1f5] sm:rl-h-section">
+        {entry ? entry.title : t('rgc.budgetTitle')}
+      </h2>
 
       {/* An optional note written in the console; absent in the design. */}
       {entry && entry.content.trim() && (

@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useRouter } from 'next/router';
 import { ICON, ROLLUCK_LOGO as logo } from '@/constants/cdn';
-import casinoArt from '@/assets/lobby/player/panel-casino.webp';
-import sportsArt from '@/assets/lobby/player/panel-sports.webp';
+import casinoArt from '@/assets/lobby/rail/rail-casino.webp';
+import sportsArt from '@/assets/lobby/rail/rail-sports.webp';
 import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
 import recentIcon from '@/assets/lobby/rail/nav-recent.svg';
 import favouritesIcon from '@/assets/lobby/rail/nav-favourites.svg';
@@ -28,7 +28,7 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
-import { CoinIcon, HandshakeIcon } from '@/components/icons';
+import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 
 interface Props {
@@ -45,8 +45,10 @@ interface Props {
 
 interface SectionProps {
   href: string;
-  /** The section's 3D render, glow included. */
+  /** The section's 3D render, without its glow. */
   art: string;
+  /** The glow the design puts round the render, as a CSS `drop-shadow`. */
+  glow: string;
   label: string;
   active: boolean;
   collapsed: boolean;
@@ -57,7 +59,7 @@ interface SectionProps {
  * One half of the design's 228×90 section switch: the section's 58px 3D
  * render over a 14px label.
  */
-const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onClick }) => (
+const SectionTab: FC<SectionProps> = ({ href, art, glow, label, active, collapsed, onClick }) => (
   <Link
     href={href}
     onClick={onClick}
@@ -69,8 +71,11 @@ const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onC
         : 'text-[#9da2b4] hover:bg-white/[0.06] hover:text-white'
     } ${collapsed ? 'lg:py-[calc(var(--u)*10)]' : ''}`}
   >
-    {/* The render carries its glow: the image is the 58px art plus ~20px of
-        glow on every side, so it overhangs a box the size of the art. */}
+    {/* The design's 58px render with its glow round it — a 34px shadow at
+        55% in the section's colour. Drawn as a soft radial behind the art, not
+        a CSS `filter`: a filtered image inside the rail's glass (two layers of
+        backdrop blur) made Chrome's GPU compositor flicker a light round it at
+        some window sizes. */}
     <span
       className={`relative flex-shrink-0 ${
         collapsed
@@ -78,21 +83,16 @@ const SectionTab: FC<SectionProps> = ({ href, art, label, active, collapsed, onC
           : 'h-[calc(var(--u)*58)] w-[calc(var(--u)*58)]'
       }`}
     >
-      {/* The overhang ignores the pointer, so a hover near the middle lands
-          on the tab under it rather than on its neighbour's glow. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-[-30%] rounded-full"
+        style={{ background: `radial-gradient(closest-side, ${glow}, transparent)` }}
+      />
       <img
         src={art}
         alt=""
-        className="pointer-events-none absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none transition-transform duration-200 group-hover/section:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover/section:scale-100"
+        className="pointer-events-none relative h-full w-full transition-transform duration-200 group-hover/section:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover/section:scale-100"
       />
-      {/* <img
-        src={inlineAssetUrl('private/ebay.jpeg')}
-        alt=""
-        className="absolute inset-[-33.7%] h-[167.3%] w-[167.3%] max-w-none"
-        onError={(e) => {
-          e.currentTarget.src = art;
-        }}
-      /> */}
     </span>
     <span
       className={`text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] ${
@@ -298,14 +298,21 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
         </div>
 
         {/* --- Section switch ------------------------------------------- */}
+        {/* `overflow-hidden` keeps the renders' glow inside the switch, as the
+            design draws it: on a scaled-down rail the label stops at its type
+            floor and pushes the art up, and the glow would otherwise spill
+            over the switch's top edge. No backdrop blur of its own: it sits on
+            the rail's glass, which already blurs, and a second blur nested in
+            the first was flickering under Chrome's GPU compositor. */}
         <div
-          className={`rl-liquid flex h-[calc(var(--u)*90)] flex-shrink-0 gap-0 rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ${
+          className={`rl-liquid flex h-[calc(var(--u)*90)] flex-shrink-0 gap-0 overflow-hidden rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ![-webkit-backdrop-filter:none] ![backdrop-filter:none] ${
             collapsed ? 'lg:h-auto lg:flex-col' : ''
           }`}
         >
           <SectionTab
             href="/casino"
             art={casinoArt.src}
+            glow="rgba(170,20,20,0.4)"
             label={t('nav.casino')}
             active={pathname === '/casino' || pathname.startsWith('/game')}
             collapsed={collapsed}
@@ -314,6 +321,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           <SectionTab
             href="/sports"
             art={sportsArt.src}
+            glow="rgba(22,163,53,0.4)"
             label={t('nav.sports')}
             active={pathname.startsWith('/sports')}
             collapsed={collapsed}
@@ -330,9 +338,18 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           }}
           title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
           className={`mt-[calc(var(--u)*24)] flex flex-shrink-0 flex-col gap-[calc(var(--u)*6)] rl-drop-pane rounded-[calc(var(--u)*16.25)] bg-[#1b1f29] px-[calc(var(--u)*16.25)] py-[calc(var(--u)*17.5)] text-start transition-colors hover:bg-[#222735] ${
-            collapsed ? 'lg:items-center lg:px-[calc(var(--u)*8)] lg:text-center' : ''
+            collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
           }`}
         >
+          {/* Collapsed, the rail is 76 wide and the amount does not fit: the
+              package becomes a gold gift, like the rows below becoming their
+              icons. The full offer stays in the title. */}
+          {collapsed && (
+            <GiftIcon
+              size={24}
+              className="hidden h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] text-[#ffe779] lg:block"
+            />
+          )}
           <span
             className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] uppercase leading-[calc(var(--u)*20)] text-[#9da2b4] ${
               collapsed ? 'lg:hidden' : ''
@@ -341,10 +358,8 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             {t('lobby.rail.welcomePackage')}
           </span>
           <span
-            className={`block font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
-              collapsed
-                ? 'text-[length:max(min(11px,16px),calc(var(--u)*16))]'
-                : 'text-[length:max(min(11px,28px),calc(var(--u)*28))]'
+            className={`block text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
+              collapsed ? 'lg:hidden' : ''
             }`}
           >
             $1,500

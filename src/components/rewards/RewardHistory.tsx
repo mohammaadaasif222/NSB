@@ -6,15 +6,16 @@ import { WALLET_REFRESH_EVENT } from '@/constants/events';
 import { REWARD_STATUS_KEYS, REWARD_TITLE_KEYS } from '@/constants/rewards';
 import { formatRewardAmount, formatWalletAmount } from '@/utils/money';
 import type { RewardClaimStatus, RewardHistoryItem, RewardHistoryPage } from '@/types';
+import { GHOST_BUTTON, MUTED, PANEL, PANEL_TITLE, TD, TH, TR } from './rewardStyles';
 
 const PAGE_SIZE = 10;
 
 const STATUS_STYLE: Record<RewardClaimStatus, string> = {
-  PENDING: 'bg-slate-800 border-slate-700 text-slate-300',
-  CLAIMABLE: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
-  CLAIMED: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
-  EXPIRED: 'bg-red-500/10 border-red-500/30 text-red-300',
-  ROLLED_OVER: 'bg-blue-600/15 border-blue-500/30 text-blue-300',
+  PENDING: 'border-white/15 bg-white/5 text-[#9da2b4]',
+  CLAIMABLE: 'border-[#f9d028]/40 bg-[#f9d028]/10 text-[#ffe779]',
+  CLAIMED: 'border-[#03b739]/40 bg-[#03b739]/10 text-[#2ed573]',
+  EXPIRED: 'border-[#ef4462]/40 bg-[#ef4462]/10 text-[#ef4462]',
+  ROLLED_OVER: 'border-white/15 bg-white/5 text-[#f0f1f5]',
 };
 
 /** A finished reward is remembered by what reached the wallet, or else by what it was worth. */
@@ -24,8 +25,7 @@ const amountOf = (item: RewardHistoryItem): string => item.credited_amount ?? it
 const finishedAt = (item: RewardHistoryItem): string =>
   item.claimed_at ?? item.expires_at ?? item.updated_at;
 
-const PAGER_BUTTON =
-  'inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 disabled:bg-slate-900 disabled:border-slate-800 disabled:text-slate-600';
+const PAGER_BUTTON = GHOST_BUTTON;
 
 /**
  * The player's finished rewards — claimed, expired, and rakeback that moved into
@@ -74,11 +74,11 @@ const RewardHistory: FC<{ currency: string }> = ({ currency }) => {
     new Date(iso).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
 
   return (
-    <section className="rounded-3xl bg-slate-900 border border-slate-800 p-4 sm:p-6">
-      <h2 className="text-lg font-bold text-white">{t('rewards.history')}</h2>
+    <section className={PANEL}>
+      <h2 className={PANEL_TITLE}>{t('rewards.history')}</h2>
 
       {rows.length === 0 ? (
-        <p className="mt-4 text-xs text-slate-500">
+        <p className={`mt-4 ${MUTED}`}>
           {loading
             ? t('common.loading')
             : failed
@@ -89,44 +89,42 @@ const RewardHistory: FC<{ currency: string }> = ({ currency }) => {
         <div className="mt-4 overflow-x-auto thin-scrollbar">
           <table className="w-full min-w-[520px] text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wide text-slate-500">
-                <th className="py-2 pr-3 font-semibold">{t('rewards.col.reward')}</th>
-                <th className="py-2 pr-3 text-right font-semibold">{t('rewards.col.amount')}</th>
-                <th className="py-2 pr-3 font-semibold">{t('rewards.col.status')}</th>
-                <th className="py-2 font-semibold">{t('rewards.col.date')}</th>
+              <tr className="border-b border-white/[0.08]">
+                <th className={TH}>{t('rewards.col.reward')}</th>
+                <th className={`${TH} text-right`}>{t('rewards.col.amount')}</th>
+                <th className={TH}>{t('rewards.col.status')}</th>
+                <th className={`${TH} pr-0`}>{t('rewards.col.date')}</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((item) => {
                 const Icon = REWARD_ICONS[item.type];
                 return (
-                  <tr key={item.id} className="border-b border-slate-800 last:border-0">
-                    <td className="py-2.5 pr-3">
-                      <span className="flex items-center gap-2 text-slate-100">
-                        <span className="text-slate-500" aria-hidden="true">
+                  <tr key={item.id} className={TR}>
+                    <td className={TD}>
+                      <span className="flex items-center gap-2">
+                        <span className="text-[#9da2b4]" aria-hidden="true">
                           <Icon size={14} />
                         </span>
                         {t(REWARD_TITLE_KEYS[item.type])}
                       </span>
                     </td>
-                    <td className="py-2.5 pr-3 text-right font-semibold text-slate-100 tabular-nums">
+                    <td className={`${TD} text-right font-medium`}>
                       {formatRewardAmount(amountOf(item), currency)}
                       {item.payout_amount && item.payout_currency && (
-                        <span className="block text-[11px] font-normal text-slate-500">
+                        <span className="block text-[12px] font-normal text-[#9da2b4]">
                           {formatWalletAmount(item.payout_amount, item.payout_currency)}
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 pr-3">
+                    <td className={TD}>
                       <span
-                        className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_STYLE[item.status]}`}
+                        className={`inline-flex rounded-full border px-2.5 py-0.5 text-[12px] leading-5 font-medium ${STATUS_STYLE[item.status]}`}
                       >
                         {t(REWARD_STATUS_KEYS[item.status])}
                       </span>
                     </td>
-                    <td className="py-2.5 text-xs text-slate-400 tabular-nums">
-                      {formatDate(finishedAt(item))}
-                    </td>
+                    <td className={`${TD} pr-0 text-[#9da2b4]`}>{formatDate(finishedAt(item))}</td>
                   </tr>
                 );
               })}
@@ -148,7 +146,7 @@ const RewardHistory: FC<{ currency: string }> = ({ currency }) => {
           >
             ‹ {t('games.prev')}
           </button>
-          <span className="px-1 text-xs text-slate-400 tabular-nums">
+          <span className={`px-1 tabular-nums ${MUTED}`}>
             {t('games.page', { page, total: totalPages })}
           </span>
           <button

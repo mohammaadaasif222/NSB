@@ -1,4 +1,4 @@
-import { useEffect, useRef, type FC, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FC, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { DESKTOP_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
 import { POPUP_SURFACE, type PopupTone } from '@/components/player/popupSurface';
@@ -65,6 +65,21 @@ const HeaderPopover: FC<Props> = ({
   const sheetRef = useRef<HTMLDivElement>(null);
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const sheet = phoneSheet && !desktop;
+  // How far under the trigger the panel opens: 8 clear of the bar's foot,
+  // measured, so it never sits on the bar whatever height the bar has.
+  const [drop, setDrop] = useState<number | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    const place = (): void => {
+      const wrap = ref.current?.getBoundingClientRect();
+      const bar = ref.current?.closest('header')?.getBoundingClientRect();
+      if (wrap && bar) setDrop(Math.max(8, bar.bottom - wrap.bottom + 8));
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
@@ -131,6 +146,8 @@ const HeaderPopover: FC<Props> = ({
             role="dialog"
             aria-label={label}
             className={`absolute end-0 top-[calc(100%+10px)] z-40 overflow-hidden rounded-[34px] lg:rounded-[calc(var(--u)*34)] ${POPUP_SURFACE[tone]} ${width} ${panelClassName}`}
+
+            style={drop === null ? undefined : { top: `calc(100% + ${drop}px)` }}
           >
             {children}
           </div>

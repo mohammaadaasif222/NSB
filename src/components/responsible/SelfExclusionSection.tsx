@@ -109,7 +109,8 @@ const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
      these boxes at that height with nothing in them, so the room is where the
      finished content is meant to go. */
   const CARD = 'rl-field-card rounded-[34px] border border-white/20 p-6 sm:min-h-[236px] sm:p-7.5';
-  const STEP_TITLE = 'text-[18px] leading-7 text-[#f0f1f5] 2xl:text-[20px]';
+  const STEP_TITLE =
+    'text-[12px] leading-5 text-[#9da2b4] sm:text-[18px] sm:leading-7 sm:text-[#f0f1f5] 2xl:text-[20px]';
 
   const pick = (o: ExclusionOption): void => setSelected(selected?.value === o.value ? null : o);
 
@@ -122,9 +123,11 @@ const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{entry ? entry.title : t('rgc.exclusionTitle')}</h2>
+      <h2 className="text-[16px] leading-6 font-medium text-[#f0f1f5] sm:rl-h-section">
+        {entry ? entry.title : t('rgc.exclusionTitle')}
+      </h2>
 
-      <div className="mt-5 space-y-7 text-[18px] leading-7 text-[#9da2b4] 2xl:text-[20px]">
+      <div className="mt-3 space-y-5 text-[12px] leading-5 text-[#9da2b4] sm:mt-5 sm:space-y-7 sm:text-[18px] sm:leading-7 2xl:text-[20px]">
         {entry ? (
           blocksOf(entry.content).map((lines, i) => (
             <p key={i} className="whitespace-pre-line">
@@ -186,7 +189,7 @@ const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
         >
           <CheckIcon size={18} />
         </span>
-        <span className="text-[18px] leading-7 text-[#f0f1f5] 2xl:text-[20px]">
+        <span className="text-[12px] leading-5 text-[#f0f1f5] sm:text-[18px] sm:leading-7 2xl:text-[20px]">
           {t('rgc.exclusionConsent')}
         </span>
       </label>
@@ -195,7 +198,7 @@ const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
         <>
           <Link
             href="/auth/login"
-            className="rl-btn-gold mt-6.5 flex h-14 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium sm:w-67.5"
+            className="rl-btn-gold mt-5 flex h-10 w-full items-center justify-center rounded-[34px] px-2 text-[14px] leading-5 font-medium sm:mt-6.5 sm:h-14 sm:w-67.5 sm:text-[18px] sm:leading-7"
           >
             {t('rgc.exclusionContinueAction')}
           </Link>
@@ -210,7 +213,7 @@ const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
           type="button"
           onClick={() => selected && setConfirming(selected)}
           disabled={!selected || !consented || !hydrated}
-          className="rl-btn-gold mt-6.5 flex h-14 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:w-67.5"
+          className="rl-btn-gold mt-5 flex h-10 w-full items-center justify-center rounded-[34px] px-2 text-[14px] leading-5 font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:mt-6.5 sm:h-14 sm:w-67.5 sm:text-[18px] sm:leading-7"
         >
           {t('rgc.exclusionContinueAction')}
         </button>

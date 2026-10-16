@@ -205,13 +205,15 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
           >
             {t('rgc.exclusionBreakPeriod')}
           </p>
-          {/* 56 tall on a desktop, where the line fits. It grows rather than
-            truncates on a narrow screen: these dates are the thing being
-            confirmed, and half a date is worse than two lines. */}
+          {/* One line at every width: on a narrow screen the type comes down
+            with the field (it is its own size container) rather than wrapping
+            the range in two — 18px wherever it fits. */}
           <p
-            className={`rl-modal-field ${short ? 'mt-1' : 'mt-1.75'} flex ${FIELD_H} items-center px-6 py-2 text-[18px] leading-6 font-medium text-[#f0f1f5]`}
+            className={`rl-modal-field ${short ? 'mt-1' : 'mt-1.75'} flex ${FIELD_H} items-center px-4 py-2 [container-type:inline-size] sm:px-6`}
           >
-            {range}
+            <span className="whitespace-nowrap text-[min(18px,4.9cqw)] leading-6 font-medium text-[#f0f1f5]">
+              {range}
+            </span>
           </p>
 
           <p className={`${short ? 'mt-2' : 'mt-3.5'} text-base leading-6 text-[#9da2b4]`}>

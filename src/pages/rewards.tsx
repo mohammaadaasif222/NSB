@@ -16,6 +16,16 @@ import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useRewards } from '@/hooks/useRewards';
 import { REWARD_DESCRIPTION_KEYS, REWARD_TITLE_KEYS, REWARD_TYPES } from '@/constants/rewards';
 import type { VipTier } from '@/types';
+import {
+  CARD,
+  GHOST_BUTTON,
+  GOLD_BUTTON,
+  ICON_WELL,
+  LABEL,
+  MUTED,
+  PANEL,
+  PANEL_TITLE,
+} from '@/components/rewards/rewardStyles';
 
 /** What each reward is — shown to a visitor who is not signed in. */
 const RewardExplainer: FC = () => {
@@ -26,17 +36,14 @@ const RewardExplainer: FC = () => {
       {REWARD_TYPES.map((type) => {
         const Icon = REWARD_ICONS[type];
         return (
-          <article key={type} className="rounded-2xl bg-slate-900 border border-slate-800 p-4">
-            <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/15 text-blue-300"
-              aria-hidden="true"
-            >
+          <article key={type} className={CARD}>
+            <span className={ICON_WELL(false)} aria-hidden="true">
               <Icon size={20} />
             </span>
-            <h3 className="mt-3 text-base font-bold text-white">{t(REWARD_TITLE_KEYS[type])}</h3>
-            <p className="mt-1 text-xs leading-relaxed text-slate-400">
-              {t(REWARD_DESCRIPTION_KEYS[type])}
-            </p>
+            <h3 className="mt-4 text-[18px] leading-7 font-medium text-[#f0f1f5]">
+              {t(REWARD_TITLE_KEYS[type])}
+            </h3>
+            <p className={`mt-1 ${MUTED}`}>{t(REWARD_DESCRIPTION_KEYS[type])}</p>
           </article>
         );
       })}
@@ -87,20 +94,20 @@ const RewardsPage: FC = () => {
   const playerView = (): React.ReactNode => {
     if (!summary) {
       return (
-        <section className="rounded-3xl bg-slate-900 border border-slate-800 px-6 py-16 text-center">
+        <section className={`${PANEL} py-16 text-center`}>
           {error ? (
             <>
-              <p className="text-sm text-slate-400">{t('rewards.loadFailed')}</p>
+              <p className={MUTED}>{t('rewards.loadFailed')}</p>
               <button
                 type="button"
                 onClick={() => void refresh()}
-                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
+                className={`mt-4 ${GOLD_BUTTON}`}
               >
                 {t('rewards.retry')}
               </button>
             </>
           ) : (
-            <p className="text-sm text-slate-500">{t('common.loading')}</p>
+            <p className={MUTED}>{t('common.loading')}</p>
           )}
         </section>
       );
@@ -110,19 +117,32 @@ const RewardsPage: FC = () => {
       <>
         <TierCard summary={summary} />
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {summary.rewards
-            .filter((reward) => reward.enabled)
-            .map((reward) => (
-              <RewardCard
-                key={reward.type}
-                reward={reward}
-                currency={summary.currency}
-                clockOffset={clockOffset}
-                claiming={claiming}
-                onClaim={(type) => void claim(type)}
-              />
-            ))}
+        {/* Soft light behind the cards: glass on a flat black page has nothing
+            to show through it, so two faint glows sit under the row for the
+            cards to blur. */}
+        <div className="relative isolate">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute left-[8%] top-1/2 -z-10 h-[70%] w-[38%] -translate-y-1/2 rounded-full bg-[#f9d028]/[0.10] blur-[90px]"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute right-[6%] top-1/2 -z-10 h-[70%] w-[40%] -translate-y-1/2 rounded-full bg-[#7b5cff]/[0.12] blur-[90px]"
+          />
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            {summary.rewards
+              .filter((reward) => reward.enabled)
+              .map((reward) => (
+                <RewardCard
+                  key={reward.type}
+                  reward={reward}
+                  currency={summary.currency}
+                  clockOffset={clockOffset}
+                  claiming={claiming}
+                  onClaim={(type) => void claim(type)}
+                />
+              ))}
+          </div>
         </div>
 
         <RewardHistory currency={summary.currency} />
@@ -146,11 +166,9 @@ const RewardsPage: FC = () => {
           <title>{`${t('rewards.title')} · ROLLUCK`}</title>
         </Head>
         <div className="mx-auto max-w-[1600px] pb-2">
-          <section className="rounded-3xl bg-slate-900 border border-slate-800 px-6 py-16 text-center">
-            <h1 className="text-lg font-bold text-white">{t('rewards.switchedOff')}</h1>
-            <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-slate-400">
-              {t('rewards.switchedOffNote')}
-            </p>
+          <section className={`${PANEL} py-16 text-center`}>
+            <h1 className={PANEL_TITLE}>{t('rewards.switchedOff')}</h1>
+            <p className={`mx-auto mt-2 max-w-xl ${MUTED}`}>{t('rewards.switchedOffNote')}</p>
           </section>
           <div className="mt-10 lg:mt-[calc(var(--u)*80)]">
             <SiteFooter />
@@ -166,12 +184,18 @@ const RewardsPage: FC = () => {
         <title>{`${t('rewards.title')} · ROLLUCK`}</title>
       </Head>
 
-      <div className="mx-auto max-w-[1600px] space-y-6 pb-2">
-        <header>
-          <h1 className="text-2xl font-extrabold text-white sm:text-3xl">{t('rewards.title')}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-400">{t('rewards.subtitle')}</p>
+      {/* The wallet page's frame: the 1548 column, 40 under the bar, the
+          44px title. */}
+      <div className="mx-auto max-w-[1548px] space-y-5 px-1 pb-2 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*20)] lg:px-0 lg:pt-[calc(var(--u)*24)]">
+        <header className="pb-1">
+          <h1 className="text-[24px] leading-8 font-medium text-[#f0f1f5] lg:text-[length:max(24px,calc(var(--u)*44))] lg:leading-[1.18] lg:font-semibold">
+            {t('rewards.title')}
+          </h1>
+          <p className={`mt-2 max-w-2xl ${MUTED} sm:text-[16px] sm:leading-6`}>
+            {t('rewards.subtitle')}
+          </p>
           {token && summary && (
-            <p className="mt-1 max-w-2xl text-xs text-slate-500">
+            <p className={`mt-1 max-w-2xl ${LABEL}`}>
               {t('rewards.paidTo', {
                 currency: summary.payout.currency_code,
                 network: summary.payout.network_code,
@@ -186,21 +210,15 @@ const RewardsPage: FC = () => {
             playerView()
           ) : (
             <>
-              <section className="flex flex-col items-start gap-4 rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                <p className="text-sm text-slate-300">{t('rewards.loginPrompt')}</p>
+              <section
+                className={`${PANEL} flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between`}
+              >
+                <p className="text-[16px] leading-6 text-[#f0f1f5]">{t('rewards.loginPrompt')}</p>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => openLogin()}
-                    className="inline-flex h-10 items-center rounded-xl bg-slate-800 border border-slate-700 px-4 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
-                  >
+                  <button type="button" onClick={() => openLogin()} className={GHOST_BUTTON}>
                     {t('account.login')}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => openRegister()}
-                    className="inline-flex h-10 items-center rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
-                  >
+                  <button type="button" onClick={() => openRegister()} className={GOLD_BUTTON}>
                     {t('account.register')}
                   </button>
                 </div>
@@ -216,7 +234,7 @@ const RewardsPage: FC = () => {
           loading={tiersLoading}
         />
 
-        <div className="mt-10 lg:mt-[calc(var(--u)*80)]">
+        <div className="!mt-10 lg:!mt-[calc(var(--u)*96)]">
           <SiteFooter />
         </div>
       </div>

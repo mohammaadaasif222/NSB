@@ -2,6 +2,7 @@ import { useEffect, useState, type FC, type ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { ChevronLeftIcon } from '@/components/icons';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
@@ -16,12 +17,8 @@ import SelfExclusionSection from '@/components/responsible/SelfExclusionSection'
 import BudgetCalculatorSection from '@/components/responsible/BudgetCalculatorSection';
 import { useTranslation } from '@/context/I18nContext';
 import { fetchHelpCenterServer } from '@/services/helpCenter.server';
-import { RESPONSIBLE_SECTIONS } from '@/components/responsible/ResponsibleNav';
-import {
-  entryFor,
-  type HelpItem,
-  type HelpSectionKey,
-} from '@/components/responsible/helpContent';
+import { RAIL_COLUMN, RESPONSIBLE_SECTIONS } from '@/components/responsible/ResponsibleNav';
+import { entryFor, type HelpItem, type HelpSectionKey } from '@/components/responsible/helpContent';
 
 /**
  * Responsible Gambling.
@@ -111,7 +108,7 @@ const ResponsibleGamblingPage: FC<Props> = ({ sections, items }) => {
       {/* Same 1544 frame as the account area — 228 of rail, a 48px channel and
           a 1268 panel — so moving between Profile and this section does not
           shift the page under the player. */}
-      <div className="@container mx-auto max-w-[1544px] pb-2">
+      <div className="@container mx-auto max-w-[1544px] pb-2 lg:max-w-[calc(var(--u)*1544)]">
         {/* A loud dev-only banner used to sit here saying these controls are
             not enforced. It is gone because it is not in the design — but the
             thing it warned about has not changed: limits and self-exclusion
@@ -120,7 +117,25 @@ const ResponsibleGamblingPage: FC<Props> = ({ sections, items }) => {
             they are protected, and not be. That has to be enforced server-side
             at the deposit, wager and login paths before this section is
             reachable by players. The warning now lives only in that file. */}
-        <div className="grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)] lg:gap-5 @acct:lg:grid-cols-[228px_minmax(0,1fr)] @acct:lg:gap-12">
+        {/* The account area's frame, in the page's unit as Profile's is: the
+            rail (RAIL_COLUMN), a 48 channel and the panel. */}
+        <div className={`grid gap-4 ${RAIL_COLUMN} lg:gap-[calc(var(--u)*48)]`}>
+          {/* The phone design's header: back and the page's title, over the
+              section chips. Desktop names the page above its rail instead. */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label={t('auth.back')}
+              className="rl-glass-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#f0f1f5]"
+            >
+              <ChevronLeftIcon size={20} className="rtl:rotate-180" />
+            </button>
+            <h1 className="min-w-0 truncate text-[24px] leading-8 font-medium text-[#f0f1f5]">
+              {t('rgc.title')}
+            </h1>
+          </div>
+
           <ResponsibleNav active={section} onSelect={selectSection} visible={sections} />
 
           {/* `@container` so the sections size against the panel rather than
@@ -134,7 +149,15 @@ const ResponsibleGamblingPage: FC<Props> = ({ sections, items }) => {
               page's own colour, so the edge is all there is. It carries the
               four other sections too, and their cards were already drawn at
               the 5% the design gives these rows. */}
-          <div className="@container rl-glass-edge min-w-0 p-5 @acct:sm:p-7.5">{body()}</div>
+          {/* On a phone the design draws FAQs as bare rows on the page and the
+              other sections in a card; from sm up every section has the panel. */}
+          <div
+            className={`@container min-w-0 sm:rl-glass-edge sm:p-5 @acct:sm:p-7.5 ${
+              section === 'faqs' ? '' : 'rl-glass-edge p-4'
+            }`}
+          >
+            {body()}
+          </div>
         </div>
 
         {/* The design breaks hard between the panel and the footer — measured

@@ -38,21 +38,21 @@ const FaqSection: FC<{ items?: readonly HelpItem[] }> = ({ items }) => {
 
   return (
     <div>
-      <h2 className="rl-h-section">{t('rgc.faqsTitle')}</h2>
+      <h2 className="hidden sm:block sm:rl-h-section">{t('rgc.faqsTitle')}</h2>
 
       {/* 60 tall closed, 16 apart, 34 of radius — the design's own row. */}
-      <div className="mt-6 space-y-4">
+      <div className="space-y-4 sm:mt-6">
         {faqs.map((faq, i) => (
           <details
             key={faq.key}
             open={i === 0}
             className="group overflow-hidden rounded-[34px] bg-white/5 open:bg-white/10"
           >
-            <summary className="flex h-15 cursor-pointer list-none items-center justify-between gap-4 px-6 [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-[72px] cursor-pointer list-none items-center justify-between gap-4 px-5 py-3 sm:h-15 sm:min-h-0 sm:px-6 sm:py-0 [&::-webkit-details-marker]:hidden">
               {/* No hover ink. The design gives this one colour in every state
                   it draws, and a question that turns yellow under the cursor
                   was an invention of the first pass. */}
-              <h3 className="rl-h-card min-w-0 tracking-normal text-[#f0f1f5]">
+              <h3 className="min-w-0 text-[16px] leading-6 font-normal text-[#f0f1f5] sm:rl-h-card sm:tracking-normal">
                 {faq.question}
               </h3>
               <ChevronDownIcon
@@ -63,8 +63,8 @@ const FaqSection: FC<{ items?: readonly HelpItem[] }> = ({ items }) => {
 
             {/* The answer starts 2px under the 60px band and closes 25 above
                 the card's foot — the design's 170 for a three-line answer. */}
-            <div className="px-6 pt-0.5 pb-6.25">
-              <p className="pe-1 text-base leading-7 font-medium whitespace-pre-line text-[#9da2b4] 2xl:text-[18px]">
+            <div className="px-4 pt-0.5 pb-5 sm:px-6 sm:pb-6.25">
+              <p className="pe-1 text-[12px] leading-5 whitespace-pre-line text-[#9da2b4] sm:text-base sm:leading-7 sm:font-medium 2xl:text-[18px]">
                 {faq.answer}
               </p>
             </div>

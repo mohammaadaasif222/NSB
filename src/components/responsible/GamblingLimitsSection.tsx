@@ -59,15 +59,17 @@ const GamblingLimitsSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
   /* 270×56 with 34 of radius — the design's own button, and the same gold the
      Affiliate page's Change and Collect are cut from. */
   const BUTTON =
-    'rl-btn-gold flex h-14 items-center justify-center rounded-[34px] px-2 text-[18px] leading-7 font-medium sm:w-67.5';
+    'rl-btn-gold flex h-10 w-full items-center justify-center rounded-[34px] px-2 text-[14px] leading-5 font-medium sm:h-14 sm:w-67.5 sm:text-[18px] sm:leading-7';
 
   return (
     <div>
-      <h2 className="rl-h-section">{entry ? entry.title : t('rgc.limitsTitle')}</h2>
+      <h2 className="text-[16px] leading-6 font-medium text-[#f0f1f5] sm:rl-h-section">
+        {entry ? entry.title : t('rgc.limitsTitle')}
+      </h2>
 
       {/* White, not the Gray 4 the Self-Assessment page uses for the same size
           of copy — the design inks this one at full strength. */}
-      <div className="mt-5 space-y-7 text-[18px] leading-7 text-white 2xl:text-[20px]">
+      <div className="mt-3 space-y-5 text-[12px] leading-5 text-[#9da2b4] sm:mt-5 sm:space-y-7 sm:text-[18px] sm:leading-7 sm:text-white 2xl:text-[20px]">
         {paragraphs
           ? paragraphs.map((p, i) => (
               <p key={i} className="whitespace-pre-line">
@@ -77,7 +79,7 @@ const GamblingLimitsSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
           : PARAGRAPHS.map((p) => <p key={p}>{t(p)}</p>)}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-5 sm:mt-8">
         {hydrated && !token ? (
           // Nothing to set without an account, so the button goes to sign-in
           // rather than opening a form that cannot save.

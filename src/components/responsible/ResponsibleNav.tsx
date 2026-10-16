@@ -48,13 +48,14 @@ export const RESPONSIBLE_SECTIONS = [
 
 /** The glyph, inked from the pill's own `color`. */
 const NavGlyph: FC<{ src: string; w: number; h: number }> = ({ src, w, h }) => (
+  // In em of the pill's 16px type, so it scales with the label.
   <span
     aria-hidden="true"
     className="block shrink-0 bg-current"
     style={
       {
-        width: `${w}px`,
-        height: `${h}px`,
+        width: `${w / 16}em`,
+        height: `${h / 16}em`,
         maskImage: `url(${src})`,
         WebkitMaskImage: `url(${src})`,
         maskRepeat: 'no-repeat',
@@ -71,18 +72,19 @@ export type ResponsibleSection = (typeof RESPONSIBLE_SECTIONS)[number]['key'];
 export const isResponsibleSection = (value: unknown): value is ResponsibleSection =>
   typeof value === 'string' && RESPONSIBLE_SECTIONS.some((s) => s.key === value);
 
-/* Matches `AccountNav`'s row at full width — 48px tall, 24px of side padding, a
-   10px gap to the label, and the icon drawn at its full 24.
-
-   Below 1536 it keeps the same 180px rail as the account one but buys the room
-   out of itself. These labels are longer than that rail's: measured, "Budget
-   Calculator" wants 204px of pill and has 180, and "Self-Assessment" and
-   "Gambling Limits" overrun too. Tightening the insets to 12, the gap to 8 and
-   the label to 15 brings the longest back to 178, so the rail stays the width
-   it is everywhere else rather than this one page widening its own chrome.
-   (14 of inset was measured first and left "Budget Calculator" 2px over.) */
+/* The design's pill — 48 tall, 24 of inset, a 10px gap, the glyph in a 24 box
+   and 16px type — in the page's unit like the account rail, but measured off
+   its own text: the inset, gap and glyph are in `em`, and the label is the
+   page's 16 or the type floor, whichever is larger. Where the floor wins on a
+   scaled-down window the whole pill grows with it in proportion, and the
+   rail's column grows to match (`RAIL_COLUMN`), so a long label like "Budget
+   Calculator" never runs out of its pill. */
 const PILL =
-  'relative flex w-full items-center gap-2 whitespace-nowrap px-3 text-[15px] leading-6 2xl:gap-2.5 2xl:px-6 2xl:text-base';
+  'relative flex h-[3em] w-full items-center gap-[0.625em] whitespace-nowrap px-[1.5em] text-[length:max(var(--tf,11px),calc(var(--u)*16))] leading-[1.5]';
+
+/** The rail's column on desktop: the design's 228, or the pill's own size at the type floor. */
+export const RAIL_COLUMN =
+  'lg:grid-cols-[max(calc(var(--u)*228),calc(var(--tf,11px)*14.25))_minmax(0,1fr)]';
 
 const INK_RESTING = 'text-[#9da2b4]';
 const INK_SELECTED = 'text-[#ffe779]';
@@ -101,39 +103,40 @@ const ResponsibleNav: FC<Props> = ({ active, onSelect, visible }) => {
   // AccountNav: without it the grid column grows to the full width of every
   // tab and the page scrolls sideways instead of the strip scrolling itself.
   return (
-    <nav className="flex min-w-0 flex-col gap-[14px] lg:h-full" aria-label={t('rgc.title')}>
+    <nav
+      className="flex min-w-0 flex-col gap-[14px] lg:h-full lg:gap-[calc(var(--u)*20)]"
+      aria-label={t('rgc.title')}
+    >
       {/* Onest Regular 20/28 in Gray 4 — the design's own, not the white/80 at
           18 this carried before.
 
-          `nowrap` and 16 below 1536: "Responsible Gambling" is two words that
-          do not fit the 180 rail a laptop gets, and it was silently wrapping to
-          two lines there while the design keeps it on one. */}
-      <h2 className="hidden px-1 text-[16px] leading-6 font-normal whitespace-nowrap text-[#9da2b4] lg:block 2xl:text-[20px] 2xl:leading-7">
+          On one line, as drawn, sized with the rail. */}
+      <h2 className="hidden text-[length:max(calc(var(--tf,11px)*1.25),calc(var(--u)*20))] leading-[1.4] font-normal whitespace-nowrap text-[#9da2b4] lg:block">
         {t('rgc.title')}
       </h2>
 
       {/* 12 between pills — the design stacks them on a 60px pitch at 48 tall. */}
-      <ul className="scrollbar-none flex gap-3 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+      <ul className="scrollbar-none flex gap-3 overflow-x-auto pb-1 lg:flex-col lg:gap-[calc(var(--u)*12)] lg:overflow-visible lg:pb-0">
         {RESPONSIBLE_SECTIONS.filter(({ key }) => !visible || visible.includes(key)).map(
           ({ key, labelKey, icon, w, h }) => {
-          const selected = key === active;
-          return (
-            <li key={key} className="shrink-0 lg:shrink">
-              <button
-                type="button"
-                onClick={() => onSelect(key)}
-                aria-current={selected ? 'page' : undefined}
-                className={`${PILL} h-12 ${
-                  selected
-                    ? `rl-rail-row-active rl-rail-glow font-medium font-['Rubik','Onest',sans-serif] ${INK_SELECTED}`
-                    : `rl-rail-row hover:rl-rail-row-active font-normal ${INK_RESTING} hover:font-medium hover:text-[#ffe779]`
-                }`}
-              >
-                <NavGlyph src={icon.src} w={w} h={h} />
-                {t(labelKey)}
-              </button>
-            </li>
-          );
+            const selected = key === active;
+            return (
+              <li key={key} className="shrink-0 lg:shrink">
+                <button
+                  type="button"
+                  onClick={() => onSelect(key)}
+                  aria-current={selected ? 'page' : undefined}
+                  className={`${PILL} ${
+                    selected
+                      ? `rl-rail-row-active rl-rail-glow font-medium font-['Rubik','Onest',sans-serif] ${INK_SELECTED}`
+                      : `rl-rail-row hover:rl-rail-row-active font-normal ${INK_RESTING} hover:font-medium hover:text-[#ffe779]`
+                  }`}
+                >
+                  <NavGlyph src={icon.src} w={w} h={h} />
+                  {t(labelKey)}
+                </button>
+              </li>
+            );
           }
         )}
       </ul>

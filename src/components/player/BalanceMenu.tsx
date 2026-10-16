@@ -78,7 +78,7 @@ const BalanceMenu: FC = () => {
       tone="glass"
       // Centred under the chip, as drawn — not hung off its end like the
       // bar's other panels.
-      panelClassName="end-auto left-1/2 -translate-x-1/2 lg:top-[calc(100%+var(--u)*9)]"
+      panelClassName="end-auto left-1/2 -translate-x-1/2"
       width={
         picking
           ? 'w-[min(535px,calc(100vw-1.5rem))] lg:w-[calc(var(--u)*535)]'
