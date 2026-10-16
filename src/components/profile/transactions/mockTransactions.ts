@@ -20,9 +20,12 @@ export type TxStatus =
   | 'WITHDRAW_PROCESSING'
   | 'WITHDRAW_COMPLETED'
   | 'WITHDRAW_REJECTED'
-  | 'WITHDRAW_FAILED';
+  | 'WITHDRAW_FAILED'
+  | 'BET_PLACED'
+  | 'BET_WON'
+  | 'BET_LOST';
 
-export type TxCategory = 'DEPOSIT' | 'WITHDRAWAL' | 'REWARD';
+export type TxCategory = 'DEPOSIT' | 'WITHDRAWAL' | 'REWARD' | 'BET';
 
 export interface Transaction {
   id: string;
@@ -42,6 +45,7 @@ export const TX_FILTERS = [
   { key: 'deposit', labelKey: 'tx.deposits' },
   { key: 'withdrawal', labelKey: 'tx.withdrawals' },
   { key: 'reward', labelKey: 'tx.rewards' },
+  { key: 'bet', labelKey: 'tx.bets' },
 ] as const satisfies readonly { key: string; labelKey: TranslationKey }[];
 
 export type TxFilter = (typeof TX_FILTERS)[number]['key'];
@@ -58,12 +62,16 @@ export const STATUS_LABEL: Record<TxStatus, TranslationKey> = {
   WITHDRAW_COMPLETED: 'tx.withdrawCompleted',
   WITHDRAW_REJECTED: 'tx.withdrawRejected',
   WITHDRAW_FAILED: 'tx.withdrawFailed',
+  BET_PLACED: 'tx.betPlaced',
+  BET_WON: 'tx.betWon',
+  BET_LOST: 'tx.betLost',
 };
 
 export const CATEGORY_LABEL: Record<TxCategory, TranslationKey> = {
   DEPOSIT: 'tx.deposits',
   WITHDRAWAL: 'tx.withdrawals',
   REWARD: 'tx.rewards',
+  BET: 'tx.bets',
 };
 
 /** Rows per page, matching what the design fits in the table. */
@@ -123,13 +131,15 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         DEPOSIT: 'DEPOSIT',
         WITHDRAWAL: 'WITHDRAWAL',
         REWARD: 'REWARD',
+        BET: 'BET',
+        WIN: 'BET', // WIN transactions show under BET category
       };
 
       const amount = tx.display_amount || tx.amount || '0';
       const currency = tx.currency_code || 'BTC';
       const usdValue = tx.amount_usd || tx.display_amount || '0';
 
-      // Determine wallet effect based on transaction status
+      // Determine wallet effect based on transaction type and status
       let effectAmount: string;
       if (tx.status === 'WITHDRAW_REJECTED' || tx.status === 'DEPOSIT_FAILED') {
         // Rejected/failed transactions show 0 effect
@@ -137,6 +147,15 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
       } else if (tx.status === 'DEPOSIT_CONFIRMED') {
         // Confirmed deposits show USD amount
         effectAmount = `+${parseFloat(usdValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      } else if (tx.type === 'BET' && tx.status === 'BET_PLACED') {
+        // Bet placed shows as debit (negative)
+        effectAmount = `-${amount}`;
+      } else if (tx.type === 'WIN' && tx.status === 'BET_WON') {
+        // Win shows as credit (positive)
+        effectAmount = `+${amount}`;
+      } else if (tx.type === 'BET' && tx.status === 'BET_LOST') {
+        // Lost bet shows 0 effect (already deducted during bet placement)
+        effectAmount = '0';
       } else {
         // Other transactions show crypto amount
         effectAmount = isOutgoing ? `-${amount}` : `+${amount}`;
