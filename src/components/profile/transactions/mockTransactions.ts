@@ -174,7 +174,7 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         WIN: 'BET', // WIN transactions show under BET category
       };
 
-      const amount = tx.display_amount || tx.amount || '0';
+      const cryptoAmount = tx.amount || '0';
       const currency = tx.currency_code || 'BTC';
       const usdValue = parseFloat(tx.amount_usd || '0');
       const displayCurrency = tx.display_currency || 'USD';
@@ -225,7 +225,7 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         id: tx.id,
         date: new Date(tx.created_at).toISOString().slice(0, 10),
         usd: `${currencySymbol}${formattedDisplayValue}`, // Show in user's display currency
-        crypto: `${amount} ${currency}`,
+        crypto: `${cryptoAmount} ${currency}`,
         status: tx.status as TxStatus,
         category: categoryMap[tx.type] as TxCategory || 'DEPOSIT',
         effect: effectAmount,
@@ -233,7 +233,7 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         amount_usd: usdValue,
         frozen_rate_display_usd: tx.frozen_rate_display_usd ? parseFloat(tx.frozen_rate_display_usd) : undefined,
         tx_type: tx.type,
-        tx_amount: amount,
+        tx_amount: cryptoAmount,
         tx_hash: tx.tx_hash || null,
       };
     });
