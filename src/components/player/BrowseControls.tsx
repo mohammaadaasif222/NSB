@@ -30,8 +30,7 @@ import Glyph from '@/components/player/Glyph';
  */
 
 /** The design's small dark glass, which every control here sits on. */
-const GLASS =
-  'rl-glass-btn';
+const GLASS = 'rl-glass-btn';
 
 /* ==================================================================== */
 /* Search                                                                */
@@ -406,7 +405,7 @@ export const CategoryChips: FC<{
               key={text}
               title={`${text} — ${t('common.soon')}`}
               aria-disabled="true"
-              className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:bg-white/[0.025]`}
+              className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:filter-none`}
             >
               {icon}
               {text}

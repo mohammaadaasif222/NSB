@@ -19,7 +19,6 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import ProfileMenu from '@/components/player/ProfileMenu';
 import BalanceMenu from '@/components/player/BalanceMenu';
 import WalletModal from '@/components/wallet/WalletModal';
-import WalletSettingsModal from '@/components/wallet/WalletSettingsModal';
 import TopWinnersTicker from '@/components/player/TopWinnersTicker';
 import LanguagePicker from '@/components/LanguagePicker';
 import HeaderPopover from '@/components/player/HeaderPopover';
@@ -110,7 +109,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
 
   // Publish the bar's height on the stage, for screens that open beneath it
@@ -152,7 +150,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
         ref={headerRef}
         className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]"
       >
-        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-[rgba(10,11,13,0.45)] lg:px-[calc(var(--u)*16)] lg:rl-drop-pane">
+        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-white/[0.01] lg:px-[calc(var(--u)*16)] lg:rl-glass-bar">
           {/* --- Brand, search, language --------------------------------- */}
           {/* Collapses the rail to icons. The phone opens its drawer from the
               tab bar instead, so this is desktop only. */}
@@ -214,7 +212,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             {/* Signed in: the balance and the wallet, centred in the bar. */}
             {token && (
               <div className="flex min-w-0 items-center gap-2.5 lg:gap-[calc(var(--u)*16)]">
-                <BalanceMenu onOpenWallet={() => setSettingsOpen(true)} />
+                <BalanceMenu />
                 <button
                   type="button"
                   onClick={() => setWalletOpen(true)}
@@ -278,6 +276,9 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                     onClose={closePanel}
                     label={t('nav.rewards')}
                     width="w-[min(415px,calc(100vw-2rem))] lg:w-[calc(var(--u)*415)]"
+                    // The notification centre's glass, over the same dimmed page.
+                    tone="frost"
+                    dim
                     className="order-2 lg:order-none"
                     trigger={
                       <button
@@ -286,7 +287,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                         aria-haspopup="dialog"
                         aria-expanded={panel === 'rewards'}
                         aria-label={t('nav.rewards')}
-                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rl-glass-btn rounded-full text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:w-auto lg:bg-transparent lg:[--tw-inset-shadow:0_0_#0000] lg:px-[calc(var(--u)*19)]"
+                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rl-glass-btn rounded-full text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:w-auto lg:bg-transparent lg:bg-none lg:[--tw-inset-shadow:0_0_#0000] lg:px-[calc(var(--u)*19)]"
                       >
                         <img
                           src={giftGlyph.src}
@@ -308,7 +309,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   onClose={closePanel}
                   label={t('nav.notifications')}
                   width="w-[min(464px,calc(100vw-2rem))] lg:w-[calc(var(--u)*464)]"
-                  tone="deep"
+                  tone="frost"
                   dim
                   phoneSheet
                   // The design hangs the panel 41px past the bell's end.
@@ -416,7 +417,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
       {searchOpen && <GameSearchModal onClose={() => setSearchOpen(false)} />}
 
       <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
-      <WalletSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       {/* Out here rather than beside the button: the drawer is full-height and
           portals to the body, and the bar is a bad place to read that from.

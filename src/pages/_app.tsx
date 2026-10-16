@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { SoundProvider } from '@/context/SoundContext';
 import { I18nProvider, useTranslation } from '@/context/I18nContext';
 import { PlatformFeaturesProvider } from '@/context/PlatformFeaturesContext';
 import { UserProvider } from '@/context/UserContext';
@@ -65,50 +66,52 @@ export default function App({ Component, pageProps }: AppProps) {
             <Analytics />
 
             <ThemeProvider>
-              <UserProvider>
-                <WalletProvider>
-                  {/* Inside WalletProvider: it reads the summary's snapshot
+              <SoundProvider>
+                <UserProvider>
+                  <WalletProvider>
+                    {/* Inside WalletProvider: it reads the summary's snapshot
                     rates to convert crypto amounts for display. */}
-                  <CurrencyConversionProvider>
-                    {/* Outside AuthModalProvider so the auth modals' "Need help?"
+                    <CurrencyConversionProvider>
+                      {/* Outside AuthModalProvider so the auth modals' "Need help?"
                       can open the support messenger. */}
-                    <SupportChatProvider>
-                      <AuthModalProvider>
-                        {/* Innermost, so the step-up prompt renders above every page
+                      <SupportChatProvider>
+                        <AuthModalProvider>
+                          {/* Innermost, so the step-up prompt renders above every page
                           and any component can reach it through useSeonGuard(). */}
-                        <SeonGuardProvider>
-                          {/* Inside AuthModalProvider: hearting signed out opens login. */}
-                          <FavouritesProvider>
-                            {/* Above the pages, so sportsbook picks survive moving between them. */}
-                            <BetslipProvider>
-                              <EventListeners />
-                              <Component {...pageProps} />
-                            </BetslipProvider>
-                          </FavouritesProvider>
-                        </SeonGuardProvider>
-                        <SeonAgentWarmup />
-                        <RouteLoader />
-                        {/* After RouteLoader so that on a first load, where
+                          <SeonGuardProvider>
+                            {/* Inside AuthModalProvider: hearting signed out opens login. */}
+                            <FavouritesProvider>
+                              {/* Above the pages, so sportsbook picks survive moving between them. */}
+                              <BetslipProvider>
+                                <EventListeners />
+                                <Component {...pageProps} />
+                              </BetslipProvider>
+                            </FavouritesProvider>
+                          </SeonGuardProvider>
+                          <SeonAgentWarmup />
+                          <RouteLoader />
+                          {/* After RouteLoader so that on a first load, where
                           both could be showing, this one wins the overlap. */}
-                        <AuthGate />
-                        {/* Outside the page so the bubble survives route changes,
+                          <AuthGate />
+                          {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching
                           Intercom off removes it without a deploy. */}
-                        <IntercomLauncher />
-                        <ToastContainer
-                          position="top-right"
-                          autoClose={3000}
-                          newestOnTop
-                          closeOnClick
-                          pauseOnHover
-                          draggable
-                          theme="dark"
-                        />
-                      </AuthModalProvider>
-                    </SupportChatProvider>
-                  </CurrencyConversionProvider>
-                </WalletProvider>
-              </UserProvider>
+                          <IntercomLauncher />
+                          <ToastContainer
+                            position="top-right"
+                            autoClose={3000}
+                            newestOnTop
+                            closeOnClick
+                            pauseOnHover
+                            draggable
+                            theme="dark"
+                          />
+                        </AuthModalProvider>
+                      </SupportChatProvider>
+                    </CurrencyConversionProvider>
+                  </WalletProvider>
+                </UserProvider>
+              </SoundProvider>
             </ThemeProvider>
           </AuthProvider>
         </I18nProvider>

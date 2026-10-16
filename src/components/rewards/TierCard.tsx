@@ -3,11 +3,22 @@ import { useTranslation } from '@/context/I18nContext';
 import { CrownIcon } from '@/components/icons';
 import { formatAmount, withCurrency } from '@/utils/money';
 import type { RewardSummary } from '@/types';
+import {
+  ICON_WELL,
+  LABEL,
+  MUTED,
+  PANEL,
+  PROGRESS_FILL,
+  PROGRESS_TRACK,
+  TILE,
+} from './rewardStyles';
 
 const Stat: FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="min-w-0">
-    <dt className="text-[11px] uppercase tracking-wide text-slate-500">{label}</dt>
-    <dd className="mt-0.5 truncate text-sm font-semibold text-slate-100 tabular-nums">{value}</dd>
+  <div className={`min-w-0 ${TILE}`}>
+    <dt className={LABEL}>{label}</dt>
+    <dd className="mt-0.5 truncate text-[18px] leading-7 font-medium text-[#f0f1f5] tabular-nums">
+      {value}
+    </dd>
   </div>
 );
 
@@ -21,24 +32,21 @@ const TierCard: FC<{ summary: RewardSummary }> = ({ summary }) => {
   const money = (amount: string): string => withCurrency(formatAmount(amount), currency);
 
   return (
-    <section className="rounded-3xl bg-slate-900 border border-slate-800 p-4 sm:p-6">
+    <section className={PANEL}>
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div className="flex items-center gap-3">
-          <span
-            className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300"
-            aria-hidden="true"
-          >
+          <span className={ICON_WELL(true)} aria-hidden="true">
             <CrownIcon size={24} />
           </span>
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-slate-500">
-              {t('rewards.tier')}
+            <p className={LABEL}>{t('rewards.tier')}</p>
+            <p className="text-[28px] leading-9 font-semibold tracking-[-0.02em] text-[#f0f1f5]">
+              {tier?.name ?? t('rewards.noTier')}
             </p>
-            <p className="text-xl font-extrabold text-white">{tier?.name ?? t('rewards.noTier')}</p>
           </div>
         </div>
 
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+        <dl className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 lg:w-auto">
           <Stat label={t('rewards.lifetimeWagered')} value={money(summary.lifetime_wagered)} />
           <Stat label={t('rewards.claimedTotal')} value={money(summary.claimed_total)} />
           <Stat
@@ -54,18 +62,15 @@ const TierCard: FC<{ summary: RewardSummary }> = ({ summary }) => {
 
       <div className="mt-5">
         <div
-          className="h-2 overflow-hidden rounded-full bg-slate-800"
+          className={PROGRESS_TRACK}
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={summary.tier_progress}
         >
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300 transition-[width] duration-500"
-            style={{ width: `${summary.tier_progress}%` }}
-          />
+          <div className={PROGRESS_FILL} style={{ width: `${summary.tier_progress}%` }} />
         </div>
-        <p className="mt-2 text-xs text-slate-400 tabular-nums">
+        <p className={`mt-3 tabular-nums ${MUTED}`}>
           {next && summary.next_tier_remaining
             ? t('rewards.toNextTier', {
                 amount: money(summary.next_tier_remaining),

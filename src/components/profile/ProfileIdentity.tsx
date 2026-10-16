@@ -15,7 +15,6 @@ const ProfileIdentity: FC<Props> = ({ me, onChangeAvatar }) => {
   return (
     <div className="flex flex-col items-center text-center">
       <div className="relative">
-       
         {me.avatar_url ? (
           <img
             src={me.avatar_url}
@@ -43,7 +42,7 @@ const ProfileIdentity: FC<Props> = ({ me, onChangeAvatar }) => {
       </div>
 
       {/* Onest SemiBold 20/28 at −0.4, per the design's own H6 style. */}
-      <p className="mt-[calc(var(--u)*10)] text-[length:max(min(11px,20px),calc(var(--u)*20))] leading-[1.4] font-semibold tracking-[-0.4px] text-[#f0f1f5]">
+      <p className="mt-[calc(var(--u)*17)] text-[length:max(min(11px,20px),calc(var(--u)*20))] leading-[1.4] font-semibold tracking-[-0.4px] text-[#f0f1f5]">
         {name}
       </p>
 

@@ -89,7 +89,10 @@ const WinnerCard: FC<{ game: Game; win: Win; fresh?: boolean }> = ({ game, win, 
           className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
         />
 
-        <span className="rl-glass-deep absolute inset-x-0 bottom-0 flex h-[31.8%] flex-col justify-between rounded-b-[11.1cqw] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw]">
+        {/* The design's "Liquid Glass" band: the artwork blurred through a
+            faint white frost, a hairline of light along its top — not a dark
+            pane, so each card's band takes its own game's colours. */}
+        <span className="absolute inset-x-0 bottom-0 flex h-[31.8%] flex-col justify-between rounded-b-[11.1cqw] bg-black/[0.40] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-[3cqw]">
           <span className="flex min-w-0 items-center gap-[4.04cqw]">
             <Image
               src={avatar}

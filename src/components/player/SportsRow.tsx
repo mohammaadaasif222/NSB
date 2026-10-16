@@ -96,7 +96,7 @@ const TileShell: FC<{ label: string; children: ReactNode }> = ({ label, children
   <Link
     href="/sports"
     title={label}
-    className="rl-liquid group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
+    className="rl-liquid-glow group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
   >
     {children}
     <span className="absolute inset-x-1 bottom-[calc(var(--u)*22)] text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white lg:bottom-[calc(var(--u)*28)] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:font-semibold lg:leading-[calc(var(--u)*28)]">
@@ -208,7 +208,7 @@ const MatchCard: FC<{ match: Match }> = ({ match }) => {
   return (
     <Link
       href="/sports"
-      className="rl-liquid group flex flex-col rounded-[calc(var(--u)*34)] px-px pb-[calc(var(--u)*18)] pt-[calc(var(--u)*18)] transition-colors hover:bg-white/[0.11] lg:px-[calc(var(--u)*19)]"
+      className="rl-liquid-glow group flex flex-col rounded-[calc(var(--u)*34)] px-px pb-[calc(var(--u)*18)] pt-[calc(var(--u)*18)] transition-colors hover:bg-white/[0.11] lg:px-[calc(var(--u)*19)]"
     >
       <span className="flex h-[calc(var(--u)*36)] items-start justify-center gap-[calc(var(--u)*8)] pb-[calc(var(--u)*12)]">
         <img src={leagueIcon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />

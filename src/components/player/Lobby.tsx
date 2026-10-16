@@ -9,6 +9,7 @@ import LobbyBanner from '@/components/player/LobbyBanner';
 import CrashPreview from '@/components/player/CrashPreview';
 import ProviderRow from '@/components/player/ProviderRow';
 import SportsRow, { SportsShelf } from '@/components/player/SportsRow';
+import FavouritesShelf from '@/components/player/FavouritesShelf';
 import TournamentsShelf from '@/components/player/TournamentsShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
 import { CASINO_SHELF_KEYS, PLAYER_SHELF_KEYS } from '@/constants/games';
@@ -60,8 +61,12 @@ const PLAYER_INSERTS: readonly ShelfInsert[] = [
   { id: 'sports', after: 'live', node: <SportsShelf viewAll="/sports" paged={false} /> },
 ];
 
-/** The casino page's rows among its shelves: providers after Live Casino, tournaments after Recommended. */
+/**
+ * The casino page's rows among its shelves: the player's favourites after
+ * Rolluck Originals, providers after Live Casino, tournaments after Recommended.
+ */
 const CASINO_INSERTS = (providerRow: ReactNode): readonly ShelfInsert[] => [
+  { id: 'favourites', after: 'originals', node: <FavouritesShelf /> },
   { id: 'providers', after: 'live', node: providerRow },
   { id: 'tournaments', after: 'featured', node: <TournamentsShelf /> },
 ];

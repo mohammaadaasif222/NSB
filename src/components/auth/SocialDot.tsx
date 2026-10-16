@@ -15,7 +15,8 @@ interface SocialDotProps {
 /**
  * One disc in an overlapping stack of provider shortcuts. The stack is drawn
  * with a negative margin on every disc but the first, so each ring sits over
- * the previous one's edge.
+ * the previous one's edge. Each disc is the header's glass button
+ * (`rl-glass-btn`) on a solid base, so the disc behind does not show through.
  */
 const SocialDot: FC<SocialDotProps> = ({ label, colour, onClick, first, size = 37, children }) => (
   <button
@@ -23,7 +24,7 @@ const SocialDot: FC<SocialDotProps> = ({ label, colour, onClick, first, size = 3
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`relative flex items-center justify-center rounded-full border border-white/10 bg-[#121317] transition-transform hover:z-10 hover:scale-110 ${colour} ${
+    className={`rl-glass-btn relative flex items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:scale-110 ${colour} ${
       size === 40 ? 'h-10 w-10' : 'h-[37px] w-[37px]'
     } ${first ? '' : '-ms-[9px]'}`}
   >

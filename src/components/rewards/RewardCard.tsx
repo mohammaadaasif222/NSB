@@ -6,6 +6,7 @@ import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
 import { REWARD_DESCRIPTION_KEYS, REWARD_TITLE_KEYS } from '@/constants/rewards';
 import { formatRewardAmount } from '@/utils/money';
 import type { RewardType, RewardTypeSummary } from '@/types';
+import { CARD, GHOST_BUTTON, GOLD_BUTTON, ICON_WELL, LABEL, MUTED, PILL } from './rewardStyles';
 
 interface Props {
   reward: RewardTypeSummary;
@@ -54,44 +55,38 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
 
   return (
     <article
-      className={`flex flex-col rounded-2xl border p-4 ${
-        claimable
-          ? 'border-amber-500/40 bg-gradient-to-b from-amber-500/10 to-slate-900'
-          : 'border-slate-800 bg-slate-900'
+      // Ready to claim: the chosen-chip treatment — a gold edge and glow.
+      className={`flex flex-col ${CARD} ${
+        claimable ? 'ring-1 ring-[#f9d028]/60 shadow-[0_0_24px_rgba(249,208,40,0.18)]' : ''
       }`}
     >
       <div className="flex items-start justify-between gap-3">
-        <span
-          className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-            claimable ? 'bg-amber-500/15 text-amber-300' : 'bg-blue-600/15 text-blue-300'
-          }`}
-          aria-hidden="true"
-        >
+        <span className={ICON_WELL(claimable)} aria-hidden="true">
           <Icon size={20} />
         </span>
         {reward.rate_percentage !== null && (
-          <span className="rounded-full bg-slate-800 border border-slate-700 px-2.5 py-0.5 text-[11px] font-semibold text-slate-300 tabular-nums">
-            {t('rewards.rate', { percent: reward.rate_percentage })}
-          </span>
+          <span className={PILL}>{t('rewards.rate', { percent: reward.rate_percentage })}</span>
         )}
       </div>
 
-      <h3 className="mt-3 text-base font-bold text-white">{t(REWARD_TITLE_KEYS[reward.type])}</h3>
-      <p className="mt-1 text-xs leading-relaxed text-slate-400">
-        {t(REWARD_DESCRIPTION_KEYS[reward.type])}
-      </p>
+      <h3 className="mt-4 text-[18px] leading-7 font-medium text-[#f0f1f5]">
+        {t(REWARD_TITLE_KEYS[reward.type])}
+      </h3>
+      <p className={`mt-1 ${MUTED}`}>{t(REWARD_DESCRIPTION_KEYS[reward.type])}</p>
 
-      <div className="mt-4 flex-1">
-        <p className="text-[11px] uppercase tracking-wide text-slate-500">
+      <div className="mt-5 flex-1">
+        <p className={LABEL}>
           {claimable ? t('rewards.readyToClaim') : t('rewards.status.pending')}
         </p>
-        <p className="mt-0.5 text-2xl font-extrabold text-white tabular-nums">
+        <p
+          className={`mt-0.5 text-[28px] leading-9 font-semibold tabular-nums ${claimable ? 'text-[#ffe779]' : 'text-[#f0f1f5]'}`}
+        >
           {formatRewardAmount(
             claimable ? reward.claimable_amount : reward.pending_amount,
             currency
           )}
         </p>
-        <p className="mt-1 text-[11px] text-slate-400 tabular-nums">
+        <p className={`mt-1 tabular-nums ${LABEL}`}>
           {claimable
             ? t('rewards.expiresIn', { time: formatCountdown(expiresIn ?? 0) })
             : accruing
@@ -99,7 +94,7 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
               : t('rewards.nothingYet')}
         </p>
         {claimable && accruing && (
-          <p className="mt-1 text-[11px] text-slate-500 tabular-nums">
+          <p className={`mt-1 tabular-nums ${LABEL}`}>
             {t('rewards.pending', { amount: formatRewardAmount(reward.pending_amount, currency) })}{' '}
             · {accrualNote}
           </p>
@@ -110,20 +105,16 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
         type="button"
         onClick={() => onClaim(reward.type)}
         disabled={!claimable || claiming !== null}
-        className={`mt-4 inline-flex h-10 items-center justify-center rounded-lg text-sm font-bold transition-colors ${
-          claimable
-            ? 'bg-amber-500 text-slate-950 hover:bg-amber-400 disabled:opacity-60'
-            : 'bg-slate-800 border border-slate-700 text-slate-500'
-        }`}
+        className={`mt-5 w-full ${claimable ? GOLD_BUTTON : GHOST_BUTTON}`}
       >
         {claiming === reward.type ? <ButtonLoader /> : t('rewards.claim')}
       </button>
 
-      <div className="mt-4 space-y-1 border-t border-slate-800 pt-3 text-[11px] text-slate-500">
+      <div className={`mt-5 space-y-1 border-t border-white/[0.08] pt-4 ${LABEL}`}>
         {split && <p>{split}</p>}
         <p className="flex items-center justify-between gap-2 tabular-nums">
           <span>{t('rewards.claimedTotal')}</span>
-          <span className="text-slate-300">
+          <span className="text-[#f0f1f5]">
             {formatRewardAmount(reward.claimed_total, currency)}
           </span>
         </p>

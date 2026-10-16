@@ -74,12 +74,12 @@ export const LandingBackdrop: FC = () => (
 const OnlinePill: FC<{ label: string }> = ({ label }) => (
   <span className="inline-flex h-[calc(var(--u)*35)] items-center gap-[calc(var(--u)*6)] rounded-full border border-[#252937] bg-[#1b1f29] pl-[calc(var(--u)*13)] pr-[calc(var(--u)*10)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-white">
     <span
-      className="relative flex h-[calc(var(--u)*18)] w-[calc(var(--u)*18)] items-center justify-center"
+      className="relative h-[calc(var(--u)*18)] w-[calc(var(--u)*18)] flex-shrink-0"
       aria-hidden="true"
     >
       <span className="absolute inset-0 animate-ping rounded-full bg-[#f0f1f5]/20" />
       <span className="absolute inset-0 rounded-full bg-[#f0f1f5]/20" />
-      <span className="h-[calc(var(--u)*10)] w-[calc(var(--u)*10)] rounded-full bg-[#f0f1f5]" />
+      <span className="absolute left-1/2 top-1/2 h-[calc(var(--u)*10)] w-[calc(var(--u)*10)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#f0f1f5]" />
     </span>
     {label}
   </span>
@@ -131,7 +131,7 @@ const SocialDisc: FC<{
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`relative flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rounded-full border border-white/10 bg-[#1e1f22]/80 backdrop-blur-md transition-transform hover:z-10 hover:-translate-y-0.5 ${
+    className={`rl-glass-btn relative flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:-translate-y-0.5 ${
       first ? '' : '-ms-[calc(var(--u)*12)]'
     }`}
   >
@@ -321,7 +321,7 @@ const SectionCard: FC<{
 }> = ({ href, title, subtitle, art }) => (
   <Link
     href={href}
-    className="group @container relative block h-[calc(var(--u)*72)] overflow-hidden rounded-[calc(var(--u)*16)] bg-white/[0.07] backdrop-blur-md transition-colors hover:bg-white/[0.1] lg:rl-liquid lg:aspect-[764/152] lg:h-auto lg:rounded-[calc(var(--u)*34)]"
+    className="rl-liquid-glow group @container relative block h-[calc(var(--u)*72)] overflow-hidden rounded-[calc(var(--u)*16)] transition-colors hover:bg-white/[0.1] lg:aspect-[764/152] lg:h-auto lg:rounded-[calc(var(--u)*34)]"
   >
     {/* Phone */}
     <Image
@@ -414,7 +414,8 @@ const LandingHero: FC = () => {
 
       {/* --- Headline and sign-up -------------------------------------- */}
       <div className="flex flex-col items-center text-center">
-        <h1 className="mt-[calc(var(--u)*13)] max-w-[calc(var(--u)*355)] text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*21)] lg:max-w-none lg:text-[length:max(min(11px,48px),calc(var(--u)*48))] lg:font-semibold lg:leading-[calc(var(--u)*52)]">
+        <h1 className="mt-[calc(var(--u)*13)] max-w-[calc(var(--u)*355)] text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*21)] lg:max-w-none lg:text-[length:max(min(11px,48px),calc(var(--u)*48))] lg:whitespace-pre-line lg:font-semibold lg:leading-[calc(var(--u)*52)]">
+          {/* Desktop breaks the title where the copy does; a phone wraps it. */}
           {t('lobby.hero.title')}
         </h1>
 

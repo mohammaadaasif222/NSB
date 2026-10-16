@@ -402,6 +402,12 @@ const coreEn = {
 
   // Wallet
   'wallet.real': 'Real Balance',
+  'wallet.primary': "Primary",
+  'wallet.rewards': "Rewards",
+  'wallet.balanceLabel': "Wallet Balance",
+  'wallet.totalLabel': "Wallet Total",
+  'wallet.assets': "My Assets",
+  'wallet.noAssets': "Nothing in your wallet yet.",
   'wallet.bonus': 'Bonus Balance',
 
   // Generic
@@ -585,7 +591,7 @@ const coreEn = {
   'chat.voiceFailed': 'Could not send your voice message',
   'dash.wageringProgress': 'Wagering Progress',
   'dash.percentComplete': '{percent}% Complete',
-  'dash.wagered': '{amount} Wagered',
+  'dash.wagered': '{amount} Wagered Complete',
   'dash.remainingToUnlock': '{amount} remaining to unlock your bonus',
   'dash.remainingToUnlockShort': 'remaining to unlock your bonus',
   'dash.unlockBonus': 'Unlock your welcome bonus',
@@ -637,6 +643,10 @@ const coreEn = {
   'profile.contactSupport': 'Contact support',
 
   'avatar.title': 'Profile picture',
+  'avatar.pick': "Change avatar or upload photo",
+  'avatar.confirm': "Confirm",
+  'avatar.upload': "Upload a photo",
+  'avatar.preset': "Avatar {n}",
   'avatar.choose': 'Choose a picture',
   'avatar.save': 'Save picture',
   'avatar.dropTitle': 'Choose a picture',
@@ -793,6 +803,9 @@ const coreEn = {
   'pref.disableTipsNote':
     "You'll still receive tips and win, but you won't get notifications or emails about them.",
   'pref.receiveMarketing': 'Receive Marketing Offers',
+  'pref.sound': 'Sound',
+  'pref.soundEffects': 'Sound Effects',
+  'pref.soundEffectsNote': 'Plays a click when you tap buttons, cards, menus and fields. Saved on this device.',
 
   // Account area: the Security section
   'sec.changePassword': 'Change Password',

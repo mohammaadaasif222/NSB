@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState, type FC, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FC,
+  type ReactNode,
+} from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -6,7 +14,6 @@ import type { StaticImageData } from 'next/image';
 import Glyph from '@/components/player/Glyph';
 import { POPUP_SURFACE } from '@/components/player/popupSurface';
 import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
-import WalletModal from '@/components/wallet/WalletModal';
 import { useAuth } from '@/context/AuthContext';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useTranslation } from '@/context/I18nContext';
@@ -42,8 +49,8 @@ interface Leaf {
   labelKey: TranslationKey;
   icon: StaticImageData;
   href?: string;
-  /** An action instead of a link — the wallet, live support. */
-  action?: 'wallet' | 'support';
+  /** An action instead of a link — live support. */
+  action?: 'support';
   /** In the design with nothing behind it yet: shown dimmed, tagged "Soon". */
   soon?: boolean;
   /** Drawn on the phone's menu only. */
@@ -90,7 +97,7 @@ const AFFILIATE: Group = {
 };
 
 const LEAVES: Leaf[] = [
-  { labelKey: 'nav.wallet', icon: walletIcon, action: 'wallet' },
+  { labelKey: 'nav.wallet', icon: walletIcon, href: '/wallet' },
   { labelKey: 'menu.vault', icon: walletIcon, soon: true, phoneOnly: true },
   { labelKey: 'menu.bonusesRewards', icon: bonusesIcon, href: '/bonuses' },
   { labelKey: 'menu.promotions', icon: promotionsIcon, href: '/promotions' },
@@ -103,10 +110,10 @@ const LEAVES: Leaf[] = [
 /* Rows                                                                  */
 /* ==================================================================== */
 
-/** Every row is this 48px pill: icon and label on the design's faint glass. */
+/** Every row is this 48px pill: icon and label on the notification cards' 10% glass. */
 const ROW =
-  'flex h-12 w-full items-center gap-2.5 overflow-hidden rounded-full bg-white/5 ps-6 pe-3 text-start text-[16px] leading-6 transition-colors lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:pe-[calc(var(--u)*12)] lg:ps-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
-const ROW_IDLE = 'text-[#9da2b4] hover:bg-white/10 hover:text-[#f0f1f5]';
+  'flex h-12 w-full items-center gap-2.5 overflow-hidden rounded-full bg-white/10 ps-6 pe-3 text-start text-[16px] leading-6 transition-colors lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:pe-[calc(var(--u)*12)] lg:ps-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+const ROW_IDLE = 'text-[#9da2b4] hover:bg-white/15 hover:text-[#f0f1f5]';
 const ICON = 'h-6 w-6 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
 const LIST = 'flex flex-col gap-1.5 lg:gap-[calc(var(--u)*6)]';
 
@@ -186,10 +193,10 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
           {group.items
             .filter((leaf) => helpOn || leaf.href !== profile('help'))
             .map((leaf) => (
-            <li key={leaf.labelKey}>
-              <LeafRow leaf={leaf} onAction={onAction} />
-            </li>
-          ))}
+              <li key={leaf.labelKey}>
+                <LeafRow leaf={leaf} onAction={onAction} />
+              </li>
+            ))}
         </ul>
       )}
     </li>
@@ -200,13 +207,20 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
 /* The menu                                                              */
 /* ==================================================================== */
 
-/** The popup: the bar popups' raised glass (see popupSurface), 14px in. */
-const PANEL = `z-40 overflow-y-auto rounded-[34px] p-3.5 thin-scrollbar lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*14)] ${POPUP_SURFACE.raised}`;
+/**
+ * The popup: the notification centre's clear glass (see popupSurface), 14px
+ * in, with a blur of its own — the page behind is left as it is, not dimmed.
+ * It is rendered outside the bar (see `portal`), because the bar's own blur
+ * would stop a blur nested in it from reaching the page.
+ */
+const PANEL = `z-40 overflow-y-auto rounded-[34px] p-3.5 thin-scrollbar backdrop-blur-[28px] lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*14)] ${POPUP_SURFACE.frost}`;
 
 const PLACEMENT = {
-  /** Under the bar's profile button, its right edge on the button's. */
-  below:
-    'absolute end-0 top-[calc(100%+8px)] w-[256px] max-h-[calc(100dvh-120px)] lg:w-[calc(var(--u)*256)]',
+  /**
+   * Under the bar — 8 clear of it, never over it — its right edge on the
+   * profile button's. Placed from the button's position (`below` style).
+   */
+  below: 'fixed w-[256px] max-h-[calc(100dvh-120px)] lg:w-[calc(var(--u)*256)]',
   /** Over the phone's tab bar, full width. */
   'above-tabbar': 'fixed inset-x-4 bottom-[92px] max-h-[calc(100dvh-180px)]',
 };
@@ -236,12 +250,30 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
   const { logout } = useAuth();
   const { openIntercom } = useSupportChat();
   const [open, setOpen] = useState(false);
-  const [walletOpen, setWalletOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const menuId = useId();
   const phone = placement === 'above-tabbar';
+  // Desktop: where the panel goes, from the bar's foot and the button's end.
+  const [spot, setSpot] = useState<{ top: number; right: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open || phone) return undefined;
+    const place = (): void => {
+      const button = ref.current?.getBoundingClientRect();
+      const bar = ref.current?.closest('header')?.getBoundingClientRect();
+      if (!button) return;
+      setSpot({ top: (bar?.bottom ?? button.bottom) + 8, right: window.innerWidth - button.right });
+    };
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, { passive: true });
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place);
+    };
+  }, [open, phone]);
 
   useEffect(() => {
     if (!open) return;
@@ -265,14 +297,18 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
 
   const onAction = (leaf: Leaf): void => {
     setOpen(false);
-    if (leaf.action === 'wallet') setWalletOpen(true);
     if (leaf.action === 'support') openIntercom();
   };
 
-  // The phone's panel goes to <body>: the tab bar's backdrop blur makes it
-  // the containing block for anything fixed inside it, which would pin the
-  // panel to the bar instead of the screen.
-  const portal = (node: ReactNode): ReactNode => (phone ? createPortal(node, document.body) : node);
+  // Out of the bar it opens from: the phone's into <body> (the tab bar's
+  // blur would make it the containing block and pin the panel to it), the
+  // desktop's into the page's stage, so it keeps the stage's unit (`--u`)
+  // and its own blur can reach the page.
+  const portal = (node: ReactNode): ReactNode =>
+    createPortal(
+      node,
+      (phone ? null : document.querySelector('[data-player-stage]')) ?? document.body
+    );
 
   /** Land on the public lobby, as logging out anywhere does. */
   const confirmLogout = (): void => {
@@ -292,6 +328,7 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
             id={menuId}
             aria-label={t('menu.label')}
             className={`${PANEL} ${PLACEMENT[placement]}`}
+            style={!phone && spot ? { top: spot.top, right: spot.right } : undefined}
           >
             <ul role="menu" className={LIST}>
               <GroupRow group={ACCOUNT} onAction={onAction} />
@@ -315,7 +352,7 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
                     setOpen(false);
                     setLogoutOpen(true);
                   }}
-                  className={`${ROW} text-[#f0f1f5] hover:bg-white/10`}
+                  className={`${ROW} text-[#f0f1f5] hover:bg-white/15`}
                 >
                   <img src={logoutIcon.src} alt="" className={ICON} />
                   <span className="truncate">{t('account.logout')}</span>
@@ -326,7 +363,6 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
           </nav>
         )}
 
-      <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
       {logoutOpen && (
         <LogoutConfirmModal onConfirm={confirmLogout} onCancel={() => setLogoutOpen(false)} />
       )}
