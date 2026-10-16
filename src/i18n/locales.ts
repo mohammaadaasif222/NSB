@@ -538,6 +538,7 @@ const coreEn = {
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.saving': 'Saving…',
+  'common.sending': 'Sending…',
   'common.copy': 'Copy',
   'common.viewOnExplorer': 'View on Explorer',
 

@@ -4,7 +4,7 @@ import Button from '@/components/ui/Button';
 import { useTranslation } from '@/context/I18nContext';
 import { useWallet } from '@/context/WalletContext';
 import WalletField, { WALLET_INPUT, WALLET_PILL } from '../shared/WalletField';
-import WalletSelect from '../shared/WalletSelect';
+import api from '@/services/api';
 
 /** The display currency's own sign — "$" for USD, "€" for EUR. */
 const currencySign = (code: string, locale: string): string => {
@@ -38,28 +38,15 @@ const TipTab: FC = () => {
     : 'USD';
   const sign = useMemo(() => currencySign(fiat, locale), [fiat, locale]);
 
-  // The player's own wallet first, then every crypto the catalogue lists.
   const active = summary?.preferences.active_currency ?? '';
-  const options = useMemo(() => {
-    const crypto = currencies.filter((c) => c.category === 'CRYPTO');
-    const codes = [...new Set([active, ...crypto.map((c) => c.code)].filter(Boolean))];
-    return codes.map((code) => ({
-      value: code,
-      label: code,
-      detail: currencies.find((c) => c.code === code)?.name,
-    }));
-  }, [active, currencies]);
-  const [picked, setPicked] = useState('');
-  const wallet = picked || active;
 
   const [amount, setAmount] = useState('');
   const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
   const amountRef = useRef<HTMLInputElement>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
 
-  // The button stays live, as drawn; an incomplete form sends the player to
-  // what is missing instead.
-  const submit = (e: FormEvent): void => {
+  const submit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     if (!(Number.parseFloat(amount) > 0)) {
       amountRef.current?.focus();
@@ -69,7 +56,22 @@ const TipTab: FC = () => {
       usernameRef.current?.focus();
       return;
     }
-    toast.info(t('acct.wallet.tipUnavailable'));
+
+    setLoading(true);
+    try {
+      await api.post('/tips/send', {
+        recipient_username: username.trim(),
+        amount: Number.parseFloat(amount),
+      });
+      toast.success(t('acct.wallet.tipSent'));
+      setAmount('');
+      setUsername('');
+    } catch (error: any) {
+      const message = error?.response?.data?.message || t('acct.wallet.tipFailed');
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -91,17 +93,6 @@ const TipTab: FC = () => {
       </label>
 
       <div className="mt-4 space-y-3.5">
-        <WalletField htmlFor="tip-wallet" label={t('acct.wallet.tipWallet')}>
-          <WalletSelect
-            id="tip-wallet"
-            options={options}
-            value={wallet}
-            onChange={setPicked}
-            placeholder={t('acct.wallet.selectCurrency')}
-            trailing={fiat}
-          />
-        </WalletField>
-
         <WalletField htmlFor="tip-username" label={t('acct.wallet.tipTo')}>
           <div className={WALLET_PILL}>
             <input
@@ -118,8 +109,8 @@ const TipTab: FC = () => {
         </WalletField>
       </div>
 
-      <Button type="submit" fullWidth className="mt-[25px]">
-        {t('acct.wallet.sendTip')}
+      <Button type="submit" fullWidth className="mt-[25px]" disabled={loading}>
+        {loading ? t('common.sending') : t('acct.wallet.sendTip')}
       </Button>
     </form>
   );
