@@ -112,13 +112,15 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </div>
           </div>
 
-          {/* Crypto Amount */}
-          <div className="flex justify-between items-center gap-4">
-            <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.cryptoAmount')}</span>
-            <span className="text-base sm:text-lg font-medium text-white text-right">
-              {transaction.crypto}
-            </span>
-          </div>
+          {/* Crypto Amount - Only show for crypto deposits/withdrawals */}
+          {(transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && (
+            <div className="flex justify-between items-center gap-4">
+              <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.cryptoAmount')}</span>
+              <span className="text-base sm:text-lg font-medium text-white text-right">
+                {transaction.crypto}
+              </span>
+            </div>
+          )}
 
           {/* Amount in Display Currency */}
           <div className="flex justify-between items-center gap-4">
@@ -162,8 +164,8 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </span>
           </div>
 
-          {/* Explorer Link */}
-          {explorerUrl && (
+          {/* Explorer Link - Only show for crypto deposits with transaction hash */}
+          {explorerUrl && transaction.category === 'DEPOSIT' && (
             <div className="flex justify-between items-center gap-4">
               <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.explorer')}</span>
               <a
