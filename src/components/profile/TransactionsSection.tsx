@@ -29,7 +29,7 @@ import { analytics } from '@/services/analytics';
  */
 const TransactionsSection: FC = () => {
   const { t } = useTranslation();
-  const { convertToDisplayCurrency, formatCurrencyDisplay } = useCurrencyConversion();
+  const { convertToDisplayCurrency } = useCurrencyConversion();
   const [inputQuery, setInputQuery] = useState('');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<TxFilter>('all');
