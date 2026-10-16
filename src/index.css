@@ -74,6 +74,8 @@
 :root {
   --rail-expanded: 180px;
 
+  --chat-drawer-w: 23rem;
+
   /* Body copy moves least of anything here — 14 is already near the floor for
      this palette on a near-black stage, so it gives up a single pixel. */
   --text-sm: 0.8125rem;

@@ -120,7 +120,8 @@ const ChatDrawer: FC<Props> = ({ open, onClose, label, children }) => {
       // (z-30/40) and the phone menu drawer (z-50) so it is not painted under
       // either, and below ui/Modal (z-70) so the wallet dialog still covers
       // chat rather than fighting it.
-      className={`fixed inset-y-0 end-0 z-[60] flex w-full flex-col border-s border-white/10 bg-[#0d0f14] shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-out sm:w-[23rem] ${
+      data-chat-drawer={shown ? 'open' : 'closed'}
+      className={`fixed inset-y-0 end-0 z-[60] flex w-full flex-col border-s border-white/10 bg-[#0d0f14] shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-out sm:w-[var(--chat-drawer-w)] ${
         shown ? 'translate-x-0' : hidden
       }`}
     >
