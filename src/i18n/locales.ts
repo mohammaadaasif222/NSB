@@ -538,6 +538,8 @@ const coreEn = {
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.saving': 'Saving…',
+  'common.copy': 'Copy',
+  'common.viewOnExplorer': 'View on Explorer',
 
   // Top bar & lobby banner
   'nav.wallet': 'Wallet',
@@ -627,6 +629,7 @@ const coreEn = {
   'profile.referral': 'Referral',
   'profile.verification': 'Verification',
   'profile.transactions': 'Transactions',
+  'profile.transactionDetails': 'Transaction Details',
   'profile.rollover': 'Rollover',
   'profile.helpCentre': 'Help Centre',
   'profile.joinedAt': 'Joined at: {date}',
@@ -851,6 +854,11 @@ const coreEn = {
   'tx.prev': 'Previous',
   'tx.next': 'Next',
   'tx.noResults': 'No transactions match your search.',
+  'tx.amount': 'Amount',
+  'tx.cryptoAmount': 'Crypto Amount',
+  'tx.provider': 'Provider',
+  'tx.explorer': 'Explorer',
+  'tx.transactionInfo': 'Transaction details are shown based on the most recent conversion rate.',
 
   // Rewards: rakeback, cashback and the daily / weekly / monthly bonuses
   'rewards.title': 'Rewards',
