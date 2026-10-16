@@ -122,6 +122,19 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </div>
           )}
 
+          {/* Recipient/Sender for Tips */}
+          {transaction.category === 'TIP' && (
+            <div className="flex justify-between items-center gap-4">
+              <span className="text-base sm:text-lg text-[#8c8c8c]">
+                {transaction.status === 'TIP_SENT' ? 'Sent to' : 'Received from'}
+              </span>
+              <span className="text-base sm:text-lg font-medium text-white text-right capitalize">
+                {/* Username would be stored in crypto field for tips */}
+                {transaction.crypto}
+              </span>
+            </div>
+          )}
+
           {/* Amount in Display Currency */}
           <div className="flex justify-between items-center gap-4">
             <span className="text-base sm:text-lg text-[#8c8c8c]">
@@ -164,8 +177,8 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </span>
           </div>
 
-          {/* Explorer Link - Show for deposits and withdrawals with transaction hash */}
-          {explorerUrl && (transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && (
+          {/* Explorer Link - Show for deposits and withdrawals with transaction hash (not for tips) */}
+          {explorerUrl && (transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && transaction.category !== 'TIP' && (
             <div className="flex justify-between items-center gap-4">
               <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.explorer')}</span>
               <a
@@ -179,17 +192,8 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </div>
           )}
 
-          {/* Network/Provider Info */}
-          {transaction.category === 'DEPOSIT' && (
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.provider')}</span>
-              <span className="text-base sm:text-lg font-medium text-white text-right">
-                Crypto Network
-              </span>
-            </div>
-          )}
-
-          {transaction.category === 'WITHDRAWAL' && (
+          {/* Network/Provider Info - Only for deposits and withdrawals */}
+          {(transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && (
             <div className="flex justify-between items-center gap-4">
               <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.provider')}</span>
               <span className="text-base sm:text-lg font-medium text-white text-right">
