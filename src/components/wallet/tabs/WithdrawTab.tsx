@@ -125,8 +125,14 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
     return summary.balance ?? null;
   }, [summary]);
 
-  // Available balance in USD (only REAL balance, excluding bonus)
-  const availableUSD = balanceRow?.real_amount ?? '0';
+  // Available balance in USD (only REAL balance, excluding bonus), less
+  // anything deposit rollover is still holding back.
+  const availableUSD = balanceRow?.withdrawable_amount ?? balanceRow?.real_amount ?? '0';
+  const heldBack = useMemo(() => {
+    if (!balanceRow) return false;
+    const flooredReal = Math.floor(Number(balanceRow.real_amount) * 100) / 100;
+    return Number(balanceRow.withdrawable_amount) < flooredReal;
+  }, [balanceRow]);
 
   // Available balance in display currency
   const availableDisplay = useMemo(() => {
@@ -256,8 +262,22 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
     setDisplayAmount(displayNum.toFixed(2).replace(/\.?0+$/, ''));
   };
 
+  const networkRow = useMemo(
+    () => enabledNetworks.find((n) => n.code === network) ?? null,
+    [enabledNetworks, network]
+  );
+
+  const minWithdrawal = Number(networkRow?.min_withdrawal ?? '0');
+
+  const belowMinimum = useMemo(() => {
+    if (!minWithdrawal || !calculatedCryptoAmount) return false;
+    const asCrypto = Number(calculatedCryptoAmount);
+    return Number.isFinite(asCrypto) && asCrypto > 0 && asCrypto < minWithdrawal;
+  }, [minWithdrawal, calculatedCryptoAmount]);
+
   const canSubmit =
     isKycApproved &&
+    !belowMinimum &&
     !!currency &&
     !!network &&
     !!toAddress.trim() &&
@@ -495,7 +515,19 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                 </div>
 
                 {displayAmount && Number(displayAmount) > Number(availableDisplay) && (
-                  <p className="mt-1 text-[11px] text-red-400">{t('acct.wallet.insufficient')}</p>
+                  <p className="mt-1 text-[11px] text-red-400">
+                    {heldBack
+                      ? t('acct.wallet.heldByRollover')
+                      : t('acct.wallet.insufficient')}
+                  </p>
+                )}
+
+                {belowMinimum && (
+                  <p className="mt-1 text-[11px] text-red-400">
+                    {t('acct.wallet.belowMinWithdrawal', {
+                      amount: `${minWithdrawal} ${currency}`,
+                    })}
+                  </p>
                 )}
               </div>
 

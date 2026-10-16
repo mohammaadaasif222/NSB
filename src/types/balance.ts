@@ -57,6 +57,10 @@ export interface WalletBalance {
 
   /** Snapshot rate used to convert USD → display currency for player UI */
   snapshot_rate: string;
+  /** USD held back by deposit rollover requirements still outstanding. */
+  rollover_locked: string;
+  /** The most that may be withdrawn now, USD: real_amount less rollover_locked. */
+  withdrawable_amount: string;
   /** Player sees this: real_amount_usd × snapshot_rate */
   display_amount: string;
   display_currency: string;
