@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import TransactionFilters from '@/components/profile/transactions/TransactionFilters';
 import TransactionTable from '@/components/profile/transactions/TransactionTable';
@@ -7,6 +8,7 @@ import TablePager from '@/components/profile/transactions/TablePager';
 import {
   PAGE_SIZE,
   queryTransactions,
+  CURRENCY_SYMBOLS,
   type Transaction,
   type TxFilter,
 } from '@/components/profile/transactions/mockTransactions';
@@ -27,6 +29,7 @@ import { analytics } from '@/services/analytics';
  */
 const TransactionsSection: FC = () => {
   const { t } = useTranslation();
+  const { convertToDisplayCurrency, formatCurrencyDisplay } = useCurrencyConversion();
   const [inputQuery, setInputQuery] = useState('');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<TxFilter>('all');
@@ -63,7 +66,43 @@ const TransactionsSection: FC = () => {
     queryTransactions({ query, filter, page, pageSize: PAGE_SIZE }).then((result) => {
       // A slower answer to an older query must not overwrite a newer one.
       if (!live) return;
-      setRows(result.rows);
+
+      // Re-convert amounts based on user's current display currency
+      const convertedRows = result.rows.map((row) => {
+        if (!row.amount_usd) {
+          return row;
+        }
+
+        // Convert USD to user's current display currency using context
+        const converted = convertToDisplayCurrency(row.amount_usd.toString(), 'USD');
+        const symbol = CURRENCY_SYMBOLS[converted.currency] || converted.currency;
+
+        // Format to 2 decimal places
+        const formattedAmount = parseFloat(converted.displayAmount).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+
+        // Recalculate effect with converted amount
+        let newEffect = row.effect;
+        if (row.tx_type === 'BET' && row.status === 'BET_PLACED') {
+          newEffect = `-${symbol}${formattedAmount}`;
+        } else if ((row.tx_type === 'WIN' && row.status === 'BET_WON') || row.status === 'DEPOSIT_CONFIRMED') {
+          newEffect = `+${symbol}${formattedAmount}`;
+        } else if (row.tx_type === 'WITHDRAWAL') {
+          newEffect = `-${symbol}${formattedAmount}`;
+        } else if (row.status === 'WITHDRAW_REJECTED' || row.status === 'DEPOSIT_FAILED' || (row.tx_type === 'BET' && row.status === 'BET_LOST')) {
+          newEffect = '0';
+        }
+
+        return {
+          ...row,
+          usd: `${symbol}${formattedAmount}`,
+          effect: newEffect,
+        };
+      });
+
+      setRows(convertedRows);
       setTotalPages(result.totalPages);
       setLoading(false);
     }).catch((error) => {
@@ -78,7 +117,7 @@ const TransactionsSection: FC = () => {
     return () => {
       live = false;
     };
-  }, [query, filter, page]);
+  }, [query, filter, page, convertToDisplayCurrency]);
 
   /** Any change to filter starts again at page one. */
   const resetPage =
