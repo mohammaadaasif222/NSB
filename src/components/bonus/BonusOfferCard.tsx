@@ -12,6 +12,7 @@ interface Props {
   /** The campaign whose claim is in flight, if any — every Claim waits on it. */
   busyId: string | null;
   onClaim: (bonusId: string) => void;
+  onDeposit?: () => void;
 }
 
 /**
@@ -28,7 +29,7 @@ interface Props {
  * spend — so it gets it, rather than the list of every term that the design
  * leaves no room for.
  */
-const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim }) => {
+const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit }) => {
   const { t } = useTranslation();
 
   const wagering = Number(bonus.wagering_multiplier ?? 0);
@@ -57,12 +58,14 @@ const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim }) => {
         disabled: busyId !== null,
         onClick: () => onClaim(bonus.id),
       }
-    : {
-        kind: 'status',
-        label: bonus.needs_deposit
-          ? t('bonus.needsDeposit')
-          : (bonus.reason ?? t('bonus.unavailable')),
-      };
+    : bonus.needs_deposit && onDeposit
+      ? { kind: 'ghost', label: t('bonus.needsDeposit'), onClick: onDeposit }
+      : {
+          kind: 'status',
+          label: bonus.needs_deposit
+            ? t('bonus.needsDeposit')
+            : (bonus.reason ?? t('bonus.unavailable')),
+        };
 
   return (
     <BonusGlassCard
