@@ -1,6 +1,34 @@
 import api from '@/services/api';
 import type { TranslationKey } from '@/i18n/locales';
 
+/** Currency symbols for display */
+export const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  AUD: 'A$',
+  CAD: 'C$',
+  CHF: 'Fr',
+  CNY: '¥',
+  INR: '₹',
+  BRL: 'R$',
+  MXN: '$',
+  ARS: '$',
+  NGN: '₦',
+  ZAR: 'R',
+  TRY: '₺',
+  RUB: '₽',
+  AED: 'د.إ',
+  SAR: '﷼',
+  KRW: '₩',
+  IDR: 'Rp',
+  VND: '₫',
+  THB: '฿',
+  PHP: '₱',
+  PLN: 'zł',
+};
+
 /**
  * The ledger behind the Transactions tab.
  *
@@ -37,6 +65,15 @@ export interface Transaction {
   category: TxCategory;
   /** Signed change to the wallet, pre-formatted. */
   effect: string;
+  // Raw data for re-conversion based on user's current display currency
+  /** Amount in USD (for real-time conversion) */
+  amount_usd?: number;
+  /** Frozen rate display to USD (for real-time conversion) */
+  frozen_rate_display_usd?: number;
+  /** Transaction type for determining effect calculation */
+  tx_type?: string;
+  /** Actual amount in session currency */
+  tx_amount?: string;
 }
 
 /** The filter chips, in the order the design lists them. */
@@ -137,38 +174,64 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
 
       const amount = tx.display_amount || tx.amount || '0';
       const currency = tx.currency_code || 'BTC';
-      const usdValue = tx.amount_usd || tx.display_amount || '0';
+      const usdValue = parseFloat(tx.amount_usd || '0');
+      const displayCurrency = tx.display_currency || 'USD';
+      const currencySymbol = CURRENCY_SYMBOLS[displayCurrency] || displayCurrency;
+
+      // Convert USD to user's display currency using frozen rate
+      let displayValue = usdValue;
+      if (tx.frozen_rate_display_usd && displayCurrency !== 'USD') {
+        const frozenRate = parseFloat(tx.frozen_rate_display_usd);
+        displayValue = usdValue / frozenRate; // USD to display currency
+      }
+
+      const formattedDisplayValue = displayValue.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 
       // Determine wallet effect based on transaction type and status
       let effectAmount: string;
+      let effectSign = '';
+      let effectValue = formattedDisplayValue;
+
       if (tx.status === 'WITHDRAW_REJECTED' || tx.status === 'DEPOSIT_FAILED') {
         // Rejected/failed transactions show 0 effect
         effectAmount = '0';
-      } else if (tx.status === 'DEPOSIT_CONFIRMED') {
-        // Confirmed deposits show USD amount
-        effectAmount = `+${parseFloat(usdValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      } else if (tx.status === 'DEPOSIT_CONFIRMED' || tx.status === 'BET_WON') {
+        // Deposits and wins show positive display currency value
+        effectSign = '+';
+        effectAmount = `${effectSign}${currencySymbol}${effectValue}`;
       } else if (tx.type === 'BET' && tx.status === 'BET_PLACED') {
-        // Bet placed shows as debit (negative)
-        effectAmount = `-${amount}`;
-      } else if (tx.type === 'WIN' && tx.status === 'BET_WON') {
-        // Win shows as credit (positive)
-        effectAmount = `+${amount}`;
+        // Bet placed shows as debit (negative) in display currency
+        effectSign = '-';
+        effectAmount = `${effectSign}${currencySymbol}${effectValue}`;
       } else if (tx.type === 'BET' && tx.status === 'BET_LOST') {
         // Lost bet shows 0 effect (already deducted during bet placement)
         effectAmount = '0';
+      } else if (tx.type === 'WITHDRAWAL') {
+        // Withdrawals show as negative
+        effectSign = '-';
+        effectAmount = `${effectSign}${currencySymbol}${effectValue}`;
       } else {
-        // Other transactions show crypto amount
-        effectAmount = isOutgoing ? `-${amount}` : `+${amount}`;
+        // Other transactions
+        effectSign = isOutgoing ? '-' : '+';
+        effectAmount = `${effectSign}${currencySymbol}${effectValue}`;
       }
 
       return {
         id: tx.id,
         date: new Date(tx.created_at).toISOString().slice(0, 10),
-        usd: `$${parseFloat(usdValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        usd: `${currencySymbol}${formattedDisplayValue}`, // Show in user's display currency
         crypto: `${amount} ${currency}`,
         status: tx.status as TxStatus,
         category: categoryMap[tx.type] as TxCategory || 'DEPOSIT',
         effect: effectAmount,
+        // Raw data for re-conversion in component
+        amount_usd: usdValue,
+        frozen_rate_display_usd: tx.frozen_rate_display_usd ? parseFloat(tx.frozen_rate_display_usd) : undefined,
+        tx_type: tx.type,
+        tx_amount: amount,
       };
     });
 
