@@ -197,7 +197,7 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
       let effectSign = '';
       let effectValue = formattedDisplayValue;
 
-      if (tx.status === 'WITHDRAW_REJECTED' || tx.status === 'DEPOSIT_FAILED') {
+      if (tx.status === 'WITHDRAW_REJECTED' || tx.status === 'WITHDRAW_FAILED' || tx.status === 'DEPOSIT_FAILED') {
         // Rejected/failed transactions show 0 effect
         effectAmount = '0';
       } else if (tx.status === 'DEPOSIT_CONFIRMED' || tx.status === 'BET_WON') {
@@ -212,7 +212,7 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         // Lost bet shows 0 effect (already deducted during bet placement)
         effectAmount = '0';
       } else if (tx.type === 'WITHDRAWAL') {
-        // Withdrawals show as negative
+        // Approved/processing withdrawals show as negative
         effectSign = '-';
         effectAmount = `${effectSign}${currencySymbol}${effectValue}`;
       } else {
