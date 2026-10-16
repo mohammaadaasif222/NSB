@@ -13,7 +13,12 @@ import { STATUS_LABEL, CATEGORY_LABEL, type Transaction } from './mockTransactio
  * has it to the column that needs it; every column still starts where the
  * design starts it, since only the last boundary moves.
  */
-const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
+interface Props {
+  rows: readonly Transaction[];
+  onRowClick?: (transaction: Transaction) => void;
+}
+
+const TransactionTable: FC<Props> = ({ rows, onRowClick }) => {
   const { t, locale } = useTranslation();
 
   const columns = useMemo<readonly DataColumn<Transaction>[]>(
@@ -24,8 +29,9 @@ const TransactionTable: FC<{ rows: readonly Transaction[] }> = ({ rows }) => {
         width: 180,
         cell: (r) => (
           <span
-            className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white truncate"
+            className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white truncate cursor-pointer hover:text-[#4ade80]"
             title={r.id.toUpperCase()}
+            onClick={() => onRowClick?.(r)}
           >
             {r.id.slice(-12).toUpperCase()}
           </span>

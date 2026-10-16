@@ -5,6 +5,7 @@ import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import TransactionFilters from '@/components/profile/transactions/TransactionFilters';
 import TransactionTable from '@/components/profile/transactions/TransactionTable';
 import TablePager from '@/components/profile/transactions/TablePager';
+import TransactionDetailModal from '@/components/profile/transactions/TransactionDetailModal';
 import {
   PAGE_SIZE,
   queryTransactions,
@@ -38,6 +39,8 @@ const TransactionsSection: FC = () => {
   const [rows, setRows] = useState<readonly Transaction[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const debounceTimer = useRef<NodeJS.Timeout>();
 
@@ -127,6 +130,11 @@ const TransactionsSection: FC = () => {
       setPage(1);
     };
 
+  const handleRowClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setModalOpen(true);
+  };
+
   return (
     <div>
       <h2 className={SECTION_HEADING}>{t('profile.transactions')}</h2>
@@ -143,12 +151,22 @@ const TransactionsSection: FC = () => {
       {/* Held at the table's height while a page is in flight, so the pager
           below does not jump up and back down on every keystroke. */}
       <div className={`mt-[calc(var(--u)*14)] transition-opacity ${loading ? 'opacity-60' : ''}`}>
-        <TransactionTable rows={rows} />
+        <TransactionTable rows={rows} onRowClick={handleRowClick} />
       </div>
 
       <div className="mt-[calc(var(--u)*33)]">
         <TablePager page={Math.min(page, totalPages)} totalPages={totalPages} onPage={setPage} />
       </div>
+
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedTransaction(null);
+        }}
+        transaction={selectedTransaction}
+      />
     </div>
   );
 };
