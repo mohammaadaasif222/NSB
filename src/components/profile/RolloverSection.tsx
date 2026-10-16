@@ -134,15 +134,32 @@ const RolloverSection: FC = () => {
       return null;
     }
 
-    if (!summary.can_withdraw) {
+    if (summary.open_count > 0 && summary.blocks_withdrawal) {
+      const unlocked = Number(summary.withdrawable) > 0;
       return (
-        <div className="rounded-[16px] border border-[#f9d028]/25 bg-[#f9d028]/[0.07] px-4 py-3 lg:rounded-[calc(var(--u)*20)]">
-          <p className="text-[14px] font-semibold text-[#ffe779]">
-            {t('roll.pending', {
-              amount: formatCurrencyDisplay(summary.total_remaining),
-            })}
+        <div
+          className={`rounded-[16px] px-4 py-3 lg:rounded-[calc(var(--u)*20)] ${
+            unlocked
+              ? 'border border-[#35d07f]/25 bg-[#35d07f]/[0.07]'
+              : 'border border-[#f9d028]/25 bg-[#f9d028]/[0.07]'
+          }`}
+        >
+          <p
+            className={`text-[14px] font-semibold ${unlocked ? 'text-[#35d07f]' : 'text-[#ffe779]'}`}
+          >
+            {unlocked
+              ? t('roll.partial', { amount: formatCurrencyDisplay(summary.withdrawable) })
+              : t('roll.heldAll')}
           </p>
-          <p className="mt-1 text-[12px] leading-relaxed text-white/64">{t('roll.pendingBody')}</p>
+          <p className="mt-1 text-[12px] leading-relaxed text-white/64">
+            {unlocked
+              ? t('roll.partialBody', {
+                  remaining: formatCurrencyDisplay(summary.total_remaining),
+                })
+              : t('roll.heldAllBody', {
+                  remaining: formatCurrencyDisplay(summary.total_remaining),
+                })}
+          </p>
         </div>
       );
     }
@@ -189,7 +206,7 @@ const RolloverSection: FC = () => {
 
           {summary.open_count > 0 && (
             <>
-              <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
                 <Figure
                   label={t('roll.totalRequired')}
                   value={formatCurrencyDisplay(summary.total_required)}
@@ -205,6 +222,12 @@ const RolloverSection: FC = () => {
                   tone="gold"
                 />
                 <Figure label={t('roll.openCount')} value={String(summary.open_count)} />
+                <Figure label={t('roll.locked')} value={formatCurrencyDisplay(summary.locked)} />
+                <Figure
+                  label={t('roll.withdrawable')}
+                  value={formatCurrencyDisplay(summary.withdrawable)}
+                  tone="green"
+                />
               </div>
 
               <div className="mt-4">
