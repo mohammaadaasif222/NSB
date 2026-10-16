@@ -660,9 +660,14 @@ const coreEn = {
     'A deposit has to be played through before it can be withdrawn. Every bet counts in full, and your oldest deposit clears first.',
   'roll.clear': 'Nothing is holding your withdrawals back',
   'roll.clearBody': 'All of your deposits have been played through.',
-  'roll.pending': '{amount} left to play through',
-  'roll.pendingBody':
-    'You can keep playing as normal. Withdrawals open up as soon as this reaches zero.',
+  'roll.partial': '{amount} available to withdraw now',
+  'roll.partialBody':
+    'The rest is held until your remaining deposits are played through — {remaining} to go.',
+  'roll.heldAll': 'Withdrawals are on hold',
+  'roll.heldAllBody':
+    'Your deposits have to be played through first — {remaining} to go. Each one unlocks as it clears.',
+  'roll.locked': 'Held by deposits',
+  'roll.withdrawable': 'Withdrawable now',
   'roll.trackingOnly':
     'Your deposits are being tracked but are not holding withdrawals back at the moment.',
   'roll.disabled': 'Deposit rollover is switched off, so new deposits no longer carry one.',

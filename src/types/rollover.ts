@@ -56,6 +56,8 @@ export interface RolloverSummary {
   total_remaining: string;
   progress: number;
 
+  locked: string;
+  withdrawable: string;
   can_withdraw: boolean;
 
   open: DepositRollover[];
