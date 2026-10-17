@@ -2,6 +2,8 @@ import apiService from './api';
 import { encryptPassword } from '@/utils/crypto';
 import type {
   LoginResponseData,
+  SessionEndedData,
+  SessionListData,
   RegisterRequest,
   RegisterResponseData,
   TwoFactorChallengeData,
@@ -41,3 +43,10 @@ export const requestPasswordReset = (identifier: string) =>
 
 export const resetPassword = (identifier: string, code: string, newPassword: string) =>
   apiService.post('/auth/reset-password', { identifier, code, new_password: newPassword });
+
+export const listSessions = () => apiService.get<SessionListData>('/auth/sessions');
+
+export const endSession = (id: string) =>
+  apiService.delete<SessionEndedData>(`/auth/sessions/${encodeURIComponent(id)}`);
+
+export const endAllSessions = () => apiService.post<{ sessions_ended: number }>('/auth/logout-all');

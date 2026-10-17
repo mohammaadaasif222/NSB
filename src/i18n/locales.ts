@@ -813,6 +813,13 @@ const coreEn = {
   'sec.endAllSessions': 'End All Sessions',
   'sec.endSession': 'End Sessions',
   'sec.currentSession': 'Current',
+  'sec.unknownDevice': 'Unknown device',
+  'sec.justNow': 'Just now',
+  'sec.endingSessions': 'Ending…',
+  'sec.noSessions': 'No active sessions.',
+  'sec.sessionsFailed': 'Could not load your sessions.',
+  'sec.endSessionFailed': 'Could not end that session. Please try again.',
+  'sec.signedOutEverywhere': 'Signed out of every device.',
   'sec.connectedWallet': 'Connected Wallet',
 
   // Account area: the Verification section's contact cards
