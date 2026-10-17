@@ -74,14 +74,8 @@ export const ROLLUCK_LOGO = cdnImage('icon/rolluck_logo.png', 882, 176);
 /** The promotions artwork behind the casino and sportsbook banner. */
 export const LOBBY_BANNER = cdnImage('icon/casino_banner.jpeg', 776, 336);
 
-/**
- * The 3D renders on the lobby's two section shortcuts.
- *
- * Square frames with the render sitting small inside them and a glow around
- * it, where the bundled versions were cut tight — so LandingHero's placement
- * boxes are measured against these, not against the old exports.
- */
+/** Shadow-free artwork for the lobby's Casino and Sports section cards. */
 export const SECTION_ART = {
-  casino: cdnImage('icon/casino_logo.webp', 338, 338),
-  sportsbook: cdnImage('icon/sportsbook_logo.webp', 338, 338),
+  casino: cdnImage('icon/casino-roulette.webp', 631, 475),
+  sportsbook: cdnImage('icon/sports-football.webp', 506, 503),
 };

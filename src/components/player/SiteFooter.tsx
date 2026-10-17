@@ -228,7 +228,7 @@ const SiteFooter: FC = () => {
       : []),
     { label: t('menu.liveSupport') },
     ...(responsibleOn
-      ? [{ label: t('menu.responsibleGambling'), href: '/responsible-play' }]
+      ? [{ label: t('menu.responsibleGambling'), href: '/responsible-gambling' }]
       : []),
   ];
 

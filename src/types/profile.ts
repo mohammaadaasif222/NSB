@@ -42,6 +42,11 @@ export interface ApiUser {
   avatar_url?: string | null;
   is_email_verified?: boolean;
   created_at?: string;
+  /** Social sign-in provider (google, telegram, steam). Null for email &
+   * password accounts — used to decide whether a current password is needed
+   * when changing the password. */
+  provider?: string | null;
+  provider_user_id?: string | null;
 }
 
 export interface SecuritySettings {

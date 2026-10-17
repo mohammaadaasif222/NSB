@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { toast } from 'react-toastify';
 
-import { SECTION_ART } from '@/constants/cdn';
 import backdrop from '@/assets/home-backdrop.webp';
 import backdropMobile from '@/assets/home-backdrop-mobile.webp';
 import casinoDice from '@/assets/casino-dice.webp';
@@ -27,6 +26,7 @@ import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import BonusBanner from '@/components/player/BonusBanner';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
+import { SECTION_ART } from '@/constants/cdn';
 import { LOBBY_STATS } from '@/constants/stats';
 import type { TranslationKey } from '@/i18n/locales';
 
@@ -267,12 +267,8 @@ interface CardArt {
    * Desktop: the two 3D renders, placed as the design places them on its
    * 764×152 card.
    *
-   * The box is the whole image, render and empty margin together, so it only
-   * means anything against the file it was measured from. The hero renders
-   * come from the CDN in a square frame with the render small inside it, and
-   * their boxes are the design's placement re-derived for that frame — each
-   * one scaled and shifted so the render itself lands where it did when the
-   * art was cut tight. Swapping either file means measuring again.
+   * Each box is measured against its own transparent artwork, so changing an
+   * image means measuring its placement again.
    */
   hero: { src: StaticImageData; box: [x: number, y: number, w: number] };
   accent: { src: StaticImageData; box: [x: number, y: number, w: number] };
@@ -281,7 +277,7 @@ interface CardArt {
 }
 
 const CASINO_ART: CardArt = {
-  hero: { src: SECTION_ART.casino, box: [363.2, -127.3, 483.1] },
+  hero: { src: SECTION_ART.casino, box: [466, 12, 273] },
   accent: { src: casinoDice, box: [372, -52, 171.2] },
   mark: {
     src: casinoChip,
@@ -290,7 +286,7 @@ const CASINO_ART: CardArt = {
 };
 
 const SPORTS_ART: CardArt = {
-  hero: { src: SECTION_ART.sportsbook, box: [404.1, -105.8, 462.6] },
+  hero: { src: SECTION_ART.sportsbook, box: [542, 15, 191] },
   accent: { src: sportsTrophy, box: [442, -48, 150.8] },
   mark: {
     src: sportsBall,
