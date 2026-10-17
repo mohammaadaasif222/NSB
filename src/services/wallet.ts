@@ -122,6 +122,8 @@ export interface RequestWithdrawalInput {
   to_address: string;
   tag?: string;
   display_currency_amount?: string;
+  /** Required once the player has set a transaction PIN. */
+  transaction_pin?: string;
 }
 
 /**

@@ -1,3 +1,4 @@
+import apiService from './api';
 import type {
   AssessmentBand,
   AssessmentResult,
@@ -8,200 +9,84 @@ import type {
   LimitSet,
   SelfExclusionState,
 } from '@/types/responsible';
-import {
-  ASSESSMENT_QUESTIONS,
-  ASSESSMENT_THRESHOLDS,
-  LIMIT_INCREASE_COOLING_OFF_HOURS,
-} from '@/components/responsible/rgContent';
+import { ASSESSMENT_QUESTIONS, ASSESSMENT_THRESHOLDS } from '@/components/responsible/rgContent';
 
 /**
- * ═══════════════════════════════════════════════════════════════════════
- *  NOT WIRED — every function below resolves from an in-memory store.
- * ═══════════════════════════════════════════════════════════════════════
+ * Responsible gambling, backed by the API's responsible-gambling module.
  *
- *  There is no responsible-gambling module in the backend yet (checked:
- *  `rolluck-backend/src/modules` has nothing for limits or exclusion), so
- *  this stands in for one. State lives for the lifetime of the tab and is
- *  gone on reload — deliberately, so nobody mistakes it for persistence.
- *
- *  ───────────────────────────────────────────────────────────────────────
- *  ⚠ READ THIS BEFORE SHIPPING
- *
- *  A limit or a self-exclusion that only exists in the browser is not a
- *  control — it is a picture of one. A player who sets a deposit limit here
- *  and is allowed to deposit anyway has been actively misled, which is worse
- *  than never having offered the feature. Both must be enforced server-side,
- *  at the deposit, wager and login paths, before this section is reachable
- *  in production.
- *
- *  Treat this file as the contract the backend should satisfy.
- *  ───────────────────────────────────────────────────────────────────────
- *
- *  TO WIRE IT UP: replace each body with the `apiService` call named in its
- *  comment and delete the store below. No component imports the store, and
- *  every signature is already async — so nothing above this file changes.
- *
- *    import apiService from './api';
+ * Every limit and self-exclusion set here is enforced on the server: deposit
+ * limits at the deposit endpoints, wager and loss limits on every stake, and
+ * self-exclusion at sign-in. Session-time limits are refused by the API until
+ * the platform records time played; the error says so.
  */
 
-/* ── Mock store ─────────────────────────────────────────────────────── */
-
-const LATENCY_MS = 260;
-
-const settle = <T>(value: T): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(value), LATENCY_MS));
-
-const iso = (date: Date): string => date.toISOString();
-
-const hoursFromNow = (hours: number): Date => new Date(Date.now() + hours * 3_600_000);
-
-/** When the window for a period next rolls over. Approximate, as a mock. */
-const windowReset = (period: LimitPeriod): string => {
-  const days = period === 'daily' ? 1 : period === 'weekly' ? 7 : 30;
-  return iso(hoursFromNow(days * 24));
-};
-
-/**
- * One player already has a daily deposit limit so the section does not open
- * on an entirely empty state. The rest are unset, which is the real default.
- */
-const store: {
-  limits: LimitSet;
-  exclusion: SelfExclusionState;
-  assessment: AssessmentResult | null;
-} = {
-  limits: {
-    deposit: {
-      kind: 'deposit',
-      period: 'daily',
-      amount: '500.00',
-      used: '120.00',
-      resetsAt: windowReset('daily'),
-      pendingAmount: null,
-      pendingEffectiveAt: null,
-    },
-    loss: null,
-    wager: null,
-    session: null,
-  },
-  exclusion: { active: false, period: null, startedAt: null, endsAt: null },
-  assessment: null,
+const unwrap = <T>(
+  res: { success: boolean; data?: T | null; message?: string },
+  fallback: string
+): T => {
+  if (!res.success) throw new Error(res.message || fallback);
+  return res.data as T;
 };
 
 /* ── Limits ─────────────────────────────────────────────────────────── */
 
 /** GET /responsible-gambling/limits */
-export const getLimits = (): Promise<LimitSet> => settle({ ...store.limits });
+export const getLimits = async (): Promise<LimitSet> =>
+  unwrap(
+    await apiService.get<LimitSet>('/responsible-gambling/limits'),
+    'Could not load your limits'
+  );
 
 /**
  * PUT /responsible-gambling/limits/:kind
  *
- * The rule the endpoint has to implement, not just the UI:
- *
- *   • A new limit, or a LOWER one, applies immediately.
- *   • A HIGHER one is recorded as pending and applies only once the
- *     cooling-off period has elapsed. Until then the old, lower figure is
- *     the one that must be enforced.
- *
- * Doing this check in the client alone is pointless — anyone can skip it.
+ * A new or lower limit applies at once; a higher one becomes pending until the
+ * cooling-off period has passed. The server decides which.
  */
-export const setLimit = (
+export const setLimit = async (
   kind: LimitKind,
   period: LimitPeriod,
   amount: string
-): Promise<GamblingLimit> => {
-  const existing = store.limits[kind];
-  const next = Number(amount);
-  const current = existing ? Number(existing.amount) : Number.POSITIVE_INFINITY;
+): Promise<GamblingLimit> =>
+  unwrap(
+    await apiService.put<GamblingLimit>(`/responsible-gambling/limits/${kind}`, { period, amount }),
+    'Could not save your limit'
+  );
 
-  // A period change on an existing limit restarts the window, so it is
-  // treated as a new limit rather than compared against the old figure.
-  const isIncrease = existing !== null && period === existing.period && next > current;
-
-  if (existing && isIncrease) {
-    const updated: GamblingLimit = {
-      ...existing,
-      pendingAmount: amount,
-      pendingEffectiveAt: iso(hoursFromNow(LIMIT_INCREASE_COOLING_OFF_HOURS)),
-    };
-    store.limits = { ...store.limits, [kind]: updated };
-    return settle(updated);
-  }
-
-  const applied: GamblingLimit = {
-    kind,
-    period,
-    amount,
-    // A tightened limit keeps what has already been spent in the window.
-    used: existing && period === existing.period ? existing.used : '0.00',
-    resetsAt: existing && period === existing.period ? existing.resetsAt : windowReset(period),
-    pendingAmount: null,
-    pendingEffectiveAt: null,
-  };
-
-  store.limits = { ...store.limits, [kind]: applied };
-  return settle(applied);
-};
-
-/**
- * DELETE /responsible-gambling/limits/:kind/pending
- *
- * Cancelling a pending increase is itself a tightening, so it is immediate.
- */
-export const cancelPendingIncrease = (kind: LimitKind): Promise<GamblingLimit | null> => {
-  const existing = store.limits[kind];
-  if (!existing) {
-    return settle(null);
-  }
-
-  const updated: GamblingLimit = { ...existing, pendingAmount: null, pendingEffectiveAt: null };
-  store.limits = { ...store.limits, [kind]: updated };
-  return settle(updated);
-};
+/** DELETE /responsible-gambling/limits/:kind/pending */
+export const cancelPendingIncrease = async (kind: LimitKind): Promise<GamblingLimit | null> =>
+  unwrap(
+    await apiService.delete<GamblingLimit | null>(`/responsible-gambling/limits/${kind}/pending`),
+    'Could not cancel the increase'
+  ) ?? null;
 
 /* ── Self-exclusion ─────────────────────────────────────────────────── */
 
-const EXCLUSION_HOURS: Record<Exclude<ExclusionPeriod, 'permanent'>, number> = {
-  '24h': 24,
-  '7d': 24 * 7,
-  '30d': 24 * 30,
-  '3m': 24 * 90,
-  '6m': 24 * 180,
-  '1y': 24 * 365,
-  '5y': 24 * 365 * 5,
-};
-
 /** GET /responsible-gambling/self-exclusion */
-export const getSelfExclusion = (): Promise<SelfExclusionState> => settle({ ...store.exclusion });
+export const getSelfExclusion = async (): Promise<SelfExclusionState> =>
+  unwrap(
+    await apiService.get<SelfExclusionState>('/responsible-gambling/self-exclusion'),
+    'Could not load your self-exclusion'
+  );
 
 /**
  * POST /responsible-gambling/self-exclusion
  *
- * On the server this must also: terminate every live session for the player,
- * settle and return the balance, suppress all marketing for the duration, and
- * block registration of a new account against the same identity. It is not a
- * flag on a row.
- *
- * It must also be irreversible. No support tool should be able to lift it.
+ * Signs the player out everywhere on the server, which ends this session too.
+ * It cannot be undone or shortened.
  */
-export const startSelfExclusion = (
+export const startSelfExclusion = async (
   period: ExclusionPeriod,
-  // Recorded for the operator's own review; never used to talk the player out
-  // of it. Optional, and the UI says so.
+  // Recorded for the operator's own review; never used to talk the player out of it.
   reason?: string
-): Promise<SelfExclusionState> => {
-  void reason;
-
-  const next: SelfExclusionState = {
-    active: true,
-    period,
-    startedAt: iso(new Date()),
-    endsAt: period === 'permanent' ? null : iso(hoursFromNow(EXCLUSION_HOURS[period])),
-  };
-
-  store.exclusion = next;
-  return settle(next);
-};
+): Promise<SelfExclusionState> =>
+  unwrap(
+    await apiService.post<SelfExclusionState>('/responsible-gambling/self-exclusion', {
+      period,
+      reason,
+    }),
+    'Could not start your self-exclusion'
+  );
 
 /* ── Self-assessment ────────────────────────────────────────────────── */
 
@@ -213,24 +98,18 @@ export const bandFor = (score: number): AssessmentBand => {
 };
 
 /** GET /responsible-gambling/assessment/latest */
-export const getLastAssessment = (): Promise<AssessmentResult | null> => settle(store.assessment);
+export const getLastAssessment = async (): Promise<AssessmentResult | null> =>
+  unwrap(
+    await apiService.get<AssessmentResult | null>('/responsible-gambling/assessment/latest'),
+    'Could not load your last assessment'
+  ) ?? null;
 
-/**
- * POST /responsible-gambling/assessment
- *
- * Stored so the player can see it again, and so an operator can see a rising
- * score across repeat assessments. It is a self-reported reflection tool and
- * carries no clinical weight — it must never be used to justify a marketing
- * decision.
- */
-export const saveAssessment = (score: number): Promise<AssessmentResult> => {
-  const result: AssessmentResult = {
-    score,
-    total: ASSESSMENT_QUESTIONS.length,
-    band: bandFor(score),
-    takenAt: iso(new Date()),
-  };
-
-  store.assessment = result;
-  return settle(result);
-};
+/** POST /responsible-gambling/assessment */
+export const saveAssessment = async (score: number): Promise<AssessmentResult> =>
+  unwrap(
+    await apiService.post<AssessmentResult>('/responsible-gambling/assessment', {
+      score,
+      total: ASSESSMENT_QUESTIONS.length,
+    }),
+    'Could not save your assessment'
+  );

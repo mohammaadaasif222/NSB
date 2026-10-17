@@ -6,6 +6,7 @@ import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { requestWithdrawal } from '@/services/wallet';
+import { getPinStatus } from '@/services/transactionPin';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import kycApi from '@/services/kyc.api';
@@ -16,6 +17,8 @@ import type { Currency, WalletBalance } from '@/types';
 import CurrencyPicker from '../shared/CurrencyPicker';
 import NetworkPicker from '../shared/NetworkPicker';
 import LocalCurrencyWithdrawalTab from './LocalCurrencyWithdrawalTab';
+import AccountReviewGate from '@/components/risk/AccountReviewGate';
+import { useMe } from '@/context/UserContext';
 
 interface Props {
   /**
@@ -44,6 +47,9 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   const { run } = useSeonGuard();
   const { t } = useTranslation();
   const { summary, currencies, refresh } = useWallet();
+  const { me, refresh: refreshMe } = useMe();
+  const restriction = me?.account_restriction;
+  const withdrawLocked = !!restriction?.blocked_actions.includes('WITHDRAW');
   const { convertToDisplayCurrency } = useCurrencyConversion();
 
   const displayCurrency = summary?.preferences.active_currency ?? 'USD';
@@ -95,7 +101,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       }
       try {
         setLoadingRate(true);
-        const response = await api.get(`/wallet/rates?fiat=${displayCurrency}`) as any;
+        const response = (await api.get(`/wallet/rates?fiat=${displayCurrency}`)) as any;
         const rates = response.data as Array<{ from: string; to: string; rate: string }>;
         if (rates && Array.isArray(rates)) {
           const rate = rates.find((r) => r.from === currency && r.to === displayCurrency);
@@ -211,6 +217,14 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   /* ── Form state ────────────────────────────────────────────────── */
 
   const [toAddress, setToAddress] = useState('');
+  const [pinRequired, setPinRequired] = useState(false);
+  const [pin, setPin] = useState('');
+
+  useEffect(() => {
+    void getPinStatus()
+      .then((s) => setPinRequired(!!s?.enabled))
+      .catch(() => undefined);
+  }, []);
   const [displayAmount, setDisplayAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<string | null>(null);
@@ -282,6 +296,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
     !!network &&
     !!toAddress.trim() &&
     !!displayAmount &&
+    (!pinRequired || /^\d{4,6}$/.test(pin)) &&
     !submitting;
 
   const submit = async (): Promise<void> => {
@@ -298,6 +313,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
             network,
             amount: displayAmount, // Amount is now in display currency (e.g., EUR, GBP, INR)
             to_address: toAddress.trim(),
+            ...(pinRequired ? { transaction_pin: pin } : {}),
           },
           headers
         )
@@ -305,6 +321,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       if (res?.success && res.data) {
         setToAddress('');
         setDisplayAmount('');
+        setPin('');
         void refresh();
       } else {
         toast.error(res?.message || t('acct.wallet.withdrawFailed'));
@@ -316,6 +333,12 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       // Every KYC refusal — Level 2 missing, compliance hold, or a tier
       // upgrade — arrives with a `requiredLevel`, so one branch opens the
       // right step instead of three.
+      // A risk lock placed after the screen opened: re-read the account so the gate shows.
+      if ((err as { errors?: { code?: string } })?.errors?.code === 'ACCOUNT_RESTRICTED') {
+        void refreshMe();
+        return;
+      }
+
       const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
       if (kycError) {
         // Held on screen rather than toasted alone: the toast fades and the
@@ -344,6 +367,10 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
         {t('acct.wallet.noWithdrawCurrencies')}
       </div>
     );
+  }
+
+  if (withdrawLocked && restriction) {
+    return <AccountReviewGate restriction={restriction} onChanged={refreshMe} />;
   }
 
   return (
@@ -456,6 +483,24 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                 />
               </div>
 
+              {pinRequired && (
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1">
+                    {t('acct.pin.label')}
+                  </label>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={6}
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder={t('acct.pin.placeholder')}
+                    className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tracking-[0.4em]"
+                  />
+                </div>
+              )}
+
               {/* Amount Input - Display Currency + Crypto Amount */}
               <div className="space-y-3">
                 {/* Two Column Layout: Display Currency = Crypto Amount */}
@@ -476,15 +521,11 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                   </div>
 
                   {/* Equals Sign - Centered in the middle */}
-                  <span className="text-2xl sm:text-3xl text-slate-400 font-light pb-1">
-                    =
-                  </span>
+                  <span className="text-2xl sm:text-3xl text-slate-400 font-light pb-1">=</span>
 
                   {/* Crypto Amount Input (Read-only) */}
                   <div className="flex-1 space-y-2">
-                    <label className="block text-[10px] text-slate-500">
-                      Amount ({currency})
-                    </label>
+                    <label className="block text-[10px] text-slate-500">Amount ({currency})</label>
                     <input
                       type="text"
                       value={
