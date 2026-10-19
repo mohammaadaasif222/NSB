@@ -605,7 +605,15 @@ html:not([data-theme='dark']) .border-blue-600 {
   animation: rolluck-bar-sweep 1.1s ease-in-out infinite;
 }
 
-/* Motion is decorative here; the overlay alone communicates "loading". */
+/* The route bar (RouteProgress) borrows the same sweep, run a little faster:
+   it sits over a page the player can still read, so it should register as
+   activity at the edge of vision rather than ask to be watched. */
+.rolluck-route-progress {
+  animation: rolluck-bar-sweep 0.9s ease-in-out infinite;
+}
+
+/* Motion is decorative here; the overlay alone communicates "loading". The
+   route bar has nothing left without its sweep, so it fades in place instead. */
 @media (prefers-reduced-motion: reduce) {
   .rolluck-loader-letter,
   .rolluck-loader-bar {
@@ -613,6 +621,20 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
   .rolluck-loader-letter {
     opacity: 0.7;
+  }
+  .rolluck-route-progress {
+    animation: rolluck-route-progress-fade 1.4s ease-in-out infinite;
+    width: 100%;
+  }
+}
+
+@keyframes rolluck-route-progress-fade {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
@@ -2552,4 +2574,83 @@ html:not([data-theme='dark']) .border-blue-600 {
   &:hover {
     filter: brightness(1.35);
   }
+}
+
+/* ==================================================================== */
+/* Toasts — react-toastify, dressed in the active theme                  */
+/*                                                                       */
+/* Driven by data-theme alone, so the container's `theme` prop no longer */
+/* decides how a toast looks. Every var() falls back to the default dark */
+/* look — the modals' frosted near-black and the brand gold — because    */
+/* `dark` defines no palette of its own. `html:root` outranks the        */
+/* library's `:root`, which is imported after this file.                 */
+/* ==================================================================== */
+html:root {
+  --toastify-font-family: inherit;
+  --toastify-toast-bd-radius: 18px;
+  --toastify-color-dark: var(--surface, rgba(18, 19, 23, 0.92));
+  --toastify-color-light: var(--surface, rgba(18, 19, 23, 0.92));
+  --toastify-text-color-dark: var(--text, #f0f1f5);
+  --toastify-text-color-light: var(--text, #f0f1f5);
+  --toastify-color-info: var(--accent-text, #f9d028);
+  --toastify-color-success: #35d07f;
+  --toastify-color-warning: #f5a524;
+  --toastify-color-error: #e33827;
+  --toastify-color-progress-dark: var(--accent, #f9d028);
+  --toastify-color-progress-light: var(--accent, #f9d028);
+  --toastify-spinner-color: var(--accent, #f9d028);
+  --toastify-spinner-color-empty-area: var(--border, rgba(255, 255, 255, 0.12));
+}
+
+/* The modals' frosted glass: a thin smoked fill that is mostly blur, a
+   hairline rim, and the pane's water-drop edge (`--rl-drop-pane`) catching
+   light on the top-start and bottom-end. */
+.Toastify .Toastify__toast {
+  background: linear-gradient(180deg, rgba(34, 35, 40, 0.55), rgba(12, 13, 16, 0.65));
+  color: var(--toastify-text-color-dark);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  backdrop-filter: blur(40px) saturate(140%);
+  box-shadow:
+    var(--rl-drop-pane),
+    0 8px 40px rgba(0, 0, 0, 0.35);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background: rgba(18, 19, 23, 0.96);
+  }
+}
+
+/* The other palettes keep the glass but tint it with their own surface, so
+   an Ocean toast is smoked teal rather than smoked black. */
+html[data-theme]:not([data-theme='dark']) .Toastify .Toastify__toast {
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  border-color: color-mix(in srgb, var(--border-3) 70%, transparent);
+}
+
+/* On a light ground the dark water-drop shading reads as dirt; a white rim
+   and a soft lift do the same job. */
+html[data-theme='light'] .Toastify .Toastify__toast,
+html[data-theme='white'] .Toastify .Toastify__toast {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.9),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 30px rgba(15, 23, 42, 0.14);
+}
+
+html[data-theme='contrast'] .Toastify .Toastify__toast {
+  background: #000000;
+  border-color: #ffffff;
+}
+
+/* The library's light close button is hardwired black; take the toast's
+   own text colour so it reads on every ground. */
+.Toastify .Toastify__close-button {
+  color: inherit;
+  opacity: 0.55;
+}
+.Toastify .Toastify__close-button:hover,
+.Toastify .Toastify__close-button:focus {
+  opacity: 1;
 }

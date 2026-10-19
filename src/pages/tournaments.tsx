@@ -43,7 +43,7 @@ const TournamentsPage: FC = () => {
       {/* The design's 1548px content column, the same one the lobby and the
           footer use; `--u` (set by PlayerLayout) scales it on a narrower
           desktop so the four-across grid stays four across. */}
-      <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
+      <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0 lg:pt-[calc(var(--u)*24)]">
         {/* Explicit margins rather than `space-y`: the design's three gaps down
             this column are 20, 32 and 28, and one `space-y` cannot be all
             three. The 32 belongs to PromotionFilters, between its own two rows. */}

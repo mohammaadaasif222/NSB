@@ -35,6 +35,9 @@ interface Props {
   joined: number;
   capacity: number;
   endsIn: Countdown;
+  /** When an ended one ran, as ISO dates. */
+  startDate: string;
+  endDate: string;
   /** The Games rows — real catalogue games, fourteen as the design draws. */
   games: Game[];
 }
@@ -65,13 +68,15 @@ const TournamentDetailPage: FC<Props> = ({
   joined,
   capacity,
   endsIn,
+  startDate,
+  endDate,
   games,
 }) => {
   const { t, locale } = useTranslation();
   const heading = t(title);
 
   const day = (iso: string): string =>
-    new Date(iso).toLocaleDateString(locale, {
+    new Date(iso).toLocaleDateString(locale === 'en' ? 'en-GB' : locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -89,7 +94,7 @@ const TournamentDetailPage: FC<Props> = ({
       {/* Explicit margins rather than `space-y`: the design's gaps down this
           column are 40 / 55 / 73 running and 40 / 40 / 86 ended, and one
           `space-y` cannot be any three of them. */}
-      <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0">
+      <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:pt-[calc(var(--u)*24)]">
         <section>
           <div className="flex items-center gap-3 lg:gap-[calc(var(--u)*19)]">
             <Link
@@ -130,8 +135,8 @@ const TournamentDetailPage: FC<Props> = ({
               <TournamentSummaryHero
                 image={image}
                 prizePool={prizePool}
-                startDate={day(TOURNAMENT_SUMMARY.startDate)}
-                endDate={day(TOURNAMENT_SUMMARY.endDate)}
+                startDate={day(startDate)}
+                endDate={day(endDate)}
                 joined={joined}
                 capacity={capacity}
                 record={TOURNAMENT_SUMMARY.record}
@@ -208,6 +213,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       joined: tournament.joined,
       capacity: tournament.capacity,
       endsIn: tournament.endsIn,
+      startDate: tournament.startDate ?? TOURNAMENT_SUMMARY.startDate,
+      endDate: tournament.endDate ?? TOURNAMENT_SUMMARY.endDate,
       games: data,
     },
   };

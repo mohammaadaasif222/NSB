@@ -14,7 +14,7 @@ import { CurrencyConversionProvider } from '@/context/CurrencyConversionContext'
 import { AuthModalProvider } from '@/context/AuthModalContext';
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { BetslipProvider } from '@/context/BetslipContext';
-import RouteLoader from '@/components/RouteLoader';
+import RouteProgress from '@/components/RouteProgress';
 import AuthGate from '@/components/AuthGate';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import Analytics from '@/components/analytics/Analytics';
@@ -89,8 +89,12 @@ export default function App({ Component, pageProps }: AppProps) {
                             </FavouritesProvider>
                           </SeonGuardProvider>
                           <SeonAgentWarmup />
-                          <RouteLoader />
-                          {/* After RouteLoader so that on a first load, where
+                          {/* A bar at the top edge, not an overlay: a link
+                          swaps the route in place and must not blank the page
+                          the player is on. */}
+                          <RouteProgress />
+                          {/* The one full-screen splash, and only on arrival:
+                          after RouteProgress so that on a first load, where
                           both could be showing, this one wins the overlap. */}
                           <AuthGate />
                           {/* Outside the page so the bubble survives route changes,

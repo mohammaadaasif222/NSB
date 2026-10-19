@@ -282,6 +282,9 @@ const coreEn = {
   'nav.rolluckOath': 'Rolluck Oath',
   'nav.tournaments': 'Tournaments',
   'tournament.active': 'Active',
+  'tournament.ended': "Ended",
+  'tournament.starts': "Starts: {date}",
+  'tournament.ends': "Ends: {date}",
   'tournament.summary': 'Tournament Summary',
   'tournament.rewardsDistributed': 'Rewards distributed',
   'tournament.startDate': 'Start Date',
@@ -999,6 +1002,22 @@ const coreEn = {
   'rewards.toNextTier': '{amount} more to reach {tier}',
   'rewards.topTier': "You've reached the top tier",
   'rewards.claimedTotal': 'Total claimed',
+  'rewards.about': 'About {reward}',
+
+  /* The reward detail dialog's section headings. The prose under each lives in
+     the content module; these are labels, which core owns. */
+  'rewards.detail.frequency': 'Accrual frequency',
+  'rewards.detail.payout': 'How it pays out',
+  'rewards.detail.vip': 'VIP benefits',
+  'rewards.detail.calculatedFor': 'Calculated for',
+  'rewards.detail.activation': 'How to claim',
+  'rewards.detail.boostDuration': 'Duration',
+  /* Built from the split the API reports, so the percentages follow the
+     player's tier rather than being frozen into the copy. */
+  'rewards.detail.payoutBalance': '{percent}% of the amount goes to your balance',
+  'rewards.detail.payoutWeekly': '{percent}% of the amount goes to the Weekly bonus',
+  'rewards.detail.payoutMonthly': '{percent}% of the amount goes to the Monthly bonus',
+  'rewards.detail.payoutFull': '100% of the bonus goes to your balance',
   'rewards.history': 'Reward history',
   'rewards.historyEmpty': 'No finished rewards yet.',
   'rewards.status.pending': 'Pending',

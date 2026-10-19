@@ -20,11 +20,38 @@ export interface Tournament {
   joined: number;
   capacity: number;
   endsIn: Countdown;
+  /** When it ran, as ISO dates — an ended card shows them instead of a countdown. */
+  startDate?: string;
+  endDate?: string;
 }
 
-/** One tournament, as the design's 370×495 card. */
+/**
+ * A date as the design writes it: 31/07/2026 — day first in English too (the
+ * design's), every other language in its own order.
+ */
+export const useDay = (): ((iso: string) => string) => {
+  const { locale } = useTranslation();
+  return (iso) =>
+    new Date(iso).toLocaleDateString(locale === 'en' ? 'en-GB' : locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+};
+
+/** The pill on the art: green Active while it runs, red Ended after. */
+const BADGE =
+  'rl-liquid absolute left-4 top-4 flex h-[26px] items-center rounded-full px-3 text-[13px] leading-5 lg:left-[calc(var(--u)*20)] lg:top-[calc(var(--u)*20)] lg:h-[calc(var(--u)*31)] lg:px-[calc(var(--u)*12)] lg:text-[length:max(11px,calc(var(--u)*14))]';
+
+/**
+ * One tournament, as the design's 370×495 card. Ended, as the Expired tab's
+ * frame draws it: a red Ended pill on the art, and the dates it ran in place
+ * of the countdown.
+ */
 const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
   const { t } = useTranslation();
+  const day = useDay();
 
   return (
     <article className="rl-liquid flex flex-col overflow-hidden rounded-[24px] lg:rounded-[calc(var(--u)*34)]">
@@ -38,9 +65,13 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
           className="object-cover"
         />
 
-        {tournament.active && (
-          <span className="rl-liquid absolute left-4 top-4 flex h-[26px] items-center rounded-full px-3 text-[13px] leading-5 text-[#03b739] drop-shadow-[0_0_8.5px_rgba(3,183,57,0.2)] lg:left-[calc(var(--u)*20)] lg:top-[calc(var(--u)*20)] lg:h-[calc(var(--u)*31)] lg:px-[calc(var(--u)*12)] lg:text-[length:max(11px,calc(var(--u)*14))]">
+        {tournament.active ? (
+          <span className={`${BADGE} text-[#03b739] drop-shadow-[0_0_8.5px_rgba(3,183,57,0.2)]`}>
             {t('tournament.active')}
+          </span>
+        ) : (
+          <span className={`${BADGE} text-[#e33827] drop-shadow-[0_0_8.5px_rgba(227,56,39,0.2)]`}>
+            {t('tournament.ended')}
           </span>
         )}
       </div>
@@ -74,7 +105,19 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
         {/* Pinned to the foot so a longer headline cannot shunt the controls
             out of line with the cards beside it. */}
         <div className="mt-auto pt-5 lg:pt-[calc(var(--u)*14)]">
-          <CountdownBar value={tournament.endsIn} />
+          {tournament.active ? (
+            <CountdownBar value={tournament.endsIn} />
+          ) : (
+            // The design's one line: Starts on the left, Ends after a gap.
+            <p className="flex flex-wrap gap-x-8 gap-y-1 text-[13px] leading-5 text-white tabular-nums lg:gap-x-[calc(var(--u)*36)] lg:text-[length:max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
+              {tournament.startDate && (
+                <span>{t('tournament.starts', { date: day(tournament.startDate) })}</span>
+              )}
+              {tournament.endDate && (
+                <span>{t('tournament.ends', { date: day(tournament.endDate) })}</span>
+              )}
+            </p>
+          )}
 
           <Link
             href={`/tournaments/${tournament.id}`}
