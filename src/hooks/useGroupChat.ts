@@ -3,13 +3,17 @@ import { useTranslation } from '@/context/I18nContext';
 import {
   CHAT_LIMITS_DEFAULT,
   CHAT_MESSAGE_EVENT,
+  CHAT_DELETE_EVENT,
   CHAT_REACTION_EVENT,
   DEFAULT_CHAT_ROOM,
   NO_REACTIONS,
+  deleteChatMessage,
   fetchChatHistory,
+  reportChatMessage,
   sendChatMessage,
   sendVoiceMessage,
   setChatReaction,
+  type ChatDeletion,
   type ChatLimits,
   type ChatMessage,
   type ChatRoom,
@@ -71,13 +75,15 @@ interface GroupChat {
   /** ms until this account may post again, or 0. Counts down. */
   cooldownMs: number;
   /** Returns true when the message was accepted. */
-  send: (body: string) => Promise<boolean>;
+  send: (body: string, replyTo?: string | null) => Promise<boolean>;
   /**
    * React to somebody else's message. Pass the reaction the player CLICKED —
    * sending the one already held clears it, and the server decides that.
    */
   react: (messageId: string, reaction: ReactionKind) => Promise<void>;
-  sendVoice: (clip: Blob, durationMs: number) => Promise<boolean>;
+  sendVoice: (clip: Blob, durationMs: number, replyTo?: string | null) => Promise<boolean>;
+  remove: (messageId: string) => Promise<boolean>;
+  report: (messageId: string, reason: string) => Promise<void>;
 }
 
 /**
@@ -102,11 +108,17 @@ interface GroupChat {
 const sameReactions = (a?: ReactionSummary, b?: ReactionSummary): boolean =>
   a?.up === b?.up && a?.down === b?.down && a?.mine === b?.mine;
 
-const merge = (current: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] => {
+const merge = (
+  current: ChatMessage[],
+  incoming: ChatMessage[],
+  deleted?: ReadonlySet<string>
+): ChatMessage[] => {
   const byId = new Map(current.map((m) => [m.id, m]));
   let changed = false;
 
   for (const message of incoming) {
+    if (deleted?.has(message.id)) continue;
+
     const existing = byId.get(message.id);
 
     if (!existing) {
@@ -173,6 +185,11 @@ const applyReaction = (current: ChatMessage[], update: ReactionUpdate): ChatMess
   return next;
 };
 
+const without = (current: ChatMessage[], messageId: string): ChatMessage[] => {
+  const next = current.filter((message) => message.id !== messageId);
+  return next.length === current.length ? current : next;
+};
+
 /** Replace one message's whole reaction summary — the answer to our own POST. */
 const setReaction = (
   current: ChatMessage[],
@@ -237,7 +254,10 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
    */
   const [channelName, setChannelName] = useState(`private-chat.${room}`);
 
+  const deletedRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
+    deletedRef.current = new Set();
     setChannelName(`private-chat.${room}`);
     setMessages([]);
     setLoading(true);
@@ -301,7 +321,7 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
           // publishes to.
           setChannelName(history.channel);
           setLimits(history.limits);
-          setMessages((current) => merge(current, history.messages));
+          setMessages((current) => merge(current, history.messages, deletedRef.current));
           setError(null);
         })
         .catch((err: { message?: string }) => {
@@ -330,7 +350,17 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
       channelName,
       CHAT_MESSAGE_EVENT,
       (message: ChatMessage) => {
-        if (!cancelled) setMessages((current) => merge(current, [message]));
+        if (!cancelled) setMessages((current) => merge(current, [message], deletedRef.current));
+      }
+    );
+
+    const stopDelete = realtimeService.onChannelEvent(
+      channelName,
+      CHAT_DELETE_EVENT,
+      (deletion: ChatDeletion) => {
+        if (cancelled || !deletion?.message_id) return;
+        deletedRef.current.add(deletion.message_id);
+        setMessages((current) => without(current, deletion.message_id));
       }
     );
 
@@ -367,6 +397,7 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
       stopReady();
       stopEvent();
       stopReaction();
+      stopDelete();
       realtimeService.leaveChannel(channelName);
     };
   }, [room, channelName]);
@@ -395,7 +426,7 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
 
   /* --- sending ----------------------------------------------------------- */
   const send = useCallback(
-    async (body: string): Promise<boolean> => {
+    async (body: string, replyTo: string | null = null): Promise<boolean> => {
       const trimmed = body.trim();
       if (trimmed.length === 0 || sending) return false;
 
@@ -403,7 +434,7 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
       setError(null);
 
       try {
-        const message = await sendChatMessage(trimmed, room);
+        const message = await sendChatMessage(trimmed, room, replyTo);
 
         if (message) {
           // Shown at once rather than waiting for the socket to bring it
@@ -465,14 +496,14 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
   );
 
   const sendVoice = useCallback(
-    async (clip: Blob, durationMs: number): Promise<boolean> => {
+    async (clip: Blob, durationMs: number, replyTo: string | null = null): Promise<boolean> => {
       if (sending) return false;
 
       setSending(true);
       setError(null);
 
       try {
-        const message = await sendVoiceMessage(clip, durationMs, room);
+        const message = await sendVoiceMessage(clip, durationMs, room, replyTo);
         if (message) setMessages((current) => merge(current, [message]));
         startCooldown(limits.slow_mode_ms);
         return true;
@@ -492,6 +523,41 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
     [room, sending, limits.slow_mode_ms, startCooldown]
   );
 
+  const remove = useCallback(
+    async (messageId: string): Promise<boolean> => {
+      const target = messagesRef.current.find((message) => message.id === messageId);
+      if (!target) return false;
+
+      deletedRef.current.add(messageId);
+      setMessages((current) => without(current, messageId));
+      setError(null);
+
+      try {
+        const ok = await deleteChatMessage(messageId, room);
+        if (!ok) throw new Error(tRef.current('chat.deleteFailed'));
+        return true;
+      } catch (err) {
+        const failure = err as { message?: string; status?: number };
+
+        if (failure?.status === 404) return true;
+
+        deletedRef.current.delete(messageId);
+        setMessages((current) => merge(current, [target], deletedRef.current));
+        setError(failure?.message || tRef.current('chat.deleteFailed'));
+        return false;
+      }
+    },
+    [room]
+  );
+
+  const report = useCallback(
+    async (messageId: string, reason: string): Promise<void> => {
+      const ok = await reportChatMessage(messageId, reason, room);
+      if (!ok) throw new Error(tRef.current('chat.reportFailed'));
+    },
+    [room]
+  );
+
   return {
     messages,
     loading,
@@ -503,5 +569,7 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
     send,
     react,
     sendVoice,
+    remove,
+    report,
   };
 };

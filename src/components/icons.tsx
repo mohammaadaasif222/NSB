@@ -599,6 +599,20 @@ export const TrashIcon: FC<IconProps> = (p) => (
   </Svg>
 );
 
+export const ReplyIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <polyline points="9 17 4 12 9 7" />
+    <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+  </Svg>
+);
+
+export const FlagIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+    <line x1="4" y1="22" x2="4" y2="15" />
+  </Svg>
+);
+
 export const PauseIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <rect x="7" y="5" width="3.5" height="14" rx="1" />
