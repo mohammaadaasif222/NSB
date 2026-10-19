@@ -185,7 +185,6 @@ export interface BonusClaimResult {
   award: UserBonus;
   credited: {
     currency_code: string;
-    network_code: string;
     amount: string;
     usd_amount: string;
     usd_rate: string | null;
