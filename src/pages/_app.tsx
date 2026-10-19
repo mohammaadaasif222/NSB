@@ -18,6 +18,7 @@ import RouteLoader from '@/components/RouteLoader';
 import AuthGate from '@/components/AuthGate';
 import AccountReviewNotice from '@/components/risk/AccountReviewNotice';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
+import RegionRestrictedModal from '@/components/modals/RegionRestrictedModal';
 import Analytics from '@/components/analytics/Analytics';
 import IntercomLauncher from '@/components/support/IntercomLauncher';
 import { EventListeners } from '@/components/listeners/EventListeners';
@@ -90,6 +91,7 @@ export default function App({ Component, pageProps }: AppProps) {
                             </FavouritesProvider>
                           </SeonGuardProvider>
                           <SeonAgentWarmup />
+                          <RegionRestrictedModal />
                           <RouteLoader />
                           {/* After RouteLoader so that on a first load, where
                           both could be showing, this one wins the overlap. */}

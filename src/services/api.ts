@@ -81,6 +81,9 @@ const noBodyFailure = (error: AxiosError): { code?: string; message: string } =>
   };
 };
 
+/** Fired when sign-up or sign-in is refused for the player's country. */
+export const REGION_RESTRICTED_EVENT = 'rl:region-restricted';
+
 api.interceptors.response.use(
   (res) => res.data,
   (error: AxiosError) => {
@@ -90,6 +93,10 @@ api.interceptors.response.use(
 
     const body = error.response?.data as { message?: unknown } | undefined;
     const usable = body && typeof body === 'object' && typeof body.message === 'string';
+    const code = (body as { errors?: { code?: unknown } } | undefined)?.errors?.code;
+    if (usable && code === 'REGION_RESTRICTED' && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(REGION_RESTRICTED_EVENT, { detail: body.message }));
+    }
 
     return Promise.reject({
       ...(usable ? body : noBodyFailure(error)),
