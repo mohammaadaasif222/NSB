@@ -13,6 +13,8 @@ export const en = {
   'acct.wallet.tipUsername': 'Username',
   'acct.wallet.sendTip': 'Send Tip',
   'acct.wallet.tipUnavailable': "Tipping isn't available yet. Check back soon.",
+  'acct.wallet.tipSent': 'Tip sent successfully',
+  'acct.wallet.tipFailed': 'Failed to send tip',
   'acct.wallet.redeemTitle': 'Promotional or Gift Card Code',
   'acct.wallet.redeemBody':
     "Redeem Promotional Codes or Gift Card Codes that you've received, and the balance will be added to your account.",
