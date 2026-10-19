@@ -1539,5 +1539,10 @@
   "misc.realtime.random": "Casuale: {value}",
   "misc.realtime.issueTitle": "Problema con la connessione in tempo reale",
   "misc.realtime.issueBody": "Il messaggio di prova non è arrivato entro 5 secondi",
-  "misc.realtime.issueHint": "Soketi potrebbe non consegnare correttamente gli eventi"
+  "misc.realtime.issueHint": "Soketi potrebbe non consegnare correttamente gli eventi",
+  "roll.bonusTitle": "Puntate del bonus",
+  "roll.bonusBlurb": "I fondi bonus diventano denaro reale prelevabile una volta completato il requisito di puntata.",
+  "roll.table.bonus": "Bonus",
+  "roll.bonusAmount": "Bonus di {amount}",
+  "roll.bonusExpires": "Scade il {date}"
 }

@@ -1539,5 +1539,10 @@
   "misc.realtime.random": "रैंडम: {value}",
   "misc.realtime.issueTitle": "रीयल-टाइम कनेक्शन में समस्या",
   "misc.realtime.issueBody": "परीक्षण संदेश 5 सेकंड के भीतर नहीं पहुँचा",
-  "misc.realtime.issueHint": "हो सकता है Soketi इवेंट्स को ठीक से नहीं पहुँचा रहा हो"
+  "misc.realtime.issueHint": "हो सकता है Soketi इवेंट्स को ठीक से नहीं पहुँचा रहा हो",
+  "roll.bonusTitle": "बोनस वेजरिंग",
+  "roll.bonusBlurb": "वेजरिंग पूरी होने पर बोनस राशि असली पैसे में बदल जाती है, जिसे आप निकाल सकते हैं।",
+  "roll.table.bonus": "बोनस",
+  "roll.bonusAmount": "{amount} बोनस",
+  "roll.bonusExpires": "{date} को समाप्त"
 }

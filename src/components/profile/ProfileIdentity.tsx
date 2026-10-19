@@ -47,7 +47,7 @@ const ProfileIdentity: FC<Props> = ({ me, onChangeAvatar }) => {
       </p>
 
       <p className="mt-[calc(var(--u)*6)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] text-[#9da2b4]">
-        {t('profile.id')} <span className="tabular-nums">{me.id}</span>
+        {t('profile.id')} <span className="tabular-nums">{me?.username ?? me?.id ?? '--'}</span>
       </p>
     </div>
   );

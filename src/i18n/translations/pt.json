@@ -1539,5 +1539,10 @@
   "misc.realtime.random": "Aleatório: {value}",
   "misc.realtime.issueTitle": "Problema na ligação em tempo real",
   "misc.realtime.issueBody": "A mensagem de teste não chegou no prazo de 5 segundos",
-  "misc.realtime.issueHint": "O Soketi pode não estar a entregar os eventos corretamente"
+  "misc.realtime.issueHint": "O Soketi pode não estar a entregar os eventos corretamente",
+  "roll.bonusTitle": "Apostas do bônus",
+  "roll.bonusBlurb": "O saldo de bônus vira dinheiro real que você pode sacar depois que o requisito de aposta é cumprido.",
+  "roll.table.bonus": "Bônus",
+  "roll.bonusAmount": "Bônus de {amount}",
+  "roll.bonusExpires": "Expira em {date}"
 }
