@@ -38,8 +38,6 @@ const TipTab: FC = () => {
     : 'USD';
   const sign = useMemo(() => currencySign(fiat, locale), [fiat, locale]);
 
-  const active = summary?.preferences.active_currency ?? '';
-
   const [amount, setAmount] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);

@@ -140,7 +140,7 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             <div className="flex justify-between items-center gap-4">
               <span className="text-base sm:text-lg text-[#8c8c8c]">
                 {transaction.network_code === 'FIAT' || transaction.provider === 'D24'
-                  ? t('tx.amountInCurrency') || 'Amount'
+                  ? 'Amount'
                   : t('tx.cryptoAmount')}
               </span>
               <span className="text-base sm:text-lg font-medium text-white text-right">
@@ -204,8 +204,8 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </span>
           </div>
 
-          {/* Explorer Link - Show for deposits and withdrawals with transaction hash (not for tips) */}
-          {explorerUrl && (transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && transaction.category !== 'TIP' && (
+          {/* Explorer Link - Show for deposits and withdrawals with transaction hash */}
+          {explorerUrl && (transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && (
             <div className="flex justify-between items-center gap-4">
               <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.explorer')}</span>
               <a
