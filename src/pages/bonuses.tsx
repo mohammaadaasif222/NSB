@@ -1,22 +1,22 @@
-import type { FC, ReactNode } from 'react';
+import { useMemo, useState, type FC, type ReactNode } from 'react';
 import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import FaqAccordion from '@/components/player/FaqAccordion';
 import SiteFooter from '@/components/player/SiteFooter';
+import WalletModal from '@/components/wallet/WalletModal';
 import WelcomePackPanel from '@/components/bonus/WelcomePackPanel';
-import SpecialBonusRow from '@/components/bonus/SpecialBonusRow';
 import RegularBonusRow from '@/components/bonus/RegularBonusRow';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
+import { useBonuses } from '@/hooks/useBonuses';
 
-/** A section title — "Special Bonuses" and "Regular Bonuses". */
 const SubHeading: FC<{ children: ReactNode }> = ({ children }) => (
   <h2 className="text-[20px] font-semibold leading-7 tracking-[-0.02em] text-white lg:text-[length:max(14px,calc(var(--u)*24))] lg:leading-[calc(var(--u)*32)]">
     {children}
   </h2>
 );
 
-/** A heading and the row under it, 16 apart as the design sets them. */
 const Section: FC<{ title: string; children: ReactNode }> = ({ title, children }) => (
   <section className="space-y-4 lg:space-y-[calc(var(--u)*16)]">
     <SubHeading>{title}</SubHeading>
@@ -24,26 +24,59 @@ const Section: FC<{ title: string; children: ReactNode }> = ({ title, children }
   </section>
 );
 
-/**
- * Deposit match, free spins, bonus cash and the rest.
- *
- * The design's Bonuses frame, and only that: the welcome pack across the top,
- * the three standing offers under "Special Bonuses", the six campaign cards
- * under "Regular Bonuses", then the shared FAQ and footer that close every
- * long page in the app.
- *
- * STATIC. Nothing on this page is served yet — the `bonuses` table is empty
- * and GET /bonuses/me returns no campaigns, so every figure here is the
- * design's own placeholder copy. The pieces that read real data are written
- * and committed but not mounted: BonusOfferCard maps an AvailableBonus onto
- * the same card, and ActiveBonusCard, BonusCodeForm and BonusHistoryTable
- * cover the player's own awards, the redeem field and the history table. The
- * design draws none of those, so none of them are on the page; mount them when
- * the API is ready. See RegularBonusRow for the one swap that turns the grid
- * live.
- */
+const PANEL = 'rl-glass-deep rounded-[24px] px-5 py-16 text-center lg:rounded-[calc(var(--u)*34)]';
+
+const COLUMN =
+  'mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0';
+
 const BonusesPage: FC = () => {
   const { t } = useTranslation();
+  const { bonuses: bonusesOn } = usePlatformFeatures();
+  const { summary, loading, error, busyId, signedIn, clockOffset, refresh, claim, forfeit } =
+    useBonuses();
+
+  const [walletOpen, setWalletOpen] = useState(false);
+
+  const welcomeStages = useMemo(() => {
+    if (!summary || !summary.welcome_enabled) {
+      return [];
+    }
+    return summary.welcome.filter((stage) => stage.status !== 'UNAVAILABLE' || !!stage.reason);
+  }, [summary]);
+
+  const regularAwards = useMemo(() => {
+    if (!summary) {
+      return [];
+    }
+    const shown = new Set(
+      welcomeStages.map((stage) => stage.bonus_id).filter((id): id is string => !!id)
+    );
+    return summary.active.filter((award) => !shown.has(award.bonus.id));
+  }, [summary, welcomeStages]);
+
+  if (!bonusesOn || summary?.enabled === false) {
+    return (
+      <PlayerLayout>
+        <Head>
+          <title>{`${t('bonus.title')} · ROLLUCK`}</title>
+        </Head>
+        <div className={COLUMN}>
+          <section className={PANEL}>
+            <h1 className="text-[22px] font-semibold leading-8 text-[#f0f1f5]">
+              {t('bonus.switchedOff')}
+            </h1>
+            <p className="mx-auto mt-2 max-w-xl text-[14px] leading-5 text-white/56">
+              {t('bonus.switchedOffNote')}
+            </p>
+          </section>
+          <SiteFooter />
+        </div>
+      </PlayerLayout>
+    );
+  }
+
+  const pending = !summary && !error;
+  const failed = !summary && !!error;
 
   return (
     <PlayerLayout>
@@ -51,24 +84,56 @@ const BonusesPage: FC = () => {
         <title>{`${t('bonus.title')} · ROLLUCK`}</title>
       </Head>
 
-      {/* The design's 1548px content column, the same one the lobby and the
-          footer use; `--u` (set by PlayerLayout) scales it on a narrower
-          desktop so the three-across rows stay three across. The 80 between
-          sections is the design's, and the lobby's. */}
-      <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
-        <WelcomePackPanel />
+      <div className={COLUMN}>
+        {error && (
+          <section className="rl-glass-deep flex flex-wrap items-center justify-between gap-3 rounded-[24px] px-5 py-4 lg:rounded-[calc(var(--u)*34)]">
+            <p className="text-[13px] leading-5 text-white/64">{t('bonus.loadFailed')}</p>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              disabled={loading}
+              className="rl-btn-ghost flex h-10 items-center justify-center rounded-full px-5 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? t('common.loading') : t('bonus.retry')}
+            </button>
+          </section>
+        )}
 
-        <Section title={t('bonus.specialBonuses')}>
-          <SpecialBonusRow />
-        </Section>
+        <WelcomePackPanel
+          stages={welcomeStages}
+          currency={summary?.currency ?? 'USD'}
+          enabled={summary?.welcome_enabled ?? true}
+          pending={pending}
+          failed={failed}
+          signedIn={signedIn}
+          clockOffset={clockOffset}
+          busyId={busyId}
+          onClaim={(bonusId) => void claim({ bonusId })}
+          onForfeit={(awardId) => void forfeit(awardId)}
+          onDeposit={() => setWalletOpen(true)}
+        />
 
         <Section title={t('bonus.regularBonuses')}>
-          <RegularBonusRow />
+          <RegularBonusRow
+            offers={summary?.available ?? []}
+            awards={regularAwards}
+            currency={summary?.currency ?? 'USD'}
+            enabled={summary?.regular_enabled ?? true}
+            pending={pending}
+            failed={failed}
+            clockOffset={clockOffset}
+            busyId={busyId}
+            onClaim={(bonusId) => void claim({ bonusId })}
+            onForfeit={(awardId) => void forfeit(awardId)}
+            onDeposit={() => setWalletOpen(true)}
+          />
         </Section>
 
         <FaqAccordion />
         <SiteFooter />
       </div>
+
+      <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} initialTab="deposit" />
     </PlayerLayout>
   );
 };

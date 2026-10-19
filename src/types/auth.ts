@@ -81,3 +81,24 @@ export interface VerifyOtpResponseData {
   verified?: boolean;
   token?: string;
 }
+
+export interface PlayerSession {
+  id: string;
+  current: boolean;
+  device_type: string | null;
+  browser: string | null;
+  os: string | null;
+  country: string | null;
+  city: string | null;
+  signed_in_at: string;
+  expires_at: string;
+}
+
+export interface SessionListData {
+  sessions: PlayerSession[];
+}
+
+export interface SessionEndedData {
+  ended: true;
+  was_current: boolean;
+}

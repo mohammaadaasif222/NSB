@@ -119,6 +119,9 @@ export const en = {
     'Crypto amount will be calculated at approval based on live {currency} rates.',
   'acct.wallet.max': 'Max',
   'acct.wallet.insufficient': 'Insufficient balance',
+  'acct.wallet.heldByRollover':
+    'More than you can withdraw right now — the rest is held until your deposits are played through.',
+  'acct.wallet.belowMinWithdrawal': 'The minimum withdrawal is {amount}.',
   'acct.wallet.submitting': 'Submitting…',
   'acct.buy.amount': 'Amount',
   'acct.buy.minMax': 'Min {min} • Max {max}',

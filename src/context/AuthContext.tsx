@@ -15,15 +15,19 @@ import apiService from '@/services/api';
 import { analytics } from '@/services/analytics';
 import { translate } from '@/i18n/translate';
 import { forgetAllSignedUrls } from '@/lib/signedAssets';
+import {
+  clearSession,
+  expireSession,
+  onSessionExpired,
+  readSession,
+  writeSession,
+} from '@/lib/session';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
-
-const TOKEN_KEY = 'token';
-const EXPIRY_KEY = 'token_expiry';
 
 /**
  * Read the token from sessionStorage, dropping it if past its expiry.
@@ -32,16 +36,19 @@ const EXPIRY_KEY = 'token_expiry';
  * Next.js renders this on the server.
  */
 const getValidToken = (): string | null => {
-  const token = sessionStorage.getItem(TOKEN_KEY);
-  const expiry = sessionStorage.getItem(EXPIRY_KEY);
+  const stored = readSession();
 
-  if (token && expiry && Date.now() < Number(expiry)) {
-    return token;
+  if (stored && Date.now() < stored.expiresAt) {
+    return stored.token;
   }
 
-  sessionStorage.clear();
+  clearSession();
   return null;
 };
+
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+
+const EXPIRY_GRACE_MS = 1000;
 
 /** Safely decode the access token into an AuthUser (id, email, role). */
 const decodeUser = (token: string | null): AuthUser | null => {
@@ -78,12 +85,57 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     setHydrated(true);
   }, []);
 
+  useEffect(
+    () =>
+      onSessionExpired((reason) => {
+        forgetAllSignedUrls();
+        setToken(null);
+        toast.info(
+          translate(
+            reason === 'ended-everywhere' ? 'sec.signedOutEverywhere' : 'misc.auth.sessionExpired'
+          )
+        );
+      }),
+    []
+  );
+
+  useEffect(() => {
+    if (!token) return undefined;
+
+    const stored = readSession();
+
+    if (!stored) return undefined;
+
+    const expireIfPast = (): void => {
+      if (Date.now() >= stored.expiresAt) {
+        expireSession();
+      }
+    };
+
+    if (Date.now() >= stored.expiresAt) {
+      expireSession();
+      return undefined;
+    }
+
+    const timer = window.setTimeout(
+      expireIfPast,
+      Math.min(stored.expiresAt - Date.now() + EXPIRY_GRACE_MS, MAX_TIMEOUT_MS)
+    );
+
+    document.addEventListener('visibilitychange', expireIfPast);
+    window.addEventListener('focus', expireIfPast);
+    window.addEventListener('online', expireIfPast);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', expireIfPast);
+      window.removeEventListener('focus', expireIfPast);
+      window.removeEventListener('online', expireIfPast);
+    };
+  }, [token]);
+
   const login = (newToken: string): void => {
-    const expiryTime = Date.now() + 30 * 60 * 1000;
-
-    sessionStorage.setItem(TOKEN_KEY, newToken);
-    sessionStorage.setItem(EXPIRY_KEY, expiryTime.toString());
-
+    writeSession(newToken);
     setToken(newToken);
   };
 
@@ -108,7 +160,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       .post('/auth/logout')
       .catch(() => undefined)
       .finally(() => {
-        sessionStorage.clear();
+        clearSession();
         forgetAllSignedUrls();
         setToken(null);
         toast.success(translate('misc.auth.loggedOut'));

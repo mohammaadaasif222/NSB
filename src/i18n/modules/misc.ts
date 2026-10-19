@@ -16,6 +16,7 @@ export const en = {
 
   // Auth outcomes
   'misc.auth.loggedOut': 'Logged out successfully',
+  'misc.auth.sessionExpired': 'Your session has expired. Please sign in again.',
   'misc.auth.malformedToken': 'Received an invalid sign-in token. Please try again.',
   'misc.steam.completing': 'Completing Steam sign-in…',
   'misc.unauthorized.title': 'Unauthorized',

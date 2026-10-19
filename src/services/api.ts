@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig, type AxiosError, type AxiosInstance } from '
 import type { ApiResponse } from '@/types';
 import { getDeviceSession } from '@/lib/seon';
 import { TRANSPORT_CODES } from '@/lib/apiError';
+import { expireSession, readSession } from '@/lib/session';
 import { translate } from '@/i18n/translate';
 
 /**
@@ -37,11 +38,12 @@ const needsDeviceSession = (url: string | undefined): boolean => {
 
 
 api.interceptors.request.use(async (config) => {
-  const token = sessionStorage.getItem('token');
-  const expiry = sessionStorage.getItem('token_expiry');
+  const stored = readSession();
 
-  if (token && expiry && Date.now() < Number(expiry)) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (stored && Date.now() < stored.expiresAt) {
+    config.headers.Authorization = `Bearer ${stored.token}`;
+  } else if (stored) {
+    expireSession();
   }
 
   if (needsDeviceSession(config.url)) {
@@ -83,7 +85,7 @@ api.interceptors.response.use(
   (res) => res.data,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      sessionStorage.clear();
+      expireSession();
     }
 
     const body = error.response?.data as { message?: unknown } | undefined;
