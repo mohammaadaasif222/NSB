@@ -5,7 +5,12 @@ import { useMe } from '@/context/UserContext';
 import { getDisplayCurrencies } from '@/services/wallet';
 import { getPinStatus } from '@/services/transactionPin';
 
-const LocalCurrencyWithdrawalTab: FC = () => {
+interface Props {
+  /** True when the error was an account lock the parent now shows. */
+  onRestricted?: (err: unknown) => boolean;
+}
+
+const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted }) => {
   const { me } = useMe();
 
   // Currencies & Methods
@@ -199,6 +204,7 @@ const LocalCurrencyWithdrawalTab: FC = () => {
       toast.success('Withdrawal request submitted. It will be paid once it has been reviewed.');
     } catch (err: any) {
       console.error('[Withdrawal] Error:', err);
+      if (onRestricted?.(err)) return;
       const errorMsg = err?.response?.data?.message || err?.message || 'Failed to submit withdrawal';
       toast.error(errorMsg);
     } finally {

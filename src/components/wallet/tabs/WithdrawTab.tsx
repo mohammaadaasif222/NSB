@@ -49,7 +49,18 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   const { summary, currencies, refresh } = useWallet();
   const { me, refresh: refreshMe } = useMe();
   const restriction = me?.account_restriction;
-  const withdrawLocked = !!restriction?.blocked_actions.includes('WITHDRAW');
+  // A disposable-contact lock stays out of sight until the player asks to withdraw.
+  const [contactAsked, setContactAsked] = useState(false);
+  const withdrawLocked =
+    !!restriction?.blocked_actions.includes('WITHDRAW') &&
+    (restriction.requires !== 'CONTACT_VERIFICATION' || contactAsked);
+  const onRestricted = (err: unknown): boolean => {
+    const errors = (err as { errors?: { code?: string; requires?: string } })?.errors;
+    if (errors?.code !== 'ACCOUNT_RESTRICTED') return false;
+    if (errors.requires === 'CONTACT_VERIFICATION') setContactAsked(true);
+    void refreshMe();
+    return true;
+  };
   const { convertToDisplayCurrency } = useCurrencyConversion();
 
   const displayCurrency = summary?.preferences.active_currency ?? 'USD';
@@ -334,10 +345,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       // upgrade — arrives with a `requiredLevel`, so one branch opens the
       // right step instead of three.
       // A risk lock placed after the screen opened: re-read the account so the gate shows.
-      if ((err as { errors?: { code?: string } })?.errors?.code === 'ACCOUNT_RESTRICTED') {
-        void refreshMe();
-        return;
-      }
+      if (onRestricted(err)) return;
 
       const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
       if (kycError) {
@@ -591,7 +599,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
         </>
       )}
 
-      {withdrawalType === 'local' && <LocalCurrencyWithdrawalTab />}
+      {withdrawalType === 'local' && <LocalCurrencyWithdrawalTab onRestricted={onRestricted} />}
     </div>
   );
 };
