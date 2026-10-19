@@ -538,6 +538,7 @@ const coreEn = {
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.saving': 'Saving…',
+  'common.sending': 'Sending…',
   'common.copy': 'Copy',
   'common.viewOnExplorer': 'View on Explorer',
 
@@ -858,6 +859,9 @@ const coreEn = {
   'tx.betWon': 'Won',
   'tx.betLost': 'Lost',
   'tx.bets': 'Bets',
+  'tx.tips': 'Tips',
+  'tx.tipSent': 'Sent',
+  'tx.tipReceived': 'Received',
   'tx.prev': 'Previous',
   'tx.next': 'Next',
   'tx.noResults': 'No transactions match your search.',
