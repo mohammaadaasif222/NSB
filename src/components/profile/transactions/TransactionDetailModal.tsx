@@ -36,6 +36,29 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
     return explorers[crypto] || null;
   };
 
+  const getProviderLabel = (
+    provider?: string | null,
+    networkCode?: string | null,
+  ): string => {
+    if (!provider) return 'Unknown';
+
+    // Fiat providers → show "Bank Transfer (D24)" style
+    if (provider === 'D24' || networkCode === 'FIAT') {
+      return 'Bank Transfer';
+    }
+
+    // Crypto providers → show provider name + network
+    const providerNames: Record<string, string> = {
+      COINSPAID: 'CoinsPaid',
+      CRYPTOMUS: 'Cryptomus',
+      CHANGELLY: 'Changelly',
+      INTERNAL: 'Internal',
+    };
+
+    const providerName = providerNames[provider] || provider;
+    return networkCode ? `${providerName} (${networkCode})` : providerName;
+  };
+
   const formatDate = (dateString: string): string => {
     return new Date(`${dateString}T00:00:00Z`).toLocaleDateString(locale, {
       weekday: 'long',
@@ -112,10 +135,14 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             </div>
           </div>
 
-          {/* Crypto Amount - Only show for crypto deposits/withdrawals */}
+          {/* Currency Amount - Label depends on fiat vs crypto */}
           {(transaction.category === 'DEPOSIT' || transaction.category === 'WITHDRAWAL') && (
             <div className="flex justify-between items-center gap-4">
-              <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.cryptoAmount')}</span>
+              <span className="text-base sm:text-lg text-[#8c8c8c]">
+                {transaction.network_code === 'FIAT' || transaction.provider === 'D24'
+                  ? t('tx.amountInCurrency') || 'Amount'
+                  : t('tx.cryptoAmount')}
+              </span>
               <span className="text-base sm:text-lg font-medium text-white text-right">
                 {transaction.crypto}
               </span>
@@ -197,7 +224,7 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
             <div className="flex justify-between items-center gap-4">
               <span className="text-base sm:text-lg text-[#8c8c8c]">{t('tx.provider')}</span>
               <span className="text-base sm:text-lg font-medium text-white text-right">
-                Crypto Network
+                {getProviderLabel(transaction.provider, transaction.network_code)}
               </span>
             </div>
           )}

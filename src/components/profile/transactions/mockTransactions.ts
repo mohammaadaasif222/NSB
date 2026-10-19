@@ -78,6 +78,10 @@ export interface Transaction {
   tx_amount?: string;
   /** Blockchain transaction hash for explorer links */
   tx_hash?: string | null;
+  /** Payment provider (D24, COINSPAID, CRYPTOMUS, INTERNAL, etc.) */
+  provider?: string | null;
+  /** Network code (FIAT, BTC, ETH, BEP20, TRC20, etc.) */
+  network_code?: string | null;
 }
 
 /** The filter chips, in the order the design lists them. */
@@ -252,6 +256,8 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
         tx_type: tx.type,
         tx_amount: cryptoAmount,
         tx_hash: tx.tx_hash || null,
+        provider: tx.provider || null,
+        network_code: tx.network_code || null,
       };
     });
 
