@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type FC } from 'react';
 import { toast } from 'react-toastify';
 import api from '@/services/api';
+import { useSeonGuard } from '@/context/SeonGuardContext';
 
 export interface D24PaymentDetails {
   deposit_id: string;
@@ -78,6 +79,8 @@ const D24EmbeddedDeposit: FC<Props> = ({
   const [error, setError] = useState<string | null>(null);
   const hasCalledHostedCheckout = useRef(false);
   const hasApiBeenCalled = useRef(false);
+  // On a 428 it asks for the one-time code and resubmits.
+  const { run } = useSeonGuard();
 
   // Fetch payment details on mount
   useEffect(() => {
@@ -86,14 +89,12 @@ const D24EmbeddedDeposit: FC<Props> = ({
         setLoading(true);
         setError(null);
 
-        const response = await api.post<D24PaymentDetails>(
-          '/wallet/deposit/d24/embedded',
-          {
-            amount,
-            currency,
-            payment_method: paymentMethod,
-            payer,
-          }
+        const response = await run((headers) =>
+          api.post<D24PaymentDetails>(
+            '/wallet/deposit/d24/embedded',
+            { amount, currency, payment_method: paymentMethod, payer },
+            { headers }
+          )
         );
 
         if (!response.data) {

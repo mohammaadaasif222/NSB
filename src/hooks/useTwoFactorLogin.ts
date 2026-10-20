@@ -3,6 +3,8 @@ import { jwtDecode } from 'jwt-decode';
 
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import { resendLoginOtp, verifyLoginOtp } from '@/services/auth';
 import { analytics, failureReason } from '@/services/analytics';
 import { isPlatformRole } from '@/constants/roles';
@@ -35,12 +37,13 @@ const isDeadChallenge = (message: string | undefined): boolean =>
 export const useTwoFactorLogin = ({ onLoggedIn, onRestart }: Options) => {
   const { login } = useAuth();
   const { t } = useTranslation();
+  const { run } = useSeonGuard();
 
   /** Resolves false for a rejected code, so the boxes clear for another try. */
   const verify = async (pending: TwoFactorChallenge, code: string): Promise<boolean> => {
     const tracked = pending.channel === 'email' ? 'mail' : 'phone';
     try {
-      const res = await verifyLoginOtp(pending.challenge, code);
+      const res = await run((headers) => verifyLoginOtp(pending.challenge, code, headers));
       const token = res?.data?.token;
       if (!res?.success || !token) {
         toast.error(res?.message || t('loginModal.failed'));
@@ -65,6 +68,7 @@ export const useTwoFactorLogin = ({ onLoggedIn, onRestart }: Options) => {
       onLoggedIn();
       return true;
     } catch (err) {
+      if (isStepUpCancelled(err)) return false;
       const apiErr = err as ApiError;
       toast.error(apiErr?.message || t('loginModal.failed'));
       analytics.auth.loginFailed(tracked, failureReason(apiErr));

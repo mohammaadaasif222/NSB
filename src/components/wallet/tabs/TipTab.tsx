@@ -3,6 +3,8 @@ import { toast } from 'react-toastify';
 import Button from '@/components/ui/Button';
 import { useTranslation } from '@/context/I18nContext';
 import { useWallet } from '@/context/WalletContext';
+import { useMe } from '@/context/UserContext';
+import AccountReviewGate from '@/components/risk/AccountReviewGate';
 import WalletField, { WALLET_INPUT, WALLET_PILL } from '../shared/WalletField';
 import api from '@/services/api';
 import { getPinStatus } from '@/services/transactionPin';
@@ -27,9 +29,13 @@ const currencySign = (code: string, locale: string): string => {
  * The transaction PIN is asked for once the player has set one, as on
  * withdrawals.
  */
-const TipTab: FC = () => {
+const TipTab: FC<{ onLeave?: () => void }> = ({ onLeave }) => {
   const { t, locale } = useTranslation();
   const { summary, currencies } = useWallet();
+  const { me, refresh: refreshMe } = useMe();
+  // Shown once a tip is refused for a lock, with the step that lifts it.
+  const [restricted, setRestricted] = useState(false);
+  const restriction = me?.account_restriction;
 
   // The amount is in the player's fiat, as the design's "$0.00 … USD": their
   // display currency when that is a fiat, dollars otherwise.
@@ -81,12 +87,21 @@ const TipTab: FC = () => {
       setUsername('');
       setPin('');
     } catch (error: any) {
+      if (error?.errors?.code === 'ACCOUNT_RESTRICTED') {
+        setRestricted(true);
+        void refreshMe();
+        return;
+      }
       const message = error?.message || t('acct.wallet.tipFailed');
       toast.error(message);
     } finally {
       setLoading(false);
     }
   };
+
+  if (restricted && restriction?.blocked_actions.includes('TIP')) {
+    return <AccountReviewGate restriction={restriction} onChanged={refreshMe} onLeave={onLeave} />;
+  }
 
   return (
     <form onSubmit={submit} noValidate>

@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
 import { useMe } from '@/context/UserContext';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import { createD24Deposit, getDisplayCurrencies, getD24PaymentMethods } from '@/services/wallet';
 import { useChangellyBuyCrypto } from '@/hooks/useChangellyBuyCrypto';
 import api from '@/services/api';
@@ -40,6 +42,8 @@ const EMBEDDED_METHODS = ['PIX', 'IX', 'ACH', 'SEPA', 'NEFT', 'WIRE', 'FASTER_PA
 
 const LocalCurrencyTab: FC = () => {
   const { t } = useTranslation();
+  // On a 428 it asks for the one-time code and resubmits.
+  const { run } = useSeonGuard();
   const { me } = useMe();
   const { offers, loadingOffers, fetchOffers, createOrder, creatingOrder } = useChangellyBuyCrypto();
 
@@ -467,11 +471,9 @@ const LocalCurrencyTab: FC = () => {
     try {
       console.log('[D24-CARD] Requesting hosted checkout from D24...');
 
-      const res = await createD24Deposit({
-        amount,
-        currency,
-        payment_method: selectedMethod,
-      });
+      const res = await run((headers) =>
+        createD24Deposit({ amount, currency, payment_method: selectedMethod }, headers)
+      );
 
       console.log('[D24-CARD] Response received:', res);
 
@@ -510,6 +512,10 @@ const LocalCurrencyTab: FC = () => {
         setDepositMode(null);
       }
     } catch (err: any) {
+      if (isStepUpCancelled(err)) {
+        setDepositMode(null);
+        return;
+      }
       console.error('[D24-CARD] ✗ Error:', err);
 
       let errorMessage = 'Payment request failed. Please try again.';

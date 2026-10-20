@@ -107,8 +107,10 @@ export const getDepositAddress = (
  * Create a D24 fiat deposit. Returns a DepositAddress with the D24 checkout URL.
  * D24 handles currency/payment method selection on their hosted page.
  */
-export const createD24Deposit = (input: { amount: string; currency: string; payment_method?: string }) =>
-  apiService.post<DepositAddress>('/wallet/deposit/d24', input);
+export const createD24Deposit = (
+  input: { amount: string; currency: string; payment_method?: string },
+  headers: Record<string, string> = {}
+) => apiService.post<DepositAddress>('/wallet/deposit/d24', input, { headers });
 
 export const getDepositHistory = (page = 1, limit = 10) =>
   apiService.get<Paged<DepositHistoryItem>>('/wallet/deposit/history', { page, limit });

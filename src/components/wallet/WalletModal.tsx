@@ -80,7 +80,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
         {active === 'deposit' && <DepositTab onLeave={onClose} />}
         {active === 'withdraw' && <WithdrawTab onLeave={onClose} />}
         {active === 'buy' && <BuyCryptoTab />}
-        {active === 'tip' && <TipTab />}
+        {active === 'tip' && <TipTab onLeave={onClose} />}
         {active === 'redeem' && <RedeemTab />}
       </div>
     </GlassDialog>

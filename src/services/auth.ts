@@ -28,15 +28,16 @@ export const resendSignupOtp = (identifier: string) =>
   apiService.post('/auth/resend-otp', { identifier });
 
 
-export const loginWithPassword = async (identifier: string, password: string) =>
-  apiService.post<Partial<LoginResponseData> & Partial<TwoFactorChallengeData>>('/auth/user/login', {
-    identifier,
-    password: await encryptPassword(password),
-  });
+export const loginWithPassword = async (identifier: string, password: string, headers?: Record<string, string>) =>
+  apiService.post<Partial<LoginResponseData> & Partial<TwoFactorChallengeData>>(
+    '/auth/user/login',
+    { identifier, password: await encryptPassword(password) },
+    { headers }
+  );
 
 /** Second step of a two-factor login: the code that was emailed or texted. */
-export const verifyLoginOtp = (challenge: string, code: string) =>
-  apiService.post<LoginResponseData>('/auth/login/verify-otp', { challenge, code });
+export const verifyLoginOtp = (challenge: string, code: string, headers?: Record<string, string>) =>
+  apiService.post<LoginResponseData>('/auth/login/verify-otp', { challenge, code }, { headers });
 
 export const resendLoginOtp = (challenge: string) =>
   apiService.post('/auth/login/resend-otp', { challenge });

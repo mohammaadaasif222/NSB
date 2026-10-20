@@ -1,10 +1,13 @@
 import { useState, type FC } from 'react';
+import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
 
 import api from '@/services/api';
 import { resendSignupOtp, verifySignupOtp } from '@/services/auth';
 import { useTranslation } from '@/context/I18nContext';
 import { useSupportChat } from '@/context/SupportChatContext';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import { apiErrorMessage } from '@/lib/apiError';
 import { SUPPORT_EMAIL } from '@/constants/auth';
 import type { AccountRestriction } from '@/types/profile';
@@ -13,6 +16,8 @@ interface Props {
   restriction: AccountRestriction;
   /** Re-reads /users/me, so a lifted lock disappears. */
   onChanged: () => Promise<unknown> | void;
+  /** Closes the wallet before going to the verification page. */
+  onLeave?: () => void;
 }
 
 /**
@@ -20,13 +25,34 @@ interface Props {
  * answer 7). A lock the player can lift themselves, a disposable email,
  * becomes a short verify-a-real-email form instead.
  */
-const AccountReviewGate: FC<Props> = ({ restriction, onChanged }) => {
+const AccountReviewGate: FC<Props> = ({ restriction, onChanged, onLeave }) => {
   const { t } = useTranslation();
+  const router = useRouter();
   const { intercomEnabled, openIntercom } = useSupportChat();
+  const { run } = useSeonGuard();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // A lock that a KYC level lifts: say which, and go there.
+  if (restriction.requires === 'KYC') {
+    return (
+      <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100 space-y-3">
+        <p>{restriction.message}</p>
+        <button
+          type="button"
+          onClick={() => {
+            onLeave?.();
+            void router.push('/profile?section=verification');
+          }}
+          className="text-xs font-semibold underline"
+        >
+          {t('acct.risk.verifyIdentity')}
+        </button>
+      </div>
+    );
+  }
 
   if (restriction.requires !== 'CONTACT_VERIFICATION') {
     return (
@@ -50,12 +76,12 @@ const AccountReviewGate: FC<Props> = ({ restriction, onChanged }) => {
     if (!next) return;
     setBusy(true);
     try {
-      await api.patch('/users/me', { email: next });
+      await run((headers) => api.patch('/users/me', { email: next }, { headers }));
       await resendSignupOtp(next);
       setSentTo(next);
       toast.success(t('acct.risk.codeSent'));
     } catch (err) {
-      toast.error(apiErrorMessage(err, t('acct.risk.verifyFailed')));
+      if (!isStepUpCancelled(err)) toast.error(apiErrorMessage(err, t('acct.risk.verifyFailed')));
     } finally {
       setBusy(false);
     }

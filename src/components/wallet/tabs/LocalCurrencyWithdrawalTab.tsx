@@ -4,14 +4,20 @@ import api from '@/services/api';
 import { useMe } from '@/context/UserContext';
 import { getDisplayCurrencies } from '@/services/wallet';
 import { getPinStatus } from '@/services/transactionPin';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 
 interface Props {
   /** True when the error was an account lock the parent now shows. */
   onRestricted?: (err: unknown) => boolean;
+  /** True when the error was a KYC refusal the parent now shows. */
+  onKycRefused?: (err: unknown) => boolean;
 }
 
-const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted }) => {
+const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) => {
   const { me } = useMe();
+  // On a 428 it asks for the one-time code and resubmits.
+  const { run } = useSeonGuard();
 
   // Currencies & Methods
   const [currencies, setCurrencies] = useState<any[]>([]);
@@ -182,7 +188,7 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted }) => {
 
       const currency = currencies.find((c) => c.code === selectedCurrency);
 
-      const response = await api.post('/wallet/withdrawal/d24/cashout', {
+      const response = await run((headers) => api.post('/wallet/withdrawal/d24/cashout', {
         amount,
         currency: selectedCurrency,
         country: currency?.country_code || 'BR',
@@ -196,7 +202,7 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted }) => {
         document_type: documentType,
         email: me?.email,
         ...(pinRequired ? { transaction_pin: pin } : {}),
-      }) as any;
+      }, { headers })) as any;
 
       console.log('[Withdrawal] Cashout created:', response.data);
       setCashoutId(response.data.cashout_id);
@@ -204,7 +210,9 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted }) => {
       toast.success('Withdrawal request submitted. It will be paid once it has been reviewed.');
     } catch (err: any) {
       console.error('[Withdrawal] Error:', err);
+      if (isStepUpCancelled(err)) return;
       if (onRestricted?.(err)) return;
+      if (onKycRefused?.(err)) return;
       const errorMsg = err?.response?.data?.message || err?.message || 'Failed to submit withdrawal';
       toast.error(errorMsg);
     } finally {

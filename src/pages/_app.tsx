@@ -77,10 +77,10 @@ export default function App({ Component, pageProps }: AppProps) {
                       {/* Outside AuthModalProvider so the auth modals' "Need help?"
                       can open the support messenger. */}
                       <SupportChatProvider>
+                        {/* Outside AuthModalProvider so the login and sign-up modals can
+                        reach the step-up prompt through useSeonGuard() too. */}
+                        <SeonGuardProvider>
                         <AuthModalProvider>
-                          {/* Innermost, so the step-up prompt renders above every page
-                          and any component can reach it through useSeonGuard(). */}
-                          <SeonGuardProvider>
                             {/* Inside AuthModalProvider: hearting signed out opens login. */}
                             <FavouritesProvider>
                               {/* Above the pages, so sportsbook picks survive moving between them. */}
@@ -89,7 +89,6 @@ export default function App({ Component, pageProps }: AppProps) {
                                 <Component {...pageProps} />
                               </BetslipProvider>
                             </FavouritesProvider>
-                          </SeonGuardProvider>
                           <SeonAgentWarmup />
                           <RegionRestrictedModal />
                           <RouteLoader />
@@ -111,6 +110,7 @@ export default function App({ Component, pageProps }: AppProps) {
                             theme="dark"
                           />
                         </AuthModalProvider>
+                        </SeonGuardProvider>
                       </SupportChatProvider>
                     </CurrencyConversionProvider>
                   </WalletProvider>

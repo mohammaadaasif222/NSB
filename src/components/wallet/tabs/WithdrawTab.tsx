@@ -62,6 +62,14 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
     return true;
   };
   const { convertToDisplayCurrency } = useCurrencyConversion();
+  /** A KYC refusal from the local-currency form, shown as the same gate as crypto. */
+  const onKycRefused = (err: unknown): boolean => {
+    const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
+    if (!kycError) return false;
+    setKycRefusal({ code: kycError.code, message: kycError.message });
+    void fetchKyc();
+    return true;
+  };
 
   const displayCurrency = summary?.preferences.active_currency ?? 'USD';
   const [withdrawalType, setWithdrawalType] = useState<WithdrawalType>('crypto');
@@ -378,7 +386,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   }
 
   if (withdrawLocked && restriction) {
-    return <AccountReviewGate restriction={restriction} onChanged={refreshMe} />;
+    return <AccountReviewGate restriction={restriction} onChanged={refreshMe} onLeave={onLeave} />;
   }
 
   return (
@@ -599,7 +607,29 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
         </>
       )}
 
-      {withdrawalType === 'local' && <LocalCurrencyWithdrawalTab onRestricted={onRestricted} />}
+      {withdrawalType === 'local' &&
+        (isHardGated ? (
+          <KycGateNotice
+            profile={kyc}
+            action="withdraw"
+            onLeave={onLeave}
+            apiMessage={kycRefusal?.message}
+            errorCode={kycRefusal?.code ?? (gatedByLevel ? 'TIER_UPGRADE_REQUIRED' : undefined)}
+          />
+        ) : (
+          <>
+            {softRefusal && (
+              <KycGateNotice
+                profile={kyc}
+                action="withdraw"
+                onLeave={onLeave}
+                apiMessage={softRefusal.message}
+                errorCode={softRefusal.code}
+              />
+            )}
+            <LocalCurrencyWithdrawalTab onRestricted={onRestricted} onKycRefused={onKycRefused} />
+          </>
+        ))}
     </div>
   );
 };

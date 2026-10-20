@@ -350,6 +350,7 @@ export const en = {
   'acct.risk.reviewTitle': 'Account under review',
   'acct.risk.underReview': 'Your account is under review. Please contact customer service.',
   'acct.risk.contactSupport': 'Contact customer service',
+  'acct.risk.verifyIdentity': 'Verify your identity',
   'acct.risk.close': 'Close',
   'acct.risk.emailPlaceholder': 'Your email address',
   'acct.risk.sendCode': 'Send code',
