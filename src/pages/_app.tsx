@@ -18,6 +18,8 @@ import RouteLoader from '@/components/RouteLoader';
 import AuthGate from '@/components/AuthGate';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import Analytics from '@/components/analytics/Analytics';
+import Seo from '@/components/seo/Seo';
+import { SITE_NAME } from '@/constants/site';
 import IntercomLauncher from '@/components/support/IntercomLauncher';
 import { EventListeners } from '@/components/listeners/EventListeners';
 import { useTracking } from '@/hooks/useTracking';
@@ -33,16 +35,23 @@ function AppHead() {
   const { t } = useTranslation();
 
   return (
-    <Head>
-      <title>ROLLUCK</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="description" content={t('misc.meta.description')} />
-      <link
-        rel="icon"
-        type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%232563eb'/><text x='32' y='44' font-family='system-ui,sans-serif' font-size='34' font-weight='800' fill='%23ffffff' text-anchor='middle'>R</text></svg>"
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#05070d" />
+        <meta property="og:site_name" content={SITE_NAME} />
+      </Head>
+      <Seo
+        title={t('misc.meta.homeTitle')}
+        bareTitle
+        description={t('misc.meta.description')}
+        hreflang={false}
       />
-    </Head>
+    </>
   );
 }
 

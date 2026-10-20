@@ -32,7 +32,7 @@ const TournamentCard: FC<{ tournament: Tournament }> = ({ tournament }) => {
       <div className="relative aspect-[370/222]">
         <Image
           src={tournament.image}
-          alt=""
+          alt={t(tournament.title)}
           fill
           sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 90vw"
           className="object-cover"

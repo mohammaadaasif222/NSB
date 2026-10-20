@@ -1,5 +1,4 @@
 import { useMemo, useState, type FC } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
@@ -14,6 +13,7 @@ import PromotionFilters, {
 } from '@/components/promotions/PromotionFilters';
 import { useTranslation } from '@/context/I18nContext';
 import { TOURNAMENTS } from '@/constants/tournaments';
+import Seo from '@/components/seo/Seo';
 
 /**
  * Tournaments.
@@ -36,9 +36,7 @@ const TournamentsPage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('nav.tournaments')} · ROLLUCK`}</title>
-      </Head>
+      <Seo title={t('nav.tournaments')} />
 
       {/* The design's 1548px content column, the same one the lobby and the
           footer use; `--u` (set by PlayerLayout) scales it on a narrower

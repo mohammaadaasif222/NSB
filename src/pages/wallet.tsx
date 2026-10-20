@@ -1,5 +1,4 @@
 import { useMemo, useState, type FC } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import ProtectedRoute from '@/routes/ProtectedRoute';
@@ -10,6 +9,7 @@ import WalletAssets, { type WalletAsset } from '@/components/wallet/page/WalletA
 import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
+import Seo from '@/components/seo/Seo';
 
 /** My Assets, as the design lists them: the coins a player can hold. */
 const ASSETS = [
@@ -71,9 +71,6 @@ const WalletPage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('profile.wallet')} · ROLLUCK`}</title>
-      </Head>
 
       {/* The design's 1548 column, 40 under the bar (24 more than the
           shell's own 16). */}
@@ -102,10 +99,17 @@ const WalletPage: FC = () => {
   );
 };
 
-const ProtectedWalletPage: FC = () => (
-  <ProtectedRoute>
-    <WalletPage />
-  </ProtectedRoute>
-);
+const ProtectedWalletPage: FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <Seo title={t('profile.wallet')} />
+      <ProtectedRoute>
+        <WalletPage />
+      </ProtectedRoute>
+    </>
+  );
+};
 
 export default ProtectedWalletPage;

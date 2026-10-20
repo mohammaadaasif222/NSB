@@ -1,5 +1,4 @@
 import { useEffect, useState, type FC } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
@@ -10,6 +9,7 @@ import ReferralTable from '@/components/profile/referral/ReferralTable';
 import { fetchReferrals, type ReferralRow } from '@/components/profile/referral/mockReferral';
 import { fetchAffiliateSummary, type AffiliateSummary } from '@/components/affiliate/mockAffiliate';
 import { useTranslation } from '@/context/I18nContext';
+import Seo from '@/components/seo/Seo';
 
 /**
  * The Affiliate page.
@@ -44,9 +44,7 @@ const AffiliatePage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('aff.title')} · ROLLUCK`}</title>
-      </Head>
+      <Seo title={t('aff.title')} />
 
       {/* 1544 is the design's content column — the same one the footer and the
           account area use, so the three line up down the page. */}

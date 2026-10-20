@@ -14,7 +14,12 @@ const Casino: FC<LobbyProps> = (props) => {
   const { t } = useTranslation();
 
   return (
-    <Lobby {...props} title={`${t('nav.casino')} — ROLLUCK`} basePath="/casino" variant="casino" />
+    <Lobby
+      {...props}
+      seo={{ title: t('nav.casino'), description: t('misc.meta.casino'), path: '/casino' }}
+      basePath="/casino"
+      variant="casino"
+    />
   );
 };
 

@@ -8,7 +8,7 @@
  */
 export const LEGAL = {
   brand: 'Rolluck',
-  site: 'rolluck.com',
+  site: 'staging.xyzlife.top',
   /** The company that operates the site and holds the licence. */
   entity: '[Operator legal entity]',
   registeredAddress: '[Registered office address]',
@@ -17,9 +17,9 @@ export const LEGAL = {
   /** The law the terms are governed by, and whose courts hear disputes. */
   jurisdiction: '[Governing jurisdiction]',
   minimumAge: 18,
-  supportEmail: 'support@rolluck.com',
+  supportEmail: 'support@xyzlife.top',
   /** Where privacy requests go. Point at a dedicated mailbox if one exists. */
-  privacyEmail: 'support@rolluck.com',
+  privacyEmail: 'support@xyzlife.top',
   /** Shown as "Last updated" on both documents (ISO date; formatted per locale). */
   updated: '2026-09-19',
 } as const;

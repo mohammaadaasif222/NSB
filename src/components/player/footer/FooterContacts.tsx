@@ -45,7 +45,7 @@ const FooterContacts: FC = () => {
                 {t(label)}
               </span>
               {/* The design's 20px only once the row has room for it. Narrower
-                than that, 20px runs `bugbounty@rolluck.com` into an ellipsis,
+                than that, 20px runs `bugbounty@xyzlife.top` into an ellipsis,
                 and half an address is worse than a small one. */}
               <span className="truncate text-base leading-6 font-semibold text-[#f0f1f5] transition-colors group-hover:text-white @7xl:text-xl @7xl:leading-7 @7xl:tracking-[-0.4px]">
                 {email}

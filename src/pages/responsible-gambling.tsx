@@ -1,6 +1,5 @@
 import { useEffect, useState, type FC, type ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { ChevronLeftIcon } from '@/components/icons';
 
@@ -19,6 +18,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { fetchHelpCenterServer } from '@/services/helpCenter.server';
 import { RAIL_COLUMN, RESPONSIBLE_SECTIONS } from '@/components/responsible/ResponsibleNav';
 import { entryFor, type HelpItem, type HelpSectionKey } from '@/components/responsible/helpContent';
+import Seo from '@/components/seo/Seo';
 
 /**
  * Responsible Gambling.
@@ -100,10 +100,7 @@ const ResponsibleGamblingPage: FC<Props> = ({ sections, items }) => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('rgc.title')} · ROLLUCK`}</title>
-        <meta name="description" content={t('rgc.metaDescription')} />
-      </Head>
+      <Seo title={t('rgc.title')} description={t('rgc.metaDescription')} />
 
       {/* Same 1544 frame as the account area — 228 of rail, a 48px channel and
           a 1268 panel — so moving between Profile and this section does not

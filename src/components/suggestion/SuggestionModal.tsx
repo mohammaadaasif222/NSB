@@ -23,7 +23,7 @@ const CATEGORIES: { value: Category; label: TranslationKey }[] = [
 ];
 
 /** Where suggestions land — the inbox the rail's button always mailed. */
-const INBOX = 'support@rolluck.com';
+const INBOX = 'support@xyzlife.top';
 const TITLE_ID = 'suggestion-title';
 
 /**

@@ -1,5 +1,4 @@
 import { useMemo, useState, type FC } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import LobbyBanner from '@/components/player/LobbyBanner';
@@ -15,6 +14,7 @@ import SportsToolbar, {
 import { useTranslation } from '@/context/I18nContext';
 import { SPORT_CHIPS, isSportKey, sportHref, type FixtureSport } from '@/constants/sportsbook';
 import { ALL_FIXTURES, LOBBY_SECTIONS } from '@/services/sportsbook.sample';
+import Seo from '@/components/seo/Seo';
 
 /** Every competition in the sample, for the league picker. */
 const LEAGUES = [...new Set(ALL_FIXTURES.map((f) => f.league))].sort();
@@ -46,9 +46,7 @@ const Sports: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('nav.sports')} — ROLLUCK`}</title>
-      </Head>
+      <Seo title={t('nav.sports')} />
 
       <div className="mx-auto max-w-[1548px] px-1 pt-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:pt-[calc(var(--u)*4)]">
         <LobbyBanner />

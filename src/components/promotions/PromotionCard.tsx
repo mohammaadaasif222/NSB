@@ -25,7 +25,7 @@ const PromotionCard: FC<{ promo: PromotionItem }> = ({ promo }) => {
             track. Without artwork the design's own picture stands in. */}
         <img
           src={promo.image_url || promoArt.src}
-          alt=""
+          alt={promo.title}
           // A dead or deleted upload falls back to the default artwork.
           onError={(e) => {
             if (!e.currentTarget.src.endsWith(promoArt.src)) {

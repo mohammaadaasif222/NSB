@@ -1,6 +1,5 @@
 import type { FC } from 'react';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -14,10 +13,14 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { DICE_SLUG } from '@/constants/dice';
-import { categoryForEnum, categoryHref, playHref } from '@/constants/games';
+import { categoryForEnum, categoryHref, gameHref, playHref } from '@/constants/games';
+import { absoluteUrl, localizedPath } from '@/constants/site';
 import { fetchDiceConfig, fetchGameBySlug, fetchShelfList } from '@/services/games.server';
+import { markUnavailable } from '@/utils/unavailable.server';
 import { fetchWinnerGames } from '@/services/myGames.server';
 import type { DiceConfig, Game } from '@/types';
+import Seo, { type JsonLd } from '@/components/seo/Seo';
+import { gameDescription } from '@/components/seo/gameMeta';
 
 interface Props {
   game: Game | null;
@@ -97,14 +100,12 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
 };
 
 const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   if (!game) {
     return (
       <PlayerLayout>
-        <Head>
-          <title>ROLLUCK</title>
-        </Head>
+        <Seo title="ROLLUCK" bareTitle noindex />
         <div className="p-6 max-w-lg mx-auto text-center space-y-4">
           <p className="text-sm text-slate-400">
             {failed ? t('dash.catalogueUnavailable') : t('game.notFound')}
@@ -125,11 +126,32 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames }) => {
   const categoryTitle = def ? t(def.titleKey) : null;
   const Icon = def ? CATEGORY_ICONS[def.key] : null;
 
+  const crumbs = [
+    { name: t('nav.home'), path: '/' },
+    ...(def && categoryTitle ? [{ name: categoryTitle, path: categoryHref(def.key) }] : []),
+    { name: game.title, path: gameHref(game.slug) },
+  ];
+  const breadcrumbs: JsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((crumb, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: crumb.name,
+      item: absoluteUrl(localizedPath(locale, crumb.path)),
+    })),
+  };
+
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${game.title} · ROLLUCK`}</title>
-      </Head>
+      <Seo
+        title={game.title}
+        description={gameDescription(t, game)}
+        image={game.image_url}
+        imageAlt={game.title}
+        card={game.image_url ? 'summary' : 'summary_large_image'}
+        jsonLd={breadcrumbs}
+      />
 
       <div className="mx-auto max-w-[1600px] space-y-6 pb-2 sm:space-y-8">
         {/* Breadcrumb */}
@@ -235,7 +257,7 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({ params, req, res }) => {
   const raw = params?.slug;
   const slug = Array.isArray(raw) ? raw[0] : raw;
   if (!slug) {
@@ -249,6 +271,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
   }
 
   if (lookup.status === 'failed') {
+    markUnavailable({ req, res });
     return { props: { game: null, related: [], failed: true, dice: null, winnerGames: [] } };
   }
 
