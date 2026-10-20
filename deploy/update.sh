@@ -32,7 +32,7 @@ for i in $(seq 1 30); do
   sleep 2
 done
 docker compose ps --format 'table {{.Service}}\t{{.Status}}'
-docker compose logs api --since 3m 2>&1 | grep -E 'Migrations applied|successfully started|Error' | tail -3
+docker compose logs api --since 3m 2>&1 | grep -E 'Migrations applied|successfully started|Error' | tail -3 || true
 
 echo "== 5/5 cleaning up old images"
 docker image prune -f >/dev/null
