@@ -1,0 +1,18 @@
+# One public origin: /api/* goes to NestJS, everything else to Next.js.
+# Caddy obtains and renews the TLS certificate automatically for a real domain.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	handle /api/* {
+		reverse_proxy api:4000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+# www.<domain> redirects to the bare domain so there is one canonical address.
+www.{$SITE_ADDRESS} {
+	redir https://{$SITE_ADDRESS}{uri} permanent
+}

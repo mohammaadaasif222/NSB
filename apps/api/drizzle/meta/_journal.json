@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791297346542,
+      "tag": "0000_petite_fixer",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791345743161,
+      "tag": "0001_ancient_true_believers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791556030371,
+      "tag": "0002_bitter_ares",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791561415756,
+      "tag": "0003_ambitious_tana_nile",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791562456277,
+      "tag": "0004_black_mantis",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791705812467,
+      "tag": "0005_unknown_madame_masque",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791813441339,
+      "tag": "0006_shocking_azazel",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792042505644,
+      "tag": "0007_productive_frank_castle",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792157949694,
+      "tag": "0008_easy_namora",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792162531121,
+      "tag": "0009_lean_shinobi_shaw",
+      "breakpoints": true
+    }
+  ]
+}

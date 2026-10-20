@@ -1,0 +1,28 @@
+{
+  "name": "nsb",
+  "private": true,
+  "description": "Noida Super Bazaar - Phase-1 Wedding MVP",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run build -w @nsb/shared && concurrently -k -n shared,api,web -c gray,cyan,magenta \"npm run dev -w @nsb/shared\" \"npm run start:dev -w @nsb/api\" \"npm run dev -w @nsb/web\"",
+    "build": "npm run build -w @nsb/shared && npm run build -w @nsb/api && npm run build -w @nsb/web",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:generate": "npm run db:generate -w @nsb/api",
+    "db:migrate": "npm run db:migrate -w @nsb/api",
+    "db:seed": "npm run db:seed -w @nsb/api",
+    "typecheck": "npm run build -w @nsb/shared && tsc -p apps/api/tsconfig.json --noEmit && tsc -p apps/web/tsconfig.json --noEmit",
+    "test": "npm run test -w @nsb/api",
+    "db:seed:demo": "npm run db:seed:demo -w @nsb/api --"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "typescript": "~6.0.2"
+  }
+}

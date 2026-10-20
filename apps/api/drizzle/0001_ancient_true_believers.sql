@@ -1,0 +1,5 @@
+ALTER TABLE "banners" ALTER COLUMN "image_url" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "banners" ADD COLUMN "subheading" text;--> statement-breakpoint
+ALTER TABLE "categories" ADD COLUMN "parent_id" uuid;--> statement-breakpoint
+ALTER TABLE "categories" ADD CONSTRAINT "categories_parent_id_categories_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."categories"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "categories_parent_idx" ON "categories" USING btree ("parent_id");

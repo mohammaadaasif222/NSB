@@ -1,0 +1,1 @@
+ALTER TABLE "enquiries" ADD COLUMN "event_type" text;

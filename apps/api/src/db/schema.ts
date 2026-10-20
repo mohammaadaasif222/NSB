@@ -1,0 +1,224 @@
+import { sql } from 'drizzle-orm';
+import {
+  type AnyPgColumn,
+  boolean,
+  date,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  real,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
+import type { ImageStorageProvider, ListingDetails, ListingStatus, ListingVideo, QuickInfoItem, ReviewSource, ServiceGroup } from '@nsb/shared';
+
+const id = () => uuid('id').primaryKey().defaultRandom();
+const createdAt = () =>
+  timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
+const updatedAt = () =>
+  timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date());
+
+export const adminUsers = pgTable('admin_users', {
+  id: id(),
+  email: text('email').notNull().unique(),
+  name: text('name').notNull(),
+  passwordHash: text('password_hash').notNull(),
+  createdAt: createdAt(),
+});
+
+export const categories = pgTable(
+  'categories',
+  {
+    id: id(),
+    /** Null for top-level categories (shown on the home page). Two levels only. */
+    parentId: uuid('parent_id').references((): AnyPgColumn => categories.id, {
+      onDelete: 'restrict',
+    }),
+    name: text('name').notNull(),
+    slug: text('slug').notNull().unique(),
+    description: text('description'),
+    imageUrl: text('image_url'),
+    /** Inactive categories (and everything under them) are hidden from the public site. */
+    isActive: boolean('is_active').notNull().default(true),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('categories_parent_idx').on(t.parentId)],
+);
+
+export const listings = pgTable(
+  'listings',
+  {
+    id: id(),
+    categoryId: uuid('category_id')
+      .notNull()
+      .references(() => categories.id, { onDelete: 'restrict' }),
+    name: text('name').notNull(),
+    slug: text('slug').notNull().unique(),
+    area: text('area').notNull(),
+    locality: text('locality'),
+    address: text('address'),
+    shortDescription: text('short_description').notNull(),
+    about: text('about').notNull().default(''),
+    services: text('services')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    quickInfo: jsonb('quick_info')
+      .$type<QuickInfoItem[]>()
+      .notNull()
+      .default([]),
+    /** Answers to the category's structured form (LISTING_FORMS in @nsb/shared). Empty for
+     *  listings that use free-form quick_info; non-empty ones show key info built from it. */
+    details: jsonb('details')
+      .$type<ListingDetails>()
+      .notNull()
+      .default({}),
+    /** YouTube videos and Shorts for the listing's Videos section. */
+    videos: jsonb('videos')
+      .$type<ListingVideo[]>()
+      .notNull()
+      .default([]),
+    /** Vendor's email for enquiry alerts; null when the vendor has none. Never exposed publicly. */
+    email: text('email'),
+    phone: text('phone'),
+    /** Off: enquiries for this listing go to NSB only. Existing listings keep getting leads. */
+    notifyVendor: boolean('notify_vendor').notNull().default(true),
+    coverImageUrl: text('cover_image_url'),
+    isFeatured: boolean('is_featured').notNull().default(false),
+    /** live | draft | hidden; only live listings are public. Existing listings stay live. */
+    status: text('status').$type<ListingStatus>().notNull().default('live'),
+    /** Headed service sections, shown after the plain services list. */
+    serviceGroups: jsonb('service_groups').$type<ServiceGroup[]>().notNull().default([]),
+    /** The vendor's Google rating as typed in by the admin; not synced from Google. */
+    googleRating: real('google_rating'),
+    googleReviewCount: integer('google_review_count'),
+    googleMapsUrl: text('google_maps_url'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('listings_category_idx').on(t.categoryId)],
+);
+
+/** Reviews the NSB team adds to a listing: copied from Google or given by customers. */
+export const listingReviews = pgTable(
+  'listing_reviews',
+  {
+    id: id(),
+    listingId: uuid('listing_id')
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    authorName: text('author_name').notNull(),
+    rating: integer('rating').notNull(),
+    text: text('text').notNull().default(''),
+    reviewDate: date('review_date', { mode: 'string' }),
+    source: text('source').$type<ReviewSource>().notNull(),
+    isVerified: boolean('is_verified').notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [index('listing_reviews_listing_idx').on(t.listingId)],
+);
+
+export const listingImages = pgTable(
+  'listing_images',
+  {
+    id: id(),
+    listingId: uuid('listing_id')
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    url: text('url').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index('listing_images_listing_idx').on(t.listingId)],
+);
+
+export const banners = pgTable(
+  'banners',
+  {
+    id: id(),
+    imageUrl: text('image_url'),
+    /** Optional phone-sized image; the site falls back to image_url. */
+    mobileImageUrl: text('mobile_image_url'),
+    heading: text('heading').notNull(),
+    subheading: text('subheading'),
+    ctaLabel: text('cta_label'),
+    ctaLink: text('cta_link'),
+    isActive: boolean('is_active').notNull().default(true),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('banners_active_order_idx').on(t.isActive, t.sortOrder)],
+);
+
+/**
+ * Images uploaded through the admin panel, keyed by the URL that records store. Tells the API
+ * which provider holds each file so it can delete it once no record uses it. URLs not in this
+ * table (seeded /images paths, pasted links) are never deleted.
+ */
+export const media = pgTable('media', {
+  id: id(),
+  url: text('url').notNull().unique(),
+  provider: text('provider').$type<ImageStorageProvider>().notNull(),
+  /** Cloudinary public_id, Firebase object name, or the path under UPLOAD_DIR. */
+  storageKey: text('storage_key').notNull(),
+  /** Cloudinary cloud name or Firebase bucket holding the file (null for local), so it is
+   *  never deleted with another account's credentials. */
+  account: text('account'),
+  mimeType: text('mime_type').notNull(),
+  bytes: integer('bytes').notNull(),
+  width: integer('width').notNull(),
+  height: integer('height').notNull(),
+  createdAt: createdAt(),
+});
+
+/** Admin-editable site settings, one row per key. */
+export const settings = pgTable('settings', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedAt: updatedAt(),
+});
+
+/**
+ * Leads. Listing and category names are copied at submission time so the lead
+ * keeps its source even if the listing is later edited or deleted.
+ */
+export const enquiries = pgTable(
+  'enquiries',
+  {
+    id: id(),
+    listingId: uuid('listing_id').references(() => listings.id, {
+      onDelete: 'set null',
+    }),
+    listingName: text('listing_name').notNull(),
+    categoryId: uuid('category_id').references(() => categories.id, {
+      onDelete: 'set null',
+    }),
+    categoryName: text('category_name').notNull(),
+    name: text('name').notNull(),
+    mobile: text('mobile').notNull(),
+    message: text('message').notNull(),
+    preferredDate: date('preferred_date', { mode: 'string' }).notNull(),
+    budget: text('budget'),
+    /** e.g. Wedding, Engagement; optional. */
+    eventType: text('event_type'),
+    /** The lead's email, if they gave one. */
+    email: text('email'),
+    createdAt: createdAt(),
+    /** First opened by an admin; null while unread (drives the unread badge). */
+    readAt: timestamp('read_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('enquiries_created_idx').on(t.createdAt),
+    index('enquiries_unread_idx').on(t.createdAt).where(sql`${t.readAt} is null`),
+    index('enquiries_category_idx').on(t.categoryId),
+    index('enquiries_listing_idx').on(t.listingId),
+  ],
+);

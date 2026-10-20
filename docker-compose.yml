@@ -1,0 +1,24 @@
+# Local development: Postgres only. Apps run natively with `npm run dev`.
+# Own project name so it never collides with the deploy/ stack (project "nsb").
+name: nsb-dev
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: nsb-postgres
+    environment:
+      POSTGRES_USER: nsb
+      POSTGRES_PASSWORD: nsb
+      POSTGRES_DB: nsb
+    ports:
+      - "5434:5432"
+    volumes:
+      - nsb-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nsb -d nsb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  nsb-pgdata:

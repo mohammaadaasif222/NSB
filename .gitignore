@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+
+# Local image storage (dev)
+apps/api/uploads/
+
+# Local notes with credentials; never ship or commit
+cred.txt
