@@ -1,10 +1,11 @@
-import { useMemo, useRef, useState, type FC, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FC, type FormEvent } from 'react';
 import { toast } from 'react-toastify';
 import Button from '@/components/ui/Button';
 import { useTranslation } from '@/context/I18nContext';
 import { useWallet } from '@/context/WalletContext';
 import WalletField, { WALLET_INPUT, WALLET_PILL } from '../shared/WalletField';
 import api from '@/services/api';
+import { getPinStatus } from '@/services/transactionPin';
 
 /** The display currency's own sign — "$" for USD, "€" for EUR. */
 const currencySign = (code: string, locale: string): string => {
@@ -23,8 +24,8 @@ const currencySign = (code: string, locale: string): string => {
  * Tip another player: the amount large across the top, the wallet it comes
  * out of, the player's username, and Send Tip — as the design draws it.
  *
- * There is no tipping endpoint yet, so sending says so rather than pretending
- * to have sent. The form is complete; wiring it is the submit handler alone.
+ * The transaction PIN is asked for once the player has set one, as on
+ * withdrawals.
  */
 const TipTab: FC = () => {
   const { t, locale } = useTranslation();
@@ -41,8 +42,17 @@ const TipTab: FC = () => {
   const [amount, setAmount] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pinRequired, setPinRequired] = useState(false);
+  const [pin, setPin] = useState('');
   const amountRef = useRef<HTMLInputElement>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
+  const pinRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    void getPinStatus()
+      .then((s) => setPinRequired(!!s?.enabled))
+      .catch(() => undefined);
+  }, []);
 
   const submit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
@@ -54,16 +64,22 @@ const TipTab: FC = () => {
       usernameRef.current?.focus();
       return;
     }
+    if (pinRequired && !/^\d{4,6}$/.test(pin)) {
+      pinRef.current?.focus();
+      return;
+    }
 
     setLoading(true);
     try {
       await api.post('/tips/send', {
         recipient_username: username.trim(),
         amount: Number.parseFloat(amount),
+        ...(pinRequired ? { transaction_pin: pin } : {}),
       });
       toast.success(t('acct.wallet.tipSent'));
       setAmount('');
       setUsername('');
+      setPin('');
     } catch (error: any) {
       const message = error?.message || t('acct.wallet.tipFailed');
       toast.error(message);
@@ -105,6 +121,25 @@ const TipTab: FC = () => {
             />
           </div>
         </WalletField>
+
+        {pinRequired && (
+          <WalletField htmlFor="tip-pin" label={t('acct.pin.label')}>
+            <div className={WALLET_PILL}>
+              <input
+                ref={pinRef}
+                id="tip-pin"
+                type="password"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={6}
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder={t('acct.pin.placeholder')}
+                className={`${WALLET_INPUT} tracking-[0.4em]`}
+              />
+            </div>
+          </WalletField>
+        )}
       </div>
 
       <Button type="submit" fullWidth className="mt-[25px]" disabled={loading}>
