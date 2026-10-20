@@ -476,6 +476,12 @@
   "profile.twoFactorShort": "2FA",
   "profile.enable2fa": "Activer la 2FA",
   "profile.linkedAccounts": "Comptes liés",
+  "profile.link.linked": "Compte {provider} associé",
+  "profile.link.unlinked": "Compte {provider} dissocié",
+  "profile.link.failed": "Impossible d’associer votre compte {provider}. Veuillez réessayer.",
+  "profile.link.unlinkFailed": "Impossible de dissocier votre compte {provider}. Veuillez réessayer.",
+  "profile.link.loadFailed": "Impossible de charger vos comptes liés",
+  "profile.link.comingSoon": "L’association {provider} arrive bientôt",
   "profile.id": "ID",
   "profile.editAvatar": "Changer la photo",
   "profile.language": "Langue",
@@ -1539,5 +1545,10 @@
   "misc.realtime.random": "Aléatoire : {value}",
   "misc.realtime.issueTitle": "Problème de connexion en temps réel",
   "misc.realtime.issueBody": "Le message de test n'est pas arrivé dans les 5 secondes",
-  "misc.realtime.issueHint": "Soketi ne transmet peut-être pas correctement les événements"
+  "misc.realtime.issueHint": "Soketi ne transmet peut-être pas correctement les événements",
+  "roll.bonusTitle": "Mises du bonus",
+  "roll.bonusBlurb": "Les fonds bonus deviennent de l’argent réel que vous pouvez retirer une fois leur condition de mise remplie.",
+  "roll.table.bonus": "Bonus",
+  "roll.bonusAmount": "Bonus de {amount}",
+  "roll.bonusExpires": "Expire le {date}"
 }

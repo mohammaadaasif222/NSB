@@ -476,6 +476,12 @@
   "profile.twoFactorShort": "2FA",
   "profile.enable2fa": "Activar 2FA",
   "profile.linkedAccounts": "Cuentas vinculadas",
+  "profile.link.linked": "Cuenta de {provider} vinculada",
+  "profile.link.unlinked": "Cuenta de {provider} desvinculada",
+  "profile.link.failed": "No se pudo vincular tu cuenta de {provider}. Inténtalo de nuevo.",
+  "profile.link.unlinkFailed": "No se pudo desvincular tu cuenta de {provider}. Inténtalo de nuevo.",
+  "profile.link.loadFailed": "No se pudieron cargar tus cuentas vinculadas",
+  "profile.link.comingSoon": "La vinculación con {provider} llegará pronto",
   "profile.id": "ID",
   "profile.editAvatar": "Cambiar imagen",
   "profile.language": "Idioma",
@@ -1539,5 +1545,10 @@
   "misc.realtime.random": "Aleatorio: {value}",
   "misc.realtime.issueTitle": "Problema con la conexión en tiempo real",
   "misc.realtime.issueBody": "El mensaje de prueba no llegó en 5 segundos",
-  "misc.realtime.issueHint": "Es posible que Soketi no esté entregando los eventos correctamente"
+  "misc.realtime.issueHint": "Es posible que Soketi no esté entregando los eventos correctamente",
+  "roll.bonusTitle": "Apuestas del bono",
+  "roll.bonusBlurb": "Los fondos del bono se convierten en dinero real que puedes retirar cuando completas su requisito de apuesta.",
+  "roll.table.bonus": "Bono",
+  "roll.bonusAmount": "Bono de {amount}",
+  "roll.bonusExpires": "Caduca el {date}"
 }

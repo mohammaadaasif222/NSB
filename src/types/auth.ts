@@ -102,3 +102,19 @@ export interface SessionEndedData {
   ended: true;
   was_current: boolean;
 }
+
+export type LinkProvider = 'google' | 'telegram';
+
+export interface LinkedAccount {
+  provider: string;
+  display_name: string | null;
+  linked_at: string;
+}
+
+export interface LinkedAccountListData {
+  accounts: LinkedAccount[];
+}
+
+export interface LinkedAccountData {
+  account: LinkedAccount;
+}

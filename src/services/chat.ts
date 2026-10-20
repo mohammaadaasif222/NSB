@@ -33,6 +33,14 @@ export interface MentionRef {
   name: string;
 }
 
+export interface ReplyRef {
+  id: string;
+  user_id: string;
+  name: string;
+  body: string;
+  kind: MessageKind;
+}
+
 export interface VoiceClip {
   url: string;
   duration_ms: number;
@@ -48,6 +56,7 @@ export interface ChatMessage {
   kind?: MessageKind;
   voice?: VoiceClip | null;
   mentions?: MentionRef[];
+  reply_to?: ReplyRef | null;
   at: string;
   reactions?: ReactionSummary;
 }
@@ -100,6 +109,12 @@ export const CHAT_MESSAGE_EVENT = 'chat.message';
 /** The socket event a reaction count change arrives on. */
 export const CHAT_REACTION_EVENT = 'chat.reaction';
 
+export const CHAT_DELETE_EVENT = 'chat.delete';
+
+export interface ChatDeletion {
+  message_id: string;
+}
+
 /**
  * What the composer assumes before the first history call answers.
  *
@@ -130,9 +145,13 @@ export const fetchChatHistory = async (
  */
 export const sendChatMessage = async (
   body: string,
-  room: ChatRoom = DEFAULT_CHAT_ROOM
+  room: ChatRoom = DEFAULT_CHAT_ROOM,
+  replyTo: string | null = null
 ): Promise<ChatMessage | null> => {
-  const res = await apiService.post<ChatMessage>(`/chat/${room}/messages`, { body });
+  const res = await apiService.post<ChatMessage>(`/chat/${room}/messages`, {
+    body,
+    reply_to: replyTo,
+  });
   return res?.success && res.data ? res.data : null;
 };
 
@@ -159,15 +178,38 @@ export const setChatReaction = async (
 export const sendVoiceMessage = async (
   clip: Blob,
   durationMs: number,
-  room: ChatRoom = DEFAULT_CHAT_ROOM
+  room: ChatRoom = DEFAULT_CHAT_ROOM,
+  replyTo: string | null = null
 ): Promise<ChatMessage | null> => {
   const form = new FormData();
   form.append('file', clip, 'voice.webm');
   form.append('duration_ms', String(Math.round(durationMs)));
+  if (replyTo) form.append('reply_to', replyTo);
 
   const res = await apiService.post<ChatMessage>(`/chat/${room}/voice`, form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 
   return res?.success && res.data ? res.data : null;
+};
+
+export const deleteChatMessage = async (
+  messageId: string,
+  room: ChatRoom = DEFAULT_CHAT_ROOM
+): Promise<boolean> => {
+  const res = await apiService.delete<ChatDeletion>(`/chat/${room}/messages/${messageId}`);
+  return Boolean(res?.success);
+};
+
+export const CHAT_REPORT_REASON_MAX = 200;
+
+export const reportChatMessage = async (
+  messageId: string,
+  reason: string,
+  room: ChatRoom = DEFAULT_CHAT_ROOM
+): Promise<boolean> => {
+  const res = await apiService.post<{ id: string }>(`/chat/${room}/messages/${messageId}/report`, {
+    reason,
+  });
+  return Boolean(res?.success);
 };

@@ -476,6 +476,12 @@
   "profile.twoFactorShort": "2FA",
   "profile.enable2fa": "Включить 2FA",
   "profile.linkedAccounts": "Связанные аккаунты",
+  "profile.link.linked": "Аккаунт {provider} привязан",
+  "profile.link.unlinked": "Аккаунт {provider} отвязан",
+  "profile.link.failed": "Не удалось привязать аккаунт {provider}. Попробуйте ещё раз.",
+  "profile.link.unlinkFailed": "Не удалось отвязать аккаунт {provider}. Попробуйте ещё раз.",
+  "profile.link.loadFailed": "Не удалось загрузить связанные аккаунты",
+  "profile.link.comingSoon": "Привязка {provider} скоро появится",
   "profile.id": "ID",
   "profile.editAvatar": "Изменить фото",
   "profile.language": "Язык",
@@ -1539,5 +1545,10 @@
   "misc.realtime.random": "Случайное число: {value}",
   "misc.realtime.issueTitle": "Проблема с соединением в реальном времени",
   "misc.realtime.issueBody": "Тестовое сообщение не пришло в течение 5 секунд",
-  "misc.realtime.issueHint": "Возможно, Soketi доставляет события некорректно"
+  "misc.realtime.issueHint": "Возможно, Soketi доставляет события некорректно",
+  "roll.bonusTitle": "Отыгрыш бонусов",
+  "roll.bonusBlurb": "Бонусные средства становятся реальными деньгами, доступными для вывода, после выполнения условий отыгрыша.",
+  "roll.table.bonus": "Бонус",
+  "roll.bonusAmount": "Бонус {amount}",
+  "roll.bonusExpires": "Истекает {date}"
 }

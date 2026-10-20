@@ -65,13 +65,13 @@ export interface GoogleAuth {
   configured: boolean;
 }
 
-export function useGoogleAuth(): GoogleAuth {
-  const { login } = useAuth();
-  const { t } = useTranslation();
-  // Handles a fraud step-up on a risky sign-in.
-  const { run } = useSeonGuard();
+export interface GooglePopupHandlers {
+  onToken: (accessToken: string) => void;
+  onFailure?: (reason: string) => void;
+}
 
-  const [loading, setLoading] = useState(false);
+export function useGooglePopup({ onToken, onFailure }: GooglePopupHandlers): () => void {
+  const { t } = useTranslation();
   const [ready, setReady] = useState(false);
   const client = useRef<TokenClient | null>(null);
 
@@ -101,6 +101,59 @@ export function useGoogleAuth(): GoogleAuth {
 
     return () => script.removeEventListener('load', onLoad);
   }, []);
+
+  const open = useCallback((): void => {
+    if (!CLIENT_ID) {
+      toast.info(t('auth.googleNotConfigured'));
+      return;
+    }
+
+    const oauth2 = window.google?.accounts?.oauth2;
+    if (!ready || !oauth2) {
+      toast.info(t('auth.googleUnavailable'));
+      return;
+    }
+
+    // Rebuilt per click: a token client holds the callback, and reusing a
+    // stale one would resolve into a previous render's closure.
+    client.current = oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: 'openid email profile',
+      callback: (response) => {
+        if (!response.access_token) {
+          // A closed popup reports "access_denied" — not worth a red toast, but
+          // worth counting: it is the most common way a Google signup is lost.
+          onFailure?.(response.error ?? 'popup_dismissed');
+
+          if (response.error && response.error !== 'access_denied') {
+            toast.error(t('auth.googleFailed'));
+          }
+          return;
+        }
+        onToken(response.access_token);
+      },
+      error_callback: (error) => {
+        onFailure?.(error?.type ?? 'popup_error');
+
+        if (error?.type !== 'popup_closed') {
+          toast.error(t('auth.googleFailed'));
+        }
+      },
+    });
+
+    client.current.requestAccessToken();
+  }, [ready, onToken, onFailure, t]);
+
+  return open;
+}
+
+export function useGoogleAuth(): GoogleAuth {
+  const { login } = useAuth();
+  const { t } = useTranslation();
+  // Handles a fraud step-up on a risky sign-in.
+  const { run } = useSeonGuard();
+
+  const [loading, setLoading] = useState(false);
 
   /** Trade the Google token for one of ours, then sign in. */
   const exchange = useCallback(
@@ -175,47 +228,18 @@ export function useGoogleAuth(): GoogleAuth {
     [login, t, run]
   );
 
-  const signIn = useCallback((): void => {
-    if (!CLIENT_ID) {
-      toast.info(t('auth.googleNotConfigured'));
-      return;
-    }
+  const onToken = useCallback(
+    (accessToken: string): void => {
+      void exchange(accessToken);
+    },
+    [exchange]
+  );
 
-    const oauth2 = window.google?.accounts?.oauth2;
-    if (!ready || !oauth2) {
-      toast.info(t('auth.googleUnavailable'));
-      return;
-    }
+  const onFailure = useCallback((reason: string): void => {
+    analytics.auth.loginFailed('google', reason);
+  }, []);
 
-    // Rebuilt per click: a token client holds the callback, and reusing a
-    // stale one would resolve into a previous render's closure.
-    client.current = oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: 'openid email profile',
-      callback: (response) => {
-        if (!response.access_token) {
-          // A closed popup reports "access_denied" — not worth a red toast, but
-          // worth counting: it is the most common way a Google signup is lost.
-          analytics.auth.loginFailed('google', response.error ?? 'popup_dismissed');
-
-          if (response.error && response.error !== 'access_denied') {
-            toast.error(t('auth.googleFailed'));
-          }
-          return;
-        }
-        void exchange(response.access_token);
-      },
-      error_callback: (error) => {
-        analytics.auth.loginFailed('google', error?.type ?? 'popup_error');
-
-        if (error?.type !== 'popup_closed') {
-          toast.error(t('auth.googleFailed'));
-        }
-      },
-    });
-
-    client.current.requestAccessToken();
-  }, [ready, exchange, t]);
+  const signIn = useGooglePopup({ onToken, onFailure });
 
   return { signIn, loading, configured: Boolean(CLIENT_ID) };
 }

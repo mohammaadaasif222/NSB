@@ -39,10 +39,10 @@ const ChatRules: FC<Props> = ({ open, onClose }) => {
     };
 
     document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey, true);
     return () => {
       document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey, true);
     };
   }, [open, onClose]);
 

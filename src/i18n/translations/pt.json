@@ -476,6 +476,12 @@
   "profile.twoFactorShort": "2FA",
   "profile.enable2fa": "Ativar 2FA",
   "profile.linkedAccounts": "Contas associadas",
+  "profile.link.linked": "Conta {provider} associada",
+  "profile.link.unlinked": "Conta {provider} desassociada",
+  "profile.link.failed": "Não foi possível associar sua conta {provider}. Tente novamente.",
+  "profile.link.unlinkFailed": "Não foi possível desassociar sua conta {provider}. Tente novamente.",
+  "profile.link.loadFailed": "Não foi possível carregar suas contas associadas",
+  "profile.link.comingSoon": "A associação com {provider} chega em breve",
   "profile.id": "ID",
   "profile.editAvatar": "Alterar imagem",
   "profile.language": "Idioma",
@@ -1539,5 +1545,10 @@
   "misc.realtime.random": "Aleatório: {value}",
   "misc.realtime.issueTitle": "Problema na ligação em tempo real",
   "misc.realtime.issueBody": "A mensagem de teste não chegou no prazo de 5 segundos",
-  "misc.realtime.issueHint": "O Soketi pode não estar a entregar os eventos corretamente"
+  "misc.realtime.issueHint": "O Soketi pode não estar a entregar os eventos corretamente",
+  "roll.bonusTitle": "Apostas do bônus",
+  "roll.bonusBlurb": "O saldo de bônus vira dinheiro real que você pode sacar depois que o requisito de aposta é cumprido.",
+  "roll.table.bonus": "Bônus",
+  "roll.bonusAmount": "Bônus de {amount}",
+  "roll.bonusExpires": "Expira em {date}"
 }

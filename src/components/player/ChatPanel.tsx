@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -17,6 +18,7 @@ import EmojiPopover from '@/components/player/EmojiPopover';
 import ChatRoomPicker from '@/components/player/ChatRoomPicker';
 import ChatRules from '@/components/player/ChatRules';
 import VoiceMessage from '@/components/player/VoiceMessage';
+import ChatReportDialog from '@/components/player/ChatReportDialog';
 import MentionSuggest, {
   matchParticipants,
   readMentionQuery,
@@ -25,8 +27,10 @@ import {
   ArrowUpIcon,
   ChatIcon,
   CloseIcon,
+  FlagIcon,
   InfoIcon,
   MicIcon,
+  ReplyIcon,
   SmileIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
@@ -38,6 +42,7 @@ import {
   type ChatRoom,
   type MentionRef,
   type ReactionKind,
+  type ReplyRef,
 } from '@/services/chat';
 import type { ConnectionState } from '@/services/realtimeService';
 
@@ -53,6 +58,10 @@ const AVATAR_TONES = [
 ];
 
 const GROUPING_WINDOW_MS = 120_000;
+
+const FLASH_MS = 1400;
+
+const NOTICE_MS = 4000;
 
 const toneFor = (userId: string): string => {
   let hash = 0;
@@ -133,10 +142,61 @@ const MessageBody: FC<{ message: ChatMessage; meId?: string }> = ({ message, meI
   );
 };
 
+const HoverAction: FC<{
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+  children: ReactNode;
+}> = ({ label, onClick, danger, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={label}
+    title={label}
+    className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500 opacity-0 transition hover:bg-white/5 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100 ${
+      danger ? 'hover:text-rose-400' : 'hover:text-slate-200'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+const ReplyQuote: FC<{
+  reply: ReplyRef;
+  meId?: string;
+  onJump: (messageId: string) => void;
+}> = ({ reply, meId, onJump }) => {
+  const { t } = useTranslation();
+  const toMe = reply.user_id === meId;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onJump(reply.id)}
+      className={`mb-1 block w-full max-w-full rounded-md border-s-2 bg-white/[0.04] px-2 py-1 text-start transition-colors hover:bg-white/[0.07] ${
+        toMe ? 'border-[#f9d028]' : 'border-[#4a9eff]/70'
+      }`}
+    >
+      <span
+        className={`block truncate text-[11px] font-semibold ${
+          toMe ? 'text-[#f9d028]' : 'text-[#4a9eff]'
+        }`}
+      >
+        {reply.name}
+      </span>
+      <span className="block truncate text-[11px] text-slate-400">
+        {reply.kind === 'voice' ? t('chat.voiceMessage') : reply.body}
+      </span>
+    </button>
+  );
+};
+
 const ReactionBar: FC<{
   message: ChatMessage;
   onReact: (messageId: string, reaction: ReactionKind) => void;
-}> = ({ message, onReact }) => {
+  onReply: (message: ChatMessage) => void;
+  onReport: (message: ChatMessage) => void;
+}> = ({ message, onReact, onReply, onReport }) => {
   const { t } = useTranslation();
   const reactions = message.reactions ?? NO_REACTIONS;
 
@@ -166,7 +226,58 @@ const ReactionBar: FC<{
     <div className="-ms-1.5 mt-1 flex items-center gap-0.5">
       {button('up', t('chat.like'), reactions.up, <ThumbsUpIcon size={13} />)}
       {button('down', t('chat.dislike'), reactions.down, <ThumbsDownIcon size={13} />)}
+      <span className="ms-1 flex items-center gap-0.5">
+        <HoverAction label={t('chat.reply')} onClick={() => onReply(message)}>
+          <ReplyIcon size={13} />
+        </HoverAction>
+        <HoverAction label={t('chat.report')} onClick={() => onReport(message)} danger>
+          <FlagIcon size={12} />
+        </HoverAction>
+      </span>
     </div>
+  );
+};
+
+const CONFIRM_WINDOW_MS = 3000;
+
+const DeleteButton: FC<{
+  messageId: string;
+  onDelete: (messageId: string) => void;
+}> = ({ messageId, onDelete }) => {
+  const { t } = useTranslation();
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    if (!confirming) return;
+    const timer = setTimeout(() => setConfirming(false), CONFIRM_WINDOW_MS);
+    return () => clearTimeout(timer);
+  }, [confirming]);
+
+  if (confirming) {
+    return (
+      <button
+        type="button"
+        onClick={() => onDelete(messageId)}
+        onBlur={() => setConfirming(false)}
+        aria-label={t('chat.delete')}
+        className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-medium text-rose-400 transition-colors hover:bg-rose-500/25"
+      >
+        <TrashIcon size={11} />
+        {t('chat.deleteConfirm')}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setConfirming(true)}
+      aria-label={t('chat.delete')}
+      title={t('chat.delete')}
+      className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500 opacity-0 transition hover:bg-white/5 hover:text-rose-400 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+    >
+      <TrashIcon size={12} />
+    </button>
   );
 };
 
@@ -174,17 +285,41 @@ interface RowProps {
   message: ChatMessage;
   mine: boolean;
   grouped: boolean;
+  flashing: boolean;
   meId?: string;
   onReact: (messageId: string, reaction: ReactionKind) => void;
+  onDelete: (messageId: string) => void;
+  onReply: (message: ChatMessage) => void;
+  onReport: (message: ChatMessage) => void;
+  onJump: (messageId: string) => void;
 }
 
-const MessageRow: FC<RowProps> = ({ message, mine, grouped, meId, onReact }) => {
+const MessageRow: FC<RowProps> = ({
+  message,
+  mine,
+  grouped,
+  flashing,
+  meId,
+  onReact,
+  onDelete,
+  onReply,
+  onReport,
+  onJump,
+}) => {
+  const { t } = useTranslation();
   const isVoice = message.kind === 'voice' && message.voice;
+  const reply = message.reply_to ?? null;
+  const spacing = grouped && !reply ? 'mt-1' : 'mt-3';
+  const flash = flashing ? 'bg-[#4a9eff]/10' : '';
 
   if (mine) {
     return (
-      <li className={`flex flex-col items-end ${grouped ? 'mt-1' : 'mt-3'}`}>
+      <li
+        id={`chat-msg-${message.id}`}
+        className={`group -mx-2 flex flex-col items-end rounded-lg px-2 transition-colors duration-500 ${spacing} ${flash}`}
+      >
         <div className="max-w-[85%]">
+          {reply && <ReplyQuote reply={reply} meId={meId} onJump={onJump} />}
           {isVoice ? (
             <VoiceMessage clip={message.voice!} mine />
           ) : (
@@ -193,23 +328,34 @@ const MessageRow: FC<RowProps> = ({ message, mine, grouped, meId, onReact }) => 
             </div>
           )}
         </div>
-        <time dateTime={message.at} className="mt-1 pe-1 text-[10px] text-slate-500">
-          {timeOf(message.at)}
-        </time>
+        <div className="mt-1 flex items-center gap-1.5 pe-1">
+          <HoverAction label={t('chat.reply')} onClick={() => onReply(message)}>
+            <ReplyIcon size={12} />
+          </HoverAction>
+          <DeleteButton messageId={message.id} onDelete={onDelete} />
+          <time dateTime={message.at} className="text-[10px] text-slate-500">
+            {timeOf(message.at)}
+          </time>
+        </div>
       </li>
     );
   }
 
   return (
-    <li className={`flex gap-2.5 ${grouped ? 'mt-1' : 'mt-3'}`}>
-      {grouped ? (
+    <li
+      id={`chat-msg-${message.id}`}
+      className={`group -mx-2 flex gap-2.5 rounded-lg px-2 transition-colors duration-500 ${spacing} ${
+        flash || (meId && reply?.user_id === meId ? 'bg-[#f9d028]/[0.05]' : '')
+      }`}
+    >
+      {grouped && !reply ? (
         <span className="h-8 w-8 flex-shrink-0" aria-hidden="true" />
       ) : (
         <Avatar message={message} />
       )}
 
       <div className="min-w-0 flex-1">
-        {!grouped && (
+        {(!grouped || reply) && (
           <div className="flex items-baseline gap-2">
             <span className="truncate text-[13px] font-semibold text-[#4a9eff]">
               {message.name}
@@ -217,6 +363,12 @@ const MessageRow: FC<RowProps> = ({ message, mine, grouped, meId, onReact }) => 
             <time dateTime={message.at} className="flex-shrink-0 text-[10px] text-slate-500">
               {timeOf(message.at)}
             </time>
+          </div>
+        )}
+
+        {reply && (
+          <div className="mt-1">
+            <ReplyQuote reply={reply} meId={meId} onJump={onJump} />
           </div>
         )}
 
@@ -228,7 +380,7 @@ const MessageRow: FC<RowProps> = ({ message, mine, grouped, meId, onReact }) => 
           <MessageBody message={message} meId={meId} />
         )}
 
-        <ReactionBar message={message} onReact={onReact} />
+        <ReactionBar message={message} onReact={onReact} onReply={onReply} onReport={onReport} />
       </div>
     </li>
   );
@@ -273,6 +425,8 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
     send,
     react,
     sendVoice,
+    remove,
+    report,
   } = useGroupChat(room);
 
   const recorder = useVoiceRecorder();
@@ -284,11 +438,55 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
   const [mentionText, setMentionText] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [reportTarget, setReportTarget] = useState<ChatMessage | null>(null);
+  const [flashId, setFlashId] = useState<string | null>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pinned = useRef(true);
+
+  useEffect(() => {
+    setReplyingTo(null);
+    setReportTarget(null);
+  }, [room]);
+
+  useEffect(() => {
+    if (replyingTo && !messages.some((message) => message.id === replyingTo.id)) {
+      setReplyingTo(null);
+    }
+  }, [messages, replyingTo]);
+
+  useEffect(() => {
+    if (!flashId) return undefined;
+    const timer = setTimeout(() => setFlashId(null), FLASH_MS);
+    return () => clearTimeout(timer);
+  }, [flashId]);
+
+  useEffect(() => {
+    if (!info) return undefined;
+    const timer = setTimeout(() => setInfo(null), NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [info]);
+
+  const startReply = useCallback((message: ChatMessage): void => {
+    setReplyingTo(message);
+    setEmojiOpen(false);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
+  const jumpTo = useCallback((messageId: string): void => {
+    const row = document.getElementById(`chat-msg-${messageId}`);
+    if (!row) return;
+    row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setFlashId(messageId);
+  }, []);
+
+  const closeReport = useCallback(() => setReportTarget(null), []);
+
+  const onReported = useCallback(() => setInfo(t('chat.reportSent')), [t]);
 
   const trackPinned = (): void => {
     const list = listRef.current;
@@ -378,6 +576,12 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
   );
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === 'Escape' && !event.defaultPrevented && replyingTo && mentionAt === null) {
+      event.preventDefault();
+      setReplyingTo(null);
+      return;
+    }
+
     if (mentionAt === null || suggestions.length === 0) return;
 
     if (event.key === 'ArrowDown') {
@@ -420,12 +624,16 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
     if (!canSend) return;
 
     const body = draft;
+    const quoted = replyingTo;
     setDraft('');
     setEmojiOpen(false);
     setMentionAt(null);
+    setReplyingTo(null);
 
-    void send(body).then((accepted) => {
-      if (!accepted) setDraft((current) => (current.length === 0 ? body : current));
+    void send(body, quoted?.id ?? null).then((accepted) => {
+      if (accepted) return;
+      setDraft((current) => (current.length === 0 ? body : current));
+      if (quoted) setReplyingTo((current) => current ?? quoted);
     });
   };
 
@@ -441,7 +649,9 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
         setNotice(t('chat.voiceTooShort'));
         return;
       }
-      void sendVoice(result.clip, result.durationMs);
+      const quoted = replyingTo;
+      setReplyingTo(null);
+      void sendVoice(result.clip, result.durationMs, quoted?.id ?? null);
     });
   };
 
@@ -490,6 +700,13 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
       <div className="relative flex min-h-0 flex-1 flex-col">
         <ChatRules open={rulesOpen} onClose={() => setRulesOpen(false)} />
 
+        <ChatReportDialog
+          message={reportTarget}
+          onClose={closeReport}
+          onSubmit={report}
+          onReported={onReported}
+        />
+
         {loading && messages.length === 0 ? (
           <Empty message={t('chat.loading')} />
         ) : messages.length === 0 ? (
@@ -507,8 +724,13 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
                   message={message}
                   mine={message.user_id === me?.id}
                   grouped={grouped}
+                  flashing={flashId === message.id}
                   meId={me?.id}
                   onReact={react}
+                  onDelete={remove}
+                  onReply={startReply}
+                  onReport={setReportTarget}
+                  onJump={jumpTo}
                 />
               ))}
             </ul>
@@ -520,6 +742,12 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
       {(error || notice || micMessage) && (
         <p role="alert" className="px-4 pb-1 text-[10px] text-rose-400">
           {error ?? notice ?? micMessage}
+        </p>
+      )}
+
+      {info && (
+        <p role="status" className="px-4 pb-1 text-[10px] text-emerald-400">
+          {info}
         </p>
       )}
 
@@ -540,6 +768,29 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
             onPick={applyMention}
             onActive={setMentionIndex}
           />
+        )}
+
+        {replyingTo && (
+          <div className="mb-2 flex items-center gap-2 rounded-lg border-s-2 border-[#4a9eff] bg-slate-900 px-3 py-1.5">
+            <ReplyIcon size={13} className="flex-shrink-0 text-[#4a9eff]" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[11px] font-semibold text-[#4a9eff]">
+                {t('chat.replyingTo', { name: replyingTo.name })}
+              </p>
+              <p className="truncate text-[11px] text-slate-400">
+                {replyingTo.kind === 'voice' ? t('chat.voiceMessage') : replyingTo.body}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReplyingTo(null)}
+              aria-label={t('chat.cancelReply')}
+              title={t('chat.cancelReply')}
+              className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <CloseIcon size={13} />
+            </button>
+          </div>
         )}
 
         {recording ? (

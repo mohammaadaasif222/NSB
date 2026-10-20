@@ -476,6 +476,12 @@
   "profile.twoFactorShort": "2FA",
   "profile.enable2fa": "2FA'yı etkinleştir",
   "profile.linkedAccounts": "Bağlı Hesaplar",
+  "profile.link.linked": "{provider} hesabı bağlandı",
+  "profile.link.unlinked": "{provider} hesabının bağlantısı kaldırıldı",
+  "profile.link.failed": "{provider} hesabınız bağlanamadı. Lütfen tekrar deneyin.",
+  "profile.link.unlinkFailed": "{provider} hesabınızın bağlantısı kaldırılamadı. Lütfen tekrar deneyin.",
+  "profile.link.loadFailed": "Bağlı hesaplarınız yüklenemedi",
+  "profile.link.comingSoon": "{provider} bağlantısı yakında geliyor",
   "profile.id": "Kimlik",
   "profile.editAvatar": "Resmi değiştir",
   "profile.language": "Dil",
@@ -1539,5 +1545,10 @@
   "misc.realtime.random": "Rastgele: {value}",
   "misc.realtime.issueTitle": "Gerçek zamanlı bağlantı sorunu",
   "misc.realtime.issueBody": "Test mesajı 5 saniye içinde ulaşmadı",
-  "misc.realtime.issueHint": "Soketi olayları düzgün iletmiyor olabilir"
+  "misc.realtime.issueHint": "Soketi olayları düzgün iletmiyor olabilir",
+  "roll.bonusTitle": "Bonus çevrimi",
+  "roll.bonusBlurb": "Bonus bakiyesi, çevrim şartı tamamlandığında çekebileceğiniz gerçek paraya dönüşür.",
+  "roll.table.bonus": "Bonus",
+  "roll.bonusAmount": "{amount} bonus",
+  "roll.bonusExpires": "Bitiş: {date}"
 }

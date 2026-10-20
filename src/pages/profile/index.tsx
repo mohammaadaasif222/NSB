@@ -246,7 +246,9 @@ const ProfilePage: FC = () => {
         <ChangeEmailModal
           currentEmail={me.email}
           onClose={closeModal}
-          onSaved={(email) => updateMe({ email })}
+          onSaved={(email) =>
+            updateMe(email === me.email ? { email } : { email, is_email_verified: false })
+          }
         />
       )}
 

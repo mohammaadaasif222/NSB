@@ -1,6 +1,10 @@
 import apiService from './api';
 import { encryptPassword } from '@/utils/crypto';
+import type { TelegramAuthData } from '@/hooks/useTelegramAuth';
 import type {
+  LinkedAccountData,
+  LinkedAccountListData,
+  LinkProvider,
   LoginResponseData,
   SessionEndedData,
   SessionListData,
@@ -50,3 +54,15 @@ export const endSession = (id: string) =>
   apiService.delete<SessionEndedData>(`/auth/sessions/${encodeURIComponent(id)}`);
 
 export const endAllSessions = () => apiService.post<{ sessions_ended: number }>('/auth/logout-all');
+
+export const listLinkedAccounts = () =>
+  apiService.get<LinkedAccountListData>('/auth/linked-accounts');
+
+export const linkGoogleAccount = (token: string) =>
+  apiService.post<LinkedAccountData>('/auth/linked-accounts', { type: 'google', token });
+
+export const linkTelegramAccount = (telegram: TelegramAuthData) =>
+  apiService.post<LinkedAccountData>('/auth/linked-accounts', { type: 'telegram', telegram });
+
+export const unlinkAccount = (provider: LinkProvider) =>
+  apiService.delete<{ unlinked: true }>(`/auth/linked-accounts/${encodeURIComponent(provider)}`);
