@@ -9,6 +9,8 @@ import { isPlatformRole } from '@/constants/roles';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import { trackSignupComplete } from '@/utils/events';
+import { clearReferral, referralField } from '@/lib/referralCapture';
+import { analytics } from '@/services/analytics';
 
 import type { ApiError, JwtPayload, LoginResponseData } from '@/types';
 
@@ -134,7 +136,7 @@ export function useTelegramAuth(): TelegramAuth {
         const response = await run((headers) =>
           apiService.post<LoginResponseData>(
             '/auth/social/login',
-            { type: 'telegram', telegram: data },
+            { type: 'telegram', telegram: data, ...referralField() },
             { headers }
           )
         );
@@ -166,6 +168,10 @@ export function useTelegramAuth(): TelegramAuth {
         // a social signup never reaches the funnel at all.
         if (response?.data?.is_new_account === true) {
           trackSignupComplete('telegram');
+          if (referralField().referral_code) {
+            analytics.referral.signUpAttributed('link');
+            clearReferral();
+          }
         }
 
         login(sessionToken);

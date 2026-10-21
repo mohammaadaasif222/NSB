@@ -1,12 +1,14 @@
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import ButtonLoader from '@/components/ButtonLoader';
 import { REWARD_ICONS } from '@/components/icons';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
-import { REWARD_DESCRIPTION_KEYS, REWARD_TITLE_KEYS } from '@/constants/rewards';
+import { REWARD_TITLE_KEYS } from '@/constants/rewards';
 import { formatRewardAmount } from '@/utils/money';
 import type { RewardType, RewardTypeSummary } from '@/types';
-import { CARD, GHOST_BUTTON, GOLD_BUTTON, ICON_WELL, LABEL, MUTED, PILL } from './rewardStyles';
+import RewardDetailModal from './RewardDetailModal';
+import RewardInfoButton from './RewardInfoButton';
+import { CARD, GHOST_BUTTON, GOLD_BUTTON, ICON_WELL, LABEL, PILL } from './rewardStyles';
 
 interface Props {
   reward: RewardTypeSummary;
@@ -19,12 +21,21 @@ interface Props {
 
 /**
  * One reward on the rewards page: what can be claimed now and until when, what
- * is still building up and when it turns claimable, the rate at the player's
- * tier, and how a claim pays out.
+ * is still building up and when it turns claimable, and the rate at the
+ * player's tier.
+ *
+ * The card carries only what changes — the figure, the countdown, the Claim
+ * button. What a reward *is*, how often it settles, how a claim splits across
+ * the cycles, what it is worked out from and what a VIP gets extra is standing
+ * copy that read the same on all five cards; it sits behind the info button
+ * now (RewardDetailModal). A player scanning for something to claim sees five
+ * short cards at once instead of scrolling past five paragraphs they have
+ * already read, and the detail they do want has room to be complete.
  */
 const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClaim }) => {
   const { t } = useTranslation();
   const Icon = REWARD_ICONS[reward.type];
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const claimable = reward.claimable_count > 0;
   const accruing = Number(reward.pending_amount) > 0;
@@ -37,56 +48,46 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
     ? t('rewards.availableIn', { time: formatCountdown(availableIn) })
     : t('rewards.processing');
 
-  let split: string | null = null;
-  if (reward.split && reward.type === 'CASHBACK') {
-    split = t('rewards.splitCashback', {
-      instant: reward.split.instant,
-      monthly: reward.split.monthly,
-    });
-  } else if (reward.split) {
-    split = t('rewards.split', {
-      instant: reward.split.instant,
-      weekly: reward.split.weekly,
-      monthly: reward.split.monthly,
-    });
-  } else if (reward.type === 'WEEKLY' || reward.type === 'MONTHLY') {
-    split = t('rewards.paidInFull');
-  }
+  const title = t(REWARD_TITLE_KEYS[reward.type]);
 
   return (
     <article
       // Ready to claim: the chosen-chip treatment — a gold edge and glow.
-      className={`flex flex-col ${CARD} ${
+      className={`flex h-full flex-col ${CARD} ${
         claimable ? 'ring-1 ring-[#f9d028]/60 shadow-[0_0_24px_rgba(249,208,40,0.18)]' : ''
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2">
         <span className={ICON_WELL(claimable)} aria-hidden="true">
           <Icon size={20} />
         </span>
-        {reward.rate_percentage !== null && (
-          <span className={PILL}>{t('rewards.rate', { percent: reward.rate_percentage })}</span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {reward.rate_percentage !== null && (
+            <span className={PILL}>{t('rewards.rate', { percent: reward.rate_percentage })}</span>
+          )}
+          <RewardInfoButton
+            reward={title}
+            open={infoOpen}
+            onClick={() => setInfoOpen((open) => !open)}
+          />
+        </div>
       </div>
 
-      <h3 className="mt-4 text-[18px] leading-7 font-medium text-[#f0f1f5]">
-        {t(REWARD_TITLE_KEYS[reward.type])}
-      </h3>
-      <p className={`mt-1 ${MUTED}`}>{t(REWARD_DESCRIPTION_KEYS[reward.type])}</p>
+      <h3 className="mt-3 text-[16px] leading-6 font-medium text-[#f0f1f5]">{title}</h3>
 
-      <div className="mt-5 flex-1">
+      <div className="mt-3 flex-1">
         <p className={LABEL}>
           {claimable ? t('rewards.readyToClaim') : t('rewards.status.pending')}
         </p>
         <p
-          className={`mt-0.5 text-[28px] leading-9 font-semibold tabular-nums ${claimable ? 'text-[#ffe779]' : 'text-[#f0f1f5]'}`}
+          className={`mt-0.5 text-[24px] leading-8 font-semibold tabular-nums ${claimable ? 'text-[#ffe779]' : 'text-[#f0f1f5]'}`}
         >
           {formatRewardAmount(
             claimable ? reward.claimable_amount : reward.pending_amount,
             currency
           )}
         </p>
-        <p className={`mt-1 tabular-nums ${LABEL}`}>
+        <p className={`mt-0.5 tabular-nums ${LABEL}`}>
           {claimable
             ? t('rewards.expiresIn', { time: formatCountdown(expiresIn ?? 0) })
             : accruing
@@ -94,7 +95,7 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
               : t('rewards.nothingYet')}
         </p>
         {claimable && accruing && (
-          <p className={`mt-1 tabular-nums ${LABEL}`}>
+          <p className={`mt-0.5 tabular-nums ${LABEL}`}>
             {t('rewards.pending', { amount: formatRewardAmount(reward.pending_amount, currency) })}{' '}
             · {accrualNote}
           </p>
@@ -105,20 +106,19 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
         type="button"
         onClick={() => onClaim(reward.type)}
         disabled={!claimable || claiming !== null}
-        className={`mt-5 w-full ${claimable ? GOLD_BUTTON : GHOST_BUTTON}`}
+        className={`mt-4 w-full ${claimable ? GOLD_BUTTON : GHOST_BUTTON}`}
       >
         {claiming === reward.type ? <ButtonLoader /> : t('rewards.claim')}
       </button>
 
-      <div className={`mt-5 space-y-1 border-t border-white/[0.08] pt-4 ${LABEL}`}>
-        {split && <p>{split}</p>}
-        <p className="flex items-center justify-between gap-2 tabular-nums">
-          <span>{t('rewards.claimedTotal')}</span>
-          <span className="text-[#f0f1f5]">
-            {formatRewardAmount(reward.claimed_total, currency)}
-          </span>
-        </p>
-      </div>
+      {infoOpen && (
+        <RewardDetailModal
+          type={reward.type}
+          summary={reward}
+          currency={currency}
+          onClose={() => setInfoOpen(false)}
+        />
+      )}
     </article>
   );
 };

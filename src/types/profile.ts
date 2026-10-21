@@ -53,6 +53,11 @@ export interface AccountRestriction {
   requires: 'CONTACT_VERIFICATION' | 'KYC' | null;
   unlock_kyc_level: number | null;
   message: string;
+  /** Social sign-in provider (google, telegram, steam). Null for email &
+   * password accounts — used to decide whether a current password is needed
+   * when changing the password. */
+  provider?: string | null;
+  provider_user_id?: string | null;
 }
 
 export interface SecuritySettings {

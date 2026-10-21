@@ -5,6 +5,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { registerAccount } from '@/services/auth';
 import { apiErrorMessage, transportErrorKey } from '@/lib/apiError';
 import { analytics, failureReason } from '@/services/analytics';
+import { clearReferral, storedReferralCode } from '@/lib/referralCapture';
 import { ANALYTICS_SIGNUP_METHOD } from '@/constants/auth';
 import { TURNSTILE_ENABLED } from '@/components/auth/TurnstileWidget';
 import {
@@ -110,6 +111,7 @@ export const useSignupForm = ({
   onRegistered,
 }: Options) => {
   const { t } = useTranslation();
+  const [linkedReferral] = useState(storedReferralCode);
 
   const [values, setValues] = useState<SignupValues>({
     username: '',
@@ -119,9 +121,9 @@ export const useSignupForm = ({
       ? (initialDialCode as string)
       : DIAL_CODES[0].code,
     password: '',
-    hasCodes: false,
+    hasCodes: !!linkedReferral,
     promoCode: '',
-    referralCode: '',
+    referralCode: linkedReferral ?? '',
   });
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   // Turnstile tokens are single-use: bumping this remounts the widget for a
@@ -177,6 +179,10 @@ export const useSignupForm = ({
       }
 
       analytics.auth.signUpCompleted(tracked);
+      if (body.referral_code) {
+        analytics.referral.signUpAttributed(linkedReferral ? 'link' : 'form');
+        clearReferral();
+      }
 
       const otpRequired = res.data?.otp_required !== false;
       if (otpRequired) analytics.auth.otpSent('sign_up', tracked);

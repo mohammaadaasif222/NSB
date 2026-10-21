@@ -11,6 +11,16 @@ import { useChangellyBuyCrypto } from '@/hooks/useChangellyBuyCrypto';
 import api from '@/services/api';
 import D24EmbeddedDeposit from './D24EmbeddedDeposit';
 import D24CheckoutModal from './D24CheckoutModal';
+import Button from '@/components/ui/Button';
+import WalletField, {
+  WALLET_GHOST_BUTTON,
+  WALLET_INPUT,
+  WALLET_NOTE,
+  WALLET_PILL,
+  WALLET_VALUE,
+} from '../shared/WalletField';
+import WalletSelect from '../shared/WalletSelect';
+import PaymentMethodGrid from '../shared/PaymentMethodGrid';
 
 /**
  * Fiat (Local Currency) deposit tab - D24 Hosted Checkout.
@@ -661,167 +671,144 @@ const LocalCurrencyTab: FC = () => {
 
   // Payer information form (for embedded D24 deposits)
   if (depositMode === 'payer-form') {
+    const docType = countryDocumentTypes.find((d: any) => d.code === payer.document_type);
+
     return (
-      <div className="space-y-4">
-        {/* Deposit summary */}
-        <div className="bg-gradient-to-r from-emerald-900/40 to-slate-800 p-4 rounded-lg border border-emerald-600/30">
-          <p className="text-emerald-400 text-sm font-semibold mb-2">
-            💚 {selectedMethod} Deposit
-          </p>
-          <p className="text-slate-300 text-2xl font-bold">
+      <div>
+        {/* What is being deposited, and how. */}
+        <div className={`${WALLET_PILL} justify-between`}>
+          <span className="truncate text-[16px] leading-6 text-[#9da2b4]">
+            {t('acct.local.depositOf', { method: selectedMethod ?? '' })}
+          </span>
+          <span className={`shrink-0 tabular-nums ${WALLET_VALUE}`}>
             {amount} {currency}
-          </p>
+          </span>
         </div>
 
-        {/* Payer form header */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-slate-100 mb-1">Complete Your Profile</h3>
-          <p className="text-xs text-slate-400">Minimum required: Name and Email</p>
-        </div>
+        <p className="mt-4 text-center text-[14px] leading-5 text-[#9da2b4]">
+          {t('acct.local.completeProfileHint')}
+        </p>
 
-        {/* Info message */}
-        <div className="bg-blue-900/30 border border-blue-600/30 p-3 rounded-lg">
-          <p className="text-blue-300 text-xs">
-            ℹ️ Document and address fields are optional
-          </p>
-        </div>
-
-        <div className="space-y-3">
+        <div className="mt-4 space-y-3.5">
           {/* Document Type - Dynamically loaded based on country */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              Document Type {countryDocumentTypes.length > 0 ? '' : '(Optional)'}
-            </label>
+          <WalletField
+            htmlFor="payer-doc-type"
+            label={
+              countryDocumentTypes.length > 0
+                ? t('acct.local.documentType')
+                : `${t('acct.local.documentType')} (${t('acct.local.optional')})`
+            }
+            hint={docType?.validation}
+          >
             {loadingDocTypes ? (
-              <div className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 flex items-center justify-center">
-                <svg className="w-4 h-4 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
+              <div className={WALLET_PILL}>
+                <span className="text-[16px] leading-6 text-[#9da2b4]">{t('common.loading')}</span>
               </div>
             ) : countryDocumentTypes.length > 0 ? (
-              <>
-                <select
+              <WalletSelect
+                id="payer-doc-type"
+                options={countryDocumentTypes.map((d: any) => ({
+                  value: d.code as string,
+                  label: d.name as string,
+                  detail: d.code as string,
+                }))}
+                value={payer.document_type}
+                onChange={(v) => setPayer({ ...payer, document_type: v })}
+                placeholder={t('acct.local.selectDocType')}
+              />
+            ) : (
+              <div className={WALLET_PILL}>
+                <input
+                  id="payer-doc-type"
                   value={payer.document_type}
                   onChange={(e) => setPayer({ ...payer, document_type: e.target.value })}
-                  className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
-                >
-                  <option value="">Select document type</option>
-                  {countryDocumentTypes.map((docType: any) => (
-                    <option key={docType.code} value={docType.code}>
-                      {docType.name} ({docType.code})
-                    </option>
-                  ))}
-                </select>
-                {payer.document_type && (
-                  <p className="text-xs text-slate-400 mt-1">
-                    Format: {countryDocumentTypes.find((d: any) => d.code === payer.document_type)?.validation}
-                  </p>
-                )}
-              </>
-            ) : (
+                  placeholder={t('acct.local.selectDocType')}
+                  className={WALLET_INPUT}
+                />
+              </div>
+            )}
+          </WalletField>
+
+          <WalletField
+            htmlFor="payer-doc"
+            label={
+              countryDocumentTypes.length > 0
+                ? `${t('acct.local.documentId')} (${t('acct.local.optional')})`
+                : t('acct.local.documentId')
+            }
+            hint={docType?.example}
+          >
+            <div className={WALLET_PILL}>
               <input
-                type="text"
-                value={payer.document_type}
-                onChange={(e) => setPayer({ ...payer, document_type: e.target.value })}
-                placeholder="Document type (optional)"
-                className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+                id="payer-doc"
+                value={payer.document}
+                onChange={(e) => setPayer({ ...payer, document: e.target.value })}
+                placeholder={t('acct.local.documentPlaceholder')}
+                className={WALLET_INPUT}
               />
-            )}
+            </div>
+          </WalletField>
+
+          <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-x-[21px]">
+            <WalletField htmlFor="payer-first" label={`${t('auth.firstName')} *`}>
+              <div className={WALLET_PILL}>
+                <input
+                  id="payer-first"
+                  value={payer.first_name}
+                  onChange={(e) => setPayer({ ...payer, first_name: e.target.value })}
+                  placeholder={t('acct.local.enterName')}
+                  autoComplete="given-name"
+                  className={WALLET_INPUT}
+                />
+              </div>
+            </WalletField>
+            <WalletField htmlFor="payer-last" label={`${t('auth.lastName')} *`}>
+              <div className={WALLET_PILL}>
+                <input
+                  id="payer-last"
+                  value={payer.last_name}
+                  onChange={(e) => setPayer({ ...payer, last_name: e.target.value })}
+                  placeholder={t('acct.local.enterName')}
+                  autoComplete="family-name"
+                  className={WALLET_INPUT}
+                />
+              </div>
+            </WalletField>
           </div>
 
-          {/* Document ID */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              Document ID / Number {countryDocumentTypes.length > 0 ? '(Optional)' : ''}
-            </label>
-            <input
-              type="text"
-              value={payer.document}
-              onChange={(e) => setPayer({ ...payer, document: e.target.value })}
-              placeholder="Enter your document number"
-              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-            {payer.document_type && (
-              <p className="text-xs text-slate-400 mt-1">
-                Example: {countryDocumentTypes.find((d: any) => d.code === payer.document_type)?.example}
-              </p>
-            )}
-          </div>
-
-          {/* First Name */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              First Name *
-            </label>
-            <input
-              type="text"
-              value={payer.first_name}
-              onChange={(e) => setPayer({ ...payer, first_name: e.target.value })}
-              placeholder="Enter your first name"
-              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          {/* Last Name */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              Last Name *
-            </label>
-            <input
-              type="text"
-              value={payer.last_name}
-              onChange={(e) => setPayer({ ...payer, last_name: e.target.value })}
-              placeholder="Enter your last name"
-              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              Email
-            </label>
-            <input
-              type="email"
-              value={payer.email}
-              onChange={(e) => setPayer({ ...payer, email: e.target.value })}
-              placeholder="your@email.com"
-              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-
-          {/* Deposit button */}
-          <button
-            type="button"
-            onClick={handlePayerFormSubmit}
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-emerald-500 hover:bg-emerald-600 text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Fetching Payment Details...
-              </span>
-            ) : (
-              'Deposit'
-            )}
-          </button>
-
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={handleGoBack}
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Please wait...' : 'Back'}
-          </button>
+          <WalletField htmlFor="payer-email" label={t('auth.email')}>
+            <div className={WALLET_PILL}>
+              <input
+                id="payer-email"
+                type="email"
+                value={payer.email}
+                onChange={(e) => setPayer({ ...payer, email: e.target.value })}
+                placeholder="your@email.com"
+                autoComplete="email"
+                className={WALLET_INPUT}
+              />
+            </div>
+          </WalletField>
         </div>
+
+        <Button
+          type="button"
+          fullWidth
+          onClick={handlePayerFormSubmit}
+          disabled={loading}
+          className="mt-[23px]"
+        >
+          {loading ? t('acct.local.fetchingDetails') : t('acct.wallet.tabDeposit')}
+        </Button>
+
+        <button
+          type="button"
+          onClick={handleGoBack}
+          disabled={loading}
+          className={`${WALLET_GHOST_BUTTON} mt-3`}
+        >
+          {t('auth.back')}
+        </button>
       </div>
     );
   }
@@ -856,278 +843,158 @@ const LocalCurrencyTab: FC = () => {
     return changellyPortal;
   }
 
+  const currencyOptions = (
+    displayCurrencies.length > 0 ? displayCurrencies : [{ code: 'USD', name: 'US Dollar' }]
+  ).map((c: any) => ({ value: c.code as string, label: c.code as string, detail: c.name as string }));
+  const sign = displayCurrencies.find((c) => c.code === currency)?.symbol || '$';
+  const noMethods = (
+    <p className={`${WALLET_NOTE} py-8 text-center`}>
+      {t('acct.local.noMethods', { currency: currency || '—' })}
+    </p>
+  );
+
   return (
-    <div className="space-y-4">
-      {/* Currency selector + Payment Methods - Hidden when amount input is shown */}
+    <div>
+      {/* The design's screen: Currency, then the Deposit Method tiles, 16
+          apart. The amount follows once a method is picked. */}
       {!showAmountInput && (
-        <>
-          {/* Currency selector */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              {t('pref.currency')}
-            </label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              disabled={loadingCurrencies || displayCurrencies.length === 0}
-              className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {displayCurrencies.length > 0 ? (
-                displayCurrencies.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code} - {c.name}
-                  </option>
-                ))
-              ) : (
-                <option value="USD">USD - US Dollar</option>
-              )}
-            </select>
-          </div>
-
-          {/* Payment Methods Loading */}
-          {loadingMethods && (
-            <div>
-              <label className="text-xs font-semibold text-slate-300 mb-3 block">
-                Payment Method
-              </label>
-              <div className="flex justify-center py-8">
-                <div className="text-center">
-                  <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <p className="text-sm text-slate-400">{t('acct.buy.processing')}</p>
-                </div>
+        <div className="space-y-4">
+          <WalletField htmlFor="local-currency" label={t('pref.currency')}>
+            {loadingCurrencies ? (
+              <div className={WALLET_PILL}>
+                <span className="text-[16px] leading-6 text-[#9da2b4]">{t('common.loading')}</span>
               </div>
-            </div>
+            ) : (
+              <WalletSelect
+                id="local-currency"
+                options={currencyOptions}
+                value={currency}
+                onChange={setCurrency}
+                placeholder={t('acct.wallet.selectCurrency')}
+              />
+            )}
+          </WalletField>
+
+          {loadingMethods ? (
+            <p className={`${WALLET_NOTE} py-8 text-center`}>{t('acct.local.loadingMethods')}</p>
+          ) : paymentMethods.length > 0 ? (
+            <PaymentMethodGrid
+              label={t('acct.local.depositMethod')}
+              methods={paymentMethods.map((m) => ({ key: m.code, name: m.name, logo: m.logo }))}
+              selected={selectedMethod ?? undefined}
+              onSelect={handleMethodSelect}
+              disabled={loading}
+            />
+          ) : useChangellyFallback ? (
+            loadingOffers ? (
+              <p className={`${WALLET_NOTE} py-8 text-center`}>{t('acct.local.loadingMethods')}</p>
+            ) : offers.length > 0 && offers[0]?.paymentMethodOffer ? (
+              <PaymentMethodGrid
+                label={t('acct.local.depositMethod')}
+                methods={offers[0].paymentMethodOffer.map((method) => {
+                  const info = PAYMENT_METHOD_LOGOS[method.method.toLowerCase()];
+                  return {
+                    key: method.method,
+                    name: info?.name ?? method.methodName,
+                    logo: info?.logo,
+                  };
+                })}
+                selected={selectedPaymentMethod ?? undefined}
+                onSelect={handleChangellyFallback}
+                disabled={creatingOrder}
+              />
+            ) : (
+              noMethods
+            )
+          ) : (
+            noMethods
           )}
-
-          {/* Payment Methods selector */}
-          {!loadingMethods && paymentMethods.length > 0 && (
-            <div>
-              <label className="text-xs font-semibold text-slate-300 mb-3 block">
-                Payment Method
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {paymentMethods.map((method) => (
-                  <button
-                    key={method.code}
-                    type="button"
-                    onClick={() => handleMethodSelect(method.code)}
-                    disabled={loadingMethods || loading}
-                    className={`aspect-square rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed ${
-                      selectedMethod === method.code
-                        ? 'border-emerald-500 bg-emerald-500/20'
-                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
-                    }`}
-                  >
-                    {method.logo && (
-                      <img
-                        src={method.logo}
-                        alt={method.name}
-                        className="w-24 h-24 object-contain"
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* No D24 Payment Methods - Show Changelly Fallback */}
-          {!loadingMethods && paymentMethods.length === 0 && useChangellyFallback && (
-            <div>
-              <label className="text-xs font-semibold text-slate-300 mb-3 block">
-                Payment Method 
-              </label>
-
-              {loadingOffers && (
-                <div className="flex justify-center py-8">
-                  <div className="text-center">
-                    <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <p className="text-sm text-slate-400">Loading payment options...</p>
-                  </div>
-                </div>
-              )}
-
-              {!loadingOffers && offers.length > 0 && offers[0]?.paymentMethodOffer && (
-                <div className="grid grid-cols-3 gap-2">
-                  {offers[0].paymentMethodOffer.map((method) => {
-                    const methodKey = method.method.toLowerCase();
-                    const methodInfo = PAYMENT_METHOD_LOGOS[methodKey] || { name: method.methodName, logo: '/payment-logos/default.png' };
-
-                    return (
-                      <button
-                        key={method.offerId}
-                        onClick={() => handleChangellyFallback(method.method)}
-                        disabled={creatingOrder}
-                        className={`aspect-square rounded-lg border-2 transition-all flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed ${
-                          selectedPaymentMethod === method.method
-                            ? 'border-emerald-500 bg-emerald-500/20'
-                            : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
-                        }`}
-                      >
-                        <img
-                          src={methodInfo.logo}
-                          alt={methodInfo.name}
-                          className="w-24 h-24 object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {!loadingOffers && (offers.length === 0 || !offers[0]?.paymentMethodOffer) && (
-                <div className="flex justify-center py-8">
-                  <div className="text-center">
-                    <svg className="w-12 h-12 text-slate-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-sm text-slate-400">No payment methods available</p>
-                    <p className="text-xs text-slate-500 mt-1">for {currency || 'selected currency'}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* No Payment Methods - Neither D24 nor Changelly */}
-          {!loadingMethods && paymentMethods.length === 0 && !useChangellyFallback && (
-            <div>
-              <label className="text-xs font-semibold text-slate-300 mb-3 block">
-                Payment Method
-              </label>
-              <div className="flex justify-center py-8">
-                <div className="text-center">
-                  <svg className="w-12 h-12 text-slate-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-sm text-slate-400">No payment methods available</p>
-                  <p className="text-xs text-slate-500 mt-1">for {currency || 'selected currency'}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
 
-      {/* Amount input section - shown only after payment method is selected (D24 or Changelly) */}
+      {/* Amount - shown only after a payment method is picked (D24 or Changelly) */}
       {showAmountInput && (selectedMethod || (selectedPaymentMethod && useChangellyFallback)) && (
-        <div className="space-y-3">
-          {/* Selected Method Display */}
+        <div>
+          {/* The method picked, with the way back to the tiles. */}
           {(() => {
-            let methodInfo: any;
-            let provider = '';
-
-            if (useChangellyFallback && selectedPaymentMethod) {
-              // Changelly fallback method
-              const methodKey = selectedPaymentMethod.toLowerCase();
-              methodInfo = PAYMENT_METHOD_LOGOS[methodKey];
-              provider = offers[0]?.providerCode || 'Changelly';
-            } else if (selectedMethod) {
-              // D24 method
-              methodInfo = getSelectedMethodInfo();
-              provider = methodInfo?.provider || 'D24';
-            }
-
-            return methodInfo ? (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
-                <div className="flex-1">
-                  <p className="text-xs font-semibold text-slate-300">Selected Method</p>
-                  <p className="text-sm text-slate-100">{methodInfo.name || methodInfo.methodName}</p>
-                  <p className="text-xs text-slate-400 mt-1">Provider: {provider}</p>
+            const info =
+              useChangellyFallback && selectedPaymentMethod
+                ? PAYMENT_METHOD_LOGOS[selectedPaymentMethod.toLowerCase()]
+                : getSelectedMethodInfo();
+            if (!info) return null;
+            return (
+              <WalletField label={t('acct.local.paymentMethod')}>
+                <div className={WALLET_PILL}>
+                  {info.logo && (
+                    <img src={info.logo} alt="" className="h-8 w-12 shrink-0 object-contain" />
+                  )}
+                  <span className={`min-w-0 flex-1 truncate ${WALLET_VALUE}`}>
+                    {info.name || info.methodName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleGoBack}
+                    disabled={loading}
+                    className="shrink-0 text-[14px] font-medium leading-5 text-[#ffe779] hover:underline disabled:opacity-50"
+                  >
+                    {t('profile.change')}
+                  </button>
                 </div>
-              </div>
-            ) : null;
+              </WalletField>
+            );
           })()}
 
-          {/* Amount input */}
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-2 block">
-              {t('acct.buy.amount')}
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-3 text-slate-400 text-sm font-semibold">
-                {displayCurrencies.find((c) => c.code === currency)?.symbol || '$'}
-              </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => {
-                  const newAmount = e.target.value.replace(/[^\d.]/g, '');
-                  if (useChangellyFallback) {
-                    handleChangellyAmountChange(newAmount);
-                  } else {
-                    setAmount(newAmount);
-                  }
-                }}
-                placeholder={t('acct.wallet.enterAmountPlain')}
-                className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 pl-8 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
+          <div className="mt-3.5">
+            <WalletField htmlFor="local-amount" label={t('acct.wallet.amountIn', { currency })}>
+              <div className={WALLET_PILL}>
+                <input
+                  id="local-amount"
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => {
+                    const newAmount = e.target.value.replace(/[^\d.]/g, '');
+                    if (useChangellyFallback) {
+                      handleChangellyAmountChange(newAmount);
+                    } else {
+                      setAmount(newAmount);
+                    }
+                  }}
+                  placeholder={t('acct.wallet.enterAmountPlain')}
+                  className={`${WALLET_INPUT} tabular-nums`}
+                />
+                <span aria-hidden="true" className="shrink-0 text-[18px] font-bold leading-6 text-[#9da2b4]">
+                  {sign}
+                </span>
+              </div>
+            </WalletField>
           </div>
 
           {/* Changelly Fallback: Show only errors, not offer details */}
-          {useChangellyFallback && amount && Number(amount) > 0 && offers.length > 0 && (() => {
-            const firstOffer = offers[0];
-
-            // Check for error in offer
-            if (firstOffer?.errorType) {
-              return (
-                <div className="space-y-2">
-                  {/* Error message */}
-                  {firstOffer.errorType === 'limits' && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-red-400 text-xs">
-                      <p className="font-semibold mb-1">⚠️ Amount Limit</p>
-                      <p>{firstOffer.errorMessage}</p>
-                      {firstOffer.errorDetails && firstOffer.errorDetails.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                          {firstOffer.errorDetails.map((detail: any) => (
-                            <p key={detail.cause}>
-                              {detail.cause === 'min' && `Minimum: ${detail.value} ${currency}`}
-                              {detail.cause === 'max' && `Maximum: ${detail.value} ${currency}`}
-                            </p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {firstOffer.errorType === 'currency' && (
-                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 text-yellow-300 text-xs">
-                      <p className="font-semibold mb-1">⚠️ Exchange Not Available</p>
-                      <p>{firstOffer.errorMessage || 'This currency pair is not available'}</p>
-                    </div>
-                  )}
-
-                  {firstOffer.errorType && firstOffer.errorType !== 'limits' && firstOffer.errorType !== 'currency' && (
-                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 text-yellow-300 text-xs">
-                      <p className="font-semibold mb-1">⚠️ Error</p>
-                      <p>{firstOffer.errorMessage}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            return null;
-          })()}
+          {useChangellyFallback &&
+            amount &&
+            Number(amount) > 0 &&
+            offers[0]?.errorType && (
+              <div className="mt-3 rounded-[20px] border border-[#ff6b5e]/25 bg-[#ff6b5e]/10 px-4 py-2.5 text-[13px] leading-5 text-[#ff6b5e]">
+                <p className="font-semibold">
+                  {offers[0].errorType === 'limits'
+                    ? t('acct.local.amountLimit')
+                    : offers[0].errorType === 'currency'
+                      ? t('acct.local.exchangeUnavailable')
+                      : t('acct.local.error')}
+                </p>
+                <p>{offers[0].errorMessage}</p>
+                {offers[0].errorType === 'limits' &&
+                  offers[0].errorDetails?.map((detail: any) => (
+                    <p key={detail.cause}>
+                      {detail.cause === 'min' &&
+                        t('acct.local.min', { amount: `${detail.value} ${currency}` })}
+                      {detail.cause === 'max' &&
+                        t('acct.local.max', { amount: `${detail.value} ${currency}` })}
+                    </p>
+                  ))}
+              </div>
+            )}
 
           {/* Continue/Deposit button - Label depends on payment flow */}
           {(() => {
@@ -1135,60 +1002,38 @@ const LocalCurrencyTab: FC = () => {
             const isChangellyLoading = useChangellyFallback && loadingOffers;
             // For Changelly: disable if amount changed from cached amount (user is editing)
             const amountChanged = useChangellyFallback && amount !== offersAmountCached;
-            const isDisabled = loading || creatingOrder || isChangellyLoading || !amount || Number(amount) <= 0 || hasError || amountChanged;
+            const isDisabled =
+              loading ||
+              creatingOrder ||
+              isChangellyLoading ||
+              !amount ||
+              Number(amount) <= 0 ||
+              hasError ||
+              amountChanged;
             const isProcessing = loading || creatingOrder || isChangellyLoading;
 
             // Check if this is an embedded method (needs payer form next)
             const method = selectedMethod?.toUpperCase() || '';
-            const isEmbeddedMethod = EMBEDDED_METHODS.some(m => method.includes(m));
-            const buttonLabel = isEmbeddedMethod ? 'Continue' : 'Deposit';
+            const isEmbeddedMethod = EMBEDDED_METHODS.some((m) => method.includes(m));
 
             return (
-              <button
+              <Button
                 type="button"
+                fullWidth
                 onClick={useChangellyFallback ? handleChangellyDeposit : handleDeposit}
                 disabled={isDisabled}
-                className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-                  isDisabled
-                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                    : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                }`}
+                className="mt-[23px]"
               >
-                {isProcessing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    {isChangellyLoading ? 'Calculating...' : 'Processing...'}
-                  </span>
-                ) : (
-                  buttonLabel
-                )}
-              </button>
+                {isProcessing
+                  ? isChangellyLoading
+                    ? t('acct.local.calculating')
+                    : t('acct.buy.processing')
+                  : isEmbeddedMethod
+                    ? t('registerModal.continue')
+                    : t('acct.wallet.tabDeposit')}
+              </Button>
             );
           })()}
-
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={handleGoBack}
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            Back
-          </button>
         </div>
       )}
     </div>

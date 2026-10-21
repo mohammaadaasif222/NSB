@@ -103,13 +103,20 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
     <AuthModalShell
       titleId="register-modal-title"
       title={title}
+      // The phone design heads the first screen "Registration".
+      phoneTitle={step === 'method' ? t('registerModal.titleLong') : undefined}
       hero={step === 'method'}
       section={step === 'social'}
       onBack={() => setStep(step === 'otp' ? 'form' : 'method')}
       onClose={onClose}
       footer={
         step === 'method' && (
-          <AuthModalFooter actionLabel={t('register.login')} onAction={onSwitchToLogin} />
+          <AuthModalFooter
+            actionLabel={t('register.login')}
+            onAction={onSwitchToLogin}
+            // The phone design sets it 15 under the terms.
+            className="max-sm:!mt-[15px]"
+          />
         )
       }
     >
@@ -145,7 +152,11 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
       {step === 'otp' && target && <OtpStep target={target} onVerified={finishSignup} />}
 
       {(step === 'method' || step === 'form') && (
-        <p className="mx-auto mt-6 max-w-[300px] text-center text-[13px] leading-relaxed text-white/60 sm:text-[14px]">
+        <p
+          className={`mx-auto max-w-[300px] text-center text-[14px] leading-5 text-[#9da2b4] sm:mt-6 sm:leading-relaxed sm:text-white/60 ${
+            step === 'method' ? 'mt-4' : 'mt-5'
+          }`}
+        >
           {t('registerModal.legal')}
         </p>
       )}

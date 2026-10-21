@@ -19,6 +19,10 @@ interface Props {
   tone?: 'clear' | 'grey';
   /** Whether the page behind is dimmed (the default) or left clear. */
   backdrop?: 'dim' | 'none';
+  /** Below `sm`, a sheet rising from the screen's foot (see Modal). */
+  phoneSheet?: boolean;
+  /** Extra classes for the title (see ModalHeader). */
+  titleClassName?: string;
   /** Classes for the card: width, padding, height. */
   className?: string;
   children: ReactNode;
@@ -41,6 +45,8 @@ const GlassDialog: FC<Props> = ({
   titleVariant = 'panel',
   tone = 'clear',
   backdrop = 'dim',
+  phoneSheet = false,
+  titleClassName,
   className = '',
   children,
 }) => {
@@ -55,12 +61,14 @@ const GlassDialog: FC<Props> = ({
       surface="rl-dialog-glass"
       style={{ zoom: scale }}
       backdrop={backdrop}
+      phoneSheet={phoneSheet}
       className={`${tone === 'grey' ? '[--dialog-fill:rgba(89,89,89,0.2)]' : ''} ${className}`}
     >
       <ModalHeader
         id={titleId}
         title={title}
         variant={titleVariant}
+        titleClassName={titleClassName}
         onClose={onClose}
         closeLabel={t('common.close')}
       />

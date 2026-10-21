@@ -265,7 +265,9 @@ const ProfilePage: FC = () => {
         />
       )}
 
-      {activeModal === 'password' && <ChangePasswordModal onClose={closeModal} />}
+      {activeModal === 'password' && me && (
+        <ChangePasswordModal user={me} onClose={closeModal} />
+      )}
 
       {me && activeModal === '2fa' && (
         <TwoFactorModal

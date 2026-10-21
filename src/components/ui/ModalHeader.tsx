@@ -7,6 +7,8 @@ interface ModalHeaderProps {
   /** Id for the heading, so the dialog can point aria-labelledby at it. */
   id: string;
   title: string;
+  /** The title on a phone, where its design words it differently. */
+  phoneTitle?: string;
   onClose: () => void;
   closeLabel: string;
   /** Shows the back button when given. */
@@ -20,6 +22,10 @@ interface ModalHeaderProps {
    * Game, the suggestion box).
    */
   variant?: 'hero' | 'compact' | 'section' | 'title' | 'panel';
+  /** Extra classes for the title, where one dialog's design sizes it apart. */
+  titleClassName?: string;
+  /** A 48px close on a phone too (the auth sheets), not the usual 40. */
+  bigClose?: boolean;
 }
 
 /**
@@ -31,18 +37,22 @@ interface ModalHeaderProps {
 const ModalHeader: FC<ModalHeaderProps> = ({
   id,
   title,
+  phoneTitle,
   onClose,
   closeLabel,
   onBack,
   backLabel,
   variant = 'compact',
+  titleClassName = '',
+  bigClose = false,
 }) => {
   const { t } = useTranslation();
 
   return (
     <div className="relative z-10 flex items-center gap-3">
       {variant !== 'panel' && (
-        <div className="flex w-10 shrink-0 sm:w-12">
+        // Beside a 48px close, a phone's 40px back lines up with its top.
+        <div className={`flex w-10 shrink-0 sm:w-12 ${bigClose ? 'max-sm:self-start' : ''}`}>
           {onBack && (
             <CircleIconButton label={backLabel ?? t('auth.back')} onClick={onBack}>
               <ChevronLeftIcon size={22} className="rtl:rotate-180" />
@@ -63,15 +73,24 @@ const ModalHeader: FC<ModalHeaderProps> = ({
                 : variant === 'panel'
                   ? 'text-[18px] font-medium leading-7 text-[#f0f1f5] sm:text-[20px]'
                   : 'text-base font-medium sm:text-lg'
-        }`}
+        } ${titleClassName}`}
       >
-        {title}
+        {phoneTitle ? (
+          <>
+            <span className="sm:hidden">{phoneTitle}</span>
+            <span className="hidden sm:inline">{title}</span>
+          </>
+        ) : (
+          title
+        )}
       </h2>
 
-      <div
-        className="flex w-10 shrink-0 justify-end sm:w-12"
-      >
-        <CircleIconButton label={closeLabel} onClick={onClose}>
+      <div className={`flex shrink-0 justify-end sm:w-12 ${bigClose ? 'w-12' : 'w-10'}`}>
+        <CircleIconButton
+          label={closeLabel}
+          onClick={onClose}
+          className={bigClose ? 'max-sm:h-12 max-sm:w-12' : ''}
+        >
           {variant === 'title' || variant === 'panel' || variant === 'hero' ? (
             // The glass dialogs' cross: 16.7px across in 2px strokes.
             <CloseIcon size={33} strokeWidth={1.45} />

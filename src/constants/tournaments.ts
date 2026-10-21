@@ -31,9 +31,8 @@ export interface TournamentRow extends Tournament {
  * four and Sports the last two.
  *
  * One thing here is not in the frame and is marked where it is used: the two
- * expired tournaments, so the Expired tab is not a dead end. The frame draws no
- * expired card, so those reuse the live card with the Active flag off, which is
- * all the design specifies.
+ * ended tournaments — four, as the Expired tab's frame draws them, each with
+ * the week it ran.
  */
 const LIVE: TournamentRow[] = Array.from({ length: 6 }, (_, i) => ({
   id: `tournament-${i + 1}`,
@@ -48,7 +47,16 @@ const LIVE: TournamentRow[] = Array.from({ length: 6 }, (_, i) => ({
   status: 'live',
 }));
 
-const EXPIRED: TournamentRow[] = Array.from({ length: 2 }, (_, i) => ({
+/* When the ended ones ran — the frame's own 31/07 to 07/08 first, then a
+   week each further back, so the Expired tab has several to open. */
+const ENDED_WEEKS: readonly [string, string][] = [
+  ['2026-07-31', '2026-08-07'],
+  ['2026-07-24', '2026-07-31'],
+  ['2026-07-17', '2026-07-24'],
+  ['2026-07-10', '2026-07-17'],
+];
+
+const EXPIRED: TournamentRow[] = ENDED_WEEKS.map(([startDate, endDate], i) => ({
   id: `tournament-ended-${i + 1}`,
   image: tournamentArt,
   active: false,
@@ -57,7 +65,9 @@ const EXPIRED: TournamentRow[] = Array.from({ length: 2 }, (_, i) => ({
   joined: 15,
   capacity: 50,
   endsIn: { day: '00', hr: '00', min: '00', sec: '00' },
-  category: i % 2 === 0 ? 'casino' : 'sports',
+  startDate,
+  endDate,
+  category: i < 2 ? 'casino' : 'sports',
   status: 'expired',
 }));
 

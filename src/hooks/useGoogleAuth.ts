@@ -10,6 +10,7 @@ import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import { analytics, failureReason } from '@/services/analytics';
 import { trackSignupComplete } from '@/utils/events';
+import { clearReferral, referralField } from '@/lib/referralCapture';
 
 import type { ApiError, JwtPayload, LoginResponseData } from '@/types';
 
@@ -70,6 +71,39 @@ export interface GooglePopupHandlers {
   onFailure?: (reason: string) => void;
 }
 
+const INTENT_EVENTS = ['pointermove', 'pointerdown', 'touchstart', 'keydown', 'scroll'] as const;
+
+const afterPageLoad = (fn: () => void): (() => void) => {
+  if (document.readyState === 'complete') {
+    fn();
+    return () => undefined;
+  }
+  let idleId: number | null = null;
+  let timer: number | null = null;
+  const stop = (): void => {
+    window.removeEventListener('load', schedule);
+    for (const type of INTENT_EVENTS) window.removeEventListener(type, start);
+    if (idleId !== null) window.cancelIdleCallback(idleId);
+    if (timer !== null) globalThis.clearTimeout(timer);
+  };
+  function start(): void {
+    stop();
+    fn();
+  }
+  function schedule(): void {
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(start, { timeout: 2000 });
+    } else {
+      timer = globalThis.setTimeout(start, 200) as unknown as number;
+    }
+  }
+  window.addEventListener('load', schedule, { once: true });
+  for (const type of INTENT_EVENTS) {
+    window.addEventListener(type, start, { once: true, passive: true });
+  }
+  return stop;
+};
+
 export function useGooglePopup({ onToken, onFailure }: GooglePopupHandlers): () => void {
   const { t } = useTranslation();
   const [ready, setReady] = useState(false);
@@ -86,20 +120,31 @@ export function useGooglePopup({ onToken, onFailure }: GooglePopupHandlers): () 
       return undefined;
     }
 
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${GSI_SRC}"]`);
-    const script = existing ?? document.createElement('script');
     const onLoad = (): void => setReady(true);
+    let script: HTMLScriptElement | null = null;
 
-    script.addEventListener('load', onLoad);
+    const attach = (): void => {
+      if (window.google?.accounts?.oauth2) {
+        setReady(true);
+        return;
+      }
+      script = document.querySelector<HTMLScriptElement>(`script[src="${GSI_SRC}"]`);
+      if (!script) {
+        script = document.createElement('script');
+        script.src = GSI_SRC;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+      script.addEventListener('load', onLoad);
+    };
 
-    if (!existing) {
-      script.src = GSI_SRC;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
+    const cancel = afterPageLoad(attach);
 
-    return () => script.removeEventListener('load', onLoad);
+    return () => {
+      cancel();
+      script?.removeEventListener('load', onLoad);
+    };
   }, []);
 
   const open = useCallback((): void => {
@@ -168,7 +213,7 @@ export function useGoogleAuth(): GoogleAuth {
         const response = await run((headers) =>
           apiService.post<LoginResponseData>(
             '/auth/social/login',
-            { token: accessToken, type: 'google' },
+            { token: accessToken, type: 'google', ...referralField() },
             { headers }
           )
         );
@@ -203,6 +248,10 @@ export function useGoogleAuth(): GoogleAuth {
         // a social signup never reaches the funnel at all.
         if (response?.data?.is_new_account === true) {
           trackSignupComplete('google');
+          if (referralField().referral_code) {
+            analytics.referral.signUpAttributed('link');
+            clearReferral();
+          }
         }
 
         login(sessionToken);

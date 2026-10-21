@@ -3,6 +3,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { GmailMark } from '@/components/brand';
 import { MailIcon, PhoneIcon, UserIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
+import { LOBBY_STATS } from '@/constants/stats';
 
 import type { LoginMethod } from '@/types';
 
@@ -19,6 +20,7 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({ onSelectMethod, onGoogle, g
   return (
     <AuthMethodList
       tab={t('loginModal.suggestion')}
+      phoneTab={t('registerModal.registeredToday', { count: LOBBY_STATS.registeredToday })}
       methods={[
         {
           id: 'gmail',
@@ -33,6 +35,8 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({ onSelectMethod, onGoogle, g
           icon: <UserIcon size={28} strokeWidth={1.5} />,
           label: t('loginModal.username'),
           onClick: () => onSelectMethod('username'),
+          // The phone design lists it last, after Email.
+          phoneOrder: 9,
         },
         {
           id: 'mobile',

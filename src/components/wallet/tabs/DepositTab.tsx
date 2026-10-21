@@ -16,6 +16,8 @@ import NetworkPicker from '../shared/NetworkPicker';
 import AddressDisplay from '../shared/AddressDisplay';
 import KycGateNotice from '../KycGateNotice';
 import LocalCurrencyTab from './LocalCurrencyTab';
+import SegmentedTabs from '@/components/player/SegmentedTabs';
+import { WALLET_NOTE } from '../shared/WalletField';
 
 type DepositType = 'crypto' | 'local';
 
@@ -215,87 +217,76 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
 
   if (eligible.length === 0) {
     return (
-      <div className="py-8 text-center text-sm text-slate-400">
+      <div className="py-8 text-center text-[14px] leading-5 text-[#9da2b4]">
         {t('acct.wallet.noDepositCurrencies')}
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {/* Segmented crypto / local currency toggle */}
-      <div className="grid grid-cols-2 gap-1 p-1 bg-slate-900 rounded-xl">
-        <button
-          type="button"
-          onClick={() => setDepositType('crypto')}
-          className={`h-8 rounded-lg text-xs font-semibold transition-all ${
-            depositType === 'crypto'
-              ? 'bg-black/60 text-white'
-              : 'text-slate-500 hover:text-slate-400'
-          }`}
-        >
-          {t('acct.wallet.crypto')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setDepositType('local')}
-          className={`h-8 rounded-lg text-xs font-semibold transition-all ${
-            depositType === 'local'
-              ? 'bg-black/60 text-white'
-              : 'text-slate-500 hover:text-slate-400'
-          }`}
-        >
-          {t('acct.wallet.localCurrency')}
-        </button>
-      </div>
+    <div>
+      {/* The design's glass Crypto / Local currency switch. */}
+      <SegmentedTabs
+        items={[
+          { key: 'crypto', label: t('acct.wallet.crypto') },
+          { key: 'local', label: t('acct.wallet.localCurrency') },
+        ]}
+        active={depositType}
+        onChange={setDepositType}
+        label={t('acct.wallet.tabDeposit')}
+      />
 
-      {/* CRYPTO DEPOSIT FLOW */}
+      {/* CRYPTO DEPOSIT FLOW — Currency, Network and the address, 14 apart. */}
       {depositType === 'crypto' && (
         <>
-          <CurrencyPicker
-            label={t('pref.currency')}
-            currencies={eligible}
-            value={currency}
-            onChange={setCurrency}
-          />
-
-          {enabledNetworks.length > 0 ? (
-            <NetworkPicker
-              label={t('acct.wallet.network')}
-              networks={enabledNetworks}
-              value={network}
-              onChange={setNetwork}
+          <div className="mt-4 space-y-3.5">
+            <CurrencyPicker
+              label={t('pref.currency')}
+              currencies={eligible}
+              value={currency}
+              onChange={setCurrency}
             />
-          ) : (
-            <div className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-[11px] text-slate-500">
-              {t('acct.wallet.noEnabledNetwork', { currency })}
-            </div>
-          )}
 
-          {loading ? (
-            <div className="h-64 rounded-xl border border-slate-700 flex items-center justify-center text-xs text-slate-400">
-              {t('acct.wallet.loadingAddress')}
-            </div>
-          ) : kycBlock ? (
-            <KycGateNotice
-              profile={kycProfile}
-              action="deposit"
-              onLeave={onLeave}
-              apiMessage={kycBlock.message}
-              errorCode={kycBlock.code}
-            />
-          ) : address ? (
-            <AddressDisplay address={address} />
-          ) : null}
+            {enabledNetworks.length > 0 ? (
+              <NetworkPicker
+                label={t('acct.wallet.network')}
+                networks={enabledNetworks}
+                value={network}
+                onChange={setNetwork}
+              />
+            ) : (
+              <p className={WALLET_NOTE}>{t('acct.wallet.noEnabledNetwork', { currency })}</p>
+            )}
 
-          <p className="text-center text-[11px] text-slate-400 pt-2">
+            {loading ? (
+              <div className={`${WALLET_NOTE} flex h-64 items-center justify-center`}>
+                {t('acct.wallet.loadingAddress')}
+              </div>
+            ) : kycBlock ? (
+              <KycGateNotice
+                profile={kycProfile}
+                action="deposit"
+                onLeave={onLeave}
+                apiMessage={kycBlock.message}
+                errorCode={kycBlock.code}
+              />
+            ) : address ? (
+              <AddressDisplay address={address} />
+            ) : null}
+          </div>
+
+          <p className="mt-[22px] text-center text-[16px] font-medium leading-6 text-[#f0f1f5]">
             {t('acct.wallet.depositHelp')}
           </p>
         </>
       )}
 
       {/* FIAT DEPOSIT FLOW (D24) */}
-      {depositType === 'local' && <LocalCurrencyTab />}
+      {depositType === 'local' && (
+        <div className="mt-4">
+          <LocalCurrencyTab />
+        </div>
+      )}
     </div>
   );
 };

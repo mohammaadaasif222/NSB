@@ -9,6 +9,7 @@ const PAGE_SIZE = 50;
 const MAX_PAGES = 200;
 const CONCURRENCY = 3;
 const CACHE_MS = 60 * 60 * 1000;
+const RETRY_MS = 5 * 60 * 1000;
 
 interface Catalogue {
   games: string[];
@@ -16,7 +17,7 @@ interface Catalogue {
   complete: boolean;
 }
 
-let cached: (Catalogue & { at: number }) | null = null;
+let cached: { catalogue: Catalogue; expires: number } | null = null;
 let inflight: Promise<Catalogue> | null = null;
 
 const escapeXml = (value: string): string =>
@@ -65,18 +66,16 @@ async function fetchCatalogue(): Promise<Catalogue> {
 }
 
 async function catalogue(): Promise<Catalogue> {
-  if (cached && Date.now() - cached.at < CACHE_MS) {
-    return cached;
+  if (cached && Date.now() < cached.expires) {
+    return cached.catalogue;
   }
   inflight ??= fetchCatalogue().finally(() => {
     inflight = null;
   });
   const fresh = await inflight;
-  if (fresh.complete) {
-    cached = { ...fresh, at: Date.now() };
-    return fresh;
-  }
-  return cached ?? fresh;
+  const kept = !fresh.complete && cached?.catalogue.complete ? cached.catalogue : fresh;
+  cached = { catalogue: kept, expires: Date.now() + (fresh.complete ? CACHE_MS : RETRY_MS) };
+  return kept;
 }
 
 const Sitemap = (): null => null;

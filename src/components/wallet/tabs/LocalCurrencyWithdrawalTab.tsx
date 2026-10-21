@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, type InputHTMLAttributes, type ReactNode } from 'react';
 import { toast } from 'react-toastify';
 import api from '@/services/api';
 import { useMe } from '@/context/UserContext';
@@ -6,15 +6,28 @@ import { getDisplayCurrencies } from '@/services/wallet';
 import { getPinStatus } from '@/services/transactionPin';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
+import { useTranslation } from '@/context/I18nContext';
+import Button from '@/components/ui/Button';
+import WalletField, {
+  WALLET_INPUT,
+  WALLET_NOTE,
+  WALLET_PILL,
+  WALLET_VALUE,
+} from '../shared/WalletField';
+import WalletSelect from '../shared/WalletSelect';
+import PaymentMethodGrid from '../shared/PaymentMethodGrid';
 
 interface Props {
   /** True when the error was an account lock the parent now shows. */
   onRestricted?: (err: unknown) => boolean;
   /** True when the error was a KYC refusal the parent now shows. */
   onKycRefused?: (err: unknown) => boolean;
+  /** What can be withdrawn, in the currency the balance is held in — for the % shortcuts. */
+  available?: { amount: string; currency: string };
 }
 
-const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) => {
+const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused, available }) => {
+  const { t } = useTranslation();
   const { me } = useMe();
   // On a 428 it asks for the one-time code and resubmits.
   const { run } = useSeonGuard();
@@ -92,7 +105,9 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
           const currency = currencies.find((c) => c.code === selectedCurrency);
           const countryCode = currency?.country_code || 'BR';
 
-          const response = await api.get(`/wallet/deposit/d24/payment-methods?country=${countryCode}`) as any;
+          const response = (await api.get(
+            `/wallet/deposit/d24/payment-methods?country=${countryCode}`
+          )) as any;
           const methods = response.data?.data || response.data?.methods || [];
           setPaymentMethods(methods);
           setSelectedMethod('');
@@ -118,7 +133,9 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
           const currency = currencies.find((c) => c.code === selectedCurrency);
           const countryCode = currency?.country_code || 'BR';
 
-          const response = await api.get(`/wallet/withdrawal/d24/banks?country=${countryCode}`) as any;
+          const response = (await api.get(
+            `/wallet/withdrawal/d24/banks?country=${countryCode}`
+          )) as any;
           setBanks(response.data.banks || []);
           setSelectedBank('');
         } catch (err) {
@@ -142,7 +159,9 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
           const currency = currencies.find((c) => c.code === selectedCurrency);
           const countryCode = currency?.country_code || 'BR';
 
-          const response = await api.get(`/wallet/deposit/d24/document-types?country=${countryCode}`) as any;
+          const response = (await api.get(
+            `/wallet/deposit/d24/document-types?country=${countryCode}`
+          )) as any;
           const docTypesData = response.data?.data?.document_types || [];
           // Extract type codes from objects
           const docTypeCodes = docTypesData.map((type: any) =>
@@ -188,21 +207,27 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
 
       const currency = currencies.find((c) => c.code === selectedCurrency);
 
-      const response = await run((headers) => api.post('/wallet/withdrawal/d24/cashout', {
-        amount,
-        currency: selectedCurrency,
-        country: currency?.country_code || 'BR',
-        beneficiary_name: beneficiaryName,
-        beneficiary_lastname: beneficiaryLastname,
-        bank_code: selectedBank,
-        bank_branch: bankBranch,
-        bank_account: bankAccount,
-        account_type: accountType,
-        document_id: documentId,
-        document_type: documentType,
-        email: me?.email,
-        ...(pinRequired ? { transaction_pin: pin } : {}),
-      }, { headers })) as any;
+      const response = (await run((headers) =>
+        api.post(
+          '/wallet/withdrawal/d24/cashout',
+          {
+            amount,
+            currency: selectedCurrency,
+            country: currency?.country_code || 'BR',
+            beneficiary_name: beneficiaryName,
+            beneficiary_lastname: beneficiaryLastname,
+            bank_code: selectedBank,
+            bank_branch: bankBranch,
+            bank_account: bankAccount,
+            account_type: accountType,
+            document_id: documentId,
+            document_type: documentType,
+            email: me?.email,
+            ...(pinRequired ? { transaction_pin: pin } : {}),
+          },
+          { headers }
+        )
+      )) as any;
 
       console.log('[Withdrawal] Cashout created:', response.data);
       setCashoutId(response.data.cashout_id);
@@ -213,7 +238,8 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
       if (isStepUpCancelled(err)) return;
       if (onRestricted?.(err)) return;
       if (onKycRefused?.(err)) return;
-      const errorMsg = err?.response?.data?.message || err?.message || 'Failed to submit withdrawal';
+      const errorMsg =
+        err?.response?.data?.message || err?.message || 'Failed to submit withdrawal';
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -235,77 +261,38 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
     setStep('amount');
   };
 
-  // Common UI: Currency Dropdown + Payment Methods
-  const renderCurrencyAndMethods = () => (
-    <div className="space-y-4">
-      {/* Currency Dropdown */}
-      <div>
-        <label className="text-xs font-semibold text-slate-300 mb-2 block">Select Currency</label>
-        {loadingCurrencies ? (
-          <div className="text-slate-400 text-xs">Loading currencies...</div>
-        ) : (
-          <select
-            value={selectedCurrency}
-            onChange={(e) => setSelectedCurrency(e.target.value)}
-            className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-slate-100 focus:outline-none focus:border-emerald-500 text-sm"
-          >
-            <option value="">Select a currency...</option>
-            {currencies.map((currency) => (
-              <option key={currency.code} value={currency.code}>
-                {currency.code} - {currency.name}
-              </option>
-            ))}
-          </select>
-        )}
+  const currencyRow = currencies.find((c) => c.code === selectedCurrency);
+  const sign = currencyRow?.symbol || '$';
+  // The shortcuts need the balance in this currency; offered only when it is
+  // the one the balance is held in.
+  const availableHere =
+    available && available.currency === selectedCurrency ? Number(available.amount) : NaN;
+  const setPercent = (pct: number): void => {
+    if (!Number.isFinite(availableHere) || availableHere <= 0) return;
+    setAmount(((availableHere * pct) / 100).toFixed(2).replace(/\.?0+$/, ''));
+  };
+  const pill = (
+    id: string,
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+    placeholder: string,
+    extra: Partial<InputHTMLAttributes<HTMLInputElement>> = {}
+  ) => (
+    <WalletField htmlFor={id} label={label}>
+      <div className={WALLET_PILL}>
+        <input
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          autoComplete="off"
+          spellCheck={false}
+          className={WALLET_INPUT}
+          {...extra}
+        />
       </div>
-
-      {/* Payment Methods */}
-      {selectedCurrency && (
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-2 block">Payment Method</label>
-          {loadingMethods ? (
-            <div className="text-slate-400 text-xs">Loading payment methods...</div>
-          ) : paymentMethods.length > 0 ? (
-            <div className="grid grid-cols-3 gap-3 max-h-48 overflow-y-auto">
-              {paymentMethods.map((method) => (
-                <button
-                  key={method.code}
-                  onClick={() => {
-                    setSelectedMethod(method.code);
-                    // Automatically proceed to form step
-                    setTimeout(() => setStep('form'), 100);
-                  }}
-                  className={`p-4 rounded-lg border transition flex flex-col items-center justify-center ${
-                    selectedMethod === method.code
-                      ? 'border-emerald-500 bg-emerald-900/20'
-                      : 'border-slate-700 hover:border-emerald-500 hover:bg-slate-800/50'
-                  }`}
-                  title={method.name}
-                >
-                  {method.logo ? (
-                    <img
-                      src={method.logo}
-                      alt={method.name}
-                      className="w-12 h-12 object-contain mb-2"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-12 h-12 mb-2 bg-slate-700 rounded flex items-center justify-center">
-                      <span className="text-xs font-bold text-slate-300">{method.code.substring(0, 2)}</span>
-                    </div>
-                  )}
-                  <p className="text-xs font-semibold text-slate-100 text-center">{method.code}</p>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-slate-400 text-xs">No methods available for this currency</p>
-          )}
-        </div>
-      )}
-    </div>
+    </WalletField>
   );
 
   // ─────────────────────────────────────────────────────────────────────
@@ -314,195 +301,243 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
   if (step === 'amount') {
     return (
       <div className="space-y-4">
-        <h3 className="text-slate-300 font-semibold text-sm">Select Withdrawal Method</h3>
+        <WalletField htmlFor="lw-currency" label={t('pref.currency')}>
+          {loadingCurrencies ? (
+            <div className={WALLET_PILL}>
+              <span className="text-[16px] leading-6 text-[#9da2b4]">{t('common.loading')}</span>
+            </div>
+          ) : (
+            <WalletSelect
+              id="lw-currency"
+              options={currencies.map((c) => ({ value: c.code, label: c.code, detail: c.name }))}
+              value={selectedCurrency}
+              onChange={setSelectedCurrency}
+              placeholder={t('acct.wallet.selectCurrency')}
+            />
+          )}
+        </WalletField>
 
-        {renderCurrencyAndMethods()}
-
+        {selectedCurrency &&
+          (loadingMethods ? (
+            <p className={`${WALLET_NOTE} py-8 text-center`}>{t('acct.local.loadingMethods')}</p>
+          ) : paymentMethods.length > 0 ? (
+            <PaymentMethodGrid
+              label={t('acct.local.withdrawMethod')}
+              methods={paymentMethods.map((m) => ({
+                key: m.code,
+                name: m.name ?? m.code,
+                logo: m.logo,
+              }))}
+              selected={selectedMethod}
+              onSelect={(code) => {
+                setSelectedMethod(code);
+                // Automatically proceed to form step
+                setTimeout(() => setStep('form'), 100);
+              }}
+            />
+          ) : (
+            <p className={`${WALLET_NOTE} py-8 text-center`}>
+              {t('acct.local.noMethods', { currency: selectedCurrency })}
+            </p>
+          ))}
       </div>
     );
   }
 
   // ─────────────────────────────────────────────────────────────────────
-  // STEP 2: Amount & Beneficiary Details Form
+  // STEP 2: The design's form — the beneficiary, the bank, the account and
+  // the amount, 14 apart — with the details D24 also asks for after the
+  // account number.
   // ─────────────────────────────────────────────────────────────────────
   if (step === 'form') {
     return (
-      <div className="space-y-3 max-h-full overflow-y-auto">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-slate-300 font-semibold text-sm">Withdrawal Information</h3>
-          <button
-            onClick={() => setStep('amount')}
-            className="text-xs text-slate-400 hover:text-slate-300"
-          >
-            ← Change
-          </button>
-        </div>
+      <div>
+        <div className="space-y-3.5">
+          {/* The method picked, with the way back to the tiles. */}
+          <WalletField label={t('acct.local.paymentMethod')}>
+            <div className={WALLET_PILL}>
+              <span className={`min-w-0 flex-1 truncate ${WALLET_VALUE}`}>
+                {paymentMethods.find((m) => m.code === selectedMethod)?.name ?? selectedMethod} ·{' '}
+                {selectedCurrency}
+              </span>
+              <button
+                type="button"
+                onClick={() => setStep('amount')}
+                className="shrink-0 text-[14px] font-medium leading-5 text-[#ffe779] hover:underline"
+              >
+                {t('profile.change')}
+              </button>
+            </div>
+          </WalletField>
 
-        <div className="bg-slate-800/30 p-3 rounded-lg border border-slate-700 space-y-1 text-xs">
-          <p><span className="text-slate-400">Currency:</span> <span className="text-emerald-400 font-semibold">{selectedCurrency}</span></p>
-          <p><span className="text-slate-400">Method:</span> <span className="text-emerald-400 font-semibold">{selectedMethod}</span></p>
-        </div>
-
-        {/* Amount */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Amount ({selectedCurrency}) *</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="Enter amount"
-            className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
-          />
-        </div>
-
-        {/* Beneficiary Name */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">First Name *</label>
-          <input
-            type="text"
-            value={beneficiaryName}
-            onChange={(e) => setBeneficiaryName(e.target.value)}
-            placeholder="First name"
-            className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
-          />
-        </div>
-
-        {/* Beneficiary Lastname */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Last Name *</label>
-          <input
-            type="text"
-            value={beneficiaryLastname}
-            onChange={(e) => setBeneficiaryLastname(e.target.value)}
-            placeholder="Last name"
-            className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
-          />
-        </div>
-
-        {/* Document Type */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Document Type</label>
-          {loadingDocumentTypes ? (
-            <div className="text-slate-400 text-xs">Loading document types...</div>
-          ) : documentTypes.length > 0 ? (
-            <select
-              value={documentType}
-              onChange={(e) => setDocumentType(e.target.value)}
-              className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 focus:outline-none focus:border-emerald-500 text-xs"
-            >
-              <option value="">Select document type...</option>
-              {documentTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type="text"
-              value={documentType}
-              onChange={(e) => setDocumentType(e.target.value)}
-              placeholder="e.g., CPF"
-              className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
-            />
-          )}
-        </div>
-
-        {/* Document ID */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Document ID</label>
-          <input
-            type="text"
-            value={documentId}
-            onChange={(e) => setDocumentId(e.target.value)}
-            placeholder="Document number"
-            className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
-          />
-        </div>
-
-        {/* Bank Selection */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Select Bank *</label>
-          {loadingBanks ? (
-            <div className="text-slate-400 text-xs">Loading banks...</div>
-          ) : (
-            <select
-              value={selectedBank}
-              onChange={(e) => setSelectedBank(e.target.value)}
-              className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 focus:outline-none focus:border-emerald-500 text-xs"
-            >
-              <option value="">Select a bank...</option>
-              {banks.map((bank) => (
-                <option key={bank.code} value={bank.code}>
-                  {bank.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        {/* Bank Account */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Bank Account Number *</label>
-          <input
-            type="text"
-            value={bankAccount}
-            onChange={(e) => setBankAccount(e.target.value)}
-            placeholder="Full account number"
-            className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
-          />
-        </div>
-
-        {/* Bank Branch */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Bank Branch Code *</label>
-          <input
-            type="text"
-            value={bankBranch}
-            onChange={(e) => setBankBranch(e.target.value)}
-            placeholder="Branch code"
-            className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
-          />
-        </div>
-
-        {/* Account Type */}
-        <div>
-          <label className="text-xs font-semibold text-slate-300 mb-1 block">Account Type</label>
-          <select
-            value={accountType}
-            onChange={(e) => setAccountType(e.target.value)}
-            className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 focus:outline-none focus:border-emerald-500 text-xs"
-          >
-            <option value="">Select type...</option>
-            <option value="C">Checking</option>
-            <option value="S">Savings</option>
-          </select>
-        </div>
-
-        {pinRequired && (
-          <div>
-            <label className="text-xs font-semibold text-slate-300 mb-1 block">Transaction PIN *</label>
-            <input
-              type="password"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={6}
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="4-6 digits"
-              className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs tracking-[0.4em]"
-            />
+          <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-x-[21px]">
+            {pill(
+              'lw-first',
+              `${t('auth.firstName')} *`,
+              beneficiaryName,
+              setBeneficiaryName,
+              t('acct.local.enterName'),
+              { autoComplete: 'given-name' }
+            )}
+            {pill(
+              'lw-last',
+              `${t('auth.lastName')} *`,
+              beneficiaryLastname,
+              setBeneficiaryLastname,
+              t('acct.local.enterName'),
+              { autoComplete: 'family-name' }
+            )}
           </div>
-        )}
 
-        {/* Submit Button */}
-        <button
+          <WalletField htmlFor="lw-bank" label={`${t('acct.local.selectBank')} *`}>
+            {loadingBanks ? (
+              <div className={WALLET_PILL}>
+                <span className="text-[16px] leading-6 text-[#9da2b4]">{t('common.loading')}</span>
+              </div>
+            ) : (
+              <WalletSelect
+                id="lw-bank"
+                options={banks.map((b) => ({ value: String(b.code), label: b.name as string }))}
+                value={selectedBank}
+                onChange={setSelectedBank}
+                placeholder={t('acct.local.selectBank')}
+              />
+            )}
+          </WalletField>
+
+          {pill(
+            'lw-account',
+            `${t('acct.local.accountNumber')} *`,
+            bankAccount,
+            setBankAccount,
+            'XXXX XXXX XXXX XXXX',
+            { inputMode: 'numeric' }
+          )}
+
+          <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-x-[21px]">
+            {pill(
+              'lw-branch',
+              `${t('acct.local.branchCode')} *`,
+              bankBranch,
+              setBankBranch,
+              t('acct.local.branchCode')
+            )}
+            <WalletField htmlFor="lw-account-type" label={t('acct.local.accountType')}>
+              <WalletSelect
+                id="lw-account-type"
+                options={[
+                  { value: 'C', label: t('acct.local.checking') },
+                  { value: 'S', label: t('acct.local.savings') },
+                ]}
+                value={accountType as '' | 'C' | 'S'}
+                onChange={setAccountType}
+                placeholder={t('acct.local.selectType')}
+              />
+            </WalletField>
+          </div>
+
+          <div className="grid gap-3.5 sm:grid-cols-2 sm:gap-x-[21px]">
+            <WalletField htmlFor="lw-doc-type" label={t('acct.local.documentType')}>
+              {loadingDocumentTypes ? (
+                <div className={WALLET_PILL}>
+                  <span className="text-[16px] leading-6 text-[#9da2b4]">
+                    {t('common.loading')}
+                  </span>
+                </div>
+              ) : documentTypes.length > 0 ? (
+                <WalletSelect
+                  id="lw-doc-type"
+                  options={documentTypes.map((type) => ({ value: type, label: type }))}
+                  value={documentType}
+                  onChange={setDocumentType}
+                  placeholder={t('acct.local.selectType')}
+                />
+              ) : (
+                <div className={WALLET_PILL}>
+                  <input
+                    id="lw-doc-type"
+                    value={documentType}
+                    onChange={(e) => setDocumentType(e.target.value)}
+                    placeholder="CPF"
+                    className={WALLET_INPUT}
+                  />
+                </div>
+              )}
+            </WalletField>
+            {pill(
+              'lw-doc',
+              t('acct.local.documentId'),
+              documentId,
+              setDocumentId,
+              t('acct.local.documentPlaceholder')
+            )}
+          </div>
+
+          {pinRequired &&
+            pill(
+              'lw-pin',
+              `${t('acct.pin.label')} *`,
+              pin,
+              (v) => setPin(v.replace(/\D/g, '').slice(0, 6)),
+              t('acct.pin.placeholder'),
+              {
+                type: 'password',
+                inputMode: 'numeric',
+                maxLength: 6,
+                className: `${WALLET_INPUT} tracking-[0.4em]`,
+              }
+            )}
+
+          {/* The amount, its sign at the end, and the quick shares under it. */}
+          <div>
+            <WalletField
+              htmlFor="lw-amount"
+              label={`${t('acct.wallet.amountIn', { currency: selectedCurrency })} *`}
+            >
+              <div className={WALLET_PILL}>
+                <input
+                  id="lw-amount"
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
+                  placeholder={t('acct.wallet.enterAmountPlain')}
+                  className={`${WALLET_INPUT} tabular-nums`}
+                />
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-[18px] font-bold leading-6 text-[#9da2b4]"
+                >
+                  {sign}
+                </span>
+              </div>
+            </WalletField>
+            {Number.isFinite(availableHere) && availableHere > 0 && (
+              <div className="mt-[9px] flex gap-2.5 sm:gap-1.5">
+                {[25, 50, 75, 100].map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPercent(p)}
+                    className="h-9 w-[72px] rounded-full bg-white/20 text-[16px] leading-6 text-[#f0f1f5] transition-colors hover:bg-white/30 sm:h-[40.5px] sm:w-[57px] sm:text-[14px] sm:leading-5"
+                  >
+                    {p}%
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          fullWidth
           onClick={handleSubmitWithdrawal}
           disabled={loading}
-          className="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition font-medium disabled:opacity-50 text-sm mt-2"
+          className="mt-[23px]"
         >
-          {loading ? 'Processing...' : 'Submit Withdrawal'}
-        </button>
+          {loading ? t('acct.buy.processing') : t('acct.wallet.tabWithdraw')}
+        </Button>
       </div>
     );
   }
@@ -511,30 +546,35 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) =
   // STEP 3: Success
   // ─────────────────────────────────────────────────────────────────────
   if (step === 'success') {
+    const row = (label: string, value: ReactNode) => (
+      <div className="flex items-center justify-between gap-3 py-1.5">
+        <span className="text-[#9da2b4]">{label}</span>
+        <span className="min-w-0 truncate text-end font-medium text-[#f0f1f5]">{value}</span>
+      </div>
+    );
+
     return (
-      <div className="space-y-4 text-center py-6">
-        <div className="text-3xl">✅</div>
-        <h3 className="text-lg font-semibold text-emerald-400">Withdrawal Submitted!</h3>
+      <div className="py-2 text-center">
+        <h3 className="text-[22px] font-semibold leading-8 text-[#f0f1f5]">
+          {t('acct.local.successTitle')}
+        </h3>
+        <p className="mx-auto mt-2 max-w-[400px] text-[14px] leading-5 text-[#9da2b4]">
+          {t('acct.local.successBody')}
+        </p>
 
-        <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700 space-y-2 text-left text-xs">
-          <p><span className="text-slate-400">Cashout ID:</span> <code className="text-emerald-400 font-mono text-xs break-all">{cashoutId}</code></p>
-          <p><span className="text-slate-400">Currency:</span> <span className="font-semibold">{selectedCurrency}</span></p>
-          <p><span className="text-slate-400">Amount:</span> <span className="font-semibold">{amount}</span></p>
-          <p><span className="text-slate-400">Status:</span> <span className="text-blue-400">PENDING</span></p>
+        <div className="mt-5 rounded-[24px] border border-white/10 bg-white/5 px-5 py-3 text-start text-[14px] leading-5">
+          {row(t('acct.local.cashoutId'), <code className="font-mono">{cashoutId}</code>)}
+          {row(t('pref.currency'), selectedCurrency)}
+          {row(t('tx.amount'), amount)}
+          {row(
+            t('acct.local.status'),
+            <span className="text-[#ffe779]">{t('acct.local.pending')}</span>
+          )}
         </div>
 
-        <div className="bg-blue-900/30 border border-blue-600 p-2 rounded-lg">
-          <p className="text-blue-300 text-xs">
-            Your withdrawal is being processed. Check your email for confirmation.
-          </p>
-        </div>
-
-        <button
-          onClick={handleReset}
-          className="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition font-medium text-sm"
-        >
-          New Withdrawal
-        </button>
+        <Button type="button" fullWidth onClick={handleReset} className="mt-[23px]">
+          {t('acct.local.newWithdrawal')}
+        </Button>
       </div>
     );
   }

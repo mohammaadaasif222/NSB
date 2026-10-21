@@ -1,7 +1,7 @@
 import type { TranslationKey } from '@/i18n/locales';
 
 /**
- * The summary terms the Affiliate page prints.
+ * The summary terms the Referral page prints.
  *
  * NOT THE LEGAL DOCUMENT. `/terms-of-service` carries the real one, written
  * against how the product actually behaves; this is the short restatement the
@@ -28,6 +28,10 @@ export interface TermsSection {
 export const TERMS_INTRO: TranslationKey = 'legal.terms.intro';
 
 export const TERMS_SECTIONS: readonly TermsSection[] = [
+  {
+    heading: 'ref.how.title',
+    points: ['ref.how.p1', 'ref.how.p2', 'ref.how.p3', 'ref.how.p4', 'ref.how.p5'],
+  },
   {
     heading: 'legal.terms.about.title',
     points: ['legal.terms.about.p1'],

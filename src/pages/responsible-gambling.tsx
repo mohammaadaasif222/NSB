@@ -140,7 +140,7 @@ const ResponsibleGamblingPage: FC<Props> = ({ sections, items }) => {
               starts, so a window breakpoint reads "desktop" far too early.
 
               `rl-glass-edge`, not `rl-panel`: the design's panel here is the
-              same "Glass Effect" node the Affiliate page uses — a black 20%
+              same "Glass Effect" node the Referral page uses — a black 20%
               fill set to screen, which over this near-black stage comes to
               nothing. Sampled from its own render the panel reads 7,8,10, the
               page's own colour, so the edge is all there is. It carries the

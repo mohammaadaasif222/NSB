@@ -193,7 +193,7 @@ const NotificationPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
         </Link>
       </header>
 
-      <div className="mt-[15px] lg:mt-[calc(var(--u)*12)]">
+      <div className="mt-[19px] lg:mt-[calc(var(--u)*12)]">
         <SegmentedTabs
           items={TABS.map((item) => ({ key: item.key, label: t(item.label) }))}
           active={tab}

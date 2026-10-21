@@ -76,7 +76,14 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
         />
       </div>
 
-      <div role="tabpanel" className="relative z-10 pt-6 sm:pt-[31px]">
+      {/* Deposit and Withdraw open on their Crypto / Local switch, 16 under
+          the tabs; the other forms sit 31 under them. */}
+      <div
+        role="tabpanel"
+        className={`relative z-10 ${
+          active === 'deposit' || active === 'withdraw' ? 'pt-4' : 'pt-6 sm:pt-[31px]'
+        }`}
+      >
         {active === 'deposit' && <DepositTab onLeave={onClose} />}
         {active === 'withdraw' && <WithdrawTab onLeave={onClose} />}
         {active === 'buy' && <BuyCryptoTab />}

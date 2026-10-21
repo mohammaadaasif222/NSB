@@ -128,14 +128,15 @@ const HeaderPopover: FC<Props> = ({
       {open &&
         (sheet ? (
           createPortal(
-            // Into the stage, under the bar (z-30) and over the tab bar (z-30
-            // after it in the tree, so the sheet sits above the page only).
+            // Into the stage, under the bar and over the tab bar, as the phone
+            // design draws it — the sheet starts where the bar ends, so it
+            // only ever covers the page and the tab bar.
             <div
               ref={sheetRef}
               role="dialog"
               aria-modal="true"
               aria-label={label}
-              className="thin-scrollbar fixed inset-x-0 bottom-0 top-[var(--player-bar-h,0px)] z-[29] overflow-y-auto bg-[#07080a]"
+              className="thin-scrollbar fixed inset-x-0 bottom-0 top-[var(--player-bar-h,0px)] z-[31] overflow-y-auto bg-[#07080a]"
             >
               {children}
             </div>,

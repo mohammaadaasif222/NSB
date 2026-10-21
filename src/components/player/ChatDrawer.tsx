@@ -41,6 +41,9 @@ interface Props {
  */
 const SLIDE_MS = 300;
 
+/** Fired by the phone's tab bar to open or close the chat drawer. */
+export const CHAT_TOGGLE_EVENT = 'rl:toggle-chat';
+
 const ChatDrawer: FC<Props> = ({ open, onClose, label, children }) => {
   // useI18n rather than useTranslation: only the full context carries the
   // direction, and which edge the panel slides out towards depends on it.
@@ -121,7 +124,9 @@ const ChatDrawer: FC<Props> = ({ open, onClose, label, children }) => {
       // either, and below ui/Modal (z-70) so the wallet dialog still covers
       // chat rather than fighting it.
       data-chat-drawer={shown ? 'open' : 'closed'}
-      className={`fixed inset-y-0 end-0 z-[60] flex w-full flex-col border-s border-white/10 bg-[#0d0f14] shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-out sm:w-[var(--chat-drawer-w)] ${
+      // A phone keeps the bar in view, as its design draws chat: the
+      // drawer starts where the bar ends, on the page's own black.
+      className={`fixed bottom-0 end-0 top-[var(--player-bar-h,0px)] z-[60] flex w-full flex-col bg-[#07080a] transition-transform duration-300 ease-out sm:top-0 sm:w-[var(--chat-drawer-w)] sm:border-s sm:border-white/10 sm:bg-[#0d0f14] sm:shadow-[0_0_40px_rgba(0,0,0,0.5)] ${
         shown ? 'translate-x-0' : hidden
       }`}
     >

@@ -117,7 +117,7 @@ const SignupFormStep: FC<SignupFormStepProps> = ({
       </Checkbox>
 
       {values.hasCodes && (
-        <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:gap-4">
+        <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 min-[380px]:gap-[18px] sm:gap-4">
           <TextField
             id={`${idPrefix}-promo`}
             label={t('registerModal.promoPlaceholder')}
@@ -147,10 +147,17 @@ const SignupFormStep: FC<SignupFormStepProps> = ({
         key={captchaKey}
         onToken={setCaptchaToken}
         language={locale}
-        className={`!mt-8 ${invalid === 'captcha' ? 'ring-2 ring-[#ef4462]/70' : ''}`}
+        className={`max-sm:!mt-[22px] sm:!mt-8 ${invalid === 'captcha' ? 'ring-2 ring-[#ef4462]/70' : ''}`}
       />
 
-      <Button type="submit" fullWidth loading={submitting} className="!mt-6">
+      <Button
+        type="submit"
+        fullWidth
+        loading={submitting}
+        // `space-y` leaves 14 under each row; the phone design puts Continue
+        // 23 under the captcha.
+        className="max-sm:!mt-[9px] sm:!mt-6"
+      >
         {t('registerModal.continue')}
       </Button>
     </form>
