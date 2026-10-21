@@ -4,6 +4,8 @@ import { jwtDecode } from 'jwt-decode';
 
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 import { loginWithPassword } from '@/services/auth';
 import { analytics, failureReason, type AuthMethod } from '@/services/analytics';
 import { isPlatformRole } from '@/constants/roles';
@@ -77,6 +79,8 @@ export const useLoginForm = ({
 }: Options) => {
   const { login } = useAuth();
   const { t } = useTranslation();
+  // A risky sign-in is challenged for a one-time code.
+  const { run } = useSeonGuard();
 
   const [values, setValues] = useState<LoginValues>({
     identifier: method === 'mobile' ? '' : initialIdentifier,
@@ -108,7 +112,7 @@ export const useLoginForm = ({
     setInvalid(null);
     setSubmitting(true);
     try {
-      const res = await loginWithPassword(identifierFor(method, values), values.password);
+      const res = await run((headers) => loginWithPassword(identifierFor(method, values), values.password, headers));
       const token = res?.data?.token;
 
       // Password accepted, code owed: the server has sent it and holds the
@@ -154,6 +158,7 @@ export const useLoginForm = ({
       toast.success(t('login.success'));
       onLoggedIn();
     } catch (err) {
+      if (isStepUpCancelled(err)) return;
       const apiErr = err as ApiError;
       analytics.auth.loginFailed(tracked, failureReason(apiErr));
       toast.error(apiErr?.message || t('loginModal.failed'));

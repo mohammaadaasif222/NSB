@@ -5,7 +5,7 @@ import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { FieldGroup, IconTile, SettingRow } from '@/components/profile/SectionShell';
 import { LifeBuoyIcon, ShieldIcon, SparklesIcon } from '@/components/icons';
 
-const SUPPORT_EMAIL = 'support@rolluck.com';
+const SUPPORT_EMAIL = 'support@xyzlife.top';
 
 /* The rows were handing `SettingRow` a bare 15px glyph where every other
    section gives it a 38px tile, so this one sat a third of the size of the

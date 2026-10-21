@@ -1,5 +1,4 @@
 import { useMemo, useState, type FC, type ReactNode } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import FaqAccordion from '@/components/player/FaqAccordion';
@@ -10,6 +9,7 @@ import RegularBonusRow from '@/components/bonus/RegularBonusRow';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useBonuses } from '@/hooks/useBonuses';
+import Seo from '@/components/seo/Seo';
 
 const SubHeading: FC<{ children: ReactNode }> = ({ children }) => (
   <h2 className="text-[20px] font-semibold leading-7 tracking-[-0.02em] text-white lg:text-[length:max(14px,calc(var(--u)*24))] lg:leading-[calc(var(--u)*32)]">
@@ -57,9 +57,7 @@ const BonusesPage: FC = () => {
   if (!bonusesOn || summary?.enabled === false) {
     return (
       <PlayerLayout>
-        <Head>
-          <title>{`${t('bonus.title')} · ROLLUCK`}</title>
-        </Head>
+        <Seo title={t('bonus.title')} noindex />
         <div className={COLUMN}>
           <section className={PANEL}>
             <h1 className="text-[22px] font-semibold leading-8 text-[#f0f1f5]">
@@ -80,9 +78,7 @@ const BonusesPage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('bonus.title')} · ROLLUCK`}</title>
-      </Head>
+      <Seo title={t('bonus.title')} description={t('misc.meta.bonuses')} />
 
       <div className={COLUMN}>
         {error && (

@@ -4,7 +4,23 @@
  */
 export const en = {
   // App shell
-  'misc.meta.description': 'ROLLUCK: originals, new releases, featured games and slots.',
+  'misc.meta.description':
+    'ROLLUCK is a crypto casino with originals, slots, live casino, table games and new releases. 18+. Play responsibly.',
+  'misc.meta.homeTitle': 'ROLLUCK — Crypto Casino: Originals, Slots & Live Casino',
+  'misc.meta.casino':
+    'Browse the ROLLUCK casino: originals, slots, live dealer tables, table games and bonus buys, all playable with crypto.',
+  'misc.meta.category':
+    'Browse every {category} game at ROLLUCK, the crypto casino, and open any title to see its details.',
+  'misc.meta.game':
+    'Play {title} by {provider} at ROLLUCK, the crypto casino. See the game details and discover similar titles.',
+  'misc.meta.gameRtp':
+    'Play {title} by {provider} at ROLLUCK, the crypto casino. RTP {rtp}%. See the game details and discover similar titles.',
+  'misc.meta.promotions':
+    'Current ROLLUCK promotions for casino and sports players. Check each offer and its terms before you take part.',
+  'misc.meta.bonuses':
+    'ROLLUCK bonuses: the welcome pack and regular bonuses, with the terms and wagering for each.',
+  'misc.meta.rewards':
+    'ROLLUCK rewards and VIP levels: rakeback, cashback and the perks unlocked at every tier.',
 
   // Auth fields and helpers
   'misc.otp.digit': 'Digit {n}',

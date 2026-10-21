@@ -8,7 +8,6 @@ import {
   type HTMLAttributeReferrerPolicy,
 } from 'react';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
@@ -19,10 +18,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { gameHref, playHref } from '@/constants/games';
 import { fetchGameBySlug } from '@/services/games.server';
+import { markUnavailable } from '@/utils/unavailable.server';
 import { currentGameDevice, launchGame } from '@/services/games';
 import { requestBalanceRefresh } from '@/utils/balanceEvents';
 import { trackGameLaunch } from '@/utils/events';
 import type { ApiError, Game, GameLaunch, GameMode } from '@/types';
+import Seo from '@/components/seo/Seo';
+import { gameDescription } from '@/components/seo/gameMeta';
 
 interface Props {
   game: Game | null;
@@ -196,9 +198,7 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
   if (!game) {
     return (
       <PlayerLayout>
-        <Head>
-          <title>ROLLUCK</title>
-        </Head>
+        <Seo title="ROLLUCK" bareTitle noindex />
         <div className="p-6 max-w-lg mx-auto text-center space-y-4">
           <p className="text-sm text-slate-400">
             {failed ? t('dash.catalogueUnavailable') : t('game.notFound')}
@@ -230,9 +230,14 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${game.title} · ROLLUCK`}</title>
-      </Head>
+      <Seo
+        title={game.title}
+        description={gameDescription(t, game)}
+        path={gameHref(game.slug)}
+        image={game.image_url}
+        imageAlt={game.title}
+        card={game.image_url ? 'summary' : 'summary_large_image'}
+      />
 
       <div className="p-2 sm:p-4 lg:p-6 max-w-[1600px] mx-auto space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -359,7 +364,7 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({ params, req, res }) => {
   const raw = params?.slug;
   const slug = Array.isArray(raw) ? raw[0] : raw;
   if (!slug) {
@@ -372,6 +377,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
     return { notFound: true };
   }
   if (lookup.status === 'failed') {
+    markUnavailable({ req, res });
     return { props: { game: null, failed: true } };
   }
 

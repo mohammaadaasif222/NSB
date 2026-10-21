@@ -1,6 +1,5 @@
 import type { FC } from 'react';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
@@ -8,6 +7,7 @@ import LegalPanel from '@/components/legal/LegalPanel';
 import type { LegalPageData } from '@/components/legal/legalContent';
 import { fetchLegalPagesServer } from '@/services/legalPages.server';
 import { useTranslation } from '@/context/I18nContext';
+import Seo from '@/components/seo/Seo';
 
 interface Props {
   pages: LegalPageData[];
@@ -41,10 +41,7 @@ const TermsAndConditions: FC<Props> = ({ pages, updatedAt }) => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('legal.page.title')} · ROLLUCK`}</title>
-        <meta name="description" content={t('legal.page.metaDescription')} />
-      </Head>
+      <Seo title={t('legal.page.title')} description={t('legal.page.metaDescription')} />
 
       {/* The same 1544 frame the rest of the app lays itself out in. The design
         draws this page's panels at 1548 and its own footer at 1544 — four

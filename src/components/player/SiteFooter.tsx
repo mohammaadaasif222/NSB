@@ -33,10 +33,10 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
 ];
 
 const CONTACTS: { icon: StaticImageData; label: TranslationKey; email: string }[] = [
-  { icon: questions, label: 'lobby.footer.contactQuestions', email: 'support@rolluck.com' },
-  { icon: bug, label: 'lobby.footer.contactBugBounty', email: 'bugbounty@rolluck.com' },
-  { icon: partner, label: 'lobby.footer.contactPartner', email: 'affiliate@rolluck.com' },
-  { icon: marketing, label: 'lobby.footer.contactMarketing', email: 'pr@rolluck.com' },
+  { icon: questions, label: 'lobby.footer.contactQuestions', email: 'support@xyzlife.top' },
+  { icon: bug, label: 'lobby.footer.contactBugBounty', email: 'bugbounty@xyzlife.top' },
+  { icon: partner, label: 'lobby.footer.contactPartner', email: 'affiliate@xyzlife.top' },
+  { icon: marketing, label: 'lobby.footer.contactMarketing', email: 'pr@xyzlife.top' },
 ];
 
 const PAYMENTS: { mark: StaticImageData; label: string }[] = [
@@ -213,7 +213,7 @@ const SiteFooter: FC = () => {
 
   const help: FooterLink[] = [
     { label: t('nav.blogs'), href: '/blogs' },
-    { label: t('lobby.footer.reportBug'), href: 'mailto:bugbounty@rolluck.com' },
+    { label: t('lobby.footer.reportBug'), href: 'mailto:bugbounty@xyzlife.top' },
     ...(termsOn
       ? [
           { label: t('lobby.footer.privacy'), href: '/privacy-policy' },

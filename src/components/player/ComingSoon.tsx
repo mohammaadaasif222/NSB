@@ -1,11 +1,11 @@
 import type { FC } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
 import { useTranslation } from '@/context/I18nContext';
 import type { IconProps } from '@/components/icons';
 import type { TranslationKey } from '@/i18n/locales';
+import Seo from '@/components/seo/Seo';
 
 /**
  * The stand-in for a rail destination that has no feature behind it yet.
@@ -58,9 +58,7 @@ export const createComingSoonPage = (titleKey: TranslationKey, icon: FC<IconProp
 
     return (
       <PlayerLayout>
-        <Head>
-          <title>{`${title} — ROLLUCK`}</title>
-        </Head>
+        <Seo title={title} />
         <ComingSoon title={title} icon={icon} />
         <div className="mx-auto mt-10 max-w-[1600px] lg:mt-[calc(var(--u)*80)]">
           <SiteFooter />

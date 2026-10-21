@@ -37,7 +37,7 @@ const BlogCard: FC<{ post: BlogPost }> = ({ post }) => {
       <div className="relative aspect-[502/199]">
         <Image
           src={post.image}
-          alt=""
+          alt={t(post.title)}
           fill
           sizes="(min-width: 1024px) 27vw, (min-width: 640px) 45vw, 90vw"
           className="object-cover"

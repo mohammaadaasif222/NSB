@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { isPlatformRole } from '@/constants/roles';
 import { trackSignupComplete } from '@/utils/events';
+import Seo from '@/components/seo/Seo';
 
 import type { JwtPayload } from '@/types';
 
@@ -103,6 +104,7 @@ const SteamCallback: FC = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center text-white/70">
+      <Seo title={t('misc.steam.completing')} />
       {t('misc.steam.completing')}
     </div>
   );

@@ -1,20 +1,25 @@
 interface Props {
   enabled: boolean;
   onToggle: () => void;
+  label?: string;
+  disabled?: boolean;
 }
 
 /**
  * The account area's switch. Sized to match `SoonToggle` so a live control and
  * an inert one line up in the same column.
  */
-const ToggleSwitch = ({ enabled, onToggle }: Props) => (
+const ToggleSwitch = ({ enabled, onToggle, label, disabled = false }: Props) => (
   <button
     onClick={onToggle}
     role="switch"
     aria-checked={enabled}
+    aria-label={label}
+    disabled={disabled}
+    aria-busy={disabled || undefined}
     type="button"
     /* 70 x 30 in the design, in `--u` so it tracks the row it sits in. */
-    className={`relative h-[calc(var(--u)*30)] w-[calc(var(--u)*70)] shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#fcd535] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07080b] ${
+    className={`relative h-[calc(var(--u)*30)] w-[calc(var(--u)*70)] shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#fcd535] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07080b] disabled:cursor-wait disabled:opacity-60 ${
       enabled ? 'bg-[#fcd535]' : 'bg-white/20'
     }`}
   >

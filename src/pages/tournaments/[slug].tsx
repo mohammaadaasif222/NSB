@@ -1,6 +1,5 @@
 import type { FC } from 'react';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 import type { StaticImageData } from 'next/image';
 
@@ -18,6 +17,7 @@ import { useTranslation } from '@/context/I18nContext';
 import type { TranslationKey } from '@/i18n/locales';
 import { fetchShelfList } from '@/services/games.server';
 import type { Game } from '@/types';
+import Seo from '@/components/seo/Seo';
 import {
   LEADERBOARD,
   PODIUM,
@@ -87,9 +87,7 @@ const TournamentDetailPage: FC<Props> = ({
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${heading} · ROLLUCK`}</title>
-      </Head>
+      <Seo title={heading} />
 
       {/* Explicit margins rather than `space-y`: the design's gaps down this
           column are 40 / 55 / 73 running and 40 / 40 / 86 ended, and one

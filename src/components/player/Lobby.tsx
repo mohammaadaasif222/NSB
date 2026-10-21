@@ -1,5 +1,4 @@
 import type { FC, ReactNode } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import HomeHero from '@/components/player/HomeHero';
@@ -20,10 +19,10 @@ import SiteFooter from '@/components/player/SiteFooter';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import type { LobbyProps } from '@/services/lobby.server';
+import Seo, { type SeoProps } from '@/components/seo/Seo';
 
 interface Props extends LobbyProps {
-  /** Document title. */
-  title: string;
+  seo: SeoProps;
   /**
    * The route this lobby lives at. Shelf pager links are built against it, so
    * paging a shelf on /casino stays on /casino rather than jumping home.
@@ -95,7 +94,7 @@ const Lobby: FC<Props> = ({
   providers,
   query,
   catalogueFailed,
-  title,
+  seo,
   basePath,
   variant,
 }) => {
@@ -151,9 +150,7 @@ const Lobby: FC<Props> = ({
 
   return (
     <PlayerLayout backdrop={player ? undefined : <LandingBackdrop />}>
-      <Head>
-        <title>{title}</title>
-      </Head>
+      <Seo {...seo} />
 
       {/* The design's 1548px content column, centred in the space beside the
           rail; `--u` (set by PlayerLayout) scales it on a narrower desktop. */}

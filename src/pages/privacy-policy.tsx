@@ -1,5 +1,7 @@
 import type { GetServerSideProps, NextPage } from 'next';
 
+import { localizedPath } from '@/constants/site';
+
 /**
  * The Privacy Policy no longer has a page of its own.
  *
@@ -15,8 +17,11 @@ import type { GetServerSideProps, NextPage } from 'next';
  * "Privacy policy" heading — the panel component takes either document — and
  * drop the second panel from the Terms page.
  */
-export const getServerSideProps: GetServerSideProps = async () => ({
-  redirect: { destination: '/terms-of-service#privacy-policy', permanent: true },
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => ({
+  redirect: {
+    destination: localizedPath(locale ?? 'en', '/terms-of-service#privacy-policy'),
+    permanent: true,
+  },
 });
 
 /* Never rendered — the redirect happens before this would run. */

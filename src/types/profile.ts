@@ -42,6 +42,17 @@ export interface ApiUser {
   avatar_url?: string | null;
   is_email_verified?: boolean;
   created_at?: string;
+  /** Present while a risk lock is on the account. Never says why. */
+  account_restriction?: AccountRestriction | null;
+}
+
+export interface AccountRestriction {
+  lock: 'SOFT_LOCK' | 'HARD_LOCK' | 'BETTING_LOCK';
+  blocked_actions: ('LOGIN' | 'DEPOSIT' | 'GAMEPLAY' | 'TIP' | 'WITHDRAW')[];
+  /** CONTACT_VERIFICATION: verifying a real email lifts it. */
+  requires: 'CONTACT_VERIFICATION' | 'KYC' | null;
+  unlock_kyc_level: number | null;
+  message: string;
   /** Social sign-in provider (google, telegram, steam). Null for email &
    * password accounts — used to decide whether a current password is needed
    * when changing the password. */

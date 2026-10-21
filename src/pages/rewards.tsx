@@ -1,5 +1,4 @@
 import { useEffect, useState, type FC } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
@@ -18,6 +17,7 @@ import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useRewards } from '@/hooks/useRewards';
 import { REWARD_TITLE_KEYS, REWARD_TYPES } from '@/constants/rewards';
 import type { RewardType, VipTier } from '@/types';
+import Seo from '@/components/seo/Seo';
 import {
   CARD,
   GHOST_BUTTON,
@@ -197,9 +197,7 @@ const RewardsPage: FC = () => {
   if (!rewardsOn) {
     return (
       <PlayerLayout>
-        <Head>
-          <title>{`${t('rewards.title')} · ROLLUCK`}</title>
-        </Head>
+        <Seo title={t('rewards.title')} noindex />
         <div className="mx-auto max-w-[1600px] pb-2">
           <section className={`${PANEL} py-16 text-center`}>
             <h1 className={PANEL_TITLE}>{t('rewards.switchedOff')}</h1>
@@ -215,9 +213,7 @@ const RewardsPage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('rewards.title')} · ROLLUCK`}</title>
-      </Head>
+      <Seo title={t('rewards.title')} description={t('misc.meta.rewards')} />
 
       {/* The wallet page's frame: the 1548 column, 40 under the bar, the
           44px title. */}

@@ -21,6 +21,12 @@ const REMOTE_IMAGE_HOSTS = [
 const nextConfig = {
   reactStrictMode: true,
 
+  i18n: {
+    locales: ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'],
+    defaultLocale: 'en',
+    localeDetection: false,
+  },
+
   eslint: {
     // Linting runs as its own `npm run lint` step; don't fail production builds
     // on formatting warnings.

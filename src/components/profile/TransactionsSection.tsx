@@ -91,6 +91,10 @@ const TransactionsSection: FC = () => {
         // Check rejected/failed statuses FIRST before checking type
         if (row.status === 'WITHDRAW_REJECTED' || row.status === 'WITHDRAW_FAILED' || row.status === 'DEPOSIT_FAILED' || (row.tx_type === 'BET' && row.status === 'BET_LOST')) {
           newEffect = '0';
+        } else if (row.status === 'TIP_SENT') {
+          newEffect = `-${symbol}${formattedAmount}`;
+        } else if (row.status === 'TIP_RECEIVED') {
+          newEffect = `+${symbol}${formattedAmount}`;
         } else if (row.tx_type === 'BET' && row.status === 'BET_PLACED') {
           newEffect = `-${symbol}${formattedAmount}`;
         } else if ((row.tx_type === 'WIN' && row.status === 'BET_WON') || row.status === 'DEPOSIT_CONFIRMED') {
