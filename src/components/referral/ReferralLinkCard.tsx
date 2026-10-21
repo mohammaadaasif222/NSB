@@ -46,7 +46,7 @@ const ReferralLinkCard: FC<Props> = ({ code, signedIn, onChange, onSignIn }) => 
   // 22 of top inset, then 28/5/20 of heading and strap, 28 down to the field,
   // 18 to the marks and 26 under them — the design's 251 tall exactly.
   return (
-    <section className="rl-glass-edge @container flex flex-col px-5 pt-5.5 pb-6.5 sm:px-6.5 2xl:px-8">
+    <section className="rl-glass-edge @container flex h-full flex-col justify-center px-5 pt-5.5 pb-6.5 sm:px-6.5 2xl:px-8">
       <h2 className="rl-h-card text-[#f0f1f5]">{t('aff.getCode')}</h2>
 
       <p className="mt-1.25 text-sm leading-5 text-[#9da2b4]">{t('aff.shareBlurb')}</p>

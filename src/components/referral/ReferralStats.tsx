@@ -53,7 +53,7 @@ const ReferralStats: FC<Props> = ({ summary, claiming, onCollect }) => {
   ].filter((note): note is string => !!note);
 
   return (
-    <section className="rl-glass-edge @container flex flex-col px-5 pt-8 pb-5 sm:px-6.5 sm:pt-13.75 sm:pb-6.5 2xl:px-8">
+    <section className="rl-glass-edge @container flex h-full flex-col px-5 pt-8 pb-5 sm:px-6.5 sm:pt-13.75 sm:pb-6.5 2xl:px-8">
       {/* Four across wherever a quarter of the card can hold "$984,125.00" —
           every desktop, laptop and tablet width, because the figures change
           size rather than changing places. A monitor and a laptop must not read
