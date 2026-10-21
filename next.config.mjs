@@ -49,6 +49,7 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/dashboard', destination: '/', permanent: true },
+      { source: '/affiliate', destination: '/referral', permanent: true },
       // Login, registration and password reset are modals now; the query
       // string opens the right one on the lobby, and any ?mobile= prefill
       // passes straight through.

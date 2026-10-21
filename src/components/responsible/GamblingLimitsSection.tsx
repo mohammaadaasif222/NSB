@@ -64,7 +64,7 @@ const GamblingLimitsSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
   );
 
   /* 270×56 with 34 of radius — the design's own button, and the same gold the
-     Affiliate page's Change and Collect are cut from. */
+     Referral page's Change and Collect are cut from. */
   const BUTTON =
     'rl-btn-gold flex h-10 w-full items-center justify-center rounded-[34px] px-2 text-[14px] leading-5 font-medium sm:h-14 sm:w-67.5 sm:text-[18px] sm:leading-7';
 

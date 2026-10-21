@@ -10,6 +10,7 @@ import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import { analytics, failureReason } from '@/services/analytics';
 import { trackSignupComplete } from '@/utils/events';
+import { clearReferral, referralField } from '@/lib/referralCapture';
 
 import type { ApiError, JwtPayload, LoginResponseData } from '@/types';
 
@@ -168,7 +169,7 @@ export function useGoogleAuth(): GoogleAuth {
         const response = await run((headers) =>
           apiService.post<LoginResponseData>(
             '/auth/social/login',
-            { token: accessToken, type: 'google' },
+            { token: accessToken, type: 'google', ...referralField() },
             { headers }
           )
         );
@@ -203,6 +204,10 @@ export function useGoogleAuth(): GoogleAuth {
         // a social signup never reaches the funnel at all.
         if (response?.data?.is_new_account === true) {
           trackSignupComplete('google');
+          if (referralField().referral_code) {
+            analytics.referral.signUpAttributed('link');
+            clearReferral();
+          }
         }
 
         login(sessionToken);

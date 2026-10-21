@@ -82,8 +82,7 @@ export const SPORTS_LINKS: FooterLink[] = [
 
 export const EARN_LINKS: FooterLink[] = [
   { label: 'lobby.footer.drops', href: '/rewards' },
-  { label: 'lobby.footer.referral', href: '/profile' },
-  { label: 'lobby.footer.affiliate', href: '/affiliate' },
+  { label: 'lobby.footer.referral', href: '/referral' },
   { label: 'lobby.footer.swapCrypto' },
 ];
 

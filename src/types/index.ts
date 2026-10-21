@@ -10,3 +10,4 @@ export * from './dice';
 export * from './kyc';
 export * from './intercom';
 export * from './assets';
+export * from './referral';

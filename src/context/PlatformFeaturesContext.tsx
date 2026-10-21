@@ -13,6 +13,8 @@ export interface PlatformFeatures {
   bonuses: boolean;
   rewards: boolean;
   vip_tiers: boolean;
+  /** Master switch: the referral programme. */
+  referrals: boolean;
   promotions: boolean;
   /** System config, CRM: whether the Terms and conditions page is shown. */
   terms_page: boolean;
@@ -36,6 +38,7 @@ const ALL_ON: PlatformFeatures = {
   bonuses: true,
   rewards: true,
   vip_tiers: true,
+  referrals: true,
   promotions: true,
   terms_page: true,
   // Off until the API says otherwise: a 2FA switch shown while the platform

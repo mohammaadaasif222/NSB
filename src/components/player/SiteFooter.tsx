@@ -206,8 +206,7 @@ const SiteFooter: FC = () => {
     ...(rewardsOn ? [{ label: t('lobby.footer.drops'), href: '/rewards' }] : []),
     ...(promotionsOn ? [{ label: t('menu.promotions'), href: '/promotions' }] : []),
     { label: t('nav.bonuses'), href: '/bonuses' },
-    { label: t('lobby.footer.referral'), href: '/profile' },
-    { label: t('lobby.footer.affiliate'), href: '/affiliate' },
+    { label: t('lobby.footer.referral'), href: '/referral' },
     { label: t('lobby.footer.swapCrypto') },
   ];
 
