@@ -390,7 +390,7 @@ const LocalCurrencyTab: FC = () => {
 
       if (order) {
         console.log('[Changelly Fallback] Order created:', order);
-        setIframeUrl(order.iframeUrl);
+        setIframeUrl(order.iframeUrl ?? null);
       } else {
         toast.error('Failed to create order');
       }
