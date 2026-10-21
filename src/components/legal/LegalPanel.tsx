@@ -11,7 +11,7 @@ import { parseLegalContent, type LegalPageData } from '@/components/legal/legalC
  * because the brief was the design.
  *
  * `rl-glass-edge` rather than `rl-panel`: the panel here is the same "Glass
- * Effect" node the Affiliate and Responsible Gambling pages use — a black 20%
+ * Effect" node the Referral and Responsible Gambling pages use — a black 20%
  * fill set to screen, which over this near-black stage comes to nothing. The
  * edge is all there is.
  *

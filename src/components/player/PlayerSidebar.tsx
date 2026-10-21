@@ -294,7 +294,7 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { pathname } = useRouter();
   const { t } = useTranslation();
-  const { rewards: rewardsOn, promotions: promotionsOn } = usePlatformFeatures();
+  const { rewards: rewardsOn, promotions: promotionsOn, referrals: referralsOn } = usePlatformFeatures();
   const { openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
@@ -556,9 +556,8 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               `nav-*.svg` beside the rows above, because the design never drew
               them a row — they take a line icon at the same 24 box instead.
 
-              Rewards is hidden while it is switched off platform-wide, since
-              the page it points at renders nothing in that state. Affiliate is
-              always on: it is open to signed-out visitors by design. */}
+              Rewards and Referral are hidden while switched off
+              platform-wide, since their pages render nothing in that state. */}
             {rewardsOn && (
               <RailLink
                 href="/rewards"
@@ -574,19 +573,21 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
                 {t('nav.rewards')}
               </RailLink>
             )}
-            <RailLink
-              href="/affiliate"
-              active={pathname === '/affiliate'}
-              icon={
-                <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
-                  <HandshakeIcon size={18} strokeWidth={1.6} />
-                </span>
-              }
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('aff.title')}
-            </RailLink>
+            {referralsOn && (
+              <RailLink
+                href="/referral"
+                active={pathname === '/referral'}
+                icon={
+                  <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
+                    <HandshakeIcon size={18} strokeWidth={1.6} />
+                  </span>
+                }
+                onClick={onClose}
+                collapsed={collapsed}
+              >
+                {t('aff.title')}
+              </RailLink>
+            )}
           </nav>
 
           {/* --- Socials and contact pills --------------------------------- */}

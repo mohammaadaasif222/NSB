@@ -44,7 +44,7 @@ export const INDEXED_STATIC_PATHS = [
 export const NOINDEX_ROUTES: ReadonlySet<string> = new Set([
   '/404',
   '/_error',
-  '/affiliate',
+  '/referral',
   '/auth/login',
   '/auth/register',
   '/auth/reset-password',

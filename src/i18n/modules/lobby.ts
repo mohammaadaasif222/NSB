@@ -74,7 +74,6 @@ export const en = {
   'lobby.footer.live': 'Live',
   'lobby.footer.drops': 'Rolluck Drops',
   'lobby.footer.referral': 'Referral System',
-  'lobby.footer.affiliate': 'Affiliate System',
   'lobby.footer.swapCrypto': 'Swap Crypto',
   'lobby.footer.reportBug': 'Report Bug',
   'lobby.footer.privacy': 'Privacy Policy',

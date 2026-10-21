@@ -1,28 +1,14 @@
 import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
-import { REFERRAL_CODE } from '@/components/profile/referral/mockReferral';
-import {
-  FacebookMark,
-  InstagramMark,
-  TelegramMark,
-  WhatsappMark,
-  XMark,
-} from '@/components/profile/referral/socialMarks';
-
-/** The networks the design offers to share on, in its order. */
-const SOCIALS: { Mark: FC; name: string; href: string }[] = [
-  { Mark: WhatsappMark, name: 'WhatsApp', href: 'https://wa.me/?text=' },
-  { Mark: InstagramMark, name: 'Instagram', href: 'https://instagram.com/' },
-  { Mark: FacebookMark, name: 'Facebook', href: 'https://www.facebook.com/sharer/sharer.php?u=' },
-  { Mark: XMark, name: 'X', href: 'https://x.com/intent/post?text=' },
-  { Mark: TelegramMark, name: 'Telegram', href: 'https://t.me/share/url?url=' },
-];
+import { shareTargets } from '@/components/profile/referral/shareTargets';
+import { referralLink } from '@/services/referral';
+import { analytics } from '@/services/analytics';
 
 /**
  * The copy mark, traced from the design.
  *
- * Exported because the Affiliate page's code card uses the same mark — it is
+ * Exported because the Referral page's link card uses the same mark — it is
  * `ci:copy` in the design on both screens, and the only difference there is a
  * 24.2667 box rather than 24, which is the icon scaled rather than redrawn.
  */
@@ -42,10 +28,11 @@ export const CopyIcon: FC = () => (
   </svg>
 );
 
-/** The code, the way to copy it, and the ways to pass it on. */
-const ReferralCodeCard: FC = () => {
+/** The code, the way to copy its link, and the ways to pass it on. */
+const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  const link = code ? referralLink(code) : '';
 
   // Clears itself so the button does not sit on "Copied" forever.
   useEffect(() => {
@@ -55,7 +42,11 @@ const ReferralCodeCard: FC = () => {
   }, [copied]);
 
   const copy = (): void => {
-    void navigator.clipboard?.writeText(REFERRAL_CODE).then(() => setCopied(true));
+    if (!link) return;
+    void navigator.clipboard?.writeText(link).then(() => {
+      setCopied(true);
+      analytics.referral.linkCopied();
+    });
   };
 
   return (
@@ -64,14 +55,15 @@ const ReferralCodeCard: FC = () => {
         {t('ref.referralCode')}
       </p>
 
-      <p className={`${SECTION_HEADING} mt-[calc(var(--u)*15)]`}>{REFERRAL_CODE}</p>
+      <p className={`${SECTION_HEADING} mt-[calc(var(--u)*15)]`}>{code ?? '—'}</p>
 
       <button
         type="button"
         onClick={copy}
-        className="rl-field-card mt-[calc(var(--u)*11)] flex h-[calc(var(--u)*56)] w-full max-w-[calc(var(--u)*434)] items-center justify-center gap-[calc(var(--u)*5)] rounded-[calc(var(--u)*34)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] hover:bg-white/8"
+        disabled={!code}
+        className="rl-field-card mt-[calc(var(--u)*11)] flex h-[calc(var(--u)*56)] w-full max-w-[calc(var(--u)*434)] items-center justify-center gap-[calc(var(--u)*5)] rounded-[calc(var(--u)*34)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] hover:bg-white/8 disabled:opacity-50"
       >
-        {copied ? t('ref.copied') : t('ref.copyCode')}
+        {copied ? t('ref.copied') : t('ref.copyLink')}
         <CopyIcon />
       </button>
 
@@ -80,14 +72,20 @@ const ReferralCodeCard: FC = () => {
       </p>
 
       <div className="mt-[calc(var(--u)*12)] flex items-center gap-[calc(var(--u)*12)]">
-        {SOCIALS.map(({ Mark, name, href }) => (
+        {shareTargets(link, t('ref.shareMessage')).map(({ Mark, name, href }) => (
           <a
             key={name}
-            href={href}
+            href={code ? href : undefined}
             target="_blank"
             rel="noreferrer"
             aria-label={t('ref.shareOn', { name })}
-            className="rl-chip flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center"
+            aria-disabled={!code}
+            onClick={() => {
+              if (!code) return;
+              if (name === 'Instagram') void navigator.clipboard?.writeText(link);
+              analytics.referral.shared(name.toLowerCase());
+            }}
+            className="rl-chip flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center aria-disabled:opacity-50"
           >
             <Mark />
           </a>
