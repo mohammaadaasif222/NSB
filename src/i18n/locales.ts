@@ -134,6 +134,7 @@ const coreEn = {
 
   // Register modal
   'registerModal.title': 'Register',
+  'registerModal.titleLong': 'Registration',
   'registerModal.registeredToday': '{count} Registered Today',
   'registerModal.recommended': 'Recommended',
   'registerModal.mobile': 'Mobile number',
@@ -610,6 +611,7 @@ const coreEn = {
   'dash.wageringProgress': 'Wagering Progress',
   'dash.percentComplete': '{percent}% Complete',
   'dash.wagered': '{amount} Wagered Complete',
+  'dash.wageredShort': '{amount} Wagered',
   'dash.remainingToUnlock': '{amount} remaining to unlock your bonus',
   'dash.remainingToUnlockShort': 'remaining to unlock your bonus',
   'dash.unlockBonus': 'Unlock your welcome bonus',

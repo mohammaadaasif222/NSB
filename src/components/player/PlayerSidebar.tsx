@@ -1,10 +1,13 @@
-import { useState, type FC, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
-import Image, { type StaticImageData } from 'next/image';
+import type { StaticImageData } from 'next/image';
 import { useRouter } from 'next/router';
-import { ICON, ROLLUCK_LOGO as logo } from '@/constants/cdn';
+import { ICON } from '@/constants/cdn';
 import casinoArt from '@/assets/lobby/rail/rail-casino.webp';
 import sportsArt from '@/assets/lobby/rail/rail-sports.webp';
+import casinoCardArt from '@/assets/casino-roulette-mobile.webp';
+import sportsCardArt from '@/assets/sports-ball-glass-mobile.webp';
+import searchGlyph from '@/assets/lobby/rail/bar-search.svg';
 import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
 import recentIcon from '@/assets/lobby/rail/nav-recent.svg';
 import favouritesIcon from '@/assets/lobby/rail/nav-favourites.svg';
@@ -30,6 +33,8 @@ import Glyph from '@/components/player/Glyph';
 import { categoryHref } from '@/constants/games';
 import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
+import GameSearchModal from '@/components/player/GameSearchModal';
+import LanguagePicker from '@/components/LanguagePicker';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -104,14 +109,48 @@ const SectionTab: FC<SectionProps> = ({ href, art, glow, label, active, collapse
   </Link>
 );
 
+/**
+ * The phone menu's section card, as the design draws it: the hero's 190×72
+ * glass card (24 of radius here) with the section's 3D render hung off its
+ * end, in full colour whichever section the player is in.
+ */
+const PhoneSectionCard: FC<{
+  href: string;
+  label: string;
+  art: string;
+  /** Where the design places the render's frame on the card. */
+  artClassName: string;
+  active: boolean;
+  onClick: () => void;
+}> = ({ href, label, art, artClassName, active, onClick }) => (
+  <Link
+    href={href}
+    onClick={onClick}
+    aria-current={active ? 'page' : undefined}
+    className="rl-liquid-glow relative block h-[72px] overflow-hidden rounded-[24px] transition-colors hover:bg-white/[0.1]"
+  >
+    <img
+      src={art}
+      alt=""
+      className={`pointer-events-none absolute h-auto max-w-none [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_10%),linear-gradient(to_bottom,transparent,#000_10%)] ${artClassName}`}
+    />
+    <span className="relative block px-4 pt-2.5 text-[18px] font-medium leading-6 text-white">
+      {label}
+    </span>
+  </Link>
+);
+
 /* ==================================================================== */
 /* Nav rows                                                              */
 /* ==================================================================== */
 
+/* A phone draws every row as its own 48px glass pill, 10 apart, the icon 24
+   in; the desktop rail's rows are bare until hovered or current. */
 const ROW =
-  'flex h-[calc(var(--u)*44)] w-full flex-shrink-0 items-center gap-[calc(var(--u)*11)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*15)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] transition-colors';
+  'flex h-12 w-full flex-shrink-0 items-center gap-2.5 rounded-full px-6 text-[16px] leading-6 transition-colors max-lg:shadow-[0_8px_40px_rgba(0,0,0,0.12)] lg:h-[calc(var(--u)*44)] lg:gap-[calc(var(--u)*11)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*15)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 const ROW_ACTIVE = 'rl-drop bg-white/10 text-white';
-const ROW_IDLE = 'text-[#9da2b4] hover:bg-white/5 hover:text-white';
+const ROW_IDLE =
+  'text-[#9da2b4] max-lg:bg-white/5 hover:bg-white/5 hover:text-white max-lg:hover:bg-white/10';
 
 interface RailLinkProps {
   href?: string;
@@ -184,7 +223,7 @@ const RailLink: FC<RailLinkProps> = ({
 
 /** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
 const RAIL_BUTTON =
-  'flex h-[calc(var(--u)*44)] w-full items-center justify-center gap-[calc(var(--u)*6)] rl-drop rounded-[calc(var(--u)*34)] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
+  'flex h-[calc(var(--u)*44)] w-full min-w-0 items-center justify-center gap-[calc(var(--u)*6)] rl-drop rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white lg:border-0';
 
 /** A contact pill at the rail's foot: a link out, or a button for a dialog. */
 const RailButton: FC<{
@@ -261,166 +300,210 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { updateMe } = useMe();
   const [suggesting, setSuggesting] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  // The phone panel opens 14 under the bar, whatever height the bar is.
+  const [menuTop, setMenuTop] = useState(80);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const place = (): void => {
+      const bar = document.querySelector('header');
+      if (bar) setMenuTop(Math.round(bar.getBoundingClientRect().bottom) + 14);
+    };
+    place();
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('resize', place);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open, onClose]);
+
+  const casinoActive = pathname === '/casino' || pathname.startsWith('/game');
+  const sportsActive = pathname.startsWith('/sports');
 
   const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
 
   return (
     <>
-      {/* Scrim: mobile only */}
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden"
-          onClick={onClose}
-          role="presentation"
-        />
-      )}
-
+      {/* On a phone this is the design's menu panel: full width, 14 under the
+          bar (which stays in view), rounded at the top, sliding up from the
+          foot; the tab bar floats over it. Its glass is the design's dark
+          one — near opaque, so the page under it does not show through. From
+          lg it is the sticky rail. */}
       <aside
-        className={`rl-glass-deep fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-shrink-0 flex-col rounded-none p-4 transition-[transform,width] duration-200 lg:sticky lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-x-0 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
-          open ? 'translate-x-0' : '-translate-x-full'
+        className={`rl-glass-deep fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden rounded-t-[34px] transition-[transform,width] max-lg:![background:rgba(17,18,22,0.97)] duration-300 lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
+          open ? 'translate-y-0' : 'max-lg:invisible max-lg:translate-y-full'
         }`}
+        style={{ '--menu-top': `${menuTop}px` } as CSSProperties}
         aria-label={t('nav.games')}
       >
-        {/* The phone drawer covers the bar, so it repeats the wordmark with
-            the drawer's close control. */}
-        <div className="mb-4 flex h-10 flex-shrink-0 items-center justify-between gap-2 lg:hidden">
-          <Link href="/" onClick={onClose} className="flex min-w-0 items-center">
-            <Image src={logo} alt="ROLLUCK" className="h-7 w-auto" priority />
-          </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('nav.closeMenu')}
-            className="flex-shrink-0 p-1 text-white/50 hover:text-white"
-          >
-            ✕
-          </button>
-        </div>
+        {/* A phone scrolls this, not the panel: a scrolling panel with
+            rounded glass left a stray edge where its first screen ended. From
+            lg the wrapper drops out and the rail lays out as before. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-28 pt-6 lg:contents">
+          {/* --- Phone: search and language -------------------------------- */}
+          <div className="flex flex-shrink-0 items-center gap-4 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setSearching(true)}
+              aria-label={t('search.title')}
+              className="rl-glass-btn flex h-12 min-w-0 flex-1 items-center rounded-full px-3"
+            >
+              <img src={searchGlyph.src} alt="" className="h-6 w-6" />
+            </button>
+            <div className="[&>div>button]:!h-12 [&>div>button]:!w-12 [&>div>button>img]:!h-6 [&>div>button>img]:!w-6">
+              <LanguagePicker iconOnly menuAlign="end" />
+            </div>
+          </div>
 
-        {/* --- Section switch ------------------------------------------- */}
-        {/* `overflow-hidden` keeps the renders' glow inside the switch, as the
+          {/* --- Phone: Casino and Sports ----------------------------------- */}
+          <div className="mt-[18px] grid flex-shrink-0 grid-cols-2 gap-2 lg:hidden">
+            <PhoneSectionCard
+              href="/casino"
+              label={t('nav.casino')}
+              art={casinoCardArt.src}
+              artClassName="left-[88px] -top-3 w-[119px]"
+              active={casinoActive}
+              onClick={onClose}
+            />
+            <PhoneSectionCard
+              href="/sports"
+              label={t('nav.sports')}
+              art={sportsCardArt.src}
+              artClassName="left-[117px] top-1 w-[88px]"
+              active={sportsActive}
+              onClick={onClose}
+            />
+          </div>
+
+          {/* --- Section switch ------------------------------------------- */}
+          {/* `overflow-hidden` keeps the renders' glow inside the switch, as the
             design draws it: on a scaled-down rail the label stops at its type
             floor and pushes the art up, and the glow would otherwise spill
             over the switch's top edge. No backdrop blur of its own: it sits on
             the rail's glass, which already blurs, and a second blur nested in
             the first was flickering under Chrome's GPU compositor. */}
-        <div
-          className={`rl-liquid flex h-[calc(var(--u)*90)] flex-shrink-0 gap-0 overflow-hidden rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ![-webkit-backdrop-filter:none] ![backdrop-filter:none] ${
-            collapsed ? 'lg:h-auto lg:flex-col' : ''
-          }`}
-        >
-          <SectionTab
-            href="/casino"
-            art={casinoArt.src}
-            glow="rgba(170,20,20,0.4)"
-            label={t('nav.casino')}
-            active={pathname === '/casino' || pathname.startsWith('/game')}
-            collapsed={collapsed}
-            onClick={onClose}
-          />
-          <SectionTab
-            href="/sports"
-            art={sportsArt.src}
-            glow="rgba(22,163,53,0.4)"
-            label={t('nav.sports')}
-            active={pathname.startsWith('/sports')}
-            collapsed={collapsed}
-            onClick={onClose}
-          />
-        </div>
+          <div
+            className={`rl-liquid hidden h-[calc(var(--u)*90)] flex-shrink-0 gap-0 overflow-hidden rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ![-webkit-backdrop-filter:none] ![backdrop-filter:none] lg:flex ${
+              collapsed ? 'lg:h-auto lg:flex-col' : ''
+            }`}
+          >
+            <SectionTab
+              href="/casino"
+              art={casinoArt.src}
+              glow="rgba(170,20,20,0.4)"
+              label={t('nav.casino')}
+              active={casinoActive}
+              collapsed={collapsed}
+              onClick={onClose}
+            />
+            <SectionTab
+              href="/sports"
+              art={sportsArt.src}
+              glow="rgba(22,163,53,0.4)"
+              label={t('nav.sports')}
+              active={sportsActive}
+              collapsed={collapsed}
+              onClick={onClose}
+            />
+          </div>
 
-        {/* --- Welcome package ------------------------------------------ */}
-        <button
-          type="button"
-          onClick={() => {
-            onClose();
-            openRegister();
-          }}
-          title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
-          className={`mt-[calc(var(--u)*24)] flex flex-shrink-0 flex-col gap-[calc(var(--u)*6)] rl-drop-pane rounded-[calc(var(--u)*16.25)] bg-[#1b1f29] px-[calc(var(--u)*16.25)] py-[calc(var(--u)*17.5)] text-start transition-colors hover:bg-[#222735] ${
-            collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
-          }`}
-        >
-          {/* Collapsed, the rail is 76 wide and the amount does not fit: the
+          {/* --- Welcome package ------------------------------------------ */}
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              openRegister();
+            }}
+            title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
+            className={`mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rl-drop-pane rounded-[24px] max-lg:![box-shadow:none] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
+              collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
+            }`}
+          >
+            {/* Collapsed, the rail is 76 wide and the amount does not fit: the
               package becomes a gold gift, like the rows below becoming their
               icons. The full offer stays in the title. */}
-          {collapsed && (
-            <GiftIcon
-              size={24}
-              className="hidden h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] text-[#ffe779] lg:block"
-            />
-          )}
-          <span
-            className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] uppercase leading-[calc(var(--u)*20)] text-[#9da2b4] ${
-              collapsed ? 'lg:hidden' : ''
-            }`}
-          >
-            {t('lobby.rail.welcomePackage')}
-          </span>
-          <span
-            className={`block text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
-              collapsed ? 'lg:hidden' : ''
-            }`}
-          >
-            $1,500
-          </span>
-          <span
-            className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] ${
-              collapsed ? 'lg:hidden' : ''
-            }`}
-          >
-            {t('lobby.rail.freeSpins', { count: 100 })}
-          </span>
-        </button>
+            {collapsed && (
+              <GiftIcon
+                size={24}
+                className="hidden h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] text-[#ffe779] lg:block"
+              />
+            )}
+            <span
+              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] uppercase leading-[calc(var(--u)*20)] text-[#9da2b4] ${
+                collapsed ? 'lg:hidden' : ''
+              }`}
+            >
+              {t('lobby.rail.welcomePackage')}
+            </span>
+            <span
+              className={`block text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
+                collapsed ? 'lg:hidden' : ''
+              }`}
+            >
+              $1,500
+            </span>
+            <span
+              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] ${
+                collapsed ? 'lg:hidden' : ''
+              }`}
+            >
+              {t('lobby.rail.freeSpins', { count: 100 })}
+            </span>
+          </button>
 
-        {/* --- Shortcuts ------------------------------------------------- */}
-        <nav className="thin-scrollbar -mx-1 mt-[calc(var(--u)*12)] flex min-h-0 flex-1 flex-col gap-[calc(var(--u)*4)] overflow-y-auto px-1">
-          <RailLink
-            href="/rolluck-oath"
-            active={pathname === '/rolluck-oath'}
-            icon={icon(oathIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.rolluckOath')}
-          </RailLink>
-          <RailLink
-            href="/recents"
-            active={pathname === '/recents'}
-            icon={icon(recentIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.recents')}
-          </RailLink>
-          <RailLink
-            href="/favourites"
-            active={pathname === '/favourites'}
-            icon={icon(favouritesIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.favourites')}
-          </RailLink>
-          <RailLink
-            href={categoryHref('originals')}
-            active={pathname === '/games/[category]'}
-            icon={icon(originalsIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.originals')}
-          </RailLink>
-          <RailLink
-            href="/my-bets"
-            active={pathname === '/my-bets'}
-            icon={icon(betsIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.myBets')}
-          </RailLink>
-          {/* <RailLink
+          {/* --- Shortcuts ------------------------------------------------- */}
+          <nav className="thin-scrollbar -mx-1 mt-[18px] flex flex-shrink-0 flex-col gap-2.5 px-1 lg:mt-[calc(var(--u)*12)] lg:min-h-0 lg:flex-1 lg:flex-shrink lg:gap-[calc(var(--u)*4)] lg:overflow-y-auto">
+            <RailLink
+              href="/rolluck-oath"
+              active={pathname === '/rolluck-oath'}
+              icon={icon(oathIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.rolluckOath')}
+            </RailLink>
+            <RailLink
+              href="/recents"
+              active={pathname === '/recents'}
+              icon={icon(recentIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.recents')}
+            </RailLink>
+            <RailLink
+              href="/favourites"
+              active={pathname === '/favourites'}
+              icon={icon(favouritesIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.favourites')}
+            </RailLink>
+            <RailLink
+              href={categoryHref('originals')}
+              active={pathname === '/games/[category]'}
+              icon={icon(originalsIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.originals')}
+            </RailLink>
+            <RailLink
+              href="/my-bets"
+              active={pathname === '/my-bets'}
+              icon={icon(betsIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.myBets')}
+            </RailLink>
+            {/* <RailLink
             onSelect={() => setThemeOpen(true)}
             active={false}
             icon={icon(themeIcon)}
@@ -429,46 +512,46 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           >
             {t('nav.theme')}
           </RailLink> */}
-          <RailLink
-            href="/vip-club"
-            active={pathname === '/vip-club'}
-            icon={icon(vipIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.vipClub')}
-          </RailLink>
-          <RailLink
-            href="/tournaments"
-            active={pathname === '/tournaments'}
-            icon={icon(tournamentsIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.tournaments')}
-          </RailLink>
-          {promotionsOn && (
             <RailLink
-              href="/promotions"
-              active={pathname === '/promotions'}
-              icon={icon(promotionIcon)}
+              href="/vip-club"
+              active={pathname === '/vip-club'}
+              icon={icon(vipIcon)}
               onClick={onClose}
               collapsed={collapsed}
             >
-              {t('nav.promotions')}
+              {t('nav.vipClub')}
             </RailLink>
-          )}
-          <RailLink
-            href="/bonuses"
-            active={pathname === '/bonuses'}
-            icon={icon(bonusesIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.bonuses')}
-          </RailLink>
+            <RailLink
+              href="/tournaments"
+              active={pathname === '/tournaments'}
+              icon={icon(tournamentsIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.tournaments')}
+            </RailLink>
+            {promotionsOn && (
+              <RailLink
+                href="/promotions"
+                active={pathname === '/promotions'}
+                icon={icon(promotionIcon)}
+                onClick={onClose}
+                collapsed={collapsed}
+              >
+                {t('nav.promotions')}
+              </RailLink>
+            )}
+            <RailLink
+              href="/bonuses"
+              active={pathname === '/bonuses'}
+              icon={icon(bonusesIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('nav.bonuses')}
+            </RailLink>
 
-          {/* Built features the design's list leaves out, kept at the end and
+            {/* Built features the design's list leaves out, kept at the end and
               below its fold so nothing becomes unreachable. Neither has a
               `nav-*.svg` beside the rows above, because the design never drew
               them a row — they take a line icon at the same 24 box instead.
@@ -476,71 +559,72 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               Rewards is hidden while it is switched off platform-wide, since
               the page it points at renders nothing in that state. Affiliate is
               always on: it is open to signed-out visitors by design. */}
-          {rewardsOn && (
+            {rewardsOn && (
+              <RailLink
+                href="/rewards"
+                active={pathname === '/rewards'}
+                icon={
+                  <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
+                    <CoinIcon size={18} strokeWidth={1.6} />
+                  </span>
+                }
+                onClick={onClose}
+                collapsed={collapsed}
+              >
+                {t('nav.rewards')}
+              </RailLink>
+            )}
             <RailLink
-              href="/rewards"
-              active={pathname === '/rewards'}
+              href="/affiliate"
+              active={pathname === '/affiliate'}
               icon={
                 <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
-                  <CoinIcon size={18} strokeWidth={1.6} />
+                  <HandshakeIcon size={18} strokeWidth={1.6} />
                 </span>
               }
               onClick={onClose}
               collapsed={collapsed}
             >
-              {t('nav.rewards')}
+              {t('aff.title')}
             </RailLink>
-          )}
-          <RailLink
-            href="/affiliate"
-            active={pathname === '/affiliate'}
-            icon={
-              <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
-                <HandshakeIcon size={18} strokeWidth={1.6} />
-              </span>
-            }
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('aff.title')}
-          </RailLink>
-        </nav>
+          </nav>
 
-        {/* --- Socials and contact pills --------------------------------- */}
-        <div className="flex-shrink-0 pt-[calc(var(--u)*13)]">
-          <div
-            className={`flex items-center justify-center gap-[calc(var(--u)*18)] py-[calc(var(--u)*6)] ${
-              collapsed ? 'lg:flex-col' : ''
-            }`}
-          >
-            {SOCIALS.map(({ icon: mark, label, href }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={label}
-                title={label}
-                className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] items-center justify-center transition-transform hover:-translate-y-0.5"
-              >
-                <img src={mark.src} alt="" className="h-full w-full" />
-              </a>
-            ))}
-          </div>
+          {/* --- Socials and contact pills --------------------------------- */}
+          <div className="mt-[67px] flex-shrink-0 border-t border-white/[0.08] pt-4 lg:mt-0 lg:border-0 lg:pt-[calc(var(--u)*13)]">
+            <div
+              className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
+                collapsed ? 'lg:flex-col' : ''
+              }`}
+            >
+              {SOCIALS.map(({ icon: mark, label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  title={label}
+                  className="flex h-7 w-7 items-center justify-center p-0.5 transition-transform hover:-translate-y-0.5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)] lg:p-0"
+                >
+                  <img src={mark.src} alt="" className="h-full w-full" />
+                </a>
+              ))}
+            </div>
 
-          <div className="mt-[calc(var(--u)*11)] space-y-[calc(var(--u)*7)]">
-            <RailButton
-              icon={ICON.telegram}
-              label={t('lobby.rail.joinTelegram')}
-              href="https://t.me/"
-              collapsed={collapsed}
-            />
-            <RailButton
-              icon={suggestionIcon}
-              label={t('lobby.rail.suggestionBox')}
-              onClick={() => setSuggesting(true)}
-              collapsed={collapsed}
-            />
+            <div className="mt-5 grid grid-cols-2 gap-2 lg:mt-[calc(var(--u)*11)] lg:block lg:space-y-[calc(var(--u)*7)]">
+              <RailButton
+                icon={ICON.telegram}
+                label={t('lobby.rail.joinTelegram')}
+                href="https://t.me/"
+                collapsed={collapsed}
+              />
+              <RailButton
+                icon={suggestionIcon}
+                label={t('lobby.rail.suggestionBox')}
+                onClick={() => setSuggesting(true)}
+                collapsed={collapsed}
+              />
+            </div>
           </div>
         </div>
       </aside>
@@ -556,6 +640,14 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
         />
       )}
       <SuggestionModal open={suggesting} onClose={() => setSuggesting(false)} />
+      {searching && (
+        <GameSearchModal
+          onClose={() => {
+            setSearching(false);
+            onClose();
+          }}
+        />
+      )}
     </>
   );
 };

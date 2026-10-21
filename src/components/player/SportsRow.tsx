@@ -241,7 +241,7 @@ const MatchCard: FC<{ match: Match }> = ({ match }) => {
         <TeamColumn team={match.away} />
       </span>
 
-      <span className="pb-[calc(var(--u)*6)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#849194]">
+      <span className="pb-[calc(var(--u)*6)] pt-[calc(var(--u)*4)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#849194]">
         1x2
       </span>
 
@@ -271,9 +271,9 @@ interface ShelfProps {
 }
 
 /**
- * The disciplines shelf: a tile per sport with its 3D render. Signed out, a
- * phone pages it three by two, as that design does; the signed-in design runs
- * it as one row of three, like the game shelves (`paged={false}`).
+ * The disciplines shelf: a tile per sport with its 3D render. Both phone
+ * designs run it as one row of three 122×150 tiles, like the game shelves
+ * (`paged={false}`); `paged` lays a phone's out three by two instead.
  */
 export const SportsShelf: FC<ShelfProps & { paged?: boolean }> = ({ viewAll, paged = true }) => {
   const { t } = useTranslation();
@@ -308,7 +308,7 @@ export const LiveGamesShelf: FC<ShelfProps> = ({ viewAll }) => {
 /** Both sportsbook teasers together, as the signed-out lobby shows them. */
 const SportsRow: FC = () => (
   <>
-    <SportsShelf viewAll="/sports" />
+    <SportsShelf viewAll="/sports" paged={false} />
     <LiveGamesShelf viewAll="/sports" />
   </>
 );

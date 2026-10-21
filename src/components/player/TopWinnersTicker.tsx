@@ -97,6 +97,33 @@ const Marquee: FC<{ size: ChipSize; gap: string; seconds: number; className?: st
   </div>
 );
 
+/**
+ * The signed-out phone hero's row: three winners standing still, sharing the
+ * width (the design's 124px chips, 8 apart), each name cut short to fit.
+ */
+export const WinnersRow: FC = () => (
+  <div className="grid grid-cols-3 gap-[calc(var(--u)*8)]" aria-hidden="true">
+    {SAMPLE_WINNERS.map((w) => (
+      <span
+        key={w.name}
+        className="flex h-[calc(var(--u)*26)] min-w-0 items-center gap-[calc(var(--u)*6)] rounded-full bg-[#13171f] pe-[calc(var(--u)*5)] ps-[calc(var(--u)*2)]"
+      >
+        <img
+          src={w.avatar.src}
+          alt=""
+          className="h-[calc(var(--u)*22)] w-[calc(var(--u)*22)] flex-shrink-0 rounded-full bg-[#464e61] object-cover"
+        />
+        <span className="min-w-0 flex-1 truncate text-[length:max(9px,calc(var(--u)*10))] leading-[calc(var(--u)*10)] text-[#9da2b4]">
+          {w.name}
+        </span>
+        <span className="flex-shrink-0 text-[length:max(10px,calc(var(--u)*12))] font-medium leading-[calc(var(--u)*20)] tabular-nums text-[#f0f1f5]">
+          {w.amount}
+        </span>
+      </span>
+    ))}
+  </div>
+);
+
 /** The top bar's strip, shown signed out. */
 const TopWinnersTicker: FC = () => (
   <Marquee size="bar" gap="gap-[var(--rl-gap)] [--rl-gap:calc(var(--u)*11)]" seconds={40} />
@@ -109,12 +136,10 @@ const TopWinnersTicker: FC = () => (
  */
 export const WinnersStrip: FC = () => (
   <div>
-    <Marquee
-      size="strip"
-      gap="gap-[var(--rl-gap)] [--rl-gap:3px]"
-      seconds={28}
-      className="-mx-4 lg:hidden"
-    />
+    {/* A phone shows the same three chips the signed-out hero does. */}
+    <div className="lg:hidden">
+      <WinnersRow />
+    </div>
     <Marquee
       size="bar"
       gap="gap-[var(--rl-gap)] [--rl-gap:calc(var(--u)*10)]"

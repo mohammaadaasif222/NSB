@@ -86,7 +86,7 @@ const PlayerLayout: FC<Props> = ({ children, backdrop }) => {
         </div>
       </div>
 
-      <MobileTabBar onOpenMenu={() => setMenuOpen(true)} />
+      <MobileTabBar menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((v) => !v)} />
     </div>
   );
 };

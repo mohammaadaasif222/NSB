@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type FC, type FormEvent, type ReactNode } from 'react';
+import { useState, type CSSProperties, type FC, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { toast } from 'react-toastify';
@@ -7,8 +7,8 @@ import backdrop from '@/assets/home-backdrop.webp';
 import backdropMobile from '@/assets/home-backdrop-mobile.webp';
 import casinoDice from '@/assets/casino-dice.webp';
 import sportsTrophy from '@/assets/sports-trophy.webp';
-import casinoChip from '@/assets/casino-chip-mobile.webp';
-import sportsBall from '@/assets/sports-ball-mobile.webp';
+import casinoRoulette from '@/assets/casino-roulette-mobile.webp';
+import sportsBall from '@/assets/sports-ball-glass-mobile.webp';
 import gmailIcon from '@/assets/lobby/gmail.svg';
 import mailIcon from '@/assets/lobby/mail.svg';
 import telegramIcon from '@/assets/lobby/telegram.svg';
@@ -25,6 +25,7 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import BonusBanner from '@/components/player/BonusBanner';
+import { WinnersRow } from '@/components/player/TopWinnersTicker';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
 import { SECTION_ART } from '@/constants/cdn';
 import { LOBBY_STATS } from '@/constants/stats';
@@ -85,13 +86,6 @@ const OnlinePill: FC<{ label: string }> = ({ label }) => (
   </span>
 );
 
-/** One of the phone's three figure pills. */
-const StatPill: FC<{ children: ReactNode }> = ({ children }) => (
-  <span className="inline-flex h-[calc(var(--u)*28)] items-center whitespace-nowrap rounded-full bg-white/10 px-[calc(var(--u)*8)] text-[length:max(min(11px,10px),calc(var(--u)*10))] leading-[calc(var(--u)*13)] text-white">
-    {children}
-  </span>
-);
-
 /* ==================================================================== */
 /* Sign-up teaser                                                        */
 /* ==================================================================== */
@@ -107,9 +101,13 @@ const ProviderButton: FC<{
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className="flex h-[calc(var(--u)*76)] flex-col items-center justify-center gap-[calc(var(--u)*8)] rounded-[calc(var(--u)*24)] bg-[#13171f] px-[calc(var(--u)*8)] transition-colors hover:bg-[#1a1f29] disabled:opacity-60 lg:h-[calc(var(--u)*99)] lg:rounded-[calc(var(--u)*34)]"
+    className="flex h-[calc(var(--u)*64)] flex-col items-center justify-center rounded-[calc(var(--u)*34)] bg-[#13171f] px-[calc(var(--u)*8)] transition-colors hover:bg-[#1a1f29] disabled:opacity-60 lg:h-[calc(var(--u)*99)] lg:gap-[calc(var(--u)*8)]"
   >
-    <img src={icon.src} alt="" className="h-[calc(var(--u)*30)] w-[calc(var(--u)*30)]" />
+    <img
+      src={icon.src}
+      alt=""
+      className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] lg:h-[calc(var(--u)*30)] lg:w-[calc(var(--u)*30)]"
+    />
     <span className="text-[length:max(min(11px,12px),calc(var(--u)*12))] font-medium leading-[calc(var(--u)*20)] text-[#f0f1f5] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)] lg:text-white">
       {label}
     </span>
@@ -131,11 +129,15 @@ const SocialDisc: FC<{
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`rl-glass-btn relative flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:-translate-y-0.5 ${
-      first ? '' : '-ms-[calc(var(--u)*12)]'
+    className={`rl-glass-btn relative flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:-translate-y-0.5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] ${
+      first ? '' : '-ms-[calc(var(--u)*14.5)] lg:-ms-[calc(var(--u)*12)]'
     }`}
   >
-    <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
+    <img
+      src={icon.src}
+      alt=""
+      className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+    />
   </button>
 );
 
@@ -173,7 +175,7 @@ const SignupTeaser: FC = () => {
   return (
     <div className="flex w-full max-w-[calc(var(--u)*346)] flex-col items-center lg:max-w-[calc(var(--u)*435)]">
       {/* A tab resting on the field's top edge, its foot tucked under it. */}
-      <span className="-mb-[calc(var(--u)*4)] flex h-[calc(var(--u)*42)] items-start rounded-t-[calc(var(--u)*10)] border border-b-0 border-[#252937] bg-[#07080a] px-[calc(var(--u)*15)] pt-[calc(var(--u)*9)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#f0f1f5]">
+      <span className="-mb-[calc(var(--u)*4)] flex h-[calc(var(--u)*37)] items-start rounded-t-[calc(var(--u)*10)] border border-b-0 border-[#252937] bg-[#07080a] px-[calc(var(--u)*11)] pt-[calc(var(--u)*7)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#f0f1f5] lg:h-[calc(var(--u)*42)] lg:px-[calc(var(--u)*15)] lg:pt-[calc(var(--u)*9)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))]">
         {t('registerModal.registeredToday', { count: LOBBY_STATS.registeredToday })}
       </span>
 
@@ -221,7 +223,7 @@ const SignupTeaser: FC = () => {
         </label>
       </form>
 
-      <div className="mt-[calc(var(--u)*13)] grid w-full grid-cols-2 gap-[calc(var(--u)*8)] lg:gap-[calc(var(--u)*10)]">
+      <div className="mt-[calc(var(--u)*20)] grid w-full grid-cols-2 gap-[calc(var(--u)*20)] lg:mt-[calc(var(--u)*13)] lg:gap-[calc(var(--u)*10)]">
         <ProviderButton
           icon={gmailIcon}
           label={t('lobby.hero.continueWith', { method: t('auth.methodGmail') })}
@@ -237,7 +239,7 @@ const SignupTeaser: FC = () => {
         />
       </div>
 
-      <div className="mt-[calc(var(--u)*15)] flex items-center lg:mt-[calc(var(--u)*22)]">
+      <div className="mt-[calc(var(--u)*20)] flex items-center lg:mt-[calc(var(--u)*22)]">
         <SocialDisc
           icon={telegramIcon}
           label={t('auth.methodTelegram')}
@@ -249,7 +251,7 @@ const SignupTeaser: FC = () => {
         <button
           type="button"
           onClick={() => openRegister({ social: true })}
-          className="ms-[calc(var(--u)*15)] text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-[#9da2b4] transition-colors hover:text-white lg:text-[#6a7287]"
+          className="ms-[calc(var(--u)*7)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white lg:ms-[calc(var(--u)*15)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:font-medium lg:leading-[calc(var(--u)*24)] lg:text-[#6a7287]"
         >
           {t('lobby.hero.moreOptions')}
         </button>
@@ -272,7 +274,12 @@ interface CardArt {
    */
   hero: { src: StaticImageData; box: [x: number, y: number, w: number] };
   accent: { src: StaticImageData; box: [x: number, y: number, w: number] };
-  /** Phone: the neon line-art mark, its glow baked in, hung off the right edge. */
+  /**
+   * Phone: the 3D render on the 190×72 card — the design's own frame of it,
+   * crop and coloured glow included, exported at 3× and placed where the
+   * design places that frame (the card clips what hangs over). Its start and
+   * top edges fade out, so the glow has no hard edge where the frame ends.
+   */
   mark: { src: StaticImageData; className: string };
 }
 
@@ -280,8 +287,9 @@ const CASINO_ART: CardArt = {
   hero: { src: SECTION_ART.casino, box: [466, 12, 273] },
   accent: { src: casinoDice, box: [372, -52, 171.2] },
   mark: {
-    src: casinoChip,
-    className: '-right-[calc(var(--u)*48)] -top-[calc(var(--u)*18)] w-[calc(var(--u)*149)]',
+    src: casinoRoulette,
+    className:
+      'left-[calc(var(--u)*88)] -top-[calc(var(--u)*12)] w-[calc(var(--u)*119)] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_10%),linear-gradient(to_bottom,transparent,#000_10%)]',
   },
 };
 
@@ -290,7 +298,8 @@ const SPORTS_ART: CardArt = {
   accent: { src: sportsTrophy, box: [442, -48, 150.8] },
   mark: {
     src: sportsBall,
-    className: '-right-[calc(var(--u)*45)] -top-[calc(var(--u)*26)] w-[calc(var(--u)*152)]',
+    className:
+      'left-[calc(var(--u)*117)] top-[calc(var(--u)*4)] w-[calc(var(--u)*88)] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_10%),linear-gradient(to_bottom,transparent,#000_10%)]',
   },
 };
 
@@ -390,13 +399,10 @@ const LandingHero: FC = () => {
   return (
     <section className="lg:pt-[calc(var(--u)*22)]">
       {/* --- Live figures --------------------------------------------- */}
-      {/* 8px under the phone bar: the layout's 12px top padding, less 4. */}
-      <div className="-mt-1 flex flex-wrap items-center justify-center gap-[calc(var(--u)*5)] lg:hidden">
-        <StatPill>
-          {t('lobby.hero.todaysWinnings', { amount: LOBBY_STATS.todaysWinnings })}
-        </StatPill>
-        <StatPill>{t('dash.online', { count: LOBBY_STATS.online })}</StatPill>
-        <StatPill>{t('lobby.hero.biggestWin', { amount: LOBBY_STATS.biggestWin })}</StatPill>
+      {/* The phone's: the winners 20 under the bar (the layout's 12px top
+          padding and 8 more); the headline follows 44 under them. */}
+      <div className="mt-2 lg:hidden">
+        <WinnersRow />
       </div>
 
       <div className="hidden items-center justify-between gap-[calc(var(--u)*12)] lg:flex">
@@ -410,12 +416,12 @@ const LandingHero: FC = () => {
 
       {/* --- Headline and sign-up -------------------------------------- */}
       <div className="flex flex-col items-center text-center">
-        <h1 className="mt-[calc(var(--u)*13)] max-w-[calc(var(--u)*355)] text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*21)] lg:max-w-none lg:text-[length:max(min(11px,48px),calc(var(--u)*48))] lg:whitespace-pre-line lg:font-semibold lg:leading-[calc(var(--u)*52)]">
+        <h1 className="mt-[calc(var(--u)*44)] max-w-[calc(var(--u)*300)] text-[length:max(min(11px,24px),calc(var(--u)*24))] font-semibold leading-[calc(var(--u)*32)] tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*21)] lg:max-w-none lg:text-[length:max(min(11px,48px),calc(var(--u)*48))] lg:whitespace-pre-line lg:font-semibold lg:leading-[calc(var(--u)*52)]">
           {/* Desktop breaks the title where the copy does; a phone wraps it. */}
           {t('lobby.hero.title')}
         </h1>
 
-        <div className="mt-[calc(var(--u)*12)] flex w-full justify-center lg:mt-[calc(var(--u)*25)]">
+        <div className="mt-[calc(var(--u)*22)] flex w-full justify-center lg:mt-[calc(var(--u)*25)]">
           <SignupTeaser />
         </div>
 
@@ -433,8 +439,8 @@ const LandingHero: FC = () => {
       </div>
 
       {/* --- Shortcuts and the welcome offer ---------------------------- */}
-      <div className="mt-[calc(var(--u)*20)] flex flex-col gap-[calc(var(--u)*12)] lg:mt-[calc(var(--u)*46)] lg:gap-[calc(var(--u)*80)]">
-        <div className="order-2 grid grid-cols-2 gap-[calc(var(--u)*12)] lg:order-1 lg:gap-[calc(var(--u)*20)]">
+      <div className="mt-[calc(var(--u)*48)] flex flex-col gap-[calc(var(--u)*18)] lg:mt-[calc(var(--u)*46)] lg:gap-[calc(var(--u)*80)]">
+        <div className="order-2 grid grid-cols-2 gap-[calc(var(--u)*8)] lg:order-1 lg:gap-[calc(var(--u)*20)]">
           <SectionCard
             href="/casino"
             title={t('nav.casino')}

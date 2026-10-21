@@ -35,6 +35,7 @@ import {
   ThumbsDownIcon,
   ThumbsUpIcon,
   TrashIcon,
+  ChevronLeftIcon,
 } from '@/components/icons';
 import {
   NO_REACTIONS,
@@ -666,7 +667,18 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
 
   return (
     <>
-      <header className="relative flex items-center gap-2 border-b border-slate-800 px-4 py-3">
+      {/* A phone draws the design's back disc at the start, the room name
+          beside it, and no rule under them. */}
+      <header className="relative flex items-center gap-3 px-4 pb-2 pt-4 sm:gap-2 sm:border-b sm:border-slate-800 sm:py-3">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('auth.back')}
+          title={t('auth.back')}
+          className="rl-glass-btn inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white sm:hidden"
+        >
+          <ChevronLeftIcon size={22} className="rtl:rotate-180" />
+        </button>
         <ChatRoomPicker room={room} onChange={onRoomChange} label={t('chat.roomSwitch')} />
 
         <div className="ms-auto flex items-center gap-1">
@@ -690,7 +702,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
             onClick={onClose}
             aria-label={t('nav.closeMenu')}
             title={t('nav.closeMenu')}
-            className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+            className="hidden h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"
           >
             <CloseIcon size={18} />
           </button>

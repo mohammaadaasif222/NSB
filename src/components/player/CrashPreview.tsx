@@ -161,7 +161,8 @@ const CrashPreview: FC = () => {
       {/* --- Chart side ------------------------------------------------- */}
       <div className="relative flex flex-col">
         <div className="flex flex-wrap items-center justify-center gap-x-[calc(var(--u)*17)] gap-y-[calc(var(--u)*15)] px-[calc(var(--u)*16)] pt-[calc(var(--u)*20)] lg:flex-nowrap lg:justify-start lg:px-[calc(var(--u)*30)] lg:pt-[calc(var(--u)*27)]">
-          <div className="flex items-center justify-center gap-[calc(var(--u)*17)]">
+          {/* A phone spreads the picker and the live count to the two ends. */}
+          <div className="flex w-full items-center justify-between gap-[calc(var(--u)*17)] lg:w-auto lg:justify-center">
             {/* The game picker: Select Game, over the page. */}
             <button
               type="button"
@@ -191,11 +192,13 @@ const CrashPreview: FC = () => {
             </span>
           </div>
 
-          <div className="rl-shelf flex w-full gap-[calc(var(--u)*8.8)] lg:ms-auto lg:w-auto">
+          {/* Each chip as wide as its figure, as drawn, sharing out the row —
+              which on a phone runs 8 nearer the card's end edge than its start. */}
+          <div className="rl-shelf -me-[calc(var(--u)*8)] flex w-[calc(100%+var(--u)*8)] gap-[calc(var(--u)*9)] lg:ms-auto lg:me-0 lg:w-auto lg:gap-[calc(var(--u)*8.8)]">
             {HISTORY.map((h) => (
               <span
                 key={h.value}
-                className={`flex h-[calc(var(--u)*50)] min-w-0 flex-1 items-center justify-center rounded-[calc(var(--u)*10)] bg-[#f0f1f5]/10 lg:flex-none lg:px-[calc(var(--u)*12.5)] text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] tabular-nums ${
+                className={`flex h-[calc(var(--u)*50)] min-w-0 flex-auto items-center justify-center rounded-[calc(var(--u)*10)] bg-[#f0f1f5]/10 px-[calc(var(--u)*12.5)] text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] lg:flex-none lg:tabular-nums ${
                   h.low ? 'text-[#464e61]' : 'text-[#f0f1f5]'
                 }`}
               >
@@ -205,8 +208,9 @@ const CrashPreview: FC = () => {
           </div>
         </div>
 
-        {/* Phone chart: 219px, the design's own shallow climb. */}
-        <div className="relative mt-[calc(var(--u)*28)] h-[calc(var(--u)*221)] overflow-hidden lg:hidden">
+        {/* Phone chart: 219px, the design's own shallow climb, 15 above the
+            bet slip. */}
+        <div className="relative mb-[calc(var(--u)*15)] mt-[calc(var(--u)*28)] h-[calc(var(--u)*219)] overflow-hidden lg:hidden">
           <div className={GRID} />
           <Curve
             viewBox="0 0 388 221"
@@ -229,7 +233,9 @@ const CrashPreview: FC = () => {
       </div>
 
       {/* --- Bet slip ---------------------------------------------------- */}
-      <div className="rl-liquid rounded-b-[calc(var(--u)*34)] px-[calc(var(--u)*28)] pb-[calc(var(--u)*32)] pt-[calc(var(--u)*25)] lg:rounded-b-none lg:rounded-r-[calc(var(--u)*34)] lg:px-[calc(var(--u)*29)]">
+      {/* The phone design's slip is tighter at its foot: the button 18 under
+          the last field, the summary 13 under it, 18 to the card's edge. */}
+      <div className="rl-liquid rounded-b-[calc(var(--u)*34)] px-[calc(var(--u)*28)] pb-[calc(var(--u)*18)] pt-[calc(var(--u)*25)] lg:rounded-b-none lg:pb-[calc(var(--u)*32)] lg:rounded-r-[calc(var(--u)*34)] lg:px-[calc(var(--u)*29)]">
         <div className="rl-liquid relative grid h-[calc(var(--u)*56)] grid-cols-2 rounded-[calc(var(--u)*34)] p-[calc(var(--u)*3)]">
           {(['manual', 'auto'] as const).map((key) => (
             <button
@@ -300,12 +306,12 @@ const CrashPreview: FC = () => {
         <button
           type="button"
           onClick={play}
-          className="mt-[calc(var(--u)*29)] h-[calc(var(--u)*56)] w-full rounded-[calc(var(--u)*43)] bg-[#f9d028] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
+          className="mt-[calc(var(--u)*18)] h-[calc(var(--u)*56)] w-full lg:mt-[calc(var(--u)*29)] rounded-[calc(var(--u)*43)] bg-[#f9d028] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
         >
           {t('sports.placeBet')}
         </button>
 
-        <div className="mt-[calc(var(--u)*33)] space-y-[calc(var(--u)*15)]">
+        <div className="mt-[calc(var(--u)*13)] space-y-[calc(var(--u)*15)] lg:mt-[calc(var(--u)*33)]">
           <Summary label={t('lobby.crash.winOnCashout')} value={`${btc(bet * multiplier)} BTC`} />
           <Summary label={t('lobby.crash.networkFee')} value={`${btc(NETWORK_FEE)} BTC`} />
         </div>

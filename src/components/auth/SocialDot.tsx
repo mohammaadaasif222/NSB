@@ -7,7 +7,7 @@ interface SocialDotProps {
   onClick: () => void;
   /** The first disc in a stack has no overlap. */
   first?: boolean;
-  /** Disc diameter in px. */
+  /** Disc diameter in px; `40` is 48 on a phone, as its design draws it. */
   size?: 37 | 40;
   children: ReactNode;
 }
@@ -25,8 +25,8 @@ const SocialDot: FC<SocialDotProps> = ({ label, colour, onClick, first, size = 3
     aria-label={label}
     title={label}
     className={`rl-glass-btn relative flex items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:scale-110 ${colour} ${
-      size === 40 ? 'h-10 w-10' : 'h-[37px] w-[37px]'
-    } ${first ? '' : '-ms-[9px]'}`}
+      size === 40 ? 'h-12 w-12 sm:h-10 sm:w-10' : 'h-[37px] w-[37px]'
+    } ${first ? '' : size === 40 ? '-ms-[13px] sm:-ms-[9px]' : '-ms-[9px]'}`}
   >
     {children}
   </button>

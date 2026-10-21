@@ -6,6 +6,7 @@ import { useSupportChat } from '@/context/SupportChatContext';
 import { useAuth } from '@/context/AuthContext';
 import Glyph from '@/components/player/Glyph';
 import ProfileMenu from '@/components/player/ProfileMenu';
+import { CHAT_TOGGLE_EVENT } from '@/components/player/ChatDrawer';
 import menuIcon from '@/assets/lobby/rail/tab-menu.svg';
 import casinoIcon from '@/assets/lobby/rail/tab-casino.svg';
 import sportsIcon from '@/assets/lobby/rail/tab-sports.svg';
@@ -43,13 +44,23 @@ const TabLink: FC<{ href: string; active: boolean; children: ReactNode }> = ({
 /**
  * The phone's bottom bar, as the designs draw it: a floating dark glass pill
  * with Menu, Casino, Sports and Chat, and Profile once signed in — the phone's
- * way into the account menu, since its top bar has no avatar. Menu opens the same
- * drawer the rail is on desktop; Chat opens the support messenger.
+ * way into the account menu, since its top bar has no avatar. Menu opens and
+ * closes the menu panel (the rail, on desktop); Chat opens the support
+ * messenger.
  */
-const MobileTabBar: FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
+const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
+  menuOpen,
+  onToggleMenu,
+}) => {
   const { pathname } = useRouter();
   const { t } = useTranslation();
-  const { openIntercom } = useSupportChat();
+  const { openIntercom, internalChatEnabled } = useSupportChat();
+  // The built-in chat when it is on — its drawer lives with the top bar, so
+  // the tab asks for it by event; Intercom otherwise.
+  const openChat = (): void => {
+    if (internalChatEnabled && token) window.dispatchEvent(new Event(CHAT_TOGGLE_EVENT));
+    else openIntercom();
+  };
   const { token } = useAuth();
 
   // The home page belongs to neither section; its designs light no tab.
@@ -64,7 +75,13 @@ const MobileTabBar: FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
       data-mobile-tabbar=""
       className="fixed inset-x-4 bottom-4 z-30 flex h-16 items-center rl-drop-pane rounded-[34px] bg-black/45 px-1.5 backdrop-blur-xl lg:hidden"
     >
-      <button type="button" onClick={onOpenMenu} className={`${ITEM} ${ITEM_IDLE}`}>
+      {/* Opens and closes the menu panel, lit while it is open. */}
+      <button
+        type="button"
+        onClick={onToggleMenu}
+        aria-expanded={menuOpen}
+        className={`${ITEM} ${menuOpen ? ITEM_ON : ITEM_IDLE}`}
+      >
         <Tab icon={menuIcon.src} label={t('nav.menu')} />
       </button>
       <TabLink href="/casino" active={casino}>
@@ -73,7 +90,7 @@ const MobileTabBar: FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
       <TabLink href="/sports" active={sports}>
         <Tab icon={sportsIcon.src} label={t('nav.sports')} />
       </TabLink>
-      <button type="button" onClick={openIntercom} className={`${ITEM} ${ITEM_IDLE}`}>
+      <button type="button" onClick={openChat} className={`${ITEM} ${ITEM_IDLE}`}>
         <Tab icon={chatIcon.src} label={t('nav.chat')} />
       </button>
       {token && (

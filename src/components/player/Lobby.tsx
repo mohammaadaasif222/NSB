@@ -167,7 +167,7 @@ const Lobby: FC<Props> = ({
         ) : player ? (
           // The signed-in design packs the top of the page closer: winners,
           // the hero, the crash card and the browser 24px apart.
-          <div className="space-y-4 pt-1 lg:space-y-[calc(var(--u)*24)] lg:pt-0">
+          <div className="space-y-4 pt-2 lg:space-y-[calc(var(--u)*24)] lg:pt-0">
             <WinnersStrip />
             <div className={`space-y-4 ${FIRST_SCREEN_FIT} lg:space-y-[calc(var(--u)*24)]`}>
               <HomeHero />

@@ -46,9 +46,9 @@ const PhoneField: FC<PhoneFieldProps> = ({
     invalid={invalid}
     className="ps-2"
     leading={
-      <span className="relative flex h-full shrink-0 items-center gap-2 pe-1 text-[15px] text-white">
+      <span className="relative flex h-full shrink-0 items-center gap-[9px] pe-[11px] text-[18px] font-bold text-white sm:gap-2 sm:pe-1 sm:text-[15px] sm:font-normal">
         <span aria-hidden="true">{dialCode}</span>
-        <ChevronDownIcon size={18} className="text-white/80" />
+        <ChevronDownIcon size={22} className="text-white/80" />
         <select
           aria-label={dialLabel}
           value={dialCode}

@@ -101,6 +101,9 @@ interface Props {
    * the trigger sits at the start of the header.
    */
   iconOnly?: boolean;
+  /** With `iconOnly`: open the list from the trigger's end edge, for a
+   *  trigger at the end of its row (the phone menu's). */
+  menuAlign?: 'start' | 'end';
   /**
    * The lobby shell's frosted pill — globe, label and chevron. Distinct from
    * `glass`, which is the auth card's heavier frosting on a fixed backdrop.
@@ -126,6 +129,7 @@ const LanguagePicker: FC<Props> = ({
   glass = false,
   dropUp = false,
   iconOnly = false,
+  menuAlign = 'start',
   shell = false,
   plain = false,
   footer = false,
@@ -164,7 +168,7 @@ const LanguagePicker: FC<Props> = ({
   const placement = glass
     ? `start-0 ${dropUp ? 'bottom-0' : 'top-0'}`
     : iconOnly
-      ? 'start-0 top-12 lg:top-[calc(var(--u)*56)]'
+      ? `${menuAlign === 'end' ? 'end-0' : 'start-0'} top-12 lg:top-[calc(var(--u)*56)]`
       : dropUp
         ? `end-0 ${shell ? 'bottom-[calc(100%+var(--u)*8)]' : 'bottom-11'}`
         : 'end-0 top-11';

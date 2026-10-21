@@ -246,18 +246,20 @@ const SiteFooter: FC = () => {
     { title: t('lobby.footer.other'), lists: [legal] },
   ];
 
+  // A phone's seven marks share the band's width — the design's 46×32 plates,
+  // 5 apart, on one line at any width; desktop's sit at 76×54, 24 apart.
   const payments = (
-    <div className="flex flex-wrap items-center justify-center gap-[calc(var(--u)*5.6)] lg:gap-[calc(var(--u)*24)]">
+    <div className="grid w-full grid-cols-7 gap-[calc(var(--u)*5.4)] lg:flex lg:w-auto lg:flex-wrap lg:items-center lg:justify-center lg:gap-[calc(var(--u)*24)]">
       {PAYMENTS.map(({ mark, label }) => (
         <span
           key={label}
           title={label}
-          className="flex h-[calc(var(--u)*32.4)] w-[calc(var(--u)*45.6)] items-center justify-center rl-plate rounded-[calc(var(--u)*10)] lg:h-[calc(var(--u)*54)] lg:w-[calc(var(--u)*76)] lg:rounded-[calc(var(--u)*16)]"
+          className="flex aspect-[46/32] w-full items-center justify-center rl-plate rounded-[calc(var(--u)*10)] lg:aspect-auto lg:h-[calc(var(--u)*54)] lg:w-[calc(var(--u)*76)] lg:rounded-[calc(var(--u)*16)]"
         >
           <Image
             src={mark}
             alt={label}
-            className="h-auto w-[calc(var(--u)*30)] lg:w-[calc(var(--u)*50)]"
+            className="h-auto w-[65%] lg:w-[calc(var(--u)*50)]"
           />
         </span>
       ))}

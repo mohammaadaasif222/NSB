@@ -23,8 +23,8 @@ const VARIANT: Record<Variant, string> = {
 const SIZE: Record<Size, string> = {
   sm: 'h-10 px-6 text-base',
   md: 'h-11 px-6 text-[15px] sm:h-12 sm:px-9 sm:text-base',
-  lg: 'h-13 px-6 text-base sm:h-14 sm:text-lg',
-  row: 'h-13 px-6 text-base sm:h-14',
+  lg: 'h-14 px-6 text-lg',
+  row: 'h-14 px-6 text-base',
 };
 
 const Button: FC<ButtonProps> = ({

@@ -6,21 +6,9 @@ import { useWallet } from '@/context/WalletContext';
 import { useMe } from '@/context/UserContext';
 import AccountReviewGate from '@/components/risk/AccountReviewGate';
 import WalletField, { WALLET_INPUT, WALLET_PILL } from '../shared/WalletField';
+import { currencySign } from '../shared/currencySign';
 import api from '@/services/api';
 import { getPinStatus } from '@/services/transactionPin';
-
-/** The display currency's own sign — "$" for USD, "€" for EUR. */
-const currencySign = (code: string, locale: string): string => {
-  try {
-    return (
-      new Intl.NumberFormat(locale, { style: 'currency', currency: code })
-        .formatToParts(0)
-        .find((p) => p.type === 'currency')?.value ?? code
-    );
-  } catch {
-    return code;
-  }
-};
 
 /**
  * Tip another player: the amount large across the top, the wallet it comes
