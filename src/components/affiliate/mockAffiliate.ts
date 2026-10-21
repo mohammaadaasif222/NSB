@@ -13,7 +13,7 @@
  */
 
 /** Matches the placeholder the design prints, so it reads as a sample. */
-export const AFFILIATE_LINK = 'https://rolluck.com/r/Akiii134';
+export const AFFILIATE_LINK = 'https://staging.xyzlife.top/r/Akiii134';
 
 export interface AffiliateSummary {
   /** Pre-formatted. The API should send numbers and the page should format. */

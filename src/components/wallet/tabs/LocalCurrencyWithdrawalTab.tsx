@@ -3,9 +3,21 @@ import { toast } from 'react-toastify';
 import api from '@/services/api';
 import { useMe } from '@/context/UserContext';
 import { getDisplayCurrencies } from '@/services/wallet';
+import { getPinStatus } from '@/services/transactionPin';
+import { useSeonGuard } from '@/context/SeonGuardContext';
+import { isStepUpCancelled } from '@/lib/seon-guard';
 
-const LocalCurrencyWithdrawalTab: FC = () => {
+interface Props {
+  /** True when the error was an account lock the parent now shows. */
+  onRestricted?: (err: unknown) => boolean;
+  /** True when the error was a KYC refusal the parent now shows. */
+  onKycRefused?: (err: unknown) => boolean;
+}
+
+const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused }) => {
   const { me } = useMe();
+  // On a 428 it asks for the one-time code and resubmits.
+  const { run } = useSeonGuard();
 
   // Currencies & Methods
   const [currencies, setCurrencies] = useState<any[]>([]);
@@ -40,6 +52,15 @@ const LocalCurrencyWithdrawalTab: FC = () => {
   const [step, setStep] = useState<'amount' | 'form' | 'success'>('amount');
   const [loading, setLoading] = useState(false);
   const [cashoutId, setCashoutId] = useState<string | null>(null);
+  // Once the player has set a transaction PIN, every withdrawal asks for it.
+  const [pinRequired, setPinRequired] = useState(false);
+  const [pin, setPin] = useState('');
+
+  useEffect(() => {
+    void getPinStatus()
+      .then((status) => setPinRequired(!!status?.enabled))
+      .catch(() => undefined);
+  }, []);
 
   // Fetch currencies on mount
   useEffect(() => {
@@ -158,11 +179,16 @@ const LocalCurrencyWithdrawalTab: FC = () => {
         return;
       }
 
+      if (pinRequired && !/^\d{4,6}$/.test(pin)) {
+        toast.error('Please enter your transaction PIN');
+        return;
+      }
+
       setLoading(true);
 
       const currency = currencies.find((c) => c.code === selectedCurrency);
 
-      const response = await api.post('/wallet/withdrawal/d24/cashout', {
+      const response = await run((headers) => api.post('/wallet/withdrawal/d24/cashout', {
         amount,
         currency: selectedCurrency,
         country: currency?.country_code || 'BR',
@@ -175,14 +201,18 @@ const LocalCurrencyWithdrawalTab: FC = () => {
         document_id: documentId,
         document_type: documentType,
         email: me?.email,
-      }) as any;
+        ...(pinRequired ? { transaction_pin: pin } : {}),
+      }, { headers })) as any;
 
       console.log('[Withdrawal] Cashout created:', response.data);
       setCashoutId(response.data.cashout_id);
       setStep('success');
-      toast.success('Withdrawal request submitted successfully!');
+      toast.success('Withdrawal request submitted. It will be paid once it has been reviewed.');
     } catch (err: any) {
       console.error('[Withdrawal] Error:', err);
+      if (isStepUpCancelled(err)) return;
+      if (onRestricted?.(err)) return;
+      if (onKycRefused?.(err)) return;
       const errorMsg = err?.response?.data?.message || err?.message || 'Failed to submit withdrawal';
       toast.error(errorMsg);
     } finally {
@@ -191,6 +221,7 @@ const LocalCurrencyWithdrawalTab: FC = () => {
   };
 
   const handleReset = () => {
+    setPin('');
     setAmount('');
     setBeneficiaryName(me?.first_name || '');
     setBeneficiaryLastname(me?.last_name || '');
@@ -447,6 +478,22 @@ const LocalCurrencyWithdrawalTab: FC = () => {
             <option value="S">Savings</option>
           </select>
         </div>
+
+        {pinRequired && (
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1 block">Transaction PIN *</label>
+            <input
+              type="password"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={6}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder="4-6 digits"
+              className="w-full h-9 rounded-lg bg-slate-900 border border-slate-700 px-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 text-xs tracking-[0.4em]"
+            />
+          </div>
+        )}
 
         {/* Submit Button */}
         <button

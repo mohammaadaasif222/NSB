@@ -1,4 +1,5 @@
-import { Html, Head, Main, NextScript } from 'next/document';
+import { Html, Head, Main, NextScript, type DocumentProps } from 'next/document';
+import { LOCALE_META } from '@/i18n/locales';
 
 /**
  * `data-theme` is seeded with the same default ThemeContext starts from, so
@@ -22,9 +23,11 @@ import { Html, Head, Main, NextScript } from 'next/document';
  * the end of the stack so anything still rendering while Onest loads lands on
  * the face this app has been read in rather than on Arial.
  */
-export default function Document() {
+export default function Document({ locale }: DocumentProps) {
+  const meta = LOCALE_META.find((m) => m.code === locale) ?? LOCALE_META[0];
+
   return (
-    <Html lang="en" data-theme="dark">
+    <Html lang={meta.code} dir={meta.rtl ? 'rtl' : 'ltr'} data-theme="dark">
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

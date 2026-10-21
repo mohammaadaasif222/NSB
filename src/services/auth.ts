@@ -1,6 +1,10 @@
 import apiService from './api';
 import { encryptPassword } from '@/utils/crypto';
+import type { TelegramAuthData } from '@/hooks/useTelegramAuth';
 import type {
+  LinkedAccountData,
+  LinkedAccountListData,
+  LinkProvider,
   LoginResponseData,
   SessionEndedData,
   SessionListData,
@@ -24,15 +28,16 @@ export const resendSignupOtp = (identifier: string) =>
   apiService.post('/auth/resend-otp', { identifier });
 
 
-export const loginWithPassword = async (identifier: string, password: string) =>
-  apiService.post<Partial<LoginResponseData> & Partial<TwoFactorChallengeData>>('/auth/user/login', {
-    identifier,
-    password: await encryptPassword(password),
-  });
+export const loginWithPassword = async (identifier: string, password: string, headers?: Record<string, string>) =>
+  apiService.post<Partial<LoginResponseData> & Partial<TwoFactorChallengeData>>(
+    '/auth/user/login',
+    { identifier, password: await encryptPassword(password) },
+    { headers }
+  );
 
 /** Second step of a two-factor login: the code that was emailed or texted. */
-export const verifyLoginOtp = (challenge: string, code: string) =>
-  apiService.post<LoginResponseData>('/auth/login/verify-otp', { challenge, code });
+export const verifyLoginOtp = (challenge: string, code: string, headers?: Record<string, string>) =>
+  apiService.post<LoginResponseData>('/auth/login/verify-otp', { challenge, code }, { headers });
 
 export const resendLoginOtp = (challenge: string) =>
   apiService.post('/auth/login/resend-otp', { challenge });
@@ -50,3 +55,15 @@ export const endSession = (id: string) =>
   apiService.delete<SessionEndedData>(`/auth/sessions/${encodeURIComponent(id)}`);
 
 export const endAllSessions = () => apiService.post<{ sessions_ended: number }>('/auth/logout-all');
+
+export const listLinkedAccounts = () =>
+  apiService.get<LinkedAccountListData>('/auth/linked-accounts');
+
+export const linkGoogleAccount = (token: string) =>
+  apiService.post<LinkedAccountData>('/auth/linked-accounts', { type: 'google', token });
+
+export const linkTelegramAccount = (telegram: TelegramAuthData) =>
+  apiService.post<LinkedAccountData>('/auth/linked-accounts', { type: 'telegram', telegram });
+
+export const unlinkAccount = (provider: LinkProvider) =>
+  apiService.delete<{ unlinked: true }>(`/auth/linked-accounts/${encodeURIComponent(provider)}`);

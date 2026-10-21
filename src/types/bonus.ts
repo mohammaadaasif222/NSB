@@ -82,6 +82,11 @@ export interface UserBonus {
   updated_at: string;
 }
 
+export interface BonusWagering {
+  active: UserBonus[];
+  history: UserBonus[];
+}
+
 export type WelcomeStageStatus =
   'UNAVAILABLE' | 'LOCKED' | 'AVAILABLE' | 'CLAIMED' | 'COMPLETED' | 'EXPIRED' | 'FORFEITED';
 

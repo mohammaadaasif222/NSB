@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const APP = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const I18N = path.join(APP, 'src', 'i18n');
@@ -63,6 +63,37 @@ const unused = () => {
 
 const rows = [];
 let errors = 0;
+
+const declaredLocales = () => {
+  let found = null;
+  parse(path.join(I18N, 'locales.ts')).forEachChild((node) => {
+    if (!ts.isVariableStatement(node)) return;
+    for (const decl of node.declarationList.declarations) {
+      if (!ts.isIdentifier(decl.name) || decl.name.text !== 'LOCALES' || !decl.initializer) continue;
+      const init = ts.isAsExpression(decl.initializer) ? decl.initializer.expression : decl.initializer;
+      if (ts.isArrayLiteralExpression(init)) found = init.elements.map((el) => el.text);
+    }
+  });
+  return found ?? [];
+};
+
+const { default: nextConfig } = await import(pathToFileURL(path.join(APP, 'next.config.mjs')).href);
+const routed = nextConfig.i18n?.locales ?? [];
+const declared = declaredLocales();
+const expected = ['en', ...LOCALES];
+for (const [label, list] of [
+  ['next.config.mjs i18n.locales', routed],
+  ['src/i18n/locales.ts LOCALES', declared],
+]) {
+  if (list.join() !== expected.join()) {
+    console.error(`${label} is [${list.join(', ')}] — expected [${expected.join(', ')}]`);
+    errors += 1;
+  }
+}
+if (nextConfig.i18n?.defaultLocale !== 'en') {
+  console.error(`next.config.mjs i18n.defaultLocale must be 'en'`);
+  errors += 1;
+}
 
 for (const locale of LOCALES) {
   const file = path.join(I18N, 'translations', `${locale}.json`);

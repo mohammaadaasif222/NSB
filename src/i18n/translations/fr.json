@@ -476,6 +476,12 @@
   "profile.twoFactorShort": "2FA",
   "profile.enable2fa": "Activer la 2FA",
   "profile.linkedAccounts": "Comptes liés",
+  "profile.link.linked": "Compte {provider} associé",
+  "profile.link.unlinked": "Compte {provider} dissocié",
+  "profile.link.failed": "Impossible d’associer votre compte {provider}. Veuillez réessayer.",
+  "profile.link.unlinkFailed": "Impossible de dissocier votre compte {provider}. Veuillez réessayer.",
+  "profile.link.loadFailed": "Impossible de charger vos comptes liés",
+  "profile.link.comingSoon": "L’association {provider} arrive bientôt",
   "profile.id": "ID",
   "profile.editAvatar": "Changer la photo",
   "profile.language": "Langue",
@@ -1224,7 +1230,7 @@
   "rgc.faqQ11": "Comment fixer des limites de dépôt ou m’auto-exclure dans le cadre du jeu responsable ?",
   "rgc.faqA11": "Les deux se font sur cette page. Limites de jeu vous permet de plafonner ce que vous pouvez déposer ; une baisse prend effet immédiatement, tandis qu’une hausse est soumise à un délai de réflexion, de sorte qu’une limite ne peut pas être levée au moment précis où vous en avez le plus envie. L’auto-exclusion bloque le jeu pendant la durée de votre choix et ne peut pas être annulée avant son terme.",
   "rgc.faqQ12": "Comment contacter le service client en cas de problème ?",
-  "rgc.faqA12": "Écrivez à support@rolluck.com en indiquant votre nom d’utilisateur et ce que vous faisiez au moment où le problème est survenu : c’est le moyen le plus rapide de joindre quelqu’un qui peut examiner votre compte. Si vous avez besoin d’une aide indépendante de nous, les organismes listés dans la rubrique Auto-exclusion sont gratuits et confidentiels, et leur parler ne vous engage à rien.",
+  "rgc.faqA12": "Écrivez à support@xyzlife.top en indiquant votre nom d’utilisateur et ce que vous faisiez au moment où le problème est survenu : c’est le moyen le plus rapide de joindre quelqu’un qui peut examiner votre compte. Si vous avez besoin d’une aide indépendante de nous, les organismes listés dans la rubrique Auto-exclusion sont gratuits et confidentiels, et leur parler ne vous engage à rien.",
   "rgc.assessmentTitle": "Auto-évaluation",
   "rgc.assessIntro": "Pour beaucoup de personnes, le jeu d’argent peut être un passe-temps agréable, source de divertissement et du frisson de la prise de risque. Cependant, chez certaines personnes, le jeu peut devenir bien plus qu’une activité inoffensive. Il peut se transformer en un problème grave qui touche différents aspects de leur vie. Reconnaître les signes du jeu problématique est la première étape pour y faire face. Cet outil d’auto-évaluation a pour but de vous aider à réfléchir à votre comportement de jeu et à déterminer s’il est susceptible de causer des problèmes dans votre vie. Il est essentiel d’aborder cette évaluation avec honnêteté et ouverture afin de bien comprendre vos habitudes de jeu.",
   "rgc.assessPrompt": "Avez-vous un problème de jeu ? Posez-vous les questions suivantes :",
@@ -1539,5 +1545,10 @@
   "misc.realtime.random": "Aléatoire : {value}",
   "misc.realtime.issueTitle": "Problème de connexion en temps réel",
   "misc.realtime.issueBody": "Le message de test n'est pas arrivé dans les 5 secondes",
-  "misc.realtime.issueHint": "Soketi ne transmet peut-être pas correctement les événements"
+  "misc.realtime.issueHint": "Soketi ne transmet peut-être pas correctement les événements",
+  "roll.bonusTitle": "Mises du bonus",
+  "roll.bonusBlurb": "Les fonds bonus deviennent de l’argent réel que vous pouvez retirer une fois leur condition de mise remplie.",
+  "roll.table.bonus": "Bonus",
+  "roll.bonusAmount": "Bonus de {amount}",
+  "roll.bonusExpires": "Expire le {date}"
 }

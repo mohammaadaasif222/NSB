@@ -476,6 +476,12 @@
   "profile.twoFactorShort": "2FA",
   "profile.enable2fa": "Attiva 2FA",
   "profile.linkedAccounts": "Account collegati",
+  "profile.link.linked": "Account {provider} collegato",
+  "profile.link.unlinked": "Account {provider} scollegato",
+  "profile.link.failed": "Impossibile collegare il tuo account {provider}. Riprova.",
+  "profile.link.unlinkFailed": "Impossibile scollegare il tuo account {provider}. Riprova.",
+  "profile.link.loadFailed": "Impossibile caricare i tuoi account collegati",
+  "profile.link.comingSoon": "Il collegamento con {provider} arriverà presto",
   "profile.id": "ID",
   "profile.editAvatar": "Cambia immagine",
   "profile.language": "Lingua",
@@ -1224,7 +1230,7 @@
   "rgc.faqQ11": "Come posso impostare limiti di deposito o autoescludermi per giocare in modo responsabile?",
   "rgc.faqA11": "Entrambe le opzioni si trovano in questa pagina. Limiti di gioco imposta un tetto a quanto puoi depositare: una riduzione ha effetto immediato, mentre un aumento viene applicato solo dopo un periodo di riflessione, così un limite non può essere tolto proprio nel momento in cui vorresti di più farlo. L'autoesclusione blocca il gioco per un periodo a tua scelta e non può essere revocata prima della scadenza.",
   "rgc.faqQ12": "Come contatto l'assistenza clienti se ho un problema?",
-  "rgc.faqA12": "Scrivi a support@rolluck.com indicando il tuo nome utente e cosa stavi facendo quando si è verificato il problema: è il modo più rapido per raggiungere qualcuno che possa controllare il tuo account. Se hai bisogno di un aiuto indipendente da noi, le organizzazioni elencate nella sezione Autoesclusione sono gratuite e riservate, e parlare con loro non ti impegna a nulla.",
+  "rgc.faqA12": "Scrivi a support@xyzlife.top indicando il tuo nome utente e cosa stavi facendo quando si è verificato il problema: è il modo più rapido per raggiungere qualcuno che possa controllare il tuo account. Se hai bisogno di un aiuto indipendente da noi, le organizzazioni elencate nella sezione Autoesclusione sono gratuite e riservate, e parlare con loro non ti impegna a nulla.",
   "rgc.assessmentTitle": "Autovalutazione",
   "rgc.assessIntro": "Per molte persone il gioco d'azzardo può essere un passatempo piacevole, che offre divertimento e il brivido di correre un rischio. Tuttavia, per alcuni può diventare qualcosa di più di un'attività innocua. Può trasformarsi in un problema serio che incide su vari aspetti della loro vita. Riconoscere i segnali del gioco problematico è il primo passo per affrontare la questione. Questo strumento di autovalutazione è pensato per aiutarti a riflettere sul tuo comportamento di gioco e a capire se potrebbe causarti problemi nella vita. È fondamentale affrontare questa valutazione con onestà e apertura, per avere un quadro chiaro delle tue abitudini di gioco.",
   "rgc.assessPrompt": "Hai un problema con il gioco d'azzardo? Poniti le seguenti domande:",
@@ -1539,5 +1545,10 @@
   "misc.realtime.random": "Casuale: {value}",
   "misc.realtime.issueTitle": "Problema con la connessione in tempo reale",
   "misc.realtime.issueBody": "Il messaggio di prova non è arrivato entro 5 secondi",
-  "misc.realtime.issueHint": "Soketi potrebbe non consegnare correttamente gli eventi"
+  "misc.realtime.issueHint": "Soketi potrebbe non consegnare correttamente gli eventi",
+  "roll.bonusTitle": "Puntate del bonus",
+  "roll.bonusBlurb": "I fondi bonus diventano denaro reale prelevabile una volta completato il requisito di puntata.",
+  "roll.table.bonus": "Bonus",
+  "roll.bonusAmount": "Bonus di {amount}",
+  "roll.bonusExpires": "Scade il {date}"
 }

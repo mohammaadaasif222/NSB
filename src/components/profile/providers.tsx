@@ -63,21 +63,16 @@ const MarkSlot: FC<{ children: ReactNode; full?: boolean }> = ({ children, full 
 /* ==================================================================== */
 
 export interface LinkableProvider {
-  /** Stable key — becomes the provider id when an endpoint exists. */
-  key: string;
+  /** Stable key — the provider id the linked-accounts endpoint speaks. */
+  key: 'google' | 'telegram' | 'metamask';
   /** Proper noun, deliberately not run through i18n. */
   label: string;
   mark: ReactNode;
 }
 
 /**
- * The providers the design offers to link.
- *
- * NOT WIRED. There is no OAuth handshake and nothing persisting a connection,
- * so the rows render inert switches — see `SoonToggle` in SectionShell. When
- * the backend lands, this list becomes the catalogue and the *connected* state
- * comes from the API alongside it; the row component already takes the
- * provider as data, so only this file and the section's props need to change.
+ * The providers the design offers to link. The *connected* state comes from
+ * GET /auth/linked-accounts; this list is only the catalogue.
  */
 const google: LinkableProvider = {
   key: 'google',
@@ -119,8 +114,8 @@ export const LINKED_PROVIDERS: readonly LinkableProvider[] = [google, telegram, 
 /**
  * The wallets the Security tab offers to connect.
  *
- * NOT WIRED, same as the list above — there is no wallet-linking endpoint and
- * nothing storing a connected address.
+ * NOT WIRED. There is no wallet-linking endpoint and nothing storing a
+ * connected address.
  */
 export const WALLET_PROVIDERS: readonly LinkableProvider[] = [metamask];
 

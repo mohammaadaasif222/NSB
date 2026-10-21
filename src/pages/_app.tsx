@@ -16,8 +16,12 @@ import { FavouritesProvider } from '@/context/FavouritesContext';
 import { BetslipProvider } from '@/context/BetslipContext';
 import RouteLoader from '@/components/RouteLoader';
 import AuthGate from '@/components/AuthGate';
+import AccountReviewNotice from '@/components/risk/AccountReviewNotice';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
+import RegionRestrictedModal from '@/components/modals/RegionRestrictedModal';
 import Analytics from '@/components/analytics/Analytics';
+import Seo from '@/components/seo/Seo';
+import { SITE_NAME } from '@/constants/site';
 import IntercomLauncher from '@/components/support/IntercomLauncher';
 import { EventListeners } from '@/components/listeners/EventListeners';
 import { useTracking } from '@/hooks/useTracking';
@@ -33,16 +37,23 @@ function AppHead() {
   const { t } = useTranslation();
 
   return (
-    <Head>
-      <title>ROLLUCK</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="description" content={t('misc.meta.description')} />
-      <link
-        rel="icon"
-        type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%232563eb'/><text x='32' y='44' font-family='system-ui,sans-serif' font-size='34' font-weight='800' fill='%23ffffff' text-anchor='middle'>R</text></svg>"
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#05070d" />
+        <meta property="og:site_name" content={SITE_NAME} />
+      </Head>
+      <Seo
+        title={t('misc.meta.homeTitle')}
+        bareTitle
+        description={t('misc.meta.description')}
+        hreflang={false}
       />
-    </Head>
+    </>
   );
 }
 
@@ -75,10 +86,10 @@ export default function App({ Component, pageProps }: AppProps) {
                       {/* Outside AuthModalProvider so the auth modals' "Need help?"
                       can open the support messenger. */}
                       <SupportChatProvider>
+                        {/* Outside AuthModalProvider so the login and sign-up modals can
+                        reach the step-up prompt through useSeonGuard() too. */}
+                        <SeonGuardProvider>
                         <AuthModalProvider>
-                          {/* Innermost, so the step-up prompt renders above every page
-                          and any component can reach it through useSeonGuard(). */}
-                          <SeonGuardProvider>
                             {/* Inside AuthModalProvider: hearting signed out opens login. */}
                             <FavouritesProvider>
                               {/* Above the pages, so sportsbook picks survive moving between them. */}
@@ -87,12 +98,13 @@ export default function App({ Component, pageProps }: AppProps) {
                                 <Component {...pageProps} />
                               </BetslipProvider>
                             </FavouritesProvider>
-                          </SeonGuardProvider>
                           <SeonAgentWarmup />
+                          <RegionRestrictedModal />
                           <RouteLoader />
                           {/* After RouteLoader so that on a first load, where
                           both could be showing, this one wins the overlap. */}
                           <AuthGate />
+                        <AccountReviewNotice />
                           {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching
                           Intercom off removes it without a deploy. */}
@@ -107,6 +119,7 @@ export default function App({ Component, pageProps }: AppProps) {
                             theme="dark"
                           />
                         </AuthModalProvider>
+                        </SeonGuardProvider>
                       </SupportChatProvider>
                     </CurrencyConversionProvider>
                   </WalletProvider>

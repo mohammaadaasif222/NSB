@@ -32,7 +32,7 @@ const LobbyBanner: FC = () => {
     >
       <Image
         src={LOBBY_BANNER}
-        alt=""
+        alt={t('menu.promotions')}
         priority
         sizes="(max-width: 1023px) 100vw, 1548px"
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"

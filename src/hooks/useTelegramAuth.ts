@@ -64,13 +64,8 @@ export interface TelegramAuth {
   configured: boolean;
 }
 
-export function useTelegramAuth(): TelegramAuth {
-  const { login } = useAuth();
+export function useTelegramPopup(onData: (data: TelegramAuthData) => void): () => void {
   const { t } = useTranslation();
-  // Handles a fraud step-up on a risky sign-in.
-  const { run } = useSeonGuard();
-
-  const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
 
   // Loaded up front for the same reason as Google's script: the click that
@@ -97,6 +92,36 @@ export function useTelegramAuth(): TelegramAuth {
 
     return () => script.removeEventListener('load', onLoad);
   }, []);
+
+  const open = useCallback((): void => {
+    if (!BOT_ID) {
+      toast.info(t('auth.telegramNotConfigured'));
+      return;
+    }
+
+    const telegramLogin = window.Telegram?.Login;
+    if (!ready || !telegramLogin) {
+      toast.info(t('auth.telegramUnavailable'));
+      return;
+    }
+
+    telegramLogin.auth({ bot_id: BOT_ID, request_access: 'write' }, (data) => {
+      // A closed or declined popup calls back with `false` — not worth a red toast.
+      if (!data) return;
+      onData(data);
+    });
+  }, [ready, onData, t]);
+
+  return open;
+}
+
+export function useTelegramAuth(): TelegramAuth {
+  const { login } = useAuth();
+  const { t } = useTranslation();
+  // Handles a fraud step-up on a risky sign-in.
+  const { run } = useSeonGuard();
+
+  const [loading, setLoading] = useState(false);
 
   /** Forward Telegram's signed profile to our backend, then sign in. */
   const exchange = useCallback(
@@ -161,24 +186,14 @@ export function useTelegramAuth(): TelegramAuth {
     [login, t, run]
   );
 
-  const signIn = useCallback((): void => {
-    if (!BOT_ID) {
-      toast.info(t('auth.telegramNotConfigured'));
-      return;
-    }
-
-    const telegramLogin = window.Telegram?.Login;
-    if (!ready || !telegramLogin) {
-      toast.info(t('auth.telegramUnavailable'));
-      return;
-    }
-
-    telegramLogin.auth({ bot_id: BOT_ID, request_access: 'write' }, (data) => {
-      // A closed or declined popup calls back with `false` — not worth a red toast.
-      if (!data) return;
+  const onData = useCallback(
+    (data: TelegramAuthData): void => {
       void exchange(data);
-    });
-  }, [ready, exchange, t]);
+    },
+    [exchange]
+  );
+
+  const signIn = useTelegramPopup(onData);
 
   return { signIn, loading, configured: Boolean(BOT_ID) };
 }

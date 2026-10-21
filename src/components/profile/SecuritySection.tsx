@@ -7,6 +7,7 @@ import {
   SoonToggle,
 } from '@/components/profile/SectionShell';
 import SessionsGroup from '@/components/profile/security/SessionsGroup';
+import TransactionPinGroup from '@/components/profile/security/TransactionPinGroup';
 import ToggleSwitch from '@/components/profile/ToggleSwitch';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { TwoFactorIcon } from '@/components/profile/profileIcons';
@@ -46,6 +47,8 @@ const SecuritySection: FC<Props> = ({ email, twoFactorEnabled, onChangePassword,
         </FieldGroup>
 
         <SessionsGroup />
+
+        <TransactionPinGroup />
 
         {twoFactorOn && (
           <FieldGroup label={t('profile.twoFactorShort')}>

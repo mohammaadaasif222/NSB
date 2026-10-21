@@ -46,10 +46,10 @@ export const SOCIALS: { Mark: FC; label: string; href: string }[] = [
 /* ==================================================================== */
 
 export const CONTACTS: { Icon: () => ReactElement; label: TranslationKey; email: string }[] = [
-  { Icon: QuestionsIcon, label: 'lobby.footer.contactQuestions', email: 'support@rolluck.com' },
-  { Icon: BugReportIcon, label: 'lobby.footer.contactBugBounty', email: 'bugbounty@rolluck.com' },
-  { Icon: PartnerIcon, label: 'lobby.footer.contactPartner', email: 'affiliate@rolluck.com' },
-  { Icon: MarketingIcon, label: 'lobby.footer.contactMarketing', email: 'pr@rolluck.com' },
+  { Icon: QuestionsIcon, label: 'lobby.footer.contactQuestions', email: 'support@xyzlife.top' },
+  { Icon: BugReportIcon, label: 'lobby.footer.contactBugBounty', email: 'bugbounty@xyzlife.top' },
+  { Icon: PartnerIcon, label: 'lobby.footer.contactPartner', email: 'affiliate@xyzlife.top' },
+  { Icon: MarketingIcon, label: 'lobby.footer.contactMarketing', email: 'pr@xyzlife.top' },
 ];
 
 /* ==================================================================== */
@@ -88,7 +88,7 @@ export const EARN_LINKS: FooterLink[] = [
 ];
 
 export const HELP_LINKS: FooterLink[] = [
-  { label: 'lobby.footer.reportBug', href: 'mailto:bugbounty@rolluck.com' },
+  { label: 'lobby.footer.reportBug', href: 'mailto:bugbounty@xyzlife.top' },
   { label: 'lobby.footer.privacy', href: '/privacy-policy' },
   { label: 'lobby.footer.terms', href: '/terms-of-service' },
 ];

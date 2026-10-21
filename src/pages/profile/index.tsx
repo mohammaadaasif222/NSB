@@ -1,5 +1,4 @@
 import { useEffect, useState, type FC, type ReactNode } from 'react';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 
 import PlayerLayout from '@/layout/PlayerLayout';
@@ -27,6 +26,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { DEFAULT_TIMEZONE } from '@/types/profile';
+import Seo from '@/components/seo/Seo';
 
 /**
  * The theme picker is not one of these: the design drops it from Preferences,
@@ -147,9 +147,6 @@ const ProfilePage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('profile.title')} · ROLLUCK`}</title>
-      </Head>
 
       {/* 1544 is the account area's width in the design — 228 of rail, a 48px
           channel, and a 1268 panel. Wider than the lobby's `max-w-6xl`, and
@@ -246,7 +243,9 @@ const ProfilePage: FC = () => {
         <ChangeEmailModal
           currentEmail={me.email}
           onClose={closeModal}
-          onSaved={(email) => updateMe({ email })}
+          onSaved={(email) =>
+            updateMe(email === me.email ? { email } : { email, is_email_verified: false })
+          }
         />
       )}
 
@@ -283,10 +282,17 @@ const ProfilePage: FC = () => {
   );
 };
 
-const Profile: FC = () => (
-  <ProtectedRoute>
-    <ProfilePage />
-  </ProtectedRoute>
-);
+const Profile: FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <Seo title={t('profile.title')} />
+      <ProtectedRoute>
+        <ProfilePage />
+      </ProtectedRoute>
+    </>
+  );
+};
 
 export default Profile;
