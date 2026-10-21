@@ -6,7 +6,7 @@ import GlassDialog from '@/components/ui/GlassDialog';
 import WalletTabBar from './shared/WalletTabBar';
 import DepositTab from './tabs/DepositTab';
 import WithdrawTab from './tabs/WithdrawTab';
-import BuyCryptoTab from './tabs/BuyCryptoTab';
+import BuyCryptoTab from './tabs/OnramperBuyCryptoTab';
 import TipTab from './tabs/TipTab';
 import RedeemTab from './tabs/RedeemTab';
 

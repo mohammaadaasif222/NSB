@@ -1,15 +1,12 @@
 import { Html, Head, Main, NextScript, type DocumentProps } from 'next/document';
 import { LOCALE_META } from '@/i18n/locales';
+import { SERVER_DICTIONARIES } from '@/i18n/dictionaries.server';
+import { EMBEDDED_DICTIONARY_ID } from '@/i18n/registry';
 
 /**
  * `data-theme` is seeded with the same default ThemeContext starts from, so
  * the server markup matches the first client render. ThemeContext swaps in the
  * user's stored theme once it mounts.
- *
- * The typefaces are loaded here rather than through `next/font` so the build
- * does not need network access to succeed; `display=swap` means a blocked or
- * slow font costs nothing but a repaint — the stack in index.css carries the
- * first frame.
  *
  * Onest is the design's typeface almost everywhere: nearly every text node in
  * the Figma file reports `Onest` at Regular, Medium or SemiBold. Rubik comes
@@ -25,20 +22,29 @@ import { LOCALE_META } from '@/i18n/locales';
  */
 export default function Document({ locale }: DocumentProps) {
   const meta = LOCALE_META.find((m) => m.code === locale) ?? LOCALE_META[0];
+  const dictionary = SERVER_DICTIONARIES[meta.code];
 
   return (
     <Html lang={meta.code} dir={meta.rtl ? 'rtl' : 'ltr'} data-theme="dark">
       <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700&display=swap"
+          rel="preload"
+          href="/fonts/onest-latin-v5.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
-
       </Head>
       <body>
         <Main />
+        {dictionary && (
+          <script
+            id={EMBEDDED_DICTIONARY_ID}
+            type="application/json"
+            data-locale={meta.code}
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(dictionary).replace(/</g, '\\u003c') }}
+          />
+        )}
         <NextScript />
       </body>
     </Html>

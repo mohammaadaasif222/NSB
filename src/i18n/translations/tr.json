@@ -1586,9 +1586,12 @@
   "misc.realtime.issueTitle": "Gerçek zamanlı bağlantı sorunu",
   "misc.realtime.issueBody": "Test mesajı 5 saniye içinde ulaşmadı",
   "misc.realtime.issueHint": "Soketi olayları düzgün iletmiyor olabilir",
-  "roll.bonusTitle": "Bonus çevrimi",
-  "roll.bonusBlurb": "Bonus bakiyesi, çevrim şartı tamamlandığında çekebileceğiniz gerçek paraya dönüşür.",
-  "roll.table.bonus": "Bonus",
   "roll.bonusAmount": "{amount} bonus",
-  "roll.bonusExpires": "Bitiş: {date}"
+  "roll.bonusExpires": "Bitiş: {date}",
+  "roll.table.source": "Kaynak",
+  "roll.status.EXPIRED": "Süresi doldu",
+  "roll.status.FORFEITED": "Vazgeçildi",
+  "roll.detail.bonus": "Bonus",
+  "roll.detail.bonusAmount": "Bonus tutarı",
+  "roll.detail.expires": "Bitiş"
 }

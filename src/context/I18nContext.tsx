@@ -1,13 +1,14 @@
-import { createContext, useContext, useEffect, type FC, type ReactNode } from 'react';
-import { useRouter } from 'next/router';
+import { createContext, useContext, useEffect, useState, type FC, type ReactNode } from 'react';
+import Router, { useRouter } from 'next/router';
+import { localizedPath } from '@/constants/site';
 import {
-  DICTIONARIES,
   LOCALE_META,
   LOCALES,
   type Locale,
   type LocaleMeta,
   type TranslationKey,
 } from '@/i18n/locales';
+import { dictionaryFor, formatMessage, loadDictionary } from '@/i18n/registry';
 
 interface I18nContextType {
   locale: Locale;
@@ -48,9 +49,52 @@ const writePreference = (l: Locale): void => {
   }
 };
 
+const ensureDictionary = (l: Locale): Promise<void> => loadDictionary(l).catch(() => undefined);
+
+const switchLocale = (next: Locale, replace: boolean, isActive: () => boolean): void => {
+  void loadDictionary(next).then(
+    () => {
+      if (!isActive()) {
+        return;
+      }
+      const options = { locale: next, scroll: false };
+      void (replace
+        ? Router.replace(Router.asPath, undefined, options)
+        : Router.push(Router.asPath, undefined, options));
+    },
+    () => {
+      if (!isActive()) {
+        return;
+      }
+      const url = localizedPath(next, Router.asPath);
+      if (replace) {
+        window.location.replace(url);
+      } else {
+        window.location.assign(url);
+      }
+    }
+  );
+};
+
 export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const router = useRouter();
   const locale: Locale = isLocale(router.locale) ? router.locale : DEFAULT_LOCALE;
+  const [, setLoadedCount] = useState(0);
+
+  useEffect(() => {
+    if (dictionaryFor(locale)) {
+      return;
+    }
+    let active = true;
+    void ensureDictionary(locale).then(() => {
+      if (active) {
+        setLoadedCount((n) => n + 1);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [locale]);
 
   // Keep <html lang> and dir in step — Arabic needs RTL.
   useEffect(() => {
@@ -65,35 +109,29 @@ export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
     const preferred = readPreference();
     if (
-      preferred &&
-      preferred !== locale &&
-      locale === DEFAULT_LOCALE &&
-      !NO_PREFERENCE_REDIRECT.test(router.pathname)
+      !preferred ||
+      preferred === locale ||
+      locale !== DEFAULT_LOCALE ||
+      NO_PREFERENCE_REDIRECT.test(router.pathname)
     ) {
-      void router.replace(router.asPath, undefined, { locale: preferred, scroll: false });
+      return;
     }
+    let active = true;
+    switchLocale(preferred, true, () => active);
+    return () => {
+      active = false;
+    };
   }, [router, locale]);
 
   const setLocale = (next: Locale): void => {
     writePreference(next);
     if (next !== locale) {
-      void router.push(router.asPath, undefined, { locale: next, scroll: false });
+      switchLocale(next, false, () => true);
     }
   };
 
-  const t = (key: TranslationKey, vars?: Record<string, string | number>): string => {
-    // Fall back to English rather than rendering a raw key at the user.
-    const dict = DICTIONARIES[locale] ?? DICTIONARIES.en;
-    let out: string = dict[key] ?? DICTIONARIES.en[key] ?? key;
-
-    if (vars) {
-      for (const [k, v] of Object.entries(vars)) {
-        out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
-      }
-    }
-
-    return out;
-  };
+  const t = (key: TranslationKey, vars?: Record<string, string | number>): string =>
+    formatMessage(locale, key, vars);
 
   const meta = metaFor(locale);
 

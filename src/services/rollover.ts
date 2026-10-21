@@ -1,6 +1,5 @@
 import apiService from './api';
 import type {
-  BonusWagering,
   DepositRollover,
   DepositRolloverDetail,
   DepositRolloverStatus,
@@ -18,8 +17,6 @@ export interface RolloverHistoryParams {
 
 export const getRolloverHistory = (params: RolloverHistoryParams = {}) =>
   apiService.get<Paged<DepositRollover>>('/rollover/me/history', params);
-
-export const getBonusWagering = () => apiService.get<BonusWagering>('/bonuses/me/wagering');
 
 export const getRollover = (id: string) =>
   apiService.get<DepositRolloverDetail>(`/rollover/me/${id}`);

@@ -1586,9 +1586,12 @@
   "misc.realtime.issueTitle": "مشكلة في الاتصال الفوري",
   "misc.realtime.issueBody": "لم تصل رسالة الاختبار خلال 5 ثوانٍ",
   "misc.realtime.issueHint": "قد لا يقوم Soketi بتسليم الأحداث بشكل صحيح",
-  "roll.bonusTitle": "مراهنة المكافآت",
-  "roll.bonusBlurb": "تتحول أموال المكافأة إلى أموال حقيقية يمكنك سحبها بعد إكمال شرط المراهنة الخاص بها.",
-  "roll.table.bonus": "المكافأة",
   "roll.bonusAmount": "مكافأة بقيمة {amount}",
-  "roll.bonusExpires": "تنتهي في {date}"
+  "roll.bonusExpires": "تنتهي في {date}",
+  "roll.table.source": "المصدر",
+  "roll.status.EXPIRED": "منتهية",
+  "roll.status.FORFEITED": "تم التنازل",
+  "roll.detail.bonus": "المكافأة",
+  "roll.detail.bonusAmount": "قيمة المكافأة",
+  "roll.detail.expires": "ينتهي في"
 }

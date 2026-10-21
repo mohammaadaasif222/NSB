@@ -1586,9 +1586,12 @@
   "misc.realtime.issueTitle": "Проблема с соединением в реальном времени",
   "misc.realtime.issueBody": "Тестовое сообщение не пришло в течение 5 секунд",
   "misc.realtime.issueHint": "Возможно, Soketi доставляет события некорректно",
-  "roll.bonusTitle": "Отыгрыш бонусов",
-  "roll.bonusBlurb": "Бонусные средства становятся реальными деньгами, доступными для вывода, после выполнения условий отыгрыша.",
-  "roll.table.bonus": "Бонус",
   "roll.bonusAmount": "Бонус {amount}",
-  "roll.bonusExpires": "Истекает {date}"
+  "roll.bonusExpires": "Истекает {date}",
+  "roll.table.source": "Источник",
+  "roll.status.EXPIRED": "Истёк",
+  "roll.status.FORFEITED": "Аннулирован",
+  "roll.detail.bonus": "Бонус",
+  "roll.detail.bonusAmount": "Сумма бонуса",
+  "roll.detail.expires": "Истекает"
 }
