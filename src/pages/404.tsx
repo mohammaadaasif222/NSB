@@ -1,7 +1,7 @@
 import type { FC } from 'react';
-import Head from 'next/head';
 import Link from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
+import Seo from '@/components/seo/Seo';
 
 /**
  * 404.
@@ -29,10 +29,7 @@ const NotFound: FC = () => {
        touching the top edge on a window too short to centre it in, where the
        page scrolls instead. */
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--rl-stage)] px-6 py-10 text-center">
-      <Head>
-        <title>{`${t('notFound.eyebrow')} · ROLLUCK`}</title>
-        <meta name="robots" content="noindex" />
-      </Head>
+      <Seo title={t('notFound.eyebrow')} noindex />
 
       {/* The design's block is 680 wide and vertically centred in the frame.
           Its measurements hold from 768 up, where the 40px line still fits;

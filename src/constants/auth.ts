@@ -10,7 +10,7 @@ export const REGISTER_HREF = '/?auth=register';
 export const LOGIN_HREF = '/?auth=login';
 export const FORGOT_PASSWORD_HREF = '/?auth=forgot';
 
-export const SUPPORT_EMAIL = 'support@rolluck.com';
+export const SUPPORT_EMAIL = 'support@xyzlife.top';
 
 export const PASSWORD_MIN_LENGTH = 10;
 

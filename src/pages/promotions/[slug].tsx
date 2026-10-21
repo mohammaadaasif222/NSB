@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -25,6 +24,7 @@ import { useAuthModal } from '@/context/AuthModalContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useCountdown } from '@/hooks/useCountdown';
 import { fetchShelfList } from '@/services/games.server';
+import { markUnavailable } from '@/utils/unavailable.server';
 import { fetchPromotionServer } from '@/services/promotions.server';
 import { paragraphsOf, type PromotionItem } from '@/services/promotions';
 import {
@@ -40,6 +40,8 @@ import {
   type SubmittedReview,
 } from '@/services/promotionReviews';
 import type { Game } from '@/types';
+import Seo from '@/components/seo/Seo';
+import { clip } from '@/constants/site';
 
 import promoArt from '@/assets/promotions/promo-horse-racing.webp';
 
@@ -189,9 +191,12 @@ const PromotionDetail: FC<Props & { promotion: PromotionItem }> = ({
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${title} · ROLLUCK`}</title>
-      </Head>
+      <Seo
+        title={title}
+        description={clip(promotion.description || promotion.details || '') || undefined}
+        image={promotion.image_url || promoArt.src}
+        imageAlt={title}
+      />
 
       <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
         <section>
@@ -239,7 +244,7 @@ const PromotionDetail: FC<Props & { promotion: PromotionItem }> = ({
                 // the image optimiser's host allowlist out of it.
                 <img
                   src={promotion.image_url}
-                  alt=""
+                  alt={title}
                   // A dead or deleted upload falls back to the default artwork.
                   onError={(e) => {
                     if (!e.currentTarget.src.endsWith(promoArt.src)) {
@@ -251,7 +256,7 @@ const PromotionDetail: FC<Props & { promotion: PromotionItem }> = ({
               ) : (
                 <Image
                   src={promoArt}
-                  alt=""
+                  alt={title}
                   fill
                   priority
                   sizes="(min-width: 1024px) 81vw, 98vw"
@@ -381,6 +386,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     // The API is down or erroring. That is not "no such promotion" — say so on
     // the page rather than 404 a promotion that exists, or throw a 500.
     console.error('[promotions] detail failed:', error instanceof Error ? error.message : error);
+    markUnavailable(context);
     return {
       props: { promotion: null, reviews: NO_REVIEWS, reviewsFailed: true, reviewsEnabled: false, games: [] },
     };
@@ -416,6 +422,7 @@ const PromotionDetailRoute: FC<Props> = (props) => {
   if (!props.promotion) {
     return (
       <PlayerLayout>
+        <Seo title={t('promo.title')} noindex />
         <div className="mx-auto max-w-[1548px] space-y-6 px-1 py-10 text-center lg:max-w-[calc(var(--u)*1548)] lg:px-0">
           <p role="alert" className="rl-glass-deep rounded-[24px] px-6 py-16 text-sm text-white/60">
             {t('promo.unavailable')}

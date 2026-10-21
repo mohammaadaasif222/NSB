@@ -1,5 +1,4 @@
 import { useMemo, useState, type FC } from 'react';
-import Head from 'next/head';
 import Image from 'next/image';
 
 import PlayerLayout from '@/layout/PlayerLayout';
@@ -16,6 +15,7 @@ import {
 } from '@/constants/blogs';
 
 import blogHero from '@/assets/blogs/blog-hero.webp';
+import Seo from '@/components/seo/Seo';
 
 const CHIP =
   'flex h-11 items-center px-5 text-[15px] lg:h-[calc(var(--u)*48)] lg:px-[calc(var(--u)*24)] lg:text-[max(12px,calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
@@ -47,9 +47,7 @@ const BlogsPage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('nav.blogs')} · ROLLUCK`}</title>
-      </Head>
+      <Seo title={t('nav.blogs')} />
 
       {/* The design's 1548px content column, the same one the lobby and the
           footer use; `--u` (set by PlayerLayout) scales it on a narrower

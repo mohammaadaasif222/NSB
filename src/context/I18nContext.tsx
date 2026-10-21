@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type FC, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type FC, type ReactNode } from 'react';
+import { useRouter } from 'next/router';
 import {
   DICTIONARIES,
   LOCALE_META,
@@ -7,15 +8,6 @@ import {
   type LocaleMeta,
   type TranslationKey,
 } from '@/i18n/locales';
-
-/**
- * Client-side i18n.
- *
- * Deliberately not next-i18next: that adds locale-prefixed routes
- * (/en/…, /ar/…), which would break the folder-based paths this app just moved
- * to and the sessionStorage auth guards. This keeps one URL per page and swaps
- * the dictionary in place.
- */
 
 interface I18nContextType {
   locale: Locale;
@@ -32,22 +24,33 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 const STORAGE_KEY = 'app_locale';
 const DEFAULT_LOCALE: Locale = 'en';
 
-const isLocale = (v: string | null): v is Locale =>
+const NO_PREFERENCE_REDIRECT = /^\/(auth|play)\//;
+
+const isLocale = (v: string | null | undefined): v is Locale =>
   !!v && (LOCALES as readonly string[]).includes(v);
 
 const metaFor = (l: Locale): LocaleMeta => LOCALE_META.find((m) => m.code === l) ?? LOCALE_META[0];
 
-export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  // Starts at the default so the server render and first client render agree;
-  // the stored choice is restored in the effect below.
-  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
-
-  useEffect(() => {
+const readPreference = (): Locale | null => {
+  try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (isLocale(stored)) {
-      setLocaleState(stored);
-    }
-  }, []);
+    return isLocale(stored) ? stored : null;
+  } catch {
+    return null;
+  }
+};
+
+const writePreference = (l: Locale): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, l);
+  } catch {
+    return;
+  }
+};
+
+export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const router = useRouter();
+  const locale: Locale = isLocale(router.locale) ? router.locale : DEFAULT_LOCALE;
 
   // Keep <html lang> and dir in step — Arabic needs RTL.
   useEffect(() => {
@@ -56,9 +59,26 @@ export const I18nProvider: FC<{ children: ReactNode }> = ({ children }) => {
     document.documentElement.dir = m.rtl ? 'rtl' : 'ltr';
   }, [locale]);
 
+  useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+    const preferred = readPreference();
+    if (
+      preferred &&
+      preferred !== locale &&
+      locale === DEFAULT_LOCALE &&
+      !NO_PREFERENCE_REDIRECT.test(router.pathname)
+    ) {
+      void router.replace(router.asPath, undefined, { locale: preferred, scroll: false });
+    }
+  }, [router, locale]);
+
   const setLocale = (next: Locale): void => {
-    localStorage.setItem(STORAGE_KEY, next);
-    setLocaleState(next);
+    writePreference(next);
+    if (next !== locale) {
+      void router.push(router.asPath, undefined, { locale: next, scroll: false });
+    }
   };
 
   const t = (key: TranslationKey, vars?: Record<string, string | number>): string => {

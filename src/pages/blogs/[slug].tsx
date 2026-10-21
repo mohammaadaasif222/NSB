@@ -1,6 +1,5 @@
 import type { FC } from 'react';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 
@@ -11,6 +10,8 @@ import { ChevronLeftIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
 import type { TranslationKey } from '@/i18n/locales';
 import { ARTICLE, findPost } from '@/constants/blogs';
+import { SITE_NAME, SITE_URL, absoluteUrl, clip } from '@/constants/site';
+import Seo, { type JsonLd } from '@/components/seo/Seo';
 
 interface Props {
   /** An i18n key while the copy is the design's placeholder. */
@@ -33,12 +34,28 @@ const BlogDetailPage: FC<Props> = ({ title, image }) => {
     dateStyle: 'medium',
     timeZone: 'UTC',
   });
+  const summary = clip(t(ARTICLE.body[0]));
+  const article: JsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: heading,
+    description: summary,
+    image: [absoluteUrl(image.src)],
+    datePublished: ARTICLE.publishedOn,
+    author: { '@type': 'Organization', name: ARTICLE.author, url: `${SITE_URL}/` },
+    publisher: { '@type': 'Organization', name: SITE_NAME, '@id': `${SITE_URL}/#organization` },
+  };
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${heading} · ROLLUCK`}</title>
-      </Head>
+      <Seo
+        title={heading}
+        type="article"
+        description={summary}
+        image={image.src}
+        imageAlt={heading}
+        jsonLd={article}
+      />
 
       <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
         <article>
@@ -58,7 +75,7 @@ const BlogDetailPage: FC<Props> = ({ title, image }) => {
           <div className="relative mt-4 aspect-[1548/416] overflow-hidden rounded-[24px] lg:mt-[calc(var(--u)*22)] lg:rounded-[calc(var(--u)*34)]">
             <Image
               src={image}
-              alt=""
+              alt={heading}
               fill
               priority
               sizes="(min-width: 1024px) 81vw, 98vw"

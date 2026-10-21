@@ -77,6 +77,7 @@ export const gaPageView = (path: string): void => {
     page_path: path,
     page_location: window.location.href,
     page_title: document.title,
+    content_language: document.documentElement.lang || 'en',
   });
 };
 

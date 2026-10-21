@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
-import Head from 'next/head';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
@@ -10,6 +9,7 @@ import PromotionFilters, {
 } from '@/components/promotions/PromotionFilters';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
+import Seo from '@/components/seo/Seo';
 import {
   fetchPromotions,
   PROMOTIONS_PAGE_SIZE,
@@ -93,9 +93,7 @@ const PromotionsPage: FC = () => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${t('promo.title')} · ROLLUCK`}</title>
-      </Head>
+      <Seo title={t('promo.title')} description={t('misc.meta.promotions')} />
       <div className="mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0">
         <section>
           <h1 className="rl-h-section">{t('promo.title')}</h1>

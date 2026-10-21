@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
-import Head from 'next/head';
 import PlayerLayout from '@/layout/PlayerLayout';
 import GameTile from '@/components/player/GameTile';
 import GoldGlow from '@/components/player/GoldGlow';
@@ -20,6 +19,7 @@ import { DESKTOP_QUERY, useMediaQuery } from '@/hooks/useMediaQuery';
 import { providersOf } from '@/services/catalogue';
 import type { TranslationKey } from '@/i18n/locales';
 import type { Game, LobbyProvider } from '@/types';
+import Seo from '@/components/seo/Seo';
 
 interface Props {
   titleKey: TranslationKey;
@@ -144,9 +144,7 @@ const MyGamesPage: FC<Props> = ({
 
   return (
     <PlayerLayout backdrop={<GoldGlow />}>
-      <Head>
-        <title>{`${title} — ROLLUCK`}</title>
-      </Head>
+      <Seo title={title} />
 
       <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0">
         <h1 className="mt-1 text-[32px] font-semibold leading-10 text-[#f0f1f5] lg:mt-[calc(var(--u)*24)] lg:text-[length:max(min(11px,44px),calc(var(--u)*44))] lg:leading-[calc(var(--u)*52)]">

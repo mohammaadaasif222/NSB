@@ -1,5 +1,4 @@
 import { useMemo, useState, type FC } from 'react';
-import Head from 'next/head';
 import type { GetServerSideProps } from 'next';
 
 import PlayerLayout from '@/layout/PlayerLayout';
@@ -16,6 +15,7 @@ import SportsToolbar, {
 import { useTranslation } from '@/context/I18nContext';
 import { SPORTS, isSportKey, type SportKey } from '@/constants/sportsbook';
 import { ALL_FIXTURES, SPORT_SECTIONS } from '@/services/sportsbook.sample';
+import Seo from '@/components/seo/Seo';
 
 interface Props {
   sport: SportKey;
@@ -52,9 +52,7 @@ const SportPage: FC<Props> = ({ sport }) => {
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${label} — ${t('nav.sports')} — ROLLUCK`}</title>
-      </Head>
+      <Seo title={`${label} — ${t('nav.sports')}`} />
 
       <div className="mx-auto max-w-[1548px] px-1 pt-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:pt-[calc(var(--u)*7)]">
         <SportsToolbar query={query} onChange={(patch) => setQuery((q) => ({ ...q, ...patch }))} />

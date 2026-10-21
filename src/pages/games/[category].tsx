@@ -1,6 +1,5 @@
 import type { FC } from 'react';
 import type { GetServerSideProps } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 
 import PlayerLayout from '@/layout/PlayerLayout';
@@ -18,8 +17,10 @@ import {
   shelfFor,
 } from '@/constants/games';
 import { fetchShelfList, parsePageParam } from '@/services/games.server';
+import { markUnavailable } from '@/utils/unavailable.server';
 import { fetchWinnerGames } from '@/services/myGames.server';
 import type { Game, GamePagination, GameShelfKey } from '@/types';
+import Seo from '@/components/seo/Seo';
 
 interface Props {
   categoryKey: GameShelfKey;
@@ -57,9 +58,11 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
 
   return (
     <PlayerLayout>
-      <Head>
-        <title>{`${title} · ROLLUCK`}</title>
-      </Head>
+      <Seo
+        title={title}
+        description={t('misc.meta.category', { category: title })}
+        path={categoryHref(def.key, pagination.page)}
+      />
 
       <div className="mx-auto max-w-[1600px] space-y-4 pb-2 sm:space-y-6">
         {/* Category tabs */}
@@ -131,7 +134,7 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
   );
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params, query }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({ params, query, req, res }) => {
   const def = categoryForKey(params?.category);
   if (!def) {
     return { notFound: true };
@@ -139,6 +142,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, qu
 
   const page = parsePageParam(query.page);
   const result = await fetchShelfList(def.list, page, CATEGORY_PAGE_SIZE);
+  if (result.failed) {
+    markUnavailable({ req, res });
+  }
 
   return {
     props: {
