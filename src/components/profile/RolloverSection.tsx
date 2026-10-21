@@ -158,10 +158,10 @@ const RolloverSection: FC = () => {
           <p className="mt-1 text-[12px] leading-relaxed text-white/64">
             {unlocked
               ? t('roll.partialBody', {
-                  remaining: formatCurrencyDisplay(summary.total_remaining),
+                  remaining: formatCurrencyDisplay(summary.held_remaining),
                 })
               : t('roll.heldAllBody', {
-                  remaining: formatCurrencyDisplay(summary.total_remaining),
+                  remaining: formatCurrencyDisplay(summary.held_remaining),
                 })}
           </p>
         </div>

@@ -71,6 +71,7 @@ export interface RolloverSummary {
   total_required: string;
   total_completed: string;
   total_remaining: string;
+  held_remaining: string;
   progress: number;
 
   locked: string;
