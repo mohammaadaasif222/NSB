@@ -15,6 +15,7 @@ const REMOTE_IMAGE_HOSTS = [
   // deploy. Mirrors ASSET_CDN in `src/constants/cdn.ts` — the two have to
   // move together, and both still point at the staging bucket.
   'rolluck-staging-assets-2026.fra1.cdn.digitaloceanspaces.com',
+  'i.ytimg.com',
 ];
 
 /** @type {import('next').NextConfig} */
@@ -25,6 +26,29 @@ const nextConfig = {
     locales: ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'],
     defaultLocale: 'en',
     localeDetection: false,
+  },
+
+  async headers() {
+    return [
+      {
+        source: '/fonts/:file*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+    ];
+  },
+
+  webpack(config, { isServer, webpack }) {
+    if (!isServer) {
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(/[\\/]dictionaries\.server$/, (resource) => {
+          resource.request = resource.request.replace(
+            /dictionaries\.server$/,
+            'dictionaries.client'
+          );
+        })
+      );
+    }
+    return config;
   },
 
   eslint: {

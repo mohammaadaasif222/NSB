@@ -14,14 +14,6 @@ import * as rgModule from './modules/rg';
 import * as legalModule from './modules/legal';
 import * as contentModule from './modules/content';
 import * as miscModule from './modules/misc';
-import ar from './translations/ar.json';
-import tr from './translations/tr.json';
-import hi from './translations/hi.json';
-import fr from './translations/fr.json';
-import ru from './translations/ru.json';
-import pt from './translations/pt.json';
-import es from './translations/es.json';
-import it from './translations/it.json';
 
 export const LOCALES = ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'] as const;
 
@@ -1061,7 +1053,7 @@ const en = {
 
 export type TranslationKey = keyof typeof en;
 
-type Dictionary = Record<TranslationKey, string>;
+export type Dictionary = Record<TranslationKey, string>;
 
 /**
  * A locale that has not been fully translated yet.
@@ -1076,22 +1068,12 @@ type Dictionary = Record<TranslationKey, string>;
  * it translated — which renders identically and hides which strings a
  * translator still has to do.
  */
-type PartialDictionary = Partial<Dictionary>;
+export type PartialDictionary = Partial<Dictionary>;
 
 type Translated<T> = [Exclude<keyof T, TranslationKey>] extends [never] ? T : never;
 
-const dictionary = <T extends PartialDictionary>(
+export const dictionary = <T extends PartialDictionary>(
   translations: T & Translated<T>
 ): PartialDictionary => translations;
 
-export const DICTIONARIES: Record<Locale, PartialDictionary> & { en: Dictionary } = {
-  en,
-  ar: dictionary(ar),
-  tr: dictionary(tr),
-  hi: dictionary(hi),
-  fr: dictionary(fr),
-  ru: dictionary(ru),
-  pt: dictionary(pt),
-  es: dictionary(es),
-  it: dictionary(it),
-};
+export const EN_DICTIONARY: Dictionary = en;

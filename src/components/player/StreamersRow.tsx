@@ -1,5 +1,5 @@
 import { useState, type FC, type ReactNode } from 'react';
-import { type StaticImageData } from 'next/image';
+import Image, { type StaticImageData } from 'next/image';
 import { toast } from 'react-toastify';
 import pauseIcon from '@/assets/lobby/stream-pause.svg';
 import linkIcon from '@/assets/lobby/stream-link.svg';
@@ -110,10 +110,11 @@ const StreamCard: FC<{ stream: Stream }> = ({ stream }) => {
           aria-label={`${t('lobby.streams.play')}: ${stream.title}`}
           className="absolute inset-0 h-full w-full"
         >
-          <img
+          <Image
             src={thumb}
             alt=""
-            loading="lazy"
+            fill
+            sizes="(min-width: 1024px) 40vw, 92vw"
             // Not every video has a full-size still; YouTube always has this one.
             onError={() => setThumb(`https://i.ytimg.com/vi/${stream.id}/hqdefault.jpg`)}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
