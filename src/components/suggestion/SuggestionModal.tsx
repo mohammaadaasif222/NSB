@@ -72,11 +72,14 @@ const SuggestionModal: FC<Props> = ({ open, onClose }) => {
       titleId={TITLE_ID}
       title={t('suggest.title')}
       tone="grey"
-      // The design's 20 / 24 insets, less the rim's pixel.
-      className="max-w-[566px] px-4 pb-5 pt-4 sm:px-[19px] sm:pb-[23px] sm:pt-[19px]"
+      // A phone's title is the design's 16px, 8 under the close's top.
+      titleClassName="max-sm:!text-[16px] max-sm:!leading-6"
+      // The design's insets, less the rim's pixel: 14 / 24 / 26 on a phone,
+      // 20 / 24 from sm.
+      className="max-w-[566px] px-[13px] pb-[25px] pt-[23px] sm:px-[19px] sm:pb-[23px] sm:pt-[19px]"
     >
       <form onSubmit={submit} noValidate>
-        <div ref={pickerRef} className="mt-[10px]">
+        <div ref={pickerRef} className="mt-[14px] sm:mt-[10px]">
           <DisclosureSelect
             id="suggestion-category"
             options={options}
@@ -92,14 +95,14 @@ const SuggestionModal: FC<Props> = ({ open, onClose }) => {
           onChange={(e) => setIdea(e.target.value)}
           placeholder={t('suggest.placeholder')}
           aria-label={t('suggest.placeholder')}
-          className="mt-4 block h-[151px] w-full resize-none rounded-[24px] border border-white/20 bg-white/5 p-5 text-[15px] leading-6 text-[#f0f1f5] outline-none transition-colors placeholder:text-[#f0f1f5] focus:border-white/30 sm:text-[16px]"
+          className="mt-[13px] block h-[151px] w-full resize-none rounded-[24px] border border-white/20 bg-white/5 p-5 text-[12px] leading-5 text-[#f0f1f5] outline-none transition-colors placeholder:text-[#f0f1f5] focus:border-white/30 sm:mt-4 sm:text-[16px] sm:leading-6"
         />
 
-        <p className="mt-[10px] text-[13px] leading-5 text-[#9da2b4] sm:text-[14px]">
+        <p className="mt-[13px] text-[12px] leading-4 text-[#9da2b4] sm:mt-[10px] sm:text-[14px] sm:leading-5">
           {t('suggest.body')}
         </p>
 
-        <Button type="submit" fullWidth className="mt-4 !font-semibold">
+        <Button type="submit" fullWidth className="mt-[30px] !font-semibold max-sm:!h-14 sm:mt-4">
           {t('suggest.submit')}
         </Button>
       </form>

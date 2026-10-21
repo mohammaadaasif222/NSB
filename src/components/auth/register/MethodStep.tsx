@@ -58,8 +58,9 @@ const MethodStep: FC<MethodStepProps> = ({
         ]}
       />
 
-      <div className="flex items-center justify-center gap-4 pt-4">
-        <div className="flex items-center">
+      {/* A phone: 18 under Email, the 48px discs with 24px marks. */}
+      <div className="flex items-center justify-center gap-4 pt-[6px] sm:pt-4">
+        <div className="flex items-center max-sm:[&_svg]:h-6 max-sm:[&_svg]:w-6">
           <SocialDot
             size={40}
             label={t('auth.methodTelegram')}
@@ -89,7 +90,7 @@ const MethodStep: FC<MethodStepProps> = ({
         <button
           type="button"
           onClick={onMore}
-          className="text-[15px] text-white/70 transition-colors hover:text-white"
+          className="text-[16px] font-medium text-[#9da2b4] transition-colors hover:text-white sm:text-[15px] sm:font-normal sm:text-white/70"
         >
           {t('registerModal.moreOptions')}
         </button>

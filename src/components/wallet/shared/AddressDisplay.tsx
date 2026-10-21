@@ -1,7 +1,8 @@
-import { useState, type FC } from 'react';
+import type { FC } from 'react';
 import { toast } from 'react-toastify';
 import type { DepositAddress } from '@/types';
 import { useTranslation } from '@/context/I18nContext';
+import WalletField, { WALLET_PILL, WALLET_VALUE } from './WalletField';
 
 /**
  * QR rendering is delegated to `api.qrserver.com` — a free image endpoint
@@ -11,24 +12,26 @@ import { useTranslation } from '@/context/I18nContext';
  * friendly, so a re-open of the same address costs nothing after first
  * paint.
  */
-const qrUrl = (payload: string, size = 220): string =>
+const qrUrl = (payload: string, size = 360): string =>
   `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(
     payload
-  )}&bgcolor=ffffff&color=000000&margin=2`;
+  )}&bgcolor=ffffff&color=000000&margin=0`;
 
 interface Props {
   address: DepositAddress;
 }
 
+/**
+ * Where to send a deposit, as the design draws it: the address in the form's
+ * glass pill (a click copies it), the 197px QR on its white card 18 below,
+ * and under it, in two centred lines, what may be sent there and the minimum.
+ */
 const AddressDisplay: FC<Props> = ({ address }) => {
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
 
   const copy = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(address.address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
       toast.success(t('acct.wallet.addressCopied'));
     } catch {
       toast.error(t('acct.wallet.copyFailed'));
@@ -36,72 +39,61 @@ const AddressDisplay: FC<Props> = ({ address }) => {
   };
 
   return (
-    <div className="space-y-2">
-      <label className="block text-[11px] text-slate-400">
-        {t('acct.wallet.addressLabel', {
+    <div>
+      <WalletField
+        htmlFor="wallet-address"
+        label={t('acct.wallet.addressLabel', {
           currency:
             address.network_code !== address.currency_code
               ? `${address.currency_code} (${address.network_code})`
               : address.currency_code,
         })}
-      </label>
-
-      <button
-        type="button"
-        onClick={() => void copy()}
-        title={t('acct.wallet.clickToCopy')}
-        className="group w-full min-h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-left text-xs text-slate-100 font-mono break-all hover:border-slate-600 transition-colors"
       >
-        {address.address}
-        <span className="block text-[10px] text-slate-500 group-hover:text-blue-400 mt-1">
-          {copied ? `${t('ref.copied')} ✓` : t('acct.wallet.tapToCopy')}
-        </span>
-      </button>
+        <button
+          id="wallet-address"
+          type="button"
+          onClick={() => void copy()}
+          title={t('acct.wallet.clickToCopy')}
+          className={`${WALLET_PILL} w-full text-start transition-colors hover:border-white/30`}
+        >
+          <span className={`min-w-0 flex-1 truncate ${WALLET_VALUE}`}>{address.address}</span>
+        </button>
+      </WalletField>
 
       {address.tag && (
-        <div className="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+        <p className="mt-3 rounded-[20px] border border-[#ffe779]/30 bg-[#ffe779]/10 px-4 py-2.5 text-[14px] leading-5 text-[#ffe779]">
           {t('acct.wallet.includeTag')}{' '}
           <span className="font-mono font-semibold">{address.tag}</span>
-        </div>
+        </p>
       )}
+
+      {/* The design's 197px white card, the code inset 5% each side. */}
+      <div className="mx-auto mt-[18px] w-[197px] rounded-[20px] bg-white p-[10px]">
+        <img
+          src={qrUrl(address.qr_payload)}
+          alt={t('acct.wallet.qrAlt', { currency: address.currency_code })}
+          width={177}
+          height={177}
+          className="block h-[177px] w-[177px]"
+        />
+      </div>
 
       {/*
        * The single most expensive mistake a player can make: sending a
        * different currency, or a different network's version of this
-       * currency, to this address. CoinsPaid's model gives one address per
-       * (currency, network), so a USDT-on-Solana address will NOT credit
-       * a SOL or a USDC-on-Solana deposit. Spell the constraint out
-       * before the QR is scanned, not after the funds are lost.
+       * currency, to this address. One address per (currency, network), so
+       * the constraint is spelled out before the QR is scanned.
        */}
-      <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[11px] text-red-200 leading-snug">
-        <span className="font-semibold text-red-100">
-          ⚠{' '}
-          {t('acct.wallet.sendOnly', {
-            currency: address.currency_code,
-            network: address.network_name,
-          })}
-        </span>{' '}
-        {t('acct.wallet.wrongNetworkWarning')}
-      </div>
-
-      <div className="mt-2 flex justify-center">
-        <div className="p-2 bg-white rounded-xl">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={qrUrl(address.qr_payload)}
-            alt={t('acct.wallet.qrAlt', { currency: address.currency_code })}
-            width={220}
-            height={220}
-            className="block w-56 h-56"
-          />
-        </div>
-      </div>
-
-      <p className="text-center text-[11px] text-slate-500 pt-1">
+      <p className="mx-auto mt-2 max-w-[400px] text-center text-[14px] leading-5 text-[#f0f1f5]">
+        {t('acct.wallet.sendOnly', {
+          currency: address.currency_code,
+          network: address.network_name,
+        })}
+        <br />
         {t('acct.wallet.minDeposit', {
           amount: `${address.min_deposit} ${address.currency_code}`,
         })}{' '}
-        • {t('acct.wallet.confirmations', { count: address.deposit_confirmations })}
+        · {t('acct.wallet.confirmations', { count: address.deposit_confirmations })}
       </p>
     </div>
   );

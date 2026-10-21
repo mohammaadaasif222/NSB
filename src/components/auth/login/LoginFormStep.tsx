@@ -90,21 +90,24 @@ const LoginFormStep: FC<LoginFormStepProps> = ({
         invalid={invalid === 'password'}
       />
 
-      <div className="flex justify-end !mt-4">
+      {/* `space-y` already leaves 14 under each row: the phone design wants
+          Forgot 5 under the password, Login 24 under it, Need help 20 under
+          that. */}
+      <div className="flex justify-end max-sm:!-mt-[9px] sm:!mt-4">
         <button
           type="button"
           onClick={onForgotPassword}
-          className="text-[14px] text-white/80 transition-colors hover:text-white"
+          className="text-[14px] text-[#c8ccd8] transition-colors hover:text-white sm:text-white/80"
         >
           {t('loginModal.forgot')}
         </button>
       </div>
 
-      <Button type="submit" fullWidth loading={submitting} className="!mt-6">
+      <Button type="submit" fullWidth loading={submitting} className="max-sm:!mt-[10px] sm:!mt-6">
         {t('loginModal.submit')}
       </Button>
 
-      <div className="!mt-6 text-center">
+      <div className="text-center max-sm:!mt-[6px] sm:!mt-6">
         <NeedHelpLink subject={t('misc.help.loginSubject')} />
       </div>
     </form>

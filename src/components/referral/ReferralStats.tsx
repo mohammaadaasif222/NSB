@@ -1,13 +1,16 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import type { AffiliateSummary } from '@/components/affiliate/mockAffiliate';
+import { formatRewardAmount } from '@/utils/money';
+import type { ReferralSummary } from '@/types';
 
 interface Props {
-  summary: AffiliateSummary | null;
+  summary: ReferralSummary | null;
+  claiming: boolean;
+  onCollect: () => void;
 }
 
 /**
- * What the affiliate has made, and the button that pays it out.
+ * What the referrer has made, and the button that pays it out.
  *
  * Four figures over a bar, inside the same edged card as the code beside it.
  * The design draws the four with absolute positions at uneven intervals; they
@@ -18,22 +21,39 @@ interface Props {
  * Below the breakpoint the four fall to a 2x2 and the dividers go with them:
  * a rule between two stacked rows would read as a table, which these are not.
  */
-const AffiliateStats: FC<Props> = ({ summary }) => {
+const ReferralStats: FC<Props> = ({ summary, claiming, onCollect }) => {
   const { t } = useTranslation();
+  const s = summary?.stats;
+  const usd = (amount: string | undefined) => (amount ? formatRewardAmount(amount, 'USD') : '—');
 
   const stats: { key: string; label: string; value: string }[] = [
-    { key: 'earnings', label: t('aff.totalEarnings'), value: summary?.totalEarnings ?? '—' },
-    { key: 'wagered', label: t('aff.totalWagered'), value: summary?.totalWagered ?? '—' },
-    { key: 'collected', label: t('aff.totalCollected'), value: summary?.totalCollected ?? '—' },
-    {
-      key: 'referrals',
-      label: t('aff.totalReferrals'),
-      value: summary ? String(summary.totalReferrals) : '—',
-    },
+    { key: 'earnings', label: t('aff.totalEarnings'), value: usd(s?.total_earned) },
+    { key: 'wagered', label: t('aff.totalWagered'), value: usd(s?.total_wagered) },
+    { key: 'collected', label: t('aff.totalCollected'), value: usd(s?.claimed) },
+    { key: 'referrals', label: t('aff.totalReferrals'), value: s ? String(s.referred) : '—' },
   ];
+  const tier = summary?.tier;
+  const notes = [
+    tier?.current
+      ? tier.next
+        ? t('ref.tierNext', {
+            rate: tier.current.rate,
+            next: tier.next.rate,
+            needed: Math.max(0, tier.next.min_active - (s?.active ?? 0)),
+          })
+        : t('ref.tierTop', { rate: tier.current.rate })
+      : null,
+    s && Number(s.held) > 0 ? t('ref.heldNote', { amount: usd(s.held) }) : null,
+    s && Number(s.pending_review) > 0
+      ? t('ref.reviewNote', { amount: usd(s.pending_review) })
+      : null,
+    summary && !summary.can_claim && Number(s?.available ?? 0) > 0
+      ? t('ref.minClaimNote', { amount: usd(summary.min_claim) })
+      : null,
+  ].filter((note): note is string => !!note);
 
   return (
-    <section className="rl-glass-edge @container flex flex-col px-5 pt-8 pb-5 sm:px-6.5 sm:pt-13.75 sm:pb-6.5 2xl:px-8">
+    <section className="rl-glass-edge @container flex h-full flex-col px-5 pt-8 pb-5 sm:px-6.5 sm:pt-13.75 sm:pb-6.5 2xl:px-8">
       {/* Four across wherever a quarter of the card can hold "$984,125.00" —
           every desktop, laptop and tablet width, because the figures change
           size rather than changing places. A monitor and a laptop must not read
@@ -64,20 +84,29 @@ const AffiliateStats: FC<Props> = ({ summary }) => {
         <div className="min-w-0 flex-1 py-1 sm:py-0">
           <p className="text-[10px] leading-4 text-[#9da2b4]">{t('aff.availableFunds')}</p>
           <p className="rl-h-card truncate font-semibold tracking-normal text-[#f0f1f5]">
-            {summary?.availableFunds ?? '—'}
+            {usd(s?.available)}
           </p>
         </div>
 
         <button
           type="button"
-          disabled={!summary}
+          onClick={onCollect}
+          disabled={!summary?.can_claim || claiming}
           className="rl-btn-gold h-12 shrink-0 rounded-[34px] px-2 text-[18px] leading-7 font-medium disabled:opacity-50 sm:w-32.5"
         >
           {t('aff.collect')}
         </button>
       </div>
+
+      {notes.length > 0 && (
+        <ul className="mt-4 space-y-1 text-xs leading-5 text-[#9da2b4]">
+          {notes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 };
 
-export default AffiliateStats;
+export default ReferralStats;

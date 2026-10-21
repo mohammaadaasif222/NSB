@@ -38,6 +38,70 @@ export const en = {
   'content.bonus.hours': '{count}h',
   'content.bonus.daysTime': '{days} d {time}',
 
+  /* --- Reward detail dialogs -------------------------------------------
+   *
+   * What each reward is, how often it settles, what it is worked out from and
+   * what a VIP gets extra — the standing copy behind a reward card's info
+   * button (RewardDetailModal). The payout split is NOT here: the API already
+   * reports the live percentages per tier, so those lines are built from
+   * `rewards.detail.payout*` instead and cannot drift from what actually pays.
+   */
+  'content.reward.rakeback.subtitle': 'Rakeback + Boost',
+  'content.reward.rakeback.desc': 'Get a bonus for your bets regardless of the result.',
+  'content.reward.rakeback.frequency': 'Every 20 minutes',
+  'content.reward.rakeback.for1': 'Casino bets (all games)',
+  'content.reward.rakeback.for2': 'Live Casino bets (all providers)',
+  'content.reward.rakeback.boostTitle': 'Rakeback Boost',
+  'content.reward.rakeback.boostDuration': '20 minutes after activation',
+  'content.reward.rakeback.boostDesc': 'Get a Rakeback bonus.',
+  'content.reward.rakeback.step1': 'Claim Rakeback bonus',
+  'content.reward.rakeback.step2': 'Claim Daily bonus',
+  'content.reward.rakeback.step3': 'Claim Weekly bonus',
+  'content.reward.rakeback.step4': 'Claim Monthly bonus',
+
+  'content.reward.cashback.subtitle': 'Cashback',
+  'content.reward.cashback.desc': 'Receive up to 15% of your losses based on your rank.',
+  'content.reward.cashback.frequency': 'Weekly, Friday at midnight UTC',
+  'content.reward.cashback.vip1': 'Higher cashback percentage for VIP users',
+  'content.reward.cashback.vip2': 'Faster crediting and higher limits',
+  'content.reward.cashback.for1': 'Casino bets (all games)',
+
+  'content.reward.daily.subtitle': 'Free daily reward',
+  'content.reward.daily.desc':
+    'The Daily Bonus is an accumulation of the instant rakeback you missed over the past 24 hours.',
+  'content.reward.daily.frequency': 'Once every 24 hours',
+  'content.reward.daily.vip1': 'Higher daily bonus amount for VIP users',
+  'content.reward.daily.vip2': 'Additional rewards on consecutive daily claims',
+  'content.reward.daily.for1': 'Claiming the Daily Bonus',
+  'content.reward.daily.for2': 'Active gameplay after bonus activation',
+  'content.reward.daily.step1': 'Open the Rewards section',
+  'content.reward.daily.step2': 'Claim your Daily Bonus',
+  'content.reward.daily.step3': 'Use the bonus within the validity period',
+
+  'content.reward.weekly.subtitle': 'Weekly reward',
+  'content.reward.weekly.desc':
+    'The Weekly Bonus is an accumulation of 25% of your instant rakeback and daily bonus claims.',
+  'content.reward.weekly.frequency': 'Calculated once per week',
+  'content.reward.weekly.vip1': 'Higher weekly bonus for VIP users',
+  'content.reward.weekly.vip2': 'Improved bonus conditions and higher limits',
+  'content.reward.weekly.for1': 'Weekly gameplay activity',
+  'content.reward.weekly.for2': 'Eligible only for casino bets',
+  'content.reward.weekly.step1': 'Open the Rewards section',
+  'content.reward.weekly.step2': 'Claim your Weekly Bonus',
+  'content.reward.weekly.step3': 'Use the bonus within the validity period',
+
+  'content.reward.monthly.subtitle': 'Monthly reward',
+  'content.reward.monthly.desc':
+    'The Monthly Bonus is an accumulation of 25% of your instant rakeback, instant cashback and daily bonus claims.',
+  'content.reward.monthly.frequency': 'Calculated once per month',
+  'content.reward.monthly.vip1': 'Higher monthly bonus for VIP users',
+  'content.reward.monthly.vip2': 'Better wagering conditions and higher bonus caps',
+  'content.reward.monthly.for1': 'Monthly gameplay activity',
+  'content.reward.monthly.for2': 'Eligible only for casino bets',
+  'content.reward.monthly.step1': 'Open the Rewards section',
+  'content.reward.monthly.step2': 'Claim your Monthly Bonus',
+  'content.reward.monthly.step3': 'Use the bonus within the validity period',
+
   'content.role.superMaster': 'Super Master',
   'content.role.master': 'Master',
   'content.role.riskManagement': 'Risk Management',

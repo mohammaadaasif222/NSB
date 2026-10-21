@@ -24,7 +24,7 @@ import LanguagePicker from '@/components/LanguagePicker';
 import HeaderPopover from '@/components/player/HeaderPopover';
 import NotificationPanel from '@/components/player/NotificationPanel';
 import ChatPanel from '@/components/player/ChatPanel';
-import ChatDrawer from '@/components/player/ChatDrawer';
+import ChatDrawer, { CHAT_TOGGLE_EVENT } from '@/components/player/ChatDrawer';
 import { DEFAULT_CHAT_ROOM, isChatRoom, type ChatRoom } from '@/services/chat';
 import RewardPanel from '@/components/player/RewardPanel';
 import GameSearchModal from '@/components/player/GameSearchModal';
@@ -111,15 +111,18 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const [walletOpen, setWalletOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
 
-  // Publish the bar's height on the stage, for screens that open beneath it
-  // (the phone's notification sheet). It changes with the signed-in phone
-  // bar's second row, so it is measured rather than assumed.
+  // Publish the bar's height, for screens that open beneath it (the phone's
+  // notification sheet and chat). On the root as well as the stage: chat
+  // portals to <body>, outside the stage. Measured rather than assumed.
   useEffect(() => {
     const header = headerRef.current;
     const stage = header?.closest<HTMLElement>('[data-player-stage]');
     if (!header || !stage) return;
-    const publish = (): void =>
-      stage.style.setProperty('--player-bar-h', `${header.getBoundingClientRect().height}px`);
+    const publish = (): void => {
+      const h = `${header.getBoundingClientRect().height}px`;
+      stage.style.setProperty('--player-bar-h', h);
+      document.documentElement.style.setProperty('--player-bar-h', h);
+    };
     publish();
     const observer = new ResizeObserver(publish);
     observer.observe(header);
@@ -135,6 +138,13 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
     isChatRoom(locale) ? locale : DEFAULT_CHAT_ROOM
   );
   const closePanel = useCallback(() => setPanel(null), []);
+
+  // The phone's tab bar opens chat by event; the drawer lives here.
+  useEffect(() => {
+    const toggle = (): void => setPanel((current) => (current === 'chat' ? null : 'chat'));
+    window.addEventListener(CHAT_TOGGLE_EVENT, toggle);
+    return () => window.removeEventListener(CHAT_TOGGLE_EVENT, toggle);
+  }, []);
   const togglePanel = (next: Exclude<HeaderPanel, null>): void =>
     setPanel((current) => (current === next ? null : next));
 
@@ -167,11 +177,12 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             />
           </IconButton>
 
-          {/* The wordmark: 157px on a phone, 228 on desktop. On a signed-in
-              phone it takes the slack, pushing the icons to the far end. */}
+          {/* The wordmark: 125px on a phone, 228 on desktop. Signed out it
+              takes the slack, pushing Login and Register to the far end;
+              signed in the balance follows it and the bell takes the end. */}
           <Link
             href="/"
-            className="me-auto flex flex-shrink-0 items-center lg:me-0"
+            className={`flex flex-shrink-0 items-center lg:me-0 ${token ? '' : 'me-auto'}`}
             aria-label="ROLLUCK"
             title="ROLLUCK"
           >
@@ -180,14 +191,15 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
               alt="ROLLUCK"
               sizes="230px"
               priority
-              className="h-auto w-[157px] lg:w-[calc(var(--u)*228)]"
+              className="h-auto w-[125px] lg:w-[calc(var(--u)*228)]"
             />
           </Link>
 
+          {/* Neither phone bar has search, as drawn — it is in the menu. */}
           <IconButton
             label={t('search.title')}
             onClick={() => setSearchOpen(true)}
-            className="inline-flex"
+            className="hidden lg:inline-flex"
           >
             <img
               src={searchGlyph.src}
@@ -201,17 +213,16 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
           </div>
 
           {/* --- Centre: winners, and the wallet once signed in -----------
-              Signed in on a phone it is the bar's second row. */}
+              Signed in on a phone it follows the wordmark, 12 after it, in the
+              bar's one row. */}
           <div
             className={`flex min-w-0 flex-1 items-center gap-2 lg:justify-center ${
-              token
-                ? 'order-last basis-full justify-center lg:order-none lg:basis-auto'
-                : 'justify-end'
+              token ? 'justify-start max-lg:ms-0.5' : 'justify-end'
             }`}
           >
             {/* Signed in: the balance and the wallet, centred in the bar. */}
             {token && (
-              <div className="flex min-w-0 items-center gap-2.5 lg:gap-[calc(var(--u)*16)]">
+              <div className="flex min-w-0 items-center gap-1.5 lg:gap-[calc(var(--u)*16)]">
                 <BalanceMenu />
                 <button
                   type="button"
@@ -247,14 +258,14 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => openLogin()}
-                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] font-bold leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
+                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
                 </button>
                 <button
                   type="button"
                   onClick={() => openRegister()}
-                  className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-[11px] text-[14px] font-bold leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
+                  className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-3 text-[14px] leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
                 </button>
@@ -279,7 +290,8 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                     // The notification centre's glass, over the same dimmed page.
                     tone="frost"
                     dim
-                    className="order-2 lg:order-none"
+                    // A phone's bar is the bell alone; Rewards is in the menu.
+                    className="max-lg:hidden"
                     trigger={
                       <button
                         type="button"

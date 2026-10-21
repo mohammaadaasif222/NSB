@@ -6,6 +6,7 @@ import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { requestWithdrawal } from '@/services/wallet';
+import { getPinStatus } from '@/services/transactionPin';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import kycApi from '@/services/kyc.api';
@@ -16,6 +17,24 @@ import type { Currency, WalletBalance } from '@/types';
 import CurrencyPicker from '../shared/CurrencyPicker';
 import NetworkPicker from '../shared/NetworkPicker';
 import LocalCurrencyWithdrawalTab from './LocalCurrencyWithdrawalTab';
+import AccountReviewGate from '@/components/risk/AccountReviewGate';
+import { useMe } from '@/context/UserContext';
+import Button from '@/components/ui/Button';
+import SegmentedTabs from '@/components/player/SegmentedTabs';
+import WalletField, {
+  WALLET_ERROR,
+  WALLET_INPUT,
+  WALLET_NOTE,
+  WALLET_PILL,
+  WALLET_VALUE,
+} from '../shared/WalletField';
+import { currencySign } from '../shared/currencySign';
+
+/** The amount as typed: 18px bold; the "0.00" before it, 16px grey. */
+const AMOUNT_INPUT = `${WALLET_INPUT} tabular-nums placeholder:text-[16px] placeholder:font-normal placeholder:text-[#9da2b4]`;
+
+/** "Need help…", centred under the button. */
+const HELP = 'mt-[26px] text-center text-[16px] font-medium leading-6 text-[#f0f1f5] sm:mt-3.5';
 
 interface Props {
   /**
@@ -42,9 +61,31 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   // Handles a fraud step-up: on a 428 it prompts for the one-time code and
   // resubmits this exact request.
   const { run } = useSeonGuard();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { summary, currencies, refresh } = useWallet();
+  const { me, refresh: refreshMe } = useMe();
+  const restriction = me?.account_restriction;
+  // A disposable-contact lock stays out of sight until the player asks to withdraw.
+  const [contactAsked, setContactAsked] = useState(false);
+  const withdrawLocked =
+    !!restriction?.blocked_actions.includes('WITHDRAW') &&
+    (restriction.requires !== 'CONTACT_VERIFICATION' || contactAsked);
+  const onRestricted = (err: unknown): boolean => {
+    const errors = (err as { errors?: { code?: string; requires?: string } })?.errors;
+    if (errors?.code !== 'ACCOUNT_RESTRICTED') return false;
+    if (errors.requires === 'CONTACT_VERIFICATION') setContactAsked(true);
+    void refreshMe();
+    return true;
+  };
   const { convertToDisplayCurrency } = useCurrencyConversion();
+  /** A KYC refusal from the local-currency form, shown as the same gate as crypto. */
+  const onKycRefused = (err: unknown): boolean => {
+    const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
+    if (!kycError) return false;
+    setKycRefusal({ code: kycError.code, message: kycError.message });
+    void fetchKyc();
+    return true;
+  };
 
   const displayCurrency = summary?.preferences.active_currency ?? 'USD';
   const [withdrawalType, setWithdrawalType] = useState<WithdrawalType>('crypto');
@@ -95,7 +136,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       }
       try {
         setLoadingRate(true);
-        const response = await api.get(`/wallet/rates?fiat=${displayCurrency}`) as any;
+        const response = (await api.get(`/wallet/rates?fiat=${displayCurrency}`)) as any;
         const rates = response.data as Array<{ from: string; to: string; rate: string }>;
         if (rates && Array.isArray(rates)) {
           const rate = rates.find((r) => r.from === currency && r.to === displayCurrency);
@@ -211,6 +252,14 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   /* ── Form state ────────────────────────────────────────────────── */
 
   const [toAddress, setToAddress] = useState('');
+  const [pinRequired, setPinRequired] = useState(false);
+  const [pin, setPin] = useState('');
+
+  useEffect(() => {
+    void getPinStatus()
+      .then((s) => setPinRequired(!!s?.enabled))
+      .catch(() => undefined);
+  }, []);
   const [displayAmount, setDisplayAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<string | null>(null);
@@ -282,6 +331,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
     !!network &&
     !!toAddress.trim() &&
     !!displayAmount &&
+    (!pinRequired || /^\d{4,6}$/.test(pin)) &&
     !submitting;
 
   const submit = async (): Promise<void> => {
@@ -298,6 +348,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
             network,
             amount: displayAmount, // Amount is now in display currency (e.g., EUR, GBP, INR)
             to_address: toAddress.trim(),
+            ...(pinRequired ? { transaction_pin: pin } : {}),
           },
           headers
         )
@@ -305,6 +356,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       if (res?.success && res.data) {
         setToAddress('');
         setDisplayAmount('');
+        setPin('');
         void refresh();
       } else {
         toast.error(res?.message || t('acct.wallet.withdrawFailed'));
@@ -316,6 +368,9 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
       // Every KYC refusal — Level 2 missing, compliance hold, or a tier
       // upgrade — arrives with a `requiredLevel`, so one branch opens the
       // right step instead of three.
+      // A risk lock placed after the screen opened: re-read the account so the gate shows.
+      if (onRestricted(err)) return;
+
       const kycError = readKycError(err, t('acct.kyc.verificationRequired'));
       if (kycError) {
         // Held on screen rather than toasted alone: the toast fades and the
@@ -340,48 +395,41 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
 
   if (eligible.length === 0) {
     return (
-      <div className="py-8 text-center text-sm text-slate-400">
+      <div className="py-8 text-center text-[14px] leading-5 text-[#9da2b4]">
         {t('acct.wallet.noWithdrawCurrencies')}
       </div>
     );
   }
 
+  if (withdrawLocked && restriction) {
+    return <AccountReviewGate restriction={restriction} onChanged={refreshMe} onLeave={onLeave} />;
+  }
+
   return (
-    <div className="space-y-3">
-      {/* Withdrawal Type Tabs */}
-      <div className="flex gap-2 border-b border-slate-700">
-        <button
-          type="button"
-          onClick={() => setWithdrawalType('crypto')}
-          className={`px-4 py-2 text-sm font-semibold transition-colors ${
-            withdrawalType === 'crypto'
-              ? 'text-slate-100 border-b-2 border-white'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Crypto
-        </button>
-        <button
-          type="button"
-          onClick={() => setWithdrawalType('local')}
-          className={`px-4 py-2 text-sm font-semibold transition-colors ${
-            withdrawalType === 'local'
-              ? 'text-slate-100 border-b-2 border-white'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Local Currency
-        </button>
-      </div>
+    <div>
+      {/* The design's glass Crypto / Local currency switch. */}
+      <SegmentedTabs
+        items={[
+          { key: 'crypto', label: t('acct.wallet.crypto') },
+          { key: 'local', label: t('acct.wallet.localCurrency') },
+        ]}
+        active={withdrawalType}
+        onChange={setWithdrawalType}
+        label={t('acct.wallet.tabWithdraw')}
+      />
+
+      {/* Where it goes, and how much can go — over either form. */}
+      <p className="mt-5 text-center text-[12px] leading-6 text-[#9da2b4] sm:mt-7 sm:text-[16px]">
+        {withdrawalType === 'crypto'
+          ? t('acct.wallet.withdrawIntro')
+          : t('acct.local.withdrawIntroBank')}{' '}
+        <span className="font-medium text-[#f0f1f5]">
+          {availableDisplay} {displayCurrency}
+        </span>
+      </p>
 
       {withdrawalType === 'crypto' && (
         <>
-          <p className="text-[11px] text-slate-400">
-            {t('acct.wallet.withdrawIntro')}{' '}
-            <span className="text-slate-200 font-semibold">
-              {availableDisplay} {displayCurrency}
-            </span>
-          </p>
 
           {/* ── KYC gate ────────────────────────────────────────────────
               A hard gate replaces the form rather than sitting above it. The old
@@ -392,11 +440,11 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
             /* Neither the form nor the gate until the profile is in. Rendering the
                form first and replacing it a moment later made an unverified player
                watch the thing they came for appear and then be taken away. */
-            <div className="flex h-40 items-center justify-center rounded-xl border border-slate-700 text-xs text-slate-400">
+            <div className={`${WALLET_NOTE} mt-[26px] flex h-40 items-center justify-center`}>
               {t('acct.wallet.checkingKyc')}
             </div>
           ) : isHardGated ? (
-            <>
+            <div className="mt-[26px]">
               <KycGateNotice
                 profile={kyc}
                 action="withdraw"
@@ -404,126 +452,157 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                 apiMessage={kycRefusal?.message}
                 errorCode={kycRefusal?.code ?? (gatedByLevel ? 'TIER_UPGRADE_REQUIRED' : undefined)}
               />
-              <p className="text-center text-[11px] text-slate-400 pt-1">
-                {t('acct.wallet.withdrawHelp')}
-              </p>
-            </>
+              <p className={HELP}>{t('acct.wallet.withdrawHelp')}</p>
+            </div>
           ) : (
             <>
-              {/* Above the form, not instead of it — see `softRefusal`. */}
-              {softRefusal && (
-                <KycGateNotice
-                  profile={kyc}
-                  action="withdraw"
-                  onLeave={onLeave}
-                  apiMessage={softRefusal.message}
-                  errorCode={softRefusal.code}
+              {/* The design's rows, 14 apart: Currency, Network, the address,
+                  then the amount. */}
+              <div className="mt-[22px] space-y-3.5 sm:mt-[26px]">
+                {/* Above the form, not instead of it — see `softRefusal`. */}
+                {softRefusal && (
+                  <KycGateNotice
+                    profile={kyc}
+                    action="withdraw"
+                    onLeave={onLeave}
+                    apiMessage={softRefusal.message}
+                    errorCode={softRefusal.code}
+                  />
+                )}
+
+                <CurrencyPicker
+                  label={t('pref.currency')}
+                  currencies={eligible}
+                  value={currency}
+                  onChange={setCurrency}
                 />
-              )}
 
-              <CurrencyPicker
-                label={t('pref.currency')}
-                currencies={eligible}
-                value={currency}
-                onChange={setCurrency}
-              />
+                {enabledNetworks.length > 0 ? (
+                  <NetworkPicker
+                    label={t('acct.wallet.network')}
+                    networks={enabledNetworks}
+                    value={network}
+                    onChange={setNetwork}
+                  />
+                ) : (
+                  <p className={WALLET_NOTE}>{t('acct.wallet.noNetworkFor', { currency })}</p>
+                )}
 
-              {enabledNetworks.length > 0 ? (
-                <NetworkPicker
-                  label={t('acct.wallet.network')}
-                  networks={enabledNetworks}
-                  value={network}
-                  onChange={setNetwork}
-                />
-              ) : (
-                <div className="rounded-xl bg-slate-900 border border-slate-700 px-3 py-2.5 text-[11px] text-slate-500">
-                  {t('acct.wallet.noNetworkFor', { currency })}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">
-                  {t('acct.wallet.addressLabel', { currency })}
-                </label>
-                <input
-                  value={toAddress}
-                  onChange={(e) => {
-                    setToAddress(e.target.value);
-                    clearRefusal();
-                  }}
-                  placeholder={t('acct.wallet.enterAddress')}
-                  className="w-full h-11 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 font-mono"
-                />
-              </div>
-
-              {/* Amount Input - Display Currency + Crypto Amount */}
-              <div className="space-y-3">
-                {/* Two Column Layout: Display Currency = Crypto Amount */}
-                <div className="flex items-end gap-2 sm:gap-3">
-                  {/* Display Currency Amount Input */}
-                  <div className="flex-1 space-y-2">
-                    <label className="block text-[10px] text-slate-500">
-                      Amount ({displayCurrency})
-                    </label>
+                <WalletField
+                  htmlFor="withdraw-address"
+                  label={t('acct.wallet.addressLabel', { currency })}
+                >
+                  <div className={WALLET_PILL}>
                     <input
-                      type="text"
-                      inputMode="decimal"
-                      value={displayAmount}
-                      onChange={(e) => handleDisplayChange(e.target.value)}
-                      placeholder="0.00"
-                      className="w-full h-12 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 tabular-nums"
+                      id="withdraw-address"
+                      value={toAddress}
+                      onChange={(e) => {
+                        setToAddress(e.target.value);
+                        clearRefusal();
+                      }}
+                      placeholder={t('acct.wallet.enterAddress')}
+                      autoComplete="off"
+                      spellCheck={false}
+                      className={WALLET_INPUT}
                     />
                   </div>
+                </WalletField>
 
-                  {/* Equals Sign - Centered in the middle */}
-                  <span className="text-2xl sm:text-3xl text-slate-400 font-light pb-1">
+                {pinRequired && (
+                  <WalletField htmlFor="withdraw-pin" label={t('acct.pin.label')}>
+                    <div className={WALLET_PILL}>
+                      <input
+                        id="withdraw-pin"
+                        type="password"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        maxLength={6}
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder={t('acct.pin.placeholder')}
+                        className={`${WALLET_INPUT} tracking-[0.4em]`}
+                      />
+                    </div>
+                  </WalletField>
+                )}
+
+                {/* The amount in the display currency = the coin it buys. Side
+                    by side with the shortcuts under both on desktop; a phone
+                    stacks them — the amount, the shortcuts, then the coin. */}
+                <div className="grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end sm:gap-x-1.5">
+                  <WalletField
+                    htmlFor="withdraw-amount"
+                    label={t('acct.wallet.amountIn', { currency: displayCurrency })}
+                  >
+                    <div className={WALLET_PILL}>
+                      <input
+                        id="withdraw-amount"
+                        type="text"
+                        inputMode="decimal"
+                        value={displayAmount}
+                        onChange={(e) => handleDisplayChange(e.target.value)}
+                        placeholder="0.00"
+                        className={AMOUNT_INPUT}
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 text-[18px] font-bold leading-6 text-[#9da2b4]"
+                      >
+                        {currencySign(displayCurrency, locale)}
+                      </span>
+                    </div>
+                  </WalletField>
+
+                  <span
+                    aria-hidden="true"
+                    className="hidden h-14 items-center text-[16px] leading-6 text-[#9da2b4] sm:order-2 sm:flex"
+                  >
                     =
                   </span>
 
-                  {/* Crypto Amount Input (Read-only) */}
-                  <div className="flex-1 space-y-2">
-                    <label className="block text-[10px] text-slate-500">
-                      Amount ({currency})
-                    </label>
-                    <input
-                      type="text"
-                      value={
-                        loadingRate
-                          ? 'Loading...'
-                          : !displayAmount
-                            ? '0.00'
-                            : calculatedCryptoAmount || '—'
-                      }
-                      readOnly
-                      className="w-full h-12 rounded-xl bg-slate-900 border border-slate-700 px-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none cursor-not-allowed tabular-nums"
-                    />
+                  <div className="order-3 mt-[18px] sm:mt-0">
+                    <WalletField label={t('acct.wallet.amountIn', { currency })}>
+                      <div className={WALLET_PILL} aria-live="polite">
+                        <span
+                          className={`min-w-0 flex-1 truncate tabular-nums ${
+                            displayAmount && calculatedCryptoAmount && !loadingRate
+                              ? WALLET_VALUE
+                              : 'text-[16px] leading-6 text-[#9da2b4]'
+                          }`}
+                        >
+                          {loadingRate
+                            ? t('common.loading')
+                            : !displayAmount
+                              ? '0.00'
+                              : calculatedCryptoAmount || '—'}
+                        </span>
+                      </div>
+                    </WalletField>
+                  </div>
+
+                  {/* The design's quick shares of the balance. */}
+                  <div className="order-2 mt-[9px] flex gap-2.5 sm:order-4 sm:col-span-3 sm:gap-1.5">
+                    {([25, 50, 75, 100] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPercent(p)}
+                        className="h-9 w-[72px] rounded-full bg-white/20 text-[16px] leading-6 text-[#f0f1f5] transition-colors hover:bg-white/30 sm:h-[40.5px] sm:w-[57px] sm:text-[14px] sm:leading-5"
+                      >
+                        {p}%
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Quick percentage buttons */}
-                <div className="grid grid-cols-4 gap-2">
-                  {[25, 50, 75, 100].map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPercent(p as 25 | 50 | 75 | 100)}
-                      className="h-8 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 font-semibold hover:bg-slate-700 transition-colors"
-                    >
-                      {p === 100 ? t('acct.wallet.max') : `${p}%`}
-                    </button>
-                  ))}
-                </div>
-
                 {displayAmount && Number(displayAmount) > Number(availableDisplay) && (
-                  <p className="mt-1 text-[11px] text-red-400">
-                    {heldBack
-                      ? t('acct.wallet.heldByRollover')
-                      : t('acct.wallet.insufficient')}
+                  <p className={WALLET_ERROR}>
+                    {heldBack ? t('acct.wallet.heldByRollover') : t('acct.wallet.insufficient')}
                   </p>
                 )}
 
                 {belowMinimum && (
-                  <p className="mt-1 text-[11px] text-red-400">
+                  <p className={WALLET_ERROR}>
                     {t('acct.wallet.belowMinWithdrawal', {
                       amount: `${minWithdrawal} ${currency}`,
                     })}
@@ -533,24 +612,53 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
 
               {/* The only action on this screen now. The gate above owns the
               verification route, so there is no second button competing for it. */}
-              <button
+              <Button
                 type="button"
+                fullWidth
                 onClick={() => void submit()}
                 disabled={!canSubmit}
-                className="w-full h-11 rounded-xl bg-white text-black text-sm font-semibold disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                className="mt-[22px] sm:mt-[23px]"
               >
                 {submitting ? t('acct.wallet.submitting') : t('acct.wallet.tabWithdraw')}
-              </button>
+              </Button>
 
-              <p className="text-center text-[11px] text-slate-400 pt-1">
-                {t('acct.wallet.withdrawHelp')}
-              </p>
+              <p className={HELP}>{t('acct.wallet.withdrawHelp')}</p>
             </>
           )}
         </>
       )}
 
-      {withdrawalType === 'local' && <LocalCurrencyWithdrawalTab />}
+      {withdrawalType === 'local' && (
+        <div className="mt-[22px] sm:mt-[26px]">
+          {isHardGated ? (
+          <KycGateNotice
+            profile={kyc}
+            action="withdraw"
+            onLeave={onLeave}
+            apiMessage={kycRefusal?.message}
+            errorCode={kycRefusal?.code ?? (gatedByLevel ? 'TIER_UPGRADE_REQUIRED' : undefined)}
+          />
+        ) : (
+          <>
+            {softRefusal && (
+              <KycGateNotice
+                profile={kyc}
+                action="withdraw"
+                onLeave={onLeave}
+                apiMessage={softRefusal.message}
+                errorCode={softRefusal.code}
+              />
+            )}
+            <LocalCurrencyWithdrawalTab
+              onRestricted={onRestricted}
+              onKycRefused={onKycRefused}
+              available={{ amount: String(availableDisplay), currency: displayCurrency }}
+            />
+            <p className={HELP}>{t('acct.wallet.withdrawHelp')}</p>
+          </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

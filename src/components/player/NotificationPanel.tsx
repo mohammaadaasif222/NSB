@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
@@ -8,14 +8,19 @@ import type { TranslationKey } from '@/i18n/locales';
 import gearIcon from '@/assets/lobby/profile-menu/gear.svg';
 import chevronLeft from '@/assets/lobby/chevron-left.svg';
 import { LOBBY_BANNER as noticeArt } from '@/constants/cdn';
+import { useAuth } from '@/context/AuthContext';
+import {
+  getNotifications,
+  markAllNotificationsRead,
+  type PlayerNotification,
+} from '@/services/notifications';
 
 /**
  * Notification centre.
  *
- * There is no notifications endpoint yet, so the platform feed below is sample
- * content rather than a live one — same footing as the winners strip and the
- * crash preview. The samples carry dictionary keys; real announcements will
- * come from the API already localised and replace them wholesale.
+ * Personal notifications come from GET /notifications (e.g. a withdrawal
+ * rejection or escalation and its reason). The platform feed below is still
+ * sample content; real announcements will replace it wholesale.
  */
 export interface Notice {
   id: string;
@@ -89,6 +94,31 @@ export const NoticeCard: FC<{ notice: Notice }> = ({ notice }) => {
   );
 };
 
+/** A personal notification: a withdrawal decision and the reason staff gave. */
+const PersonalCard: FC<{ item: PlayerNotification }> = ({ item }) => {
+  const { locale } = useTranslation();
+  return (
+    <article className="rounded-[24px] bg-white/10 px-[14px] py-[14px] lg:rounded-[calc(var(--u)*24)] lg:px-[calc(var(--u)*16)] lg:py-[calc(var(--u)*14)]">
+      <h3 className="flex items-center gap-2 text-[15px] font-medium leading-6 text-[#f0f1f5]">
+        {!item.read_at && (
+          <span className="h-2 w-2 flex-shrink-0 rounded-full bg-[#ff5a5f]" aria-hidden />
+        )}
+        <span className="min-w-0 truncate">{item.title}</span>
+      </h3>
+      {item.body && <p className="mt-1 text-[14px] leading-5 text-[#c8ccd8]">{item.body}</p>}
+      <p className="mt-2 text-[12px] leading-5 text-[#9da2b4]">
+        {new Date(item.created_at).toLocaleString(locale, {
+          year: '2-digit',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </p>
+    </article>
+  );
+};
+
 /** Shown for Personal, which has no source of its own until accounts emit events. */
 const EmptyState: FC<{ message: string }> = ({ message }) => (
   <div className="flex flex-col items-center justify-center gap-3 rounded-[24px] bg-white/5 px-6 py-14 text-center lg:rounded-[calc(var(--u)*24)]">
@@ -113,6 +143,26 @@ const NotificationPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('platform');
   const title = t('nav.notifications');
+  const { token } = useAuth();
+  const [personal, setPersonal] = useState<PlayerNotification[]>([]);
+
+  useEffect(() => {
+    if (!token) return;
+    let live = true;
+    void getNotifications()
+      .then((feed) => {
+        if (!live) return;
+        setPersonal(feed.rows);
+        if (feed.unread > 0) {
+          setTab('personal');
+          void markAllNotificationsRead().catch(() => undefined);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [token]);
 
   return (
     <div className="flex h-full flex-col px-4 pb-6 pt-4 lg:h-[calc(var(--u)*716)] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*20)]">
@@ -143,7 +193,7 @@ const NotificationPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
         </Link>
       </header>
 
-      <div className="mt-[15px] lg:mt-[calc(var(--u)*12)]">
+      <div className="mt-[19px] lg:mt-[calc(var(--u)*12)]">
         <SegmentedTabs
           items={TABS.map((item) => ({ key: item.key, label: t(item.label) }))}
           active={tab}
@@ -158,6 +208,8 @@ const NotificationPanel: FC<{ onClose: () => void }> = ({ onClose }) => {
       >
         {tab === 'platform' ? (
           PLATFORM_NOTICES.map((notice) => <NoticeCard key={notice.id} notice={notice} />)
+        ) : personal.length > 0 ? (
+          personal.map((item) => <PersonalCard key={item.id} item={item} />)
         ) : (
           <EmptyState message={t('lobby.notices.personalEmpty')} />
         )}

@@ -316,19 +316,18 @@ const referral = {
   /** The referral screen was opened. */
   sectionViewed: (): void => track('referral_section_viewed'),
 
-  /** NOT WIRED YET — no code can be issued until the endpoint exists. */
   linkCopied: (): void => track('referral_link_copied'),
 
-  /** NOT WIRED YET. GA4's own name; `method` is where it was shared. */
+  /** GA4's own name; `method` is where it was shared. */
   shared: (method: string): void => track('share', { method, content_type: 'referral_link' }),
 
   /**
-   * NOT WIRED YET. A sign-up that arrived on someone's code. Tracked on the
-   * new account's session, which is where the conversion actually happens.
+   * A sign-up that arrived on someone's code. Tracked on the new account's
+   * session, which is where the conversion actually happens.
    */
   signUpAttributed: (source?: string): void => track('referral_sign_up', { source }),
 
-  /** NOT WIRED YET. The referrer's reward landed. */
+  /** The referrer claimed commission. */
   rewardEarned: (value?: number, currency?: string): void =>
     track('referral_reward_earned', { value, currency }),
 };

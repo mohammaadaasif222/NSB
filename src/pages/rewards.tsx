@@ -3,6 +3,8 @@ import { useEffect, useState, type FC } from 'react';
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
 import RewardCard from '@/components/rewards/RewardCard';
+import RewardDetailModal from '@/components/rewards/RewardDetailModal';
+import RewardInfoButton from '@/components/rewards/RewardInfoButton';
 import TierCard from '@/components/rewards/TierCard';
 import RewardHistory from '@/components/rewards/RewardHistory';
 import VipTierTable from '@/components/rewards/VipTierTable';
@@ -13,8 +15,8 @@ import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useRewards } from '@/hooks/useRewards';
-import { REWARD_DESCRIPTION_KEYS, REWARD_TITLE_KEYS, REWARD_TYPES } from '@/constants/rewards';
-import type { VipTier } from '@/types';
+import { REWARD_TITLE_KEYS, REWARD_TYPES } from '@/constants/rewards';
+import type { RewardType, VipTier } from '@/types';
 import Seo from '@/components/seo/Seo';
 import {
   CARD,
@@ -27,26 +29,59 @@ import {
   PANEL_TITLE,
 } from '@/components/rewards/rewardStyles';
 
-/** What each reward is — shown to a visitor who is not signed in. */
+/**
+ * The row of reward cards, scrolled rather than reflowed.
+ *
+ * Five cards never fit across a phone, and the grid this replaces stacked them
+ * into two columns three deep — which pushed the Claim buttons far below the
+ * fold and made the page a long scroll past copy the player had already read.
+ * One swipeable row keeps every reward one gesture away at any width, and at
+ * xl the five columns still land exactly as the grid did.
+ *
+ * The negative margins are not decoration: `overflow-x` on the track forces
+ * the other axis to clip too, which would shave the gold glow off a claimable
+ * card. The padding gives it room and the margins take the space back.
+ */
+const REWARD_TRACK =
+  'rl-shelf rl-track flex -mx-1 -my-3 px-1 py-3 [--cols:1.15] [--gap:16px] sm:[--cols:2.2] lg:[--cols:3.5] xl:[--cols:5]';
+
+/**
+ * What each reward is — shown to a visitor who is not signed in.
+ *
+ * The same short card the signed-in row uses: the description that used to
+ * fill it sits behind the info button now, so the two states of this page are
+ * one object rather than two that happen to share a row. A visitor reading
+ * about the rewards gets more detail than the old paragraph carried, not
+ * less — the dialog has the accrual frequency, the payout split and the VIP
+ * perks under it (RewardDetailModal).
+ */
 const RewardExplainer: FC = () => {
   const { t } = useTranslation();
+  const [openType, setOpenType] = useState<RewardType | null>(null);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+    <div className={REWARD_TRACK}>
       {REWARD_TYPES.map((type) => {
         const Icon = REWARD_ICONS[type];
+        const title = t(REWARD_TITLE_KEYS[type]);
         return (
-          <article key={type} className={CARD}>
-            <span className={ICON_WELL(false)} aria-hidden="true">
-              <Icon size={20} />
-            </span>
-            <h3 className="mt-4 text-[18px] leading-7 font-medium text-[#f0f1f5]">
-              {t(REWARD_TITLE_KEYS[type])}
-            </h3>
-            <p className={`mt-1 ${MUTED}`}>{t(REWARD_DESCRIPTION_KEYS[type])}</p>
+          <article key={type} className={`flex h-full flex-col ${CARD}`}>
+            <div className="flex items-start justify-between gap-2">
+              <span className={ICON_WELL(false)} aria-hidden="true">
+                <Icon size={20} />
+              </span>
+              <RewardInfoButton
+                reward={title}
+                open={openType === type}
+                onClick={() => setOpenType((open) => (open === type ? null : type))}
+              />
+            </div>
+            <h3 className="mt-3 text-[16px] leading-6 font-medium text-[#f0f1f5]">{title}</h3>
           </article>
         );
       })}
+
+      {openType && <RewardDetailModal type={openType} onClose={() => setOpenType(null)} />}
     </div>
   );
 };
@@ -129,7 +164,7 @@ const RewardsPage: FC = () => {
             aria-hidden="true"
             className="pointer-events-none absolute right-[6%] top-1/2 -z-10 h-[70%] w-[40%] -translate-y-1/2 rounded-full bg-[#7b5cff]/[0.12] blur-[90px]"
           />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className={REWARD_TRACK}>
             {summary.rewards
               .filter((reward) => reward.enabled)
               .map((reward) => (

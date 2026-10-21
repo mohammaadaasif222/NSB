@@ -8,8 +8,9 @@ import { fullNameOf } from '@/types/profile';
 import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import casinoArt from '@/assets/lobby/player/panel-casino.webp';
 import sportsArt from '@/assets/lobby/player/panel-sports.webp';
-import casinoLine from '@/assets/lobby/player/panel-casino-line.svg';
-import sportsLine from '@/assets/lobby/player/panel-sports-line.svg';
+import casinoMobile from '@/assets/lobby/player/panel-casino-mobile.webp';
+import sportsMobile from '@/assets/lobby/player/panel-sports-mobile.webp';
+import editPencil from '@/assets/lobby/player/edit-pencil.svg';
 import promoArt from '@/assets/lobby/player/promo-banner.webp';
 import promoArtMobile from '@/assets/lobby/player/promo-banner-mobile.webp';
 
@@ -43,13 +44,13 @@ const Avatar: FC<{ ringed?: boolean }> = ({ ringed }) => {
   return (
     <span
       className={`flex flex-shrink-0 items-center justify-center rounded-full ${
-        ringed ? 'h-[calc(var(--u)*85)] w-[calc(var(--u)*85)] ring-1 ring-[#9da2b4]' : ''
+        ringed ? 'lg:h-[calc(var(--u)*85)] lg:w-[calc(var(--u)*85)] lg:ring-1 lg:ring-[#9da2b4]' : ''
       }`}
     >
       <img
         src={src}
         alt=""
-        className="h-[81px] w-[81px] rounded-full bg-[#666666] object-cover lg:h-[calc(var(--u)*81)] lg:w-[calc(var(--u)*81)]"
+        className="h-20 w-20 rounded-full bg-[#666666] object-cover lg:h-[calc(var(--u)*81)] lg:w-[calc(var(--u)*81)]"
       />
     </span>
   );
@@ -77,7 +78,8 @@ const TILE_RIM = {
 /**
  * A section shortcut in the panel. Desktop: the design's 125×158 glass tile
  * with the section's 3D render and its glow. Phone: a 174×110 tile with the
- * line mark.
+ * render at 62px, 12 from the top — the design's own export of it, its glow
+ * the 34px margin round it, hence the 130px frame hung 22 above the tile.
  */
 const SectionTile: FC<{
   href: string;
@@ -90,7 +92,11 @@ const SectionTile: FC<{
     style={TILE_RIM}
     className={`rl-liquid before:p-[1px] group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0`}
   >
-    <img src={mark} alt="" className="h-[49px] w-[49px] lg:hidden" />
+    <img
+      src={mark}
+      alt=""
+      className="pointer-events-none absolute left-1/2 top-[-22px] h-[130px] w-[130px] max-w-none -translate-x-1/2 transition-transform duration-300 group-hover:-translate-y-1 lg:hidden"
+    />
     {/* The render carries its glow, so the image is the art plus a 34px
         margin of light on every side — hence the negative offset. */}
     <img
@@ -180,7 +186,7 @@ const ProgressBar: FC<{ percent: number; label: string }> = ({ percent, label })
  * would then be too small for the words in it.
  */
 const RemainingPill: FC<{ children: ReactNode }> = ({ children }) => (
-  <span className="inline-flex h-[38px] items-center rounded-[24px] bg-white/10 px-[38px] text-[10px] leading-5 text-white lg:h-[2.833em] lg:rounded-full lg:px-[1.5em] lg:text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
+  <span className="inline-flex h-[38px] items-center rounded-[24px] bg-white/10 px-[38px] text-[12px] leading-5 text-white lg:h-[2.833em] lg:rounded-full lg:px-[1.5em] lg:text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]">
     {children}
   </span>
 );
@@ -207,31 +213,43 @@ const PlayerPanel: FC = () => {
     <section className="rl-liquid relative overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*415)] lg:rounded-[calc(var(--u)*34)]">
       {/* --- Identity and tiles ----------------------------------------- */}
       <div className="flex flex-col items-center px-[15px] pt-5 lg:h-[calc(var(--u)*212)] lg:flex-row lg:items-start lg:justify-between lg:px-[calc(var(--u)*20)] lg:pl-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*20)]">
-        <div className="flex flex-col items-center gap-px lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">
+        <div className="flex flex-col items-center gap-1.5 lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">
           <Avatar ringed />
-          <span className="max-w-[calc(var(--u)*140)] truncate text-[18px] font-medium leading-7 text-white lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
-            {name}
+          {/* A phone hangs the profile's pencil 8 after the name, which stays
+              centred. */}
+          <span className="relative flex max-w-full items-center">
+            <span className="max-w-[calc(var(--u)*240)] truncate text-[18px] font-medium leading-7 text-white lg:max-w-[calc(var(--u)*140)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
+              {name}
+            </span>
+            <Link
+              href="/profile"
+              aria-label={t('nav.profile')}
+              title={t('nav.profile')}
+              className="absolute start-full ms-2 w-[18px] opacity-90 transition-opacity hover:opacity-100 lg:hidden"
+            >
+              <img src={editPencil.src} alt="" className="h-[18px] w-[18px]" />
+            </Link>
           </span>
         </div>
 
-        <div className="mt-[20px] flex w-full gap-[11px] lg:mt-0 lg:w-auto lg:gap-[calc(var(--u)*12)]">
+        <div className="mt-4 flex w-full gap-[11px] lg:mt-0 lg:w-auto lg:gap-[calc(var(--u)*12)]">
           <SectionTile
             href="/casino"
             label={t('nav.casino')}
             art={casinoArt.src}
-            mark={casinoLine.src}
+            mark={casinoMobile.src}
           />
           <SectionTile
             href="/sports"
             label={t('nav.sports')}
             art={sportsArt.src}
-            mark={sportsLine.src}
+            mark={sportsMobile.src}
           />
         </div>
       </div>
 
       {/* --- Wagering --------------------------------------------------- */}
-      <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[21px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*16)]">
+      <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[22px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*16)]">
         {/* The small print here keeps the design's proportions to the 16px
             heading when the panel is scaled down: its floor is the heading's
             floor in the same ratio (10/16, 12/16), not the shared one, so the
@@ -254,12 +272,12 @@ const PlayerPanel: FC = () => {
         </div>
 
         {/* Phone: the bar, with its ends and the amount so far. */}
-        <div className="mt-[22px] lg:hidden">
+        <div className="mt-[15px] lg:hidden">
           <ProgressBar percent={percent} label={t('dash.wageringProgress')} />
-          <div className="mt-[14px] flex items-center justify-between text-[12px] leading-5 text-[#9da2b4]">
+          <div className="mt-[14px] flex items-center justify-between text-[12px] leading-[22px] text-[#9da2b4]">
             <span>{usd(0, locale)}</span>
             <span className="text-[14px] font-medium text-white">
-              {t('dash.wagered', { amount: usd(wagered, locale) })}
+              {t('dash.wageredShort', { amount: usd(wagered, locale) })}
             </span>
             <span>{usd(required, locale)}</span>
           </div>

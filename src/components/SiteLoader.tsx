@@ -28,8 +28,10 @@ const SiteLoader: FC<{ label?: string }> = ({ label }) => {
     >
       <div className="flex items-center gap-1" aria-hidden="true">
         {LETTERS.map((letter, index) => (
+          // Keyed by position, not by the letter: ROLLUCK has two Ls, and the
+          // duplicate key had React warning on every first load.
           <span
-            key={letter}
+            key={`${letter}-${index}`}
             className="rolluck-loader-letter text-4xl sm:text-5xl font-extrabold tracking-[0.2em] text-white"
             style={{ animationDelay: `${index * 0.15}s` }}
           >

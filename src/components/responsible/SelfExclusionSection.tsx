@@ -10,6 +10,8 @@ import { getSelfExclusion, startSelfExclusion } from '@/services/responsible';
 import type { SelfExclusionState } from '@/types/responsible';
 import { CheckIcon, PauseIcon } from '@/components/icons';
 import { blocksOf, type HelpEntry } from '@/components/responsible/helpContent';
+import { toast } from 'react-toastify';
+import { apiErrorMessage } from '@/lib/apiError';
 
 /**
  * Self-exclusion.
@@ -47,11 +49,15 @@ const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
   const confirm = useCallback(async (): Promise<void> => {
     if (!confirming) return;
     setSaving(true);
-    const next = await startSelfExclusion(confirming.value);
-    setState(next);
-    setSaving(false);
-    setConfirming(null);
-    setSelected(null);
+    try {
+      setState(await startSelfExclusion(confirming.value));
+      setConfirming(null);
+      setSelected(null);
+    } catch (err) {
+      toast.error(apiErrorMessage(err, 'Could not start your self-exclusion'));
+    } finally {
+      setSaving(false);
+    }
   }, [confirming]);
 
   if (!state) {

@@ -3,9 +3,9 @@ import { useMemo, useState, type FC } from 'react';
 import PlayerLayout from '@/layout/PlayerLayout';
 import LobbyBanner from '@/components/player/LobbyBanner';
 import SiteFooter from '@/components/player/SiteFooter';
+import { SportsShelf } from '@/components/player/SportsRow';
 import { ChipButton, CHIP_ROW } from '@/components/player/BrowseControls';
 import MatchShelf from '@/components/sports/MatchShelf';
-import SportTiles from '@/components/sports/SportTiles';
 import SportsToolbar, {
   FIXTURE_QUERY_DEFAULTS,
   queryFixtures,
@@ -21,7 +21,7 @@ const LEAGUES = [...new Set(ALL_FIXTURES.map((f) => f.league))].sort();
 
 /**
  * The sportsbook lobby, as the design lays it out: the banner, the toolbar,
- * a tile per sport, then Highlights, Top Sports (with its sport chips), Top
+ * the lobby's Sports shelf (a 3D tile per sport), then Highlights, Top Sports (with its sport chips), Top
  * Events and Upcoming. Fixtures are sample data until a feed exists — see
  * services/sportsbook.sample. The toolbar narrows every section at once.
  */
@@ -60,10 +60,10 @@ const Sports: FC = () => {
         </div>
 
         <div className="mt-5 lg:mt-[calc(var(--u)*30)]">
-          <SportTiles />
+          <SportsShelf paged={false} />
         </div>
 
-        <div className="mt-5 space-y-10 lg:mt-[calc(var(--u)*33)] lg:space-y-[calc(var(--u)*80)]">
+        <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
           {empty && (
             <p className="rl-liquid rounded-[24px] px-4 py-10 text-center text-sm text-[#9da2b4]">
               {t('sports.noMatches')}

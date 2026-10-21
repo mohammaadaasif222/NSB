@@ -7,7 +7,7 @@ import ScrollShelf from '@/components/player/ScrollShelf';
 import { BROWSE_ANCHOR } from '@/components/player/GameBrowser';
 import type { TranslationKey } from '@/i18n/locales';
 import type { LobbyProvider } from '@/types';
-import type { StaticImageData } from 'next/image';
+import { getImageProps, type StaticImageData } from 'next/image';
 import pragmaticPlay from '@/assets/providers/pragmatic-play.svg';
 import evolution from '@/assets/providers/evolution.svg';
 import relaxGaming from '@/assets/providers/relax-gaming.svg';
@@ -73,7 +73,15 @@ const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = (
   const { isFavouriteProvider, toggleProvider } = useFavourites();
   const [broken, setBroken] = useState(false);
   const bundled = BUNDLED_LOGOS[provider.slug];
-  const logo = provider.logo_url || bundled?.src || null;
+  const bundledSrc = bundled
+    ? getImageProps({
+        src: bundled,
+        alt: '',
+        width: 320,
+        height: Math.round((320 * bundled.height) / bundled.width),
+      }).props.src
+    : null;
+  const logo = provider.logo_url || bundledSrc || null;
   const showLogo = !!logo && !broken;
   // Known up front for a bundled mark; read from the image once an uploaded
   // one loads.

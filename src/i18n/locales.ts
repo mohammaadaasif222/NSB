@@ -14,14 +14,6 @@ import * as rgModule from './modules/rg';
 import * as legalModule from './modules/legal';
 import * as contentModule from './modules/content';
 import * as miscModule from './modules/misc';
-import ar from './translations/ar.json';
-import tr from './translations/tr.json';
-import hi from './translations/hi.json';
-import fr from './translations/fr.json';
-import ru from './translations/ru.json';
-import pt from './translations/pt.json';
-import es from './translations/es.json';
-import it from './translations/it.json';
 
 export const LOCALES = ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'] as const;
 
@@ -134,6 +126,7 @@ const coreEn = {
 
   // Register modal
   'registerModal.title': 'Register',
+  'registerModal.titleLong': 'Registration',
   'registerModal.registeredToday': '{count} Registered Today',
   'registerModal.recommended': 'Recommended',
   'registerModal.mobile': 'Mobile number',
@@ -282,6 +275,9 @@ const coreEn = {
   'nav.rolluckOath': 'Rolluck Oath',
   'nav.tournaments': 'Tournaments',
   'tournament.active': 'Active',
+  'tournament.ended': "Ended",
+  'tournament.starts': "Starts: {date}",
+  'tournament.ends': "Ends: {date}",
   'tournament.summary': 'Tournament Summary',
   'tournament.rewardsDistributed': 'Rewards distributed',
   'tournament.startDate': 'Start Date',
@@ -607,6 +603,7 @@ const coreEn = {
   'dash.wageringProgress': 'Wagering Progress',
   'dash.percentComplete': '{percent}% Complete',
   'dash.wagered': '{amount} Wagered Complete',
+  'dash.wageredShort': '{amount} Wagered',
   'dash.remainingToUnlock': '{amount} remaining to unlock your bonus',
   'dash.remainingToUnlockShort': 'remaining to unlock your bonus',
   'dash.unlockBonus': 'Unlock your welcome bonus',
@@ -714,7 +711,7 @@ const coreEn = {
   'roll.times': '{times}x',
   'roll.open': 'Outstanding',
   'roll.history': 'History',
-  'roll.table.deposit': 'Deposit',
+  'roll.table.source': 'Source',
   'roll.table.required': 'Required',
   'roll.table.progress': 'Progress',
   'roll.table.status': 'Status',
@@ -723,19 +720,21 @@ const coreEn = {
   'roll.emptyOpen': 'Nothing outstanding',
   'roll.loadFailed': 'Could not load your rollover. Please try again.',
   'roll.retry': 'Try again',
-  'roll.bonusTitle': 'Bonus wagering',
-  'roll.bonusBlurb': 'Bonus funds become real money you can withdraw once their wagering is played through.',
-  'roll.table.bonus': 'Bonus',
   'roll.bonusAmount': '{amount} bonus',
   'roll.bonusExpires': 'Expires {date}',
   'roll.status.NOT_STARTED': 'Not started',
   'roll.status.IN_PROGRESS': 'In progress',
   'roll.status.COMPLETED': 'Cleared',
+  'roll.status.EXPIRED': 'Expired',
+  'roll.status.FORFEITED': 'Forfeited',
   'roll.filterAll': 'All',
   'roll.detail.title': 'Rollover details',
   'roll.detail.close': 'Close',
   'roll.detail.deposit': 'Deposit',
   'roll.detail.depositValue': 'Deposit value',
+  'roll.detail.bonus': 'Bonus',
+  'roll.detail.bonusAmount': 'Bonus amount',
+  'roll.detail.expires': 'Expires',
   'roll.detail.multiplier': 'Rollover',
   'roll.detail.required': 'To play through',
   'roll.detail.completed': 'Played through',
@@ -774,28 +773,50 @@ const coreEn = {
 
   // Account area: the Referral section
   'ref.referralCode': 'Referral Code',
-  'ref.copyCode': 'Copy Code',
   'ref.copied': 'Copied',
   'ref.orShare': 'Or share on social media',
   'ref.shareOn': 'Share on {name}',
   'ref.yourReferral': 'Your Referral',
-  'ref.colId': 'Referral ID',
   'ref.colDate': 'Date',
   'ref.colUser': 'Referred User',
   'ref.colStatus': 'Status',
-  'ref.colReward': 'Reward',
-  'ref.completed': 'Completed',
-  'ref.pending': 'Pending',
-  'ref.inProgress': 'In Progress',
-  'ref.cancelled': 'Cancelled',
-  'ref.noChange': 'No Change',
+  'ref.colReward': 'Commission',
+  'ref.copyLink': 'Copy Link',
+  'ref.shareMessage': 'Join me on Rolluck!',
+  'ref.colCode': 'Code',
+  'ref.colWagered': 'Wagered',
+  'ref.status.pending': 'Awaiting deposit',
+  'ref.status.active': 'Active',
+  'ref.status.onHold': 'On hold',
+  'ref.status.rejected': 'Rejected',
+  'ref.empty': 'No one has signed up with your link yet.',
+  'ref.unavailable': 'The referral programme is unavailable right now.',
+  'ref.commissionRate': 'Commission rate',
+  'ref.openDashboard': 'Open referral dashboard',
+  'ref.loadFailed': 'Could not load your referrals',
+  'ref.claimed': '{amount} added to your balance',
+  'ref.claimReview': 'Your claim of {amount} is being reviewed',
+  'ref.claimFailed': 'Could not collect your commission',
+  'ref.codeCreated': 'Referral code created',
+  'ref.codeFailed': 'Could not save the referral code',
+  'ref.tierNext': 'You earn {rate}% of the house edge. {needed} more active referrals unlock {next}%.',
+  'ref.tierTop': 'You earn {rate}% of the house edge, the top tier.',
+  'ref.heldNote': '{amount} is on hold while a referral is reviewed.',
+  'ref.reviewNote': '{amount} collected and waiting for approval.',
+  'ref.minClaimNote': 'You can collect once you have at least {amount}.',
+  'ref.how.title': 'How referrals work',
+  'ref.how.p1': 'Share your link. Anyone who signs up with it becomes your referral.',
+  'ref.how.p2': 'A referral starts earning once the player makes a qualifying deposit.',
+  'ref.how.p3': 'You earn a share of the house edge on every real-money bet they place: bet × house edge × your commission rate.',
+  'ref.how.p4': 'Your rate grows with the number of active players you refer. Collect your earnings to your balance once they pass the minimum.',
+  'ref.how.p5': 'Referring yourself or accounts you control is not allowed. Linked accounts are held for review and their commission can be voided.',
 
   // The Affiliate page
-  'aff.title': 'Affiliate',
-  'aff.getCode': 'Get Your Affiliate Code',
+  'aff.title': 'Referral',
+  'aff.getCode': 'Get Your Referral Link',
   // line anyone meant to ship. Our own name is used here.
   'aff.shareBlurb': 'Share Rolluck with your friends and earn as they play',
-  'aff.copyLink': 'Copy affiliate link',
+  'aff.copyLink': 'Copy referral link',
   'aff.copied': 'Copied',
   'aff.change': 'Change',
   'aff.orShare': 'Or share on social media',
@@ -806,6 +827,16 @@ const coreEn = {
   'aff.availableFunds': 'Available Funds',
   'aff.collect': 'Collect',
   'aff.terms': 'Terms & Condition',
+  'aff.signInForLink': 'Sign in to get your link',
+  'aff.signIn': 'Sign in',
+  'aff.campaigns': 'Your referral codes',
+  'aff.createCode': 'Create code',
+  'aff.codeStats': '{name} · {clicks} clicks · {referrals} referrals',
+  'aff.disable': 'Turn off',
+  'aff.enable': 'Turn on',
+  'aff.newCodeHint': 'Make a code for each place you share, to see which works best.',
+  'aff.newCode': 'New code (3-32 letters or digits)',
+  'aff.codeName': 'Name, e.g. YouTube',
 
   // Account area: the Preferences section
   'pref.appearance': 'Appearance',
@@ -1028,6 +1059,22 @@ const coreEn = {
   'rewards.toNextTier': '{amount} more to reach {tier}',
   'rewards.topTier': "You've reached the top tier",
   'rewards.claimedTotal': 'Total claimed',
+  'rewards.about': 'About {reward}',
+
+  /* The reward detail dialog's section headings. The prose under each lives in
+     the content module; these are labels, which core owns. */
+  'rewards.detail.frequency': 'Accrual frequency',
+  'rewards.detail.payout': 'How it pays out',
+  'rewards.detail.vip': 'VIP benefits',
+  'rewards.detail.calculatedFor': 'Calculated for',
+  'rewards.detail.activation': 'How to claim',
+  'rewards.detail.boostDuration': 'Duration',
+  /* Built from the split the API reports, so the percentages follow the
+     player's tier rather than being frozen into the copy. */
+  'rewards.detail.payoutBalance': '{percent}% of the amount goes to your balance',
+  'rewards.detail.payoutWeekly': '{percent}% of the amount goes to the Weekly bonus',
+  'rewards.detail.payoutMonthly': '{percent}% of the amount goes to the Monthly bonus',
+  'rewards.detail.payoutFull': '100% of the bonus goes to your balance',
   'rewards.history': 'Reward history',
   'rewards.historyEmpty': 'No finished rewards yet.',
   'rewards.status.pending': 'Pending',
@@ -1061,7 +1108,7 @@ const en = {
 
 export type TranslationKey = keyof typeof en;
 
-type Dictionary = Record<TranslationKey, string>;
+export type Dictionary = Record<TranslationKey, string>;
 
 /**
  * A locale that has not been fully translated yet.
@@ -1076,22 +1123,12 @@ type Dictionary = Record<TranslationKey, string>;
  * it translated — which renders identically and hides which strings a
  * translator still has to do.
  */
-type PartialDictionary = Partial<Dictionary>;
+export type PartialDictionary = Partial<Dictionary>;
 
 type Translated<T> = [Exclude<keyof T, TranslationKey>] extends [never] ? T : never;
 
-const dictionary = <T extends PartialDictionary>(
+export const dictionary = <T extends PartialDictionary>(
   translations: T & Translated<T>
 ): PartialDictionary => translations;
 
-export const DICTIONARIES: Record<Locale, PartialDictionary> & { en: Dictionary } = {
-  en,
-  ar: dictionary(ar),
-  tr: dictionary(tr),
-  hi: dictionary(hi),
-  fr: dictionary(fr),
-  ru: dictionary(ru),
-  pt: dictionary(pt),
-  es: dictionary(es),
-  it: dictionary(it),
-};
+export const EN_DICTIONARY: Dictionary = en;

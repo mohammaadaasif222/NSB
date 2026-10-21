@@ -92,15 +92,15 @@ const BalanceMenu: FC = () => {
           aria-expanded={open}
           aria-label={t('lobby.balance.label')}
           title={chipLabel}
-          className="rl-glass-btn flex h-10 max-w-full items-center gap-2.5 rounded-full px-[18px] lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*9)] lg:px-[calc(var(--u)*14)]"
+          className="rl-glass-btn flex h-10 max-w-full items-center gap-2.5 rounded-full px-3 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*9)] lg:px-[calc(var(--u)*14)]"
         >
-          <span className="min-w-0 truncate text-[16px] font-medium leading-6 tabular-nums text-[#f0f1f5] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
+          <span className="min-w-0 truncate text-[12px] font-medium leading-5 tabular-nums text-[#f0f1f5] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]">
             {chipLabel}
           </span>
           <img
             src={chevronIcon.src}
             alt=""
-            className={`h-4 w-4 flex-shrink-0 transition-transform lg:h-[calc(var(--u)*16)] lg:w-[calc(var(--u)*16)] ${open ? 'rotate-180' : ''}`}
+            className={`hidden h-4 w-4 flex-shrink-0 transition-transform lg:block lg:h-[calc(var(--u)*16)] lg:w-[calc(var(--u)*16)] ${open ? 'rotate-180' : ''}`}
           />
         </button>
       }

@@ -14,9 +14,11 @@ import { CurrencyConversionProvider } from '@/context/CurrencyConversionContext'
 import { AuthModalProvider } from '@/context/AuthModalContext';
 import { FavouritesProvider } from '@/context/FavouritesContext';
 import { BetslipProvider } from '@/context/BetslipContext';
-import RouteLoader from '@/components/RouteLoader';
+import RouteProgress from '@/components/RouteProgress';
 import AuthGate from '@/components/AuthGate';
+import AccountReviewNotice from '@/components/risk/AccountReviewNotice';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
+import RegionRestrictedModal from '@/components/modals/RegionRestrictedModal';
 import Analytics from '@/components/analytics/Analytics';
 import Seo from '@/components/seo/Seo';
 import { SITE_NAME } from '@/constants/site';
@@ -84,10 +86,10 @@ export default function App({ Component, pageProps }: AppProps) {
                       {/* Outside AuthModalProvider so the auth modals' "Need help?"
                       can open the support messenger. */}
                       <SupportChatProvider>
+                        {/* Outside AuthModalProvider so the login and sign-up modals can
+                        reach the step-up prompt through useSeonGuard() too. */}
+                        <SeonGuardProvider>
                         <AuthModalProvider>
-                          {/* Innermost, so the step-up prompt renders above every page
-                          and any component can reach it through useSeonGuard(). */}
-                          <SeonGuardProvider>
                             {/* Inside AuthModalProvider: hearting signed out opens login. */}
                             <FavouritesProvider>
                               {/* Above the pages, so sportsbook picks survive moving between them. */}
@@ -96,12 +98,17 @@ export default function App({ Component, pageProps }: AppProps) {
                                 <Component {...pageProps} />
                               </BetslipProvider>
                             </FavouritesProvider>
-                          </SeonGuardProvider>
                           <SeonAgentWarmup />
-                          <RouteLoader />
-                          {/* After RouteLoader so that on a first load, where
+                          <RegionRestrictedModal />
+                          {/* A bar at the top edge, not an overlay: a link
+                          swaps the route in place and must not blank the page
+                          the player is on. */}
+                          <RouteProgress />
+                          {/* The one full-screen splash, and only on arrival:
+                          after RouteProgress so that on a first load, where
                           both could be showing, this one wins the overlap. */}
                           <AuthGate />
+                        <AccountReviewNotice />
                           {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching
                           Intercom off removes it without a deploy. */}
@@ -116,6 +123,7 @@ export default function App({ Component, pageProps }: AppProps) {
                             theme="dark"
                           />
                         </AuthModalProvider>
+                        </SeonGuardProvider>
                       </SupportChatProvider>
                     </CurrencyConversionProvider>
                   </WalletProvider>

@@ -43,7 +43,7 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         {label}
       </label>
       <div
-        className={`rl-field flex h-12 items-center gap-2 px-4 text-[15px] sm:px-5 ${
+        className={`rl-field flex h-12 items-center gap-2 px-4 text-[14px] max-sm:border-white/20 max-sm:bg-white/5 sm:px-5 sm:text-[15px] ${
           invalid ? '!border-[#ef4462]/70' : ''
         }`}
       >
@@ -56,7 +56,7 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           data-clarity-mask="true"
           placeholder={placeholder ?? label}
           aria-invalid={invalid || undefined}
-          className={`h-full min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-white/70 ${className}`}
+          className={`h-full min-w-0 flex-1 bg-transparent text-white outline-none placeholder:text-[#c8ccd8] sm:placeholder:text-white/70 ${className}`}
           {...inputProps}
         />
         {trailing}

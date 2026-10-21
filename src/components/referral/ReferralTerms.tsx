@@ -1,7 +1,7 @@
 import { useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { ChevronDownIcon } from '@/components/icons';
-import { TERMS_INTRO, TERMS_SECTIONS } from '@/components/affiliate/termsContent';
+import { TERMS_INTRO, TERMS_SECTIONS } from '@/components/referral/termsContent';
 
 /**
  * The terms panel at the foot of the page.
@@ -14,7 +14,7 @@ import { TERMS_INTRO, TERMS_SECTIONS } from '@/components/affiliate/termsContent
  * `<details>` carries the open/closed state, the keyboard handling and the
  * accessible name on its own — the chevron only has to point the right way.
  */
-const AffiliateTerms: FC = () => {
+const ReferralTerms: FC = () => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(true);
 
@@ -53,4 +53,4 @@ const AffiliateTerms: FC = () => {
   );
 };
 
-export default AffiliateTerms;
+export default ReferralTerms;

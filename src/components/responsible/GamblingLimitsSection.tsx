@@ -7,6 +7,8 @@ import { getLimits, setLimit } from '@/services/responsible';
 import type { LimitKind, LimitPeriod, LimitSet } from '@/types/responsible';
 import type { TranslationKey } from '@/i18n/locales';
 import { blocksOf, type HelpEntry } from '@/components/responsible/helpContent';
+import { toast } from 'react-toastify';
+import { apiErrorMessage } from '@/lib/apiError';
 
 /**
  * Gambling limits.
@@ -48,16 +50,21 @@ const GamblingLimitsSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
   const submit = useCallback(
     async (kind: LimitKind, period: LimitPeriod, amount: string): Promise<void> => {
       setSaving(true);
-      await setLimit(kind, period, amount);
-      setLimits(await getLimits());
-      setSaving(false);
-      setOpen(false);
+      try {
+        await setLimit(kind, period, amount);
+        setLimits(await getLimits());
+        setOpen(false);
+      } catch (err) {
+        toast.error(apiErrorMessage(err, 'Could not save your limit'));
+      } finally {
+        setSaving(false);
+      }
     },
     []
   );
 
   /* 270×56 with 34 of radius — the design's own button, and the same gold the
-     Affiliate page's Change and Collect are cut from. */
+     Referral page's Change and Collect are cut from. */
   const BUTTON =
     'rl-btn-gold flex h-10 w-full items-center justify-center rounded-[34px] px-2 text-[14px] leading-5 font-medium sm:h-14 sm:w-67.5 sm:text-[18px] sm:leading-7';
 

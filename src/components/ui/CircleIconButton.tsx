@@ -18,7 +18,7 @@ const CircleIconButton: FC<CircleIconButtonProps> = ({
     type={type}
     aria-label={label}
     title={label}
-    className={`rl-circle-btn flex h-10 w-10 shrink-0 items-center justify-center sm:h-12 sm:w-12 ${className}`}
+    className={`rl-circle-btn rl-glass-rim flex h-10 w-10 shrink-0 items-center justify-center sm:h-12 sm:w-12 ${className}`}
     {...rest}
   >
     {children}

@@ -79,7 +79,7 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="rl-modal-glass flex max-h-[96vh] w-full max-w-[581px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7"
+        className="rl-modal-glass flex max-h-[96vh] w-full max-w-[480px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7"
       >
         <div className="flex shrink-0 items-start">
           <h2

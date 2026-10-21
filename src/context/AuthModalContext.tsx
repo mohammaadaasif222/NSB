@@ -11,6 +11,8 @@ import {
 import { useRouter } from 'next/router';
 
 import { useAuth } from '@/context/AuthContext';
+import { captureReferral } from '@/lib/referralCapture';
+import { recordReferralVisit } from '@/services/referral';
 // Imported statically, not via next/dynamic: Login and Register are the
 // primary calls to action, and a lazy chunk that never resolves leaves the
 // buttons silently doing nothing.
@@ -24,6 +26,9 @@ import LoginModal, { type LoginEntry } from '@/components/auth/login/LoginModal'
  * with `&mobile=` or `&method=email`) or `?auth=forgot` opens the matching
  * modal on whatever page the link points at. The old /auth/* pages redirect to
  * these, so bookmarks and shared links keep working.
+ *
+ * `?ref=CODE` is a referral link: the code is kept for signup and a signed-out
+ * visitor is shown the register modal.
  */
 
 interface AuthModalContextType {
@@ -69,11 +74,15 @@ export const AuthModalProvider: FC<{ children: ReactNode }> = ({ children }) => 
   // Deep link: open from the query string, then drop it so a refresh or a
   // shared URL copied later does not reopen the modal.
   useEffect(() => {
-    const { auth, mobile, method, ...rest } = router.query;
-    if (!router.isReady || !hydrated || typeof auth !== 'string') return;
+    const { auth, mobile, method, ref, ...rest } = router.query;
+    if (!router.isReady || !hydrated) return;
+    if (typeof auth !== 'string' && typeof ref !== 'string') return;
 
+    if (typeof ref === 'string' && !token && captureReferral(ref)) {
+      void recordReferralVisit(ref).catch(() => undefined);
+    }
     if (!token) {
-      if (auth === 'register') openRegister(registerPrefill(mobile, method));
+      if (auth === 'register' || (ref && !auth)) openRegister(registerPrefill(mobile, method));
       if (auth === 'login') openLogin();
       if (auth === 'forgot') openLogin('forgot');
     }

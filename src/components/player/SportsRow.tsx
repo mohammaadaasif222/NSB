@@ -4,6 +4,7 @@ import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
 import ScrollShelf from '@/components/player/ScrollShelf';
 import type { TranslationKey } from '@/i18n/locales';
+import { sportHref, type SportKey } from '@/constants/sportsbook';
 
 import leagueIcon from '@/assets/lobby/league-soccer.svg';
 import crestBayern from '@/assets/lobby/crest-bayern.webp';
@@ -55,18 +56,20 @@ interface Discipline {
    * cut to a common box — the rifle is wide, the trophy narrow.
    */
   box: [x: number, y: number, w: number];
+  /** The sport's own page, where the sportsbook has one; else the lobby. */
+  page?: SportKey;
 }
 
 /** In the design's order, which is also the order the shelf scrolls in. */
 const DISCIPLINES: Discipline[] = [
-  { label: 'lobby.sport.soccer', art: soccer, box: [48, 21, 99] },
-  { label: 'lobby.sport.basketball', art: basketball, box: [48, 21, 99] },
+  { label: 'lobby.sport.soccer', art: soccer, box: [48, 21, 99], page: 'football' },
+  { label: 'lobby.sport.basketball', art: basketball, box: [48, 21, 99], page: 'basketball' },
   { label: 'lobby.sport.americanFootball', art: football, box: [48, 21, 99] },
-  { label: 'lobby.sport.tennis', art: tennis, box: [46, 21, 102] },
+  { label: 'lobby.sport.tennis', art: tennis, box: [46, 21, 102], page: 'tennis' },
   { label: 'lobby.sport.esports', art: esport, box: [42, 18, 110] },
   { label: 'lobby.sport.cs2', art: cs2, box: [26, 21, 143] },
   { label: 'lobby.sport.fifa', art: fifa, box: [48, 21, 99] },
-  { label: 'lobby.sport.cricket', art: cricket, box: [48, 21, 99] },
+  { label: 'lobby.sport.cricket', art: cricket, box: [48, 21, 99], page: 'cricket' },
   { label: 'lobby.sport.tableTennis', art: tableTennis, box: [48, 21, 99] },
   { label: 'lobby.sport.valorant', art: valorant, box: [48, 21, 99] },
   { label: 'lobby.sport.chess', art: chess, box: [48, 21, 99] },
@@ -75,7 +78,7 @@ const DISCIPLINES: Discipline[] = [
   { label: 'lobby.sport.golf', art: golf, box: [43, 18, 109] },
   { label: 'lobby.sport.live', art: live, box: [41, 33, 113] },
   { label: 'lobby.sport.boxing', art: boxing, box: [48, 21, 99] },
-  { label: 'lobby.sport.iceHockey', art: iceHockey, box: [47, 20, 101] },
+  { label: 'lobby.sport.iceHockey', art: iceHockey, box: [47, 20, 101], page: 'hockey' },
   { label: 'lobby.sport.volleyball', art: volleyball, box: [48, 21, 99] },
   { label: 'lobby.sport.wrestling', art: wrestling, box: [45, 21, 108] },
   { label: 'lobby.sport.sportsbook', art: sportsbook, box: [48, 21, 99] },
@@ -83,18 +86,17 @@ const DISCIPLINES: Discipline[] = [
 ];
 
 /**
- * One discipline: the design's glass tile (198×192 on desktop, 122×150 on a
- * phone) with its 3D render placed as the design places it — as fractions of
- * the tile, so it holds its spot at either size — and the label at the foot.
- */
-/**
  * A discipline's glass tile — 198×192 on desktop, 122×150 on a phone — with
  * its label at the foot. What sits above the label is the caller's: a 3D
  * render or a line icon.
  */
-const TileShell: FC<{ label: string; children: ReactNode }> = ({ label, children }) => (
+const TileShell: FC<{ label: string; href: string; children: ReactNode }> = ({
+  label,
+  href,
+  children,
+}) => (
   <Link
-    href="/sports"
+    href={href}
     title={label}
     className="rl-liquid-glow group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
   >
@@ -118,7 +120,7 @@ const DisciplineTile: FC<{ sport: Discipline; phoneLarge?: boolean }> = ({
   const { t } = useTranslation();
 
   return (
-    <TileShell label={t(sport.label)}>
+    <TileShell label={t(sport.label)} href={sport.page ? sportHref(sport.page) : '/sports'}>
       <Image
         src={sport.art}
         alt=""
@@ -239,7 +241,7 @@ const MatchCard: FC<{ match: Match }> = ({ match }) => {
         <TeamColumn team={match.away} />
       </span>
 
-      <span className="pb-[calc(var(--u)*6)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#849194]">
+      <span className="pb-[calc(var(--u)*6)] pt-[calc(var(--u)*4)] text-center text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#849194]">
         1x2
       </span>
 
@@ -269,9 +271,9 @@ interface ShelfProps {
 }
 
 /**
- * The disciplines shelf: a tile per sport with its 3D render. Signed out, a
- * phone pages it three by two, as that design does; the signed-in design runs
- * it as one row of three, like the game shelves (`paged={false}`).
+ * The disciplines shelf: a tile per sport with its 3D render. Both phone
+ * designs run it as one row of three 122×150 tiles, like the game shelves
+ * (`paged={false}`); `paged` lays a phone's out three by two instead.
  */
 export const SportsShelf: FC<ShelfProps & { paged?: boolean }> = ({ viewAll, paged = true }) => {
   const { t } = useTranslation();
@@ -306,7 +308,7 @@ export const LiveGamesShelf: FC<ShelfProps> = ({ viewAll }) => {
 /** Both sportsbook teasers together, as the signed-out lobby shows them. */
 const SportsRow: FC = () => (
   <>
-    <SportsShelf viewAll="/sports" />
+    <SportsShelf viewAll="/sports" paged={false} />
     <LiveGamesShelf viewAll="/sports" />
   </>
 );

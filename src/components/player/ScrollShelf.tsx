@@ -229,13 +229,14 @@ const ScrollShelf: FC<Props> = ({
   const arrow = (dir: -1 | 1, canScroll: boolean): ReactNode => {
     const towardEnd = rtl ? dir < 0 : dir > 0;
     const enabled = canScroll || (towardEnd && hasMore);
+    // At an end only the chevron dims: the design draws both discs alike.
     return (
       <button
         type="button"
         onClick={() => scroll(dir)}
         disabled={!enabled}
         aria-label={`${t(dir < 0 ? 'games.prev' : 'games.next')}: ${title}`}
-        className={`${ARROW_CLASS} ${enabled ? 'hover:bg-white/10' : 'opacity-40'}`}
+        className={`${ARROW_CLASS} ${enabled ? 'hover:bg-white/10' : 'cursor-default [&>img]:opacity-35'}`}
       >
         <ArrowGlyph dir={dir < 0 ? 'prev' : 'next'} />
       </button>

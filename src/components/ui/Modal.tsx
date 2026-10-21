@@ -30,6 +30,13 @@ interface ModalProps {
    * Either way a click outside closes.
    */
   backdrop?: 'dim' | 'none';
+  /**
+   * Below `sm`, a sheet instead of a floating card: full width, joined to the
+   * screen's foot, its top corners rounded. `true` reaches up to 140px under
+   * the screen's top (Select Game); `'fit'` is as tall as its content, the
+   * auth flows' sheets. The card's class sets the radius.
+   */
+  phoneSheet?: boolean | 'fit';
   children: ReactNode;
 }
 
@@ -45,6 +52,7 @@ const Modal: FC<ModalProps> = ({
   surface = 'rl-modal-card',
   style,
   backdrop = 'dim',
+  phoneSheet = false,
   children,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -109,7 +117,9 @@ const Modal: FC<ModalProps> = ({
       }}
     >
       <div
-        className="flex min-h-full items-center justify-center px-3 py-6 sm:p-6"
+        className={`flex min-h-full justify-center sm:items-center sm:p-6 ${
+          phoneSheet ? 'items-end' : 'items-center px-4 py-6'
+        }`}
         onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -121,7 +131,13 @@ const Modal: FC<ModalProps> = ({
           aria-labelledby={labelledBy}
           aria-label={labelledBy ? undefined : ariaLabel}
           tabIndex={-1}
-          className={`${surface} w-full outline-none ${className}`}
+          className={`${surface} w-full outline-none ${
+            phoneSheet === 'fit'
+              ? 'max-sm:max-h-[calc(100dvh-24px)] max-sm:max-w-none max-sm:overflow-y-auto max-sm:!rounded-b-none'
+              : phoneSheet
+                ? 'max-sm:flex max-sm:h-[calc(100dvh-140px)] max-sm:max-w-none max-sm:flex-col max-sm:!rounded-b-none'
+                : ''
+          } ${className}`}
           style={style}
         >
           {children}

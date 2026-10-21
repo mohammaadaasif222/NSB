@@ -135,16 +135,29 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
           </div>
 
           <dl className="mt-4">
-            <Row
-              label={t('roll.detail.deposit')}
-              value={formatWalletAmount(shown.deposit.amount, shown.deposit.currency_code)}
-            />
-            <Row
-              label={t('roll.detail.depositValue')}
-              value={
-                shown.deposit.amount_usd ? formatCurrencyDisplay(shown.deposit.amount_usd) : '—'
-              }
-            />
+            {shown.deposit && (
+              <>
+                <Row
+                  label={t('roll.detail.deposit')}
+                  value={formatWalletAmount(shown.deposit.amount, shown.deposit.currency_code)}
+                />
+                <Row
+                  label={t('roll.detail.depositValue')}
+                  value={
+                    shown.deposit.amount_usd ? formatCurrencyDisplay(shown.deposit.amount_usd) : '—'
+                  }
+                />
+              </>
+            )}
+            {shown.bonus && (
+              <>
+                <Row label={t('roll.detail.bonus')} value={shown.bonus.name} />
+                <Row
+                  label={t('roll.detail.bonusAmount')}
+                  value={formatCurrencyDisplay(shown.base_amount)}
+                />
+              </>
+            )}
             <Row
               label={t('roll.detail.multiplier')}
               value={t('roll.multiplier', { times: Number(shown.wagering_multiplier) })}
@@ -161,7 +174,10 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
             {shown.completed_at && (
               <Row label={t('roll.detail.cleared')} value={formatMoment(shown.completed_at)} />
             )}
-            {shown.deposit.tx_hash && (
+            {shown.bonus?.status === 'ACTIVE' && shown.bonus.expires_at && (
+              <Row label={t('roll.detail.expires')} value={formatMoment(shown.bonus.expires_at)} />
+            )}
+            {shown.deposit?.tx_hash && (
               <Row
                 label={t('roll.detail.txHash')}
                 value={

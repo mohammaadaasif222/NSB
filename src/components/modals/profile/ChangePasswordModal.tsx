@@ -7,16 +7,23 @@ import ModalInput from '@/components/inputs/ModalInput';
 import { useTranslation } from '@/context/I18nContext';
 import ProfileModalShell from './ProfileModalShell';
 import { analytics } from '@/services/analytics';
+import type { ApiUser } from '@/types/profile';
 
 interface Props {
+  /** The signed-in user — used to detect social-login accounts that have no
+   * existing password and therefore should not be asked for a current one. */
+  user: ApiUser;
   onClose: () => void;
 }
 
-const ChangePasswordModal: FC<Props> = ({ onClose }) => {
+const ChangePasswordModal: FC<Props> = ({ user, onClose }) => {
   // Changing a password is a security-sensitive change and is risk-scored:
   // it is how a hijacked session is turned into a permanent takeover.
   const { run } = useSeonGuard();
   const { t } = useTranslation();
+  /** True when the account was created via a social provider (Google, Telegram,
+   * …) and has no password the user knows. Those users only create a new one. */
+  const isSocial = Boolean(user.provider);
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -25,9 +32,9 @@ const ChangePasswordModal: FC<Props> = ({ onClose }) => {
 
   const handleSubmit = async (): Promise<void> => {
     const e: Record<string, string> = {};
-    if (!current) e.current = t('acct.pw.currentRequired');
+    if (!isSocial && !current) e.current = t('acct.pw.currentRequired');
     if (next.length < 6) e.next = t('acct.pw.tooShort', { min: 6 });
-    if (next && next === current) e.next = t('acct.pw.sameAsCurrent');
+    if (!isSocial && next && next === current) e.next = t('acct.pw.sameAsCurrent');
     if (confirm !== next) e.confirm = t('acct.pw.mismatch');
     setErrors(e);
     if (Object.keys(e).length) return;
@@ -37,7 +44,10 @@ const ChangePasswordModal: FC<Props> = ({ onClose }) => {
       const res = await run((headers) =>
         apiService.post(
           '/users/me/change-password',
-          { current_password: current, new_password: next },
+          {
+            ...(!isSocial && { current_password: current }),
+            new_password: next,
+          },
           { headers }
         )
       );
@@ -69,19 +79,23 @@ const ChangePasswordModal: FC<Props> = ({ onClose }) => {
       loading={loading}
       submitLabel={t('acct.pw.update')}
     >
-      <ModalInput
-        label={t('acct.pw.current')}
-        type="password"
-        value={current}
-        onChange={setCurrent}
-        error={errors.current}
-      />
+      {!isSocial && (
+        <ModalInput
+          label={t('acct.pw.current')}
+          type="password"
+          value={current}
+          onChange={setCurrent}
+          error={errors.current}
+          showToggle
+        />
+      )}
       <ModalInput
         label={t('acct.pw.new')}
         type="password"
         value={next}
         onChange={setNext}
         error={errors.next}
+        showToggle
       />
       <ModalInput
         label={t('acct.pw.confirm')}
@@ -89,6 +103,7 @@ const ChangePasswordModal: FC<Props> = ({ onClose }) => {
         value={confirm}
         onChange={setConfirm}
         error={errors.confirm}
+        showToggle
       />
     </ProfileModalShell>
   );

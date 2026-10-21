@@ -60,7 +60,7 @@ interface Leaf {
 interface Group {
   labelKey: TranslationKey;
   icon: StaticImageData;
-  /** The group's rows — the design's Account and Affiliate dropdowns. */
+  /** The group's rows — the design's Account and Referral dropdowns. */
   items: Leaf[];
 }
 
@@ -75,7 +75,6 @@ const ACCOUNT: Group = {
     { labelKey: 'account.profile', icon: accountIcon, href: profile() },
     { labelKey: 'profile.statistic', icon: statisticIcon, href: profile('statistic') },
     { labelKey: 'profile.preferences', icon: preferencesIcon, href: profile('preferences') },
-    { labelKey: 'profile.referral', icon: bonusesIcon, href: profile('referral') },
     { labelKey: 'profile.security', icon: securityIcon, href: profile('security') },
     { labelKey: 'profile.verification', icon: verificationIcon, href: profile('verification') },
     { labelKey: 'profile.transactions', icon: transactionsIcon, href: profile('transactions') },
@@ -83,16 +82,16 @@ const ACCOUNT: Group = {
   ],
 };
 
-/** The design's Affiliate dropdown: the affiliate page and its sections. */
-const AFFILIATE: Group = {
+/** The design's second dropdown: the referral page and its sections. */
+const REFERRAL: Group = {
   labelKey: 'aff.title',
   icon: affiliateIcon,
   items: [
-    { labelKey: 'aff.dashboard', icon: dashboardIcon, href: '/affiliate' },
-    { labelKey: 'aff.campaign', icon: campaignIcon, href: '/affiliate#campaign' },
-    { labelKey: 'aff.referredUsers', icon: referredIcon, href: '/affiliate#referred-users' },
-    { labelKey: 'aff.earning', icon: earningIcon, href: '/affiliate#earning' },
-    { labelKey: 'aff.terms', icon: termsIcon, href: '/affiliate#terms' },
+    { labelKey: 'aff.dashboard', icon: dashboardIcon, href: '/referral' },
+    { labelKey: 'aff.campaign', icon: campaignIcon, href: '/referral#campaign' },
+    { labelKey: 'aff.referredUsers', icon: referredIcon, href: '/referral#referred-users' },
+    { labelKey: 'aff.earning', icon: earningIcon, href: '/referral#earning' },
+    { labelKey: 'aff.terms', icon: termsIcon, href: '/referral#terms' },
   ],
 };
 
@@ -234,7 +233,7 @@ interface Props {
 }
 
 /**
- * The account menu, as the design draws it: Account and Affiliate fold open
+ * The account menu, as the design draws it: Account and Referral fold open
  * into their sections, then Wallet, the rewards, help and support, and Log
  * out. The bar's profile button opens it on desktop, the Profile tab on a
  * phone. Closes on a choice, a click away, Escape, or navigation.
@@ -244,6 +243,7 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
     promotions: promotionsOn,
     help_center: helpOn,
     responsible_gambling: responsibleOn,
+    referrals: referralsOn,
   } = usePlatformFeatures();
   const { t } = useTranslation();
   const router = useRouter();
@@ -332,7 +332,7 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
           >
             <ul role="menu" className={LIST}>
               <GroupRow group={ACCOUNT} onAction={onAction} />
-              <GroupRow group={AFFILIATE} onAction={onAction} />
+              {referralsOn && <GroupRow group={REFERRAL} onAction={onAction} />}
               {LEAVES.filter(
                 (leaf) =>
                   (phone || !leaf.phoneOnly) &&

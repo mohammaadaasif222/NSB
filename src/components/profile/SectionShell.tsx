@@ -36,7 +36,7 @@ import { useTranslation } from '@/context/I18nContext';
  * filter chips off the heading's line and onto a row of their own.
  *
  * `rl-h-section` is left alone; it still carries the Responsible Gambling,
- * Affiliate and legal pages, which are not on `--u`.
+ * Referral and legal pages, which are not on `--u`.
  *
  * Below `lg` the unit is 1px, so the design's 44 would land at 44 on a phone.
  * The old 30 is kept there instead.
