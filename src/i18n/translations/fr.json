@@ -1535,9 +1535,6 @@
   "misc.realtime.issueTitle": "Problème de connexion en temps réel",
   "misc.realtime.issueBody": "Le message de test n'est pas arrivé dans les 5 secondes",
   "misc.realtime.issueHint": "Soketi ne transmet peut-être pas correctement les événements",
-  "roll.bonusTitle": "Mises du bonus",
-  "roll.bonusBlurb": "Les fonds bonus deviennent de l’argent réel que vous pouvez retirer une fois leur condition de mise remplie.",
-  "roll.table.bonus": "Bonus",
   "roll.bonusAmount": "Bonus de {amount}",
   "roll.bonusExpires": "Expire le {date}",
   "ref.copyLink": "Copier le lien",
@@ -1578,5 +1575,11 @@
   "aff.enable": "Activer",
   "aff.newCodeHint": "Créez un code pour chaque endroit où vous partagez afin de voir lequel fonctionne le mieux.",
   "aff.newCode": "Nouveau code (3-32 lettres ou chiffres)",
-  "aff.codeName": "Nom, ex. YouTube"
+  "aff.codeName": "Nom, ex. YouTube",
+  "roll.table.source": "Source",
+  "roll.status.EXPIRED": "Expiré",
+  "roll.status.FORFEITED": "Abandonné",
+  "roll.detail.bonus": "Bonus",
+  "roll.detail.bonusAmount": "Montant du bonus",
+  "roll.detail.expires": "Expire le"
 }

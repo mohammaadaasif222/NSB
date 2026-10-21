@@ -14,14 +14,6 @@ import * as rgModule from './modules/rg';
 import * as legalModule from './modules/legal';
 import * as contentModule from './modules/content';
 import * as miscModule from './modules/misc';
-import ar from './translations/ar.json';
-import tr from './translations/tr.json';
-import hi from './translations/hi.json';
-import fr from './translations/fr.json';
-import ru from './translations/ru.json';
-import pt from './translations/pt.json';
-import es from './translations/es.json';
-import it from './translations/it.json';
 
 export const LOCALES = ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'] as const;
 
@@ -714,7 +706,7 @@ const coreEn = {
   'roll.times': '{times}x',
   'roll.open': 'Outstanding',
   'roll.history': 'History',
-  'roll.table.deposit': 'Deposit',
+  'roll.table.source': 'Source',
   'roll.table.required': 'Required',
   'roll.table.progress': 'Progress',
   'roll.table.status': 'Status',
@@ -723,19 +715,21 @@ const coreEn = {
   'roll.emptyOpen': 'Nothing outstanding',
   'roll.loadFailed': 'Could not load your rollover. Please try again.',
   'roll.retry': 'Try again',
-  'roll.bonusTitle': 'Bonus wagering',
-  'roll.bonusBlurb': 'Bonus funds become real money you can withdraw once their wagering is played through.',
-  'roll.table.bonus': 'Bonus',
   'roll.bonusAmount': '{amount} bonus',
   'roll.bonusExpires': 'Expires {date}',
   'roll.status.NOT_STARTED': 'Not started',
   'roll.status.IN_PROGRESS': 'In progress',
   'roll.status.COMPLETED': 'Cleared',
+  'roll.status.EXPIRED': 'Expired',
+  'roll.status.FORFEITED': 'Forfeited',
   'roll.filterAll': 'All',
   'roll.detail.title': 'Rollover details',
   'roll.detail.close': 'Close',
   'roll.detail.deposit': 'Deposit',
   'roll.detail.depositValue': 'Deposit value',
+  'roll.detail.bonus': 'Bonus',
+  'roll.detail.bonusAmount': 'Bonus amount',
+  'roll.detail.expires': 'Expires',
   'roll.detail.multiplier': 'Rollover',
   'roll.detail.required': 'To play through',
   'roll.detail.completed': 'Played through',
@@ -1093,7 +1087,7 @@ const en = {
 
 export type TranslationKey = keyof typeof en;
 
-type Dictionary = Record<TranslationKey, string>;
+export type Dictionary = Record<TranslationKey, string>;
 
 /**
  * A locale that has not been fully translated yet.
@@ -1108,22 +1102,12 @@ type Dictionary = Record<TranslationKey, string>;
  * it translated — which renders identically and hides which strings a
  * translator still has to do.
  */
-type PartialDictionary = Partial<Dictionary>;
+export type PartialDictionary = Partial<Dictionary>;
 
 type Translated<T> = [Exclude<keyof T, TranslationKey>] extends [never] ? T : never;
 
-const dictionary = <T extends PartialDictionary>(
+export const dictionary = <T extends PartialDictionary>(
   translations: T & Translated<T>
 ): PartialDictionary => translations;
 
-export const DICTIONARIES: Record<Locale, PartialDictionary> & { en: Dictionary } = {
-  en,
-  ar: dictionary(ar),
-  tr: dictionary(tr),
-  hi: dictionary(hi),
-  fr: dictionary(fr),
-  ru: dictionary(ru),
-  pt: dictionary(pt),
-  es: dictionary(es),
-  it: dictionary(it),
-};
+export const EN_DICTIONARY: Dictionary = en;

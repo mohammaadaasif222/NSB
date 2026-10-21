@@ -9,6 +9,7 @@ import type { DepositRollover } from '@/types';
 const CELL = 'px-4 py-3 lg:px-[calc(var(--u)*20)] lg:py-[calc(var(--u)*14)]';
 const HEAD = `${CELL} text-[11px] font-semibold uppercase tracking-wide text-white/40 lg:text-[length:max(10px,calc(var(--u)*13))]`;
 const BODY = 'text-[13px] lg:text-[length:max(11px,calc(var(--u)*15))]';
+const NOTE = 'text-[11px] text-white/45 lg:text-[length:max(10px,calc(var(--u)*13))]';
 
 interface Props {
   rows: readonly DepositRollover[];
@@ -39,7 +40,7 @@ const RolloverTable: FC<Props> = ({ rows, locale, empty, onOpen }) => {
       <table className="w-full min-w-[620px] text-left">
         <thead>
           <tr className="border-b border-white/7">
-            <th className={HEAD}>{t('roll.table.deposit')}</th>
+            <th className={HEAD}>{t('roll.table.source')}</th>
             <th className={HEAD}>{t('roll.table.required')}</th>
             <th className={HEAD}>{t('roll.table.progress')}</th>
             <th className={HEAD}>{t('roll.table.status')}</th>
@@ -62,11 +63,17 @@ const RolloverTable: FC<Props> = ({ rows, locale, empty, onOpen }) => {
                   }}
                   className={`${BODY} text-left font-medium text-[#f0f1f5] hover:text-[#ffe779]`}
                 >
-                  {formatWalletAmount(row.deposit.amount, row.deposit.currency_code)}
+                  {row.deposit
+                    ? formatWalletAmount(row.deposit.amount, row.deposit.currency_code)
+                    : (row.bonus?.name ?? t('roll.detail.bonus'))}
                 </button>
-                <p className="text-[11px] text-white/45 lg:text-[length:max(10px,calc(var(--u)*13))]">
-                  {row.deposit.network_code} ·{' '}
-                  {t('roll.times', { times: Number(row.wagering_multiplier) })}
+                <p className={NOTE}>
+                  {row.deposit
+                    ? row.deposit.network_code
+                    : t('roll.bonusAmount', {
+                        amount: formatCurrencyDisplay(row.base_amount),
+                      })}{' '}
+                  · {t('roll.times', { times: Number(row.wagering_multiplier) })}
                 </p>
               </td>
 
@@ -108,6 +115,11 @@ const RolloverTable: FC<Props> = ({ rows, locale, empty, onOpen }) => {
                 className={`${CELL} text-[12px] text-white/50 lg:text-[length:max(10px,calc(var(--u)*14))]`}
               >
                 {formatDate(row.created_at)}
+                {row.bonus?.status === 'ACTIVE' && row.bonus.expires_at && (
+                  <p className={NOTE}>
+                    {t('roll.bonusExpires', { date: formatDate(row.bonus.expires_at) })}
+                  </p>
+                )}
               </td>
             </tr>
           ))}

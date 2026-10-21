@@ -5,19 +5,11 @@ import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import RolloverTable from '@/components/profile/rollover/RolloverTable';
 import RolloverDetailsModal from '@/components/profile/rollover/RolloverDetailsModal';
-import BonusWageringTable from '@/components/profile/rollover/BonusWageringTable';
 import TablePager from '@/components/profile/transactions/TablePager';
-import { getBonusWagering, getRolloverHistory, getRolloverSummary } from '@/services/rollover';
+import { getRolloverHistory, getRolloverSummary } from '@/services/rollover';
 import { ROLLOVER_PAGE_SIZE, ROLLOVER_STATUSES, ROLLOVER_STATUS_KEYS } from '@/constants/rollover';
 import { BONUS_REFRESH_EVENT, WALLET_REFRESH_EVENT } from '@/constants/events';
-import type {
-  ApiError,
-  BonusWagering,
-  DepositRollover,
-  DepositRolloverStatus,
-  RolloverSummary,
-  UserBonus,
-} from '@/types';
+import type { ApiError, DepositRollover, DepositRolloverStatus, RolloverSummary } from '@/types';
 
 type Tab = 'open' | 'history';
 type StatusFilter = DepositRolloverStatus | 'ALL';
@@ -40,27 +32,6 @@ const Figure: FC<{ label: string; value: string; tone?: 'gold' | 'green' }> = ({
     </p>
   </div>
 );
-
-const BonusWageringBlock: FC<{ rows: readonly UserBonus[]; locale: string }> = ({
-  rows,
-  locale,
-}) => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="mt-6">
-      <h3 className="text-[15px] font-semibold text-[#f0f1f5] lg:text-[length:max(12px,calc(var(--u)*18))]">
-        {t('roll.bonusTitle')}
-      </h3>
-      <p className="mt-1 text-[12px] leading-relaxed text-white/50 lg:text-[length:max(10px,calc(var(--u)*14))]">
-        {t('roll.bonusBlurb')}
-      </p>
-      <div className="mt-3">
-        <BonusWageringTable rows={rows} locale={locale} />
-      </div>
-    </div>
-  );
-};
 
 const TAB_BUTTON =
   'h-[calc(var(--u)*40)] rounded-full px-4 text-[13px] font-medium transition-colors lg:px-[calc(var(--u)*20)] lg:text-[length:max(11px,calc(var(--u)*15))]';
@@ -87,19 +58,8 @@ const RolloverSection: FC = () => {
 
   const [selected, setSelected] = useState<DepositRollover | null>(null);
 
-  const [bonusWagering, setBonusWagering] = useState<BonusWagering | null>(null);
-
   const summaryRequest = useRef(0);
   const historyRequest = useRef(0);
-  const bonusRequest = useRef(0);
-
-  const loadBonusWagering = useCallback(async (): Promise<void> => {
-    const request = ++bonusRequest.current;
-    const res = await getBonusWagering().catch(() => null);
-    if (request === bonusRequest.current && res?.success && res.data) {
-      setBonusWagering(res.data);
-    }
-  }, []);
 
   const loadSummary = useCallback(async (): Promise<void> => {
     const request = ++summaryRequest.current;
@@ -125,20 +85,15 @@ const RolloverSection: FC = () => {
 
   useEffect(() => {
     void loadSummary();
-    void loadBonusWagering();
 
-    const onWalletChanged = (): void => {
-      void loadSummary();
-      void loadBonusWagering();
-    };
-    const onBonusChanged = (): void => void loadBonusWagering();
-    window.addEventListener(WALLET_REFRESH_EVENT, onWalletChanged);
-    window.addEventListener(BONUS_REFRESH_EVENT, onBonusChanged);
+    const onChanged = (): void => void loadSummary();
+    window.addEventListener(WALLET_REFRESH_EVENT, onChanged);
+    window.addEventListener(BONUS_REFRESH_EVENT, onChanged);
     return () => {
-      window.removeEventListener(WALLET_REFRESH_EVENT, onWalletChanged);
-      window.removeEventListener(BONUS_REFRESH_EVENT, onBonusChanged);
+      window.removeEventListener(WALLET_REFRESH_EVENT, onChanged);
+      window.removeEventListener(BONUS_REFRESH_EVENT, onChanged);
     };
-  }, [loadSummary, loadBonusWagering]);
+  }, [loadSummary]);
 
   const loadHistory = useCallback(async (): Promise<void> => {
     const request = ++historyRequest.current;
@@ -173,10 +128,6 @@ const RolloverSection: FC = () => {
     }
   }, [tab, loadHistory]);
 
-  const activeBonuses = bonusWagering?.active ?? [];
-  const finishedBonuses = bonusWagering?.history ?? [];
-  const outstandingCount = (summary?.open_count ?? 0) + activeBonuses.length;
-
   const selectStatus = (next: StatusFilter): void => {
     setStatus(next);
     setPage(1);
@@ -187,7 +138,7 @@ const RolloverSection: FC = () => {
       return null;
     }
 
-    if (summary.open_count > 0 && summary.blocks_withdrawal) {
+    if (summary.held_count > 0 && summary.blocks_withdrawal) {
       const unlocked = Number(summary.withdrawable) > 0;
       return (
         <div
@@ -207,17 +158,17 @@ const RolloverSection: FC = () => {
           <p className="mt-1 text-[12px] leading-relaxed text-white/64">
             {unlocked
               ? t('roll.partialBody', {
-                  remaining: formatCurrencyDisplay(summary.total_remaining),
+                  remaining: formatCurrencyDisplay(summary.held_remaining),
                 })
               : t('roll.heldAllBody', {
-                  remaining: formatCurrencyDisplay(summary.total_remaining),
+                  remaining: formatCurrencyDisplay(summary.held_remaining),
                 })}
           </p>
         </div>
       );
     }
 
-    if (summary.open_count > 0) {
+    if (summary.held_count > 0) {
       return (
         <div className="rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-3 lg:rounded-[calc(var(--u)*20)]">
           <p className="text-[13px] leading-relaxed text-white/72">{t('roll.trackingOnly')}</p>
@@ -274,7 +225,7 @@ const RolloverSection: FC = () => {
                   value={formatCurrencyDisplay(summary.total_remaining)}
                   tone="gold"
                 />
-                <Figure label={t('roll.openCount')} value={String(summary.open_count)} />
+                <Figure label={t('roll.openCount')} value={String(summary.held_count)} />
                 <Figure label={t('roll.locked')} value={formatCurrencyDisplay(summary.locked)} />
                 <Figure
                   label={t('roll.withdrawable')}
@@ -323,7 +274,7 @@ const RolloverSection: FC = () => {
               }`}
             >
               {t('roll.open')}
-              {outstandingCount > 0 && ` (${outstandingCount})`}
+              {summary.open_count > 0 && ` (${summary.open_count})`}
             </button>
             <button
               type="button"
@@ -340,21 +291,14 @@ const RolloverSection: FC = () => {
           </div>
 
           {tab === 'open' ? (
-            <>
-              {(summary.open.length > 0 || activeBonuses.length === 0) && (
-                <div className="mt-4">
-                  <RolloverTable
-                    rows={summary.open}
-                    locale={locale}
-                    empty={summary.open_count === 0 ? t('roll.emptyOpen') : t('roll.empty')}
-                    onOpen={setSelected}
-                  />
-                </div>
-              )}
-              {activeBonuses.length > 0 && (
-                <BonusWageringBlock rows={activeBonuses} locale={locale} />
-              )}
-            </>
+            <div className="mt-4">
+              <RolloverTable
+                rows={summary.open}
+                locale={locale}
+                empty={summary.open_count === 0 ? t('roll.emptyOpen') : t('roll.empty')}
+                onOpen={setSelected}
+              />
+            </div>
           ) : (
             <>
               <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -417,10 +361,6 @@ const RolloverSection: FC = () => {
                     />
                   </div>
                 </>
-              )}
-
-              {finishedBonuses.length > 0 && (
-                <BonusWageringBlock rows={finishedBonuses} locale={locale} />
               )}
             </>
           )}

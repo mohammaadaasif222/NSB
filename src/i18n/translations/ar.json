@@ -1535,9 +1535,6 @@
   "misc.realtime.issueTitle": "مشكلة في الاتصال الفوري",
   "misc.realtime.issueBody": "لم تصل رسالة الاختبار خلال 5 ثوانٍ",
   "misc.realtime.issueHint": "قد لا يقوم Soketi بتسليم الأحداث بشكل صحيح",
-  "roll.bonusTitle": "مراهنة المكافآت",
-  "roll.bonusBlurb": "تتحول أموال المكافأة إلى أموال حقيقية يمكنك سحبها بعد إكمال شرط المراهنة الخاص بها.",
-  "roll.table.bonus": "المكافأة",
   "roll.bonusAmount": "مكافأة بقيمة {amount}",
   "roll.bonusExpires": "تنتهي في {date}",
   "ref.copyLink": "نسخ الرابط",
@@ -1578,5 +1575,11 @@
   "aff.enable": "تشغيل",
   "aff.newCodeHint": "أنشئ رمزًا لكل مكان تشارك فيه لتعرف أيها يعمل أفضل.",
   "aff.newCode": "رمز جديد (3-32 حرفًا أو رقمًا)",
-  "aff.codeName": "الاسم، مثل YouTube"
+  "aff.codeName": "الاسم، مثل YouTube",
+  "roll.table.source": "المصدر",
+  "roll.status.EXPIRED": "منتهية",
+  "roll.status.FORFEITED": "تم التنازل",
+  "roll.detail.bonus": "المكافأة",
+  "roll.detail.bonusAmount": "قيمة المكافأة",
+  "roll.detail.expires": "ينتهي في"
 }

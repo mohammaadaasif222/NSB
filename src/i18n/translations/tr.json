@@ -1535,9 +1535,6 @@
   "misc.realtime.issueTitle": "Gerçek zamanlı bağlantı sorunu",
   "misc.realtime.issueBody": "Test mesajı 5 saniye içinde ulaşmadı",
   "misc.realtime.issueHint": "Soketi olayları düzgün iletmiyor olabilir",
-  "roll.bonusTitle": "Bonus çevrimi",
-  "roll.bonusBlurb": "Bonus bakiyesi, çevrim şartı tamamlandığında çekebileceğiniz gerçek paraya dönüşür.",
-  "roll.table.bonus": "Bonus",
   "roll.bonusAmount": "{amount} bonus",
   "roll.bonusExpires": "Bitiş: {date}",
   "ref.copyLink": "Bağlantıyı kopyala",
@@ -1578,5 +1575,11 @@
   "aff.enable": "Aç",
   "aff.newCodeHint": "Paylaştığınız her yer için bir kod oluşturun, hangisinin daha iyi çalıştığını görün.",
   "aff.newCode": "Yeni kod (3-32 harf veya rakam)",
-  "aff.codeName": "Ad, ör. YouTube"
+  "aff.codeName": "Ad, ör. YouTube",
+  "roll.table.source": "Kaynak",
+  "roll.status.EXPIRED": "Süresi doldu",
+  "roll.status.FORFEITED": "Vazgeçildi",
+  "roll.detail.bonus": "Bonus",
+  "roll.detail.bonusAmount": "Bonus tutarı",
+  "roll.detail.expires": "Bitiş"
 }

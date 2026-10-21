@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type FC, type FormEvent, type ReactNode } from 'react';
+import Head from 'next/head';
 import Link from 'next/link';
-import Image, { type StaticImageData } from 'next/image';
+import Image, { getImageProps, type StaticImageData } from 'next/image';
 import { toast } from 'react-toastify';
 
 import { SECTION_ART } from '@/constants/cdn';
@@ -55,16 +56,61 @@ export const LandingBackdrop: FC = () => (
           'radial-gradient(circle 47vw at 18vw 41.8vw, rgba(217,217,217,0.13), rgba(217,217,217,0.07) 40%, rgba(217,217,217,0.02) 72%, transparent), radial-gradient(circle 40vw at 94vw 8vw, rgba(217,217,217,0.06), transparent 70%)',
       }}
     />
-    <Image src={backdrop} alt="" priority sizes="100vw" className="hidden h-auto w-full lg:block" />
-    <Image
-      src={backdropMobile}
-      alt=""
-      priority
-      sizes="100vw"
-      className="-mt-[11.2vw] h-auto w-full lg:hidden"
-    />
+    <BackdropPicture />
   </div>
 );
+
+const DESKTOP_MEDIA = '(min-width: 1024px)';
+const MOBILE_MEDIA = '(max-width: 1023.98px)';
+const HIGH_PRIORITY = { fetchpriority: 'high' } as Record<string, string>;
+
+const BackdropPicture: FC = () => {
+  const { props: desktop } = getImageProps({ src: backdrop, alt: '', sizes: '100vw' });
+  const {
+    props: { fetchPriority: _unused, ...mobile },
+  } = getImageProps({ src: backdropMobile, alt: '', sizes: '100vw' });
+
+  return (
+    <>
+      <Head>
+        <link
+          key="backdrop-preload-desktop"
+          rel="preload"
+          as="image"
+          imageSrcSet={desktop.srcSet}
+          imageSizes="100vw"
+          media={DESKTOP_MEDIA}
+          {...HIGH_PRIORITY}
+        />
+        <link
+          key="backdrop-preload-mobile"
+          rel="preload"
+          as="image"
+          imageSrcSet={mobile.srcSet}
+          imageSizes="100vw"
+          media={MOBILE_MEDIA}
+          {...HIGH_PRIORITY}
+        />
+      </Head>
+      <picture>
+        <source
+          media={DESKTOP_MEDIA}
+          srcSet={desktop.srcSet}
+          sizes="100vw"
+          width={desktop.width}
+          height={desktop.height}
+        />
+        <img
+          {...mobile}
+          alt=""
+          loading="eager"
+          {...HIGH_PRIORITY}
+          className="-mt-[11.2vw] h-auto w-full lg:mt-0"
+        />
+      </picture>
+    </>
+  );
+};
 
 /* ==================================================================== */
 /* Live figures                                                          */

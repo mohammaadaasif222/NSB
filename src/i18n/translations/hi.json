@@ -1535,9 +1535,6 @@
   "misc.realtime.issueTitle": "रीयल-टाइम कनेक्शन में समस्या",
   "misc.realtime.issueBody": "परीक्षण संदेश 5 सेकंड के भीतर नहीं पहुँचा",
   "misc.realtime.issueHint": "हो सकता है Soketi इवेंट्स को ठीक से नहीं पहुँचा रहा हो",
-  "roll.bonusTitle": "बोनस वेजरिंग",
-  "roll.bonusBlurb": "वेजरिंग पूरी होने पर बोनस राशि असली पैसे में बदल जाती है, जिसे आप निकाल सकते हैं।",
-  "roll.table.bonus": "बोनस",
   "roll.bonusAmount": "{amount} बोनस",
   "roll.bonusExpires": "{date} को समाप्त",
   "ref.copyLink": "लिंक कॉपी करें",
@@ -1578,5 +1575,11 @@
   "aff.enable": "चालू करें",
   "aff.newCodeHint": "हर जगह के लिए अलग कोड बनाएँ जहाँ आप शेयर करते हैं, ताकि पता चले कौन सा बेहतर है।",
   "aff.newCode": "नया कोड (3-32 अक्षर या अंक)",
-  "aff.codeName": "नाम, जैसे YouTube"
+  "aff.codeName": "नाम, जैसे YouTube",
+  "roll.table.source": "स्रोत",
+  "roll.status.EXPIRED": "समाप्त",
+  "roll.status.FORFEITED": "छोड़ा गया",
+  "roll.detail.bonus": "बोनस",
+  "roll.detail.bonusAmount": "बोनस राशि",
+  "roll.detail.expires": "समाप्ति"
 }
