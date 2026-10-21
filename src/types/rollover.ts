@@ -1,4 +1,17 @@
-export type DepositRolloverStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+export type DepositRolloverStatus =
+  'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'EXPIRED' | 'FORFEITED';
+
+export type RolloverType = 'DEPOSIT' | 'BONUS';
+
+export interface RolloverBonus {
+  award_id: string;
+  bonus_id: string;
+  name: string;
+  type: string;
+  bonus_amount: string;
+  status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' | 'FORFEITED';
+  expires_at: string | null;
+}
 
 export interface RolloverDeposit {
   id: string;
@@ -12,17 +25,19 @@ export interface RolloverDeposit {
 
 export interface DepositRollover {
   id: string;
+  type: RolloverType;
   status: DepositRolloverStatus;
-  provider: string;
+  provider: string | null;
 
-  deposit_amount: string;
+  base_amount: string;
   wagering_multiplier: string;
   wagering_required: string;
   wagering_completed: string;
   wagering_remaining: string;
   progress: number;
 
-  deposit: RolloverDeposit;
+  deposit: RolloverDeposit | null;
+  bonus: RolloverBonus | null;
 
   completed_at: string | null;
   created_at: string;
@@ -37,6 +52,7 @@ export interface RolloverProgression {
   source: RolloverBetSource;
   game_id: string | null;
   bet_amount: string;
+  contribution: number;
   wagering_progress: string;
   created_at: string;
 }
@@ -51,6 +67,7 @@ export interface RolloverSummary {
   multiplier: string;
 
   open_count: number;
+  held_count: number;
   total_required: string;
   total_completed: string;
   total_remaining: string;

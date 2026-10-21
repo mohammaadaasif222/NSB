@@ -1546,9 +1546,12 @@
   "misc.realtime.issueTitle": "Problema con la conexión en tiempo real",
   "misc.realtime.issueBody": "El mensaje de prueba no llegó en 5 segundos",
   "misc.realtime.issueHint": "Es posible que Soketi no esté entregando los eventos correctamente",
-  "roll.bonusTitle": "Apuestas del bono",
-  "roll.bonusBlurb": "Los fondos del bono se convierten en dinero real que puedes retirar cuando completas su requisito de apuesta.",
-  "roll.table.bonus": "Bono",
   "roll.bonusAmount": "Bono de {amount}",
-  "roll.bonusExpires": "Caduca el {date}"
+  "roll.bonusExpires": "Caduca el {date}",
+  "roll.table.source": "Origen",
+  "roll.status.EXPIRED": "Caducado",
+  "roll.status.FORFEITED": "Cancelado",
+  "roll.detail.bonus": "Bono",
+  "roll.detail.bonusAmount": "Importe del bono",
+  "roll.detail.expires": "Caduca el"
 }
