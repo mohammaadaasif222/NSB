@@ -57,7 +57,7 @@ export const formatRewardAmount = (amount: string, currency: string): string => 
  */
 export const formatWalletAmount = (amount: string, currency: string): string =>
   CURRENCY_SYMBOLS[currency?.toUpperCase()]
-    ? withCurrency(formatAmount(amount), currency)
+    ? formatRewardAmount(amount, currency)
     : `${Number(amount).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 8,

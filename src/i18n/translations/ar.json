@@ -1313,6 +1313,7 @@
   "acct.username.title": "تغيير اسم المستخدم",
   "acct.username.label": "اسم المستخدم الجديد",
   "acct.username.placeholder": "your_username",
+  "acct.username.onceOnly": "يمكنك تغيير اسم المستخدم مرة واحدة فقط. اختر بعناية.",
   "acct.theme.updated": "تم تحديث المظهر بنجاح",
   "acct.theme.failed": "تعذّر تحديث المظهر",
   "acct.theme.title": "مظهر الواجهة",

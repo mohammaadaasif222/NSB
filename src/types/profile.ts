@@ -30,6 +30,7 @@ export interface ApiUser {
   first_name: string;
   last_name: string;
   username: string | null;
+  username_changed_at?: string | null;
   /** Null on accounts with no email on file — the API does send it. */
   email: string | null;
   mobile: string;
