@@ -1313,6 +1313,7 @@
   "acct.username.title": "Kullanıcı Adını Değiştir",
   "acct.username.label": "Yeni Kullanıcı Adı",
   "acct.username.placeholder": "kullanici_adiniz",
+  "acct.username.onceOnly": "Kullanıcı adınızı yalnızca bir kez değiştirebilirsiniz. Dikkatli seçin.",
   "acct.theme.updated": "Tema başarıyla güncellendi",
   "acct.theme.failed": "Tema güncellenemedi",
   "acct.theme.title": "Görünüm Teması",

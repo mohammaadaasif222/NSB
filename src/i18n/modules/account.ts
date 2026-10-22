@@ -250,6 +250,7 @@ export const en = {
   'acct.username.title': 'Change Username',
   'acct.username.label': 'New Username',
   'acct.username.placeholder': 'your_username',
+  'acct.username.onceOnly': 'You can change your username only once. Choose carefully.',
   'acct.theme.updated': 'Theme updated successfully',
   'acct.theme.failed': 'Failed to update theme',
   'acct.theme.title': 'Appearance Theme',

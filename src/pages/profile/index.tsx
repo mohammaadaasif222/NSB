@@ -253,7 +253,7 @@ const ProfilePage: FC = () => {
         <ChangeUsernameModal
           currentUsername={me.username ?? ''}
           onClose={closeModal}
-          onSaved={(username) => updateMe({ username })}
+          onSaved={(username) => updateMe({ username, username_changed_at: new Date().toISOString() })}
         />
       )}
 

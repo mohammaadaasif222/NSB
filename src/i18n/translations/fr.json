@@ -1313,6 +1313,7 @@
   "acct.username.title": "Changer de nom d’utilisateur",
   "acct.username.label": "Nouveau nom d’utilisateur",
   "acct.username.placeholder": "votre_pseudo",
+  "acct.username.onceOnly": "Vous ne pouvez changer votre nom d’utilisateur qu’une seule fois. Choisissez bien.",
   "acct.theme.updated": "Thème mis à jour",
   "acct.theme.failed": "Échec de la mise à jour du thème",
   "acct.theme.title": "Thème d’affichage",

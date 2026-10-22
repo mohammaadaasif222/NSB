@@ -60,26 +60,28 @@ const RewardExplainer: FC = () => {
   const [openType, setOpenType] = useState<RewardType | null>(null);
 
   return (
-    <div className={REWARD_TRACK}>
-      {REWARD_TYPES.map((type) => {
-        const Icon = REWARD_ICONS[type];
-        const title = t(REWARD_TITLE_KEYS[type]);
-        return (
-          <article key={type} className={`flex h-full flex-col ${CARD}`}>
-            <div className="flex items-start justify-between gap-2">
-              <span className={ICON_WELL(false)} aria-hidden="true">
-                <Icon size={20} />
-              </span>
-              <RewardInfoButton
-                reward={title}
-                open={openType === type}
-                onClick={() => setOpenType((open) => (open === type ? null : type))}
-              />
-            </div>
-            <h3 className="mt-3 text-[16px] leading-6 font-medium text-[#f0f1f5]">{title}</h3>
-          </article>
-        );
-      })}
+    <div>
+      <div className={REWARD_TRACK}>
+        {REWARD_TYPES.map((type) => {
+          const Icon = REWARD_ICONS[type];
+          const title = t(REWARD_TITLE_KEYS[type]);
+          return (
+            <article key={type} className={`flex h-full flex-col ${CARD}`}>
+              <div className="flex items-start justify-between gap-2">
+                <span className={ICON_WELL(false)} aria-hidden="true">
+                  <Icon size={20} />
+                </span>
+                <RewardInfoButton
+                  reward={title}
+                  open={openType === type}
+                  onClick={() => setOpenType((open) => (open === type ? null : type))}
+                />
+              </div>
+              <h3 className="mt-3 text-[16px] leading-6 font-medium text-[#f0f1f5]">{title}</h3>
+            </article>
+          );
+        })}
+      </div>
 
       {openType && <RewardDetailModal type={openType} onClose={() => setOpenType(null)} />}
     </div>

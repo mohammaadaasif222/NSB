@@ -1313,6 +1313,7 @@
   "acct.username.title": "यूज़रनेम बदलें",
   "acct.username.label": "नया यूज़रनेम",
   "acct.username.placeholder": "your_username",
+  "acct.username.onceOnly": "आप अपना यूज़रनेम केवल एक बार बदल सकते हैं। सोच-समझकर चुनें।",
   "acct.theme.updated": "थीम सफलतापूर्वक अपडेट हो गई",
   "acct.theme.failed": "थीम अपडेट नहीं हो सकी",
   "acct.theme.title": "डिस्प्ले थीम",

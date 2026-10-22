@@ -1313,6 +1313,7 @@
   "acct.username.title": "Изменить имя пользователя",
   "acct.username.label": "Новое имя пользователя",
   "acct.username.placeholder": "vashe_imya",
+  "acct.username.onceOnly": "Имя пользователя можно изменить только один раз. Выбирайте внимательно.",
   "acct.theme.updated": "Тема успешно обновлена",
   "acct.theme.failed": "Не удалось обновить тему",
   "acct.theme.title": "Тема оформления",

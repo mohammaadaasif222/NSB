@@ -71,6 +71,7 @@ const ChangeUsernameModal: FC<Props> = ({ currentUsername, onClose, onSaved }) =
         error={error}
         placeholder={t('acct.username.placeholder')}
       />
+      <p className="text-sm leading-6 text-[#9da2b4]">{t('acct.username.onceOnly')}</p>
     </ProfileModalShell>
   );
 };
