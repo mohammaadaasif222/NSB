@@ -941,7 +941,7 @@
   "rewards.col.cashback": "الاسترداد النقدي",
   "rewards.currentTier": "الحالي",
   "rewards.tiersEmpty": "لم يتم إعداد مستويات VIP بعد.",
-  "lobby.hero.title": "هل أنت مستعد لتجربة حظك",
+  "lobby.hero.title": "هل أنت مستعد لتجربة حظك؟",
   "lobby.hero.dialCode": "رمز الاتصال الدولي",
   "lobby.hero.continueWith": "المتابعة باستخدام {method}",
   "lobby.hero.continueWithEmail": "المتابعة بالبريد الإلكتروني",

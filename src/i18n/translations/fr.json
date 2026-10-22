@@ -941,7 +941,7 @@
   "rewards.col.cashback": "Cashback",
   "rewards.currentTier": "Actuel",
   "rewards.tiersEmpty": "Aucun niveau VIP n'a encore été configuré.",
-  "lobby.hero.title": "PRÊT À TENTER TA CHANCE",
+  "lobby.hero.title": "Prêt à tenter ta chance ?",
   "lobby.hero.dialCode": "Indicatif téléphonique du pays",
   "lobby.hero.continueWith": "Continuer avec {method}",
   "lobby.hero.continueWithEmail": "Continuer avec l'e-mail",
