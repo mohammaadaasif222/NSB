@@ -130,6 +130,7 @@ const Lobby: FC<Props> = ({
       shelves={shelves}
       basePath={basePath}
       controls={controls}
+      providers={providers.map((p) => p.name).sort((a, b) => a.localeCompare(b))}
       {...(casino
         ? {
             // The casino design's shelves, with the providers and tournaments

@@ -2,17 +2,12 @@ import { useEffect, useMemo, useRef, useState, type FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
-import { fetchCatalogue, gameMatches } from '@/services/catalogue';
+import { MIN_SEARCH_LENGTH, gameMatches, searchCatalogue } from '@/services/catalogue';
 import { gameHref } from '@/constants/games';
 import { CloseIcon, SearchIcon } from '@/components/icons';
 import type { Game } from '@/types';
 
-/**
- * Catalogue search, reached from the magnifier in the top bar.
- *
- * The catalogue is pulled once when the modal opens and filtered in the browser
- * — see fetchCatalogue for why the matching cannot happen server-side.
- */
+const SEARCH_DELAY_MS = 250;
 
 const GameRow: FC<{ game: Game; onPick: () => void; newLabel: string }> = ({
   game,
@@ -46,6 +41,7 @@ const GameRow: FC<{ game: Game; onPick: () => void; newLabel: string }> = ({
 const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation();
   const [games, setGames] = useState<Game[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [query, setQuery] = useState('');
@@ -65,36 +61,51 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
-  useEffect(() => {
-    let active = true;
+  const trimmed = query.trim();
+  const term = trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '';
 
-    fetchCatalogue()
-      .then((all) => {
-        if (active) {
-          setGames(all);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setFailed(true);
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false);
-        }
-      });
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setFailed(false);
+
+    const timer = setTimeout(
+      () => {
+        searchCatalogue(term, controller.signal)
+          .then((page) => {
+            if (!controller.signal.aborted) {
+              setGames(page.games);
+              setTotal(page.total);
+            }
+          })
+          .catch(() => {
+            if (!controller.signal.aborted) {
+              setFailed(true);
+            }
+          })
+          .finally(() => {
+            if (!controller.signal.aborted) {
+              setLoading(false);
+            }
+          });
+      },
+      term ? SEARCH_DELAY_MS : 0
+    );
 
     return () => {
-      active = false;
+      clearTimeout(timer);
+      controller.abort();
     };
-  }, []);
+  }, [term]);
 
-  const trimmed = query.trim().toLowerCase();
   const results = useMemo(
-    () => (trimmed ? games.filter((game) => gameMatches(game, trimmed)) : games),
-    [games, trimmed]
+    () =>
+      !trimmed || (term && !loading)
+        ? games
+        : games.filter((game) => gameMatches(game, trimmed.toLowerCase())),
+    [games, term, trimmed, loading]
   );
+  const count = term ? total : results.length;
 
   return (
     <div
@@ -133,7 +144,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar p-2">
-          {loading && (
+          {loading && results.length === 0 && (
             <p className="px-2 py-8 text-center text-xs text-white/40">{t('search.loading')}</p>
           )}
 
@@ -147,7 +158,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
             </p>
           )}
 
-          {!loading && !failed && results.length > 0 && (
+          {!failed && results.length > 0 && (
             <ul>
               {results.map((game) => (
                 <GameRow key={game.id} game={game} onPick={onClose} newLabel={t('game.new')} />
@@ -156,9 +167,9 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
           )}
         </div>
 
-        {!loading && !failed && results.length > 0 && (
+        {!failed && results.length > 0 && (
           <p className="border-t border-white/[0.08] px-4 py-2 text-[11px] text-white/40">
-            {t('dash.gamesCount', { count: results.length })}
+            {t('dash.gamesCount', { count })}
           </p>
         )}
       </div>

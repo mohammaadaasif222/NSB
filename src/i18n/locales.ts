@@ -633,6 +633,7 @@ const coreEn = {
   'browse.filterNew': 'New only',
   'browse.results': 'Results',
   'browse.clear': 'Clear filters',
+  'browse.loadMore': 'Load more games',
 
   // Account area: the left nav and its sections
   'profile.account': 'Account',
