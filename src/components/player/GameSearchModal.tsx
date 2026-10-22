@@ -131,7 +131,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('search.placeholder')}
             aria-label={t('search.title')}
-            className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+            className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35 [&::-webkit-search-cancel-button]:hidden"
           />
           <button
             type="button"

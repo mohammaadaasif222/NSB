@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
+import type { GetServerSideProps } from 'next';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
@@ -15,9 +16,14 @@ import {
   PROMOTIONS_PAGE_SIZE,
   type PromotionItem,
 } from '@/services/promotions';
+import { fetchPromotionsPageServer } from '@/services/promotions.server';
+import { markUnavailable } from '@/utils/unavailable.server';
 
+interface Props {
+  initial: { items: PromotionItem[]; page: number; totalPages: number } | null;
+}
 
-const PromotionsPage: FC = () => {
+const PromotionsPage: FC<Props> = ({ initial }) => {
   const { t } = useTranslation();
   const { promotions: promotionsOn, promotion_filters: filters } = usePlatformFeatures();
   const [chosenCategory, setCategory] = useState<PromoCategory>('all');
@@ -37,10 +43,11 @@ const PromotionsPage: FC = () => {
   // Both tabs, or both categories, switched off leaves nothing to show.
   const available = promotionsOn && statuses.length > 0 && categories.length > 0;
 
-  const [items, setItems] = useState<PromotionItem[]>([]);
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<PromotionItem[]>(initial?.items ?? []);
+  const [page, setPage] = useState(initial?.page ?? 0);
+  const [totalPages, setTotalPages] = useState(initial?.totalPages ?? 0);
+  const [loading, setLoading] = useState(!initial);
+  const serverRendered = useRef(!!initial);
   const [failed, setFailed] = useState(false);
 
   // Bumped on every new query so a slow answer to an old filter cannot land
@@ -79,6 +86,12 @@ const PromotionsPage: FC = () => {
   );
 
   useEffect(() => {
+    if (serverRendered.current) {
+      serverRendered.current = false;
+      if (available && status === 'live' && category === 'all') {
+        return;
+      }
+    }
     setPage(0);
     setTotalPages(0);
     if (!available) {
@@ -87,7 +100,7 @@ const PromotionsPage: FC = () => {
       return;
     }
     void load(1, true);
-  }, [load, available]);
+  }, [load, available, status, category]);
 
   const hasMore = page > 0 && page < totalPages;
 
@@ -157,6 +170,29 @@ const PromotionsPage: FC = () => {
       </div>
     </PlayerLayout>
   );
+};
+
+export const getServerSideProps: GetServerSideProps<Props> = async ({ req, res }) => {
+  try {
+    const result = await fetchPromotionsPageServer({
+      status: 'live',
+      page: 1,
+      limit: PROMOTIONS_PAGE_SIZE,
+    });
+    return {
+      props: {
+        initial: {
+          items: result.data,
+          page: result.pagination?.page ?? 1,
+          totalPages: result.pagination?.totalPages ?? 0,
+        },
+      },
+    };
+  } catch (error) {
+    console.error('[promotions] list fetch failed:', error instanceof Error ? error.message : error);
+    markUnavailable({ req, res });
+    return { props: { initial: null } };
+  }
 };
 
 export default PromotionsPage;

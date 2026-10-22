@@ -413,6 +413,7 @@ const coreEn = {
   'role.player': 'Player',
   'role.vip': 'VIP Player',
   'dash.categories': 'Categories',
+  'dash.casinoHeading': 'Online Casino Games',
   'dash.gamesCount': '{count} games',
   'dash.viewAll': 'View All',
   'dash.online': '{count} Online',

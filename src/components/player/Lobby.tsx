@@ -19,7 +19,8 @@ import SiteFooter from '@/components/player/SiteFooter';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import type { LobbyProps } from '@/services/lobby.server';
-import Seo, { type SeoProps } from '@/components/seo/Seo';
+import Seo, { type JsonLd, type SeoProps } from '@/components/seo/Seo';
+import type { FaqItem } from '@/services/faqs';
 
 interface Props extends LobbyProps {
   seo: SeoProps;
@@ -54,6 +55,16 @@ interface Props extends LobbyProps {
  */
 const FIRST_SCREEN_FIT =
   'lg:[--uw:min(1px,calc(100vw/1920))] lg:[--fold-top:max(calc(66px+var(--uw)*102),calc(10px+var(--uw)*172))] lg:[--u:min(var(--uw),max(calc((100vh-8px-var(--fold-top))/937),calc(var(--uw)*0.65)))] lg:[--tf:clamp(9px,calc(var(--u)*11),11px)] lg:[--crash-h:clamp(calc(var(--u)*498),calc(100vh-8px-var(--fold-top)-var(--u)*439),calc(var(--u)*586))]';
+
+const faqJsonLd = (faqs: FaqItem[]): JsonLd => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+  })),
+});
 
 /** The signed-in lobby's sports row, after Live Casino. */
 const PLAYER_INSERTS: readonly ShelfInsert[] = [
@@ -92,8 +103,8 @@ const CASINO_INSERTS = (providerRow: ReactNode): readonly ShelfInsert[] => [
 const Lobby: FC<Props> = ({
   shelves,
   providers,
-  query,
   catalogueFailed,
+  faqs,
   seo,
   basePath,
   variant,
@@ -107,17 +118,11 @@ const Lobby: FC<Props> = ({
     ...shelves.filter((s) => s.key !== 'new').flatMap((s) => s.games),
   ];
   const casino = variant === 'casino';
-  // Signed out, the home lobby is the shelves alone, so a provider plate
-  // opens /casino, which has the browser controls to show and clear it.
+  const jsonLd =
+    !casino && faqs.length > 0 ? [...[seo.jsonLd ?? []].flat(), faqJsonLd(faqs)] : seo.jsonLd;
   const controls = player || casino;
 
-  const providerRow = (
-    <ProviderRow
-      providers={providers}
-      basePath={controls ? basePath : '/casino'}
-      query={controls ? query : {}}
-    />
-  );
+  const providerRow = <ProviderRow providers={providers} />;
 
   const unavailable = catalogueFailed && (
     <p role="status" className="rl-glass rounded-2xl px-4 py-3 text-sm text-white/55">
@@ -151,7 +156,7 @@ const Lobby: FC<Props> = ({
 
   return (
     <PlayerLayout backdrop={player ? undefined : <LandingBackdrop />}>
-      <Seo {...seo} />
+      <Seo {...seo} jsonLd={jsonLd} />
 
       {/* The design's 1548px content column, centred in the space beside the
           rail; `--u` (set by PlayerLayout) scales it on a narrower desktop. */}
@@ -160,6 +165,7 @@ const Lobby: FC<Props> = ({
           // Winners (signed in), banner and browser, 30px apart on a phone
           // and 26px on desktop — the browser's own rhythm.
           <div className="space-y-[30px] pt-1 lg:space-y-[calc(var(--u)*26)] lg:pt-0">
+            <h1 className="sr-only">{t('dash.casinoHeading')}</h1>
             {player && <WinnersStrip />}
             <LobbyBanner />
             {unavailable}
@@ -194,7 +200,7 @@ const Lobby: FC<Props> = ({
         {!player && !casino && <SportsRow />}
         {!casino && <StreamersRow />}
         <RecentWinners games={winnerGames} tabs={player || casino ? 'player' : 'landing'} />
-        <FaqAccordion />
+        <FaqAccordion items={faqs} />
         <SiteFooter />
       </div>
     </PlayerLayout>

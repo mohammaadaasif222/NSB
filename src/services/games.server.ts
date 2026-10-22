@@ -135,12 +135,16 @@ export async function fetchHomeShelves(
  * the whole render over.
  */
 export async function fetchLobbyProviders(): Promise<LobbyProvider[]> {
+  return (await fetchProviders()) ?? [];
+}
+
+export async function fetchProviders(): Promise<LobbyProvider[] | null> {
   try {
     const data = await getJson<LobbyProvider[]>('/game-providers');
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? data : null;
   } catch (error) {
     logFailure('Providers fetch', error);
-    return [];
+    return null;
   }
 }
 

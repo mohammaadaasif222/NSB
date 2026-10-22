@@ -10,6 +10,7 @@ export interface ShelfListQuery {
   /** A word within the game's genre, matched case-insensitively. */
   genre?: string;
   buy_feature?: boolean;
+  provider?: string;
 }
 
 /**
@@ -116,6 +117,11 @@ export const categoryForEnum = (category: GameCategory): GameShelfDef =>
 /** Path of the listing page for a shelf. */
 export const categoryHref = (key: GameShelfKey, page = 1): string =>
   page > 1 ? `/games/${key}?page=${page}` : `/games/${key}`;
+
+export const PROVIDERS_PATH = '/providers';
+
+export const providerHref = (slug: string, page = 1): string =>
+  `${PROVIDERS_PATH}/${encodeURIComponent(slug)}${page > 1 ? `?page=${page}` : ''}`;
 
 /** Path of a game's detail page. */
 export const gameHref = (slug: string): string => `/game/${encodeURIComponent(slug)}`;
