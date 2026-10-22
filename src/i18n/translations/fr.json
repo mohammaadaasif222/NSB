@@ -378,8 +378,6 @@
   "notFound.body1": "La page que vous cherchez n'existe pas ou a été déplacée",
   "notFound.body2": "Essayez de revenir à notre page d'accueil.",
   "notFound.cta": "Aller à l'accueil",
-  "dice.demo": "Démo",
-  "dice.demoNotice": "Jeu en démo : aucun solde n'est utilisé et rien n'est versé. Chaque lancer compte tout de même comme une mise pour votre niveau VIP, votre rakeback et votre cashback.",
   "dice.odds": "RTP {rtp} % · avantage de la maison {edge} %",
   "dice.manual": "Manuel",
   "dice.auto": "Auto",

@@ -378,8 +378,6 @@
   "notFound.body1": "La pagina che stai cercando non esiste o è stata spostata",
   "notFound.body2": "Prova a tornare alla nostra pagina iniziale.",
   "notFound.cta": "Vai alla pagina iniziale",
-  "dice.demo": "Demo",
-  "dice.demoNotice": "Gioco dimostrativo: non viene usato alcun saldo e non viene pagato nulla. Ogni lancio conta comunque come puntata per il tuo livello VIP, il rakeback e il cashback.",
   "dice.odds": "RTP {rtp}% · vantaggio del banco {edge}%",
   "dice.manual": "Manuale",
   "dice.auto": "Auto",

@@ -378,8 +378,6 @@
   "notFound.body1": "La página que buscas no existe o se ha movido",
   "notFound.body2": "Prueba a volver a nuestra página de inicio.",
   "notFound.cta": "Ir a la página de inicio",
-  "dice.demo": "Demo",
-  "dice.demoNotice": "Juego de demostración: no se usa saldo y no se paga nada. Aun así, cada tirada cuenta como apuesta para tu nivel VIP, rakeback y cashback.",
   "dice.odds": "RTP {rtp}% · ventaja de la casa {edge}%",
   "dice.manual": "Manual",
   "dice.auto": "Auto",

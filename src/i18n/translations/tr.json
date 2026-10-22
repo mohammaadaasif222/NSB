@@ -378,8 +378,6 @@
   "notFound.body1": "Ulaşmaya çalıştığınız sayfa mevcut değil veya taşınmış",
   "notFound.body2": "Ana sayfamıza dönmeyi deneyin.",
   "notFound.cta": "Ana sayfaya git",
-  "dice.demo": "Demo",
-  "dice.demoNotice": "Demo oyun: bakiye kullanılmaz ve ödeme yapılmaz. Yine de her atış VIP seviyeniz, rakeback ve nakit iade için bahis olarak sayılır.",
   "dice.odds": "RTP %{rtp} · kasa avantajı %{edge}",
   "dice.manual": "Manuel",
   "dice.auto": "Otomatik",

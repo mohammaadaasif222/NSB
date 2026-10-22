@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import apiService from '@/services/api';
 import { useTranslation } from '@/context/I18nContext';
 import { REWARDS_REFRESH_EVENT } from '@/constants/events';
+import { requestBalanceRefresh } from '@/utils/balanceEvents';
 import {
   DICE_AUTO_DELAY_MS,
   DICE_DEFAULT_BET,
@@ -63,8 +64,6 @@ export interface UseDiceGame {
   /** Newest first. */
   history: DiceRoll[];
   session: DiceSession;
-  /** Where the last roll left the player's rewards. */
-  rewards: DiceRoll['rewards'] | null;
   auto: DiceAutoSettings;
   setAmountText: (text: string) => void;
   commitAmount: () => void;
@@ -106,10 +105,10 @@ const sleep = (ms: number): Promise<void> =>
   });
 
 /**
- * State and actions for the demo Dice board.
+ * State and actions for the Dice board.
  *
- * Every roll goes to the server, which picks the number and records the bet as a
- * wager; nothing here decides an outcome. The board only mirrors the maths so
+ * Every roll goes to the server, which picks the number and settles the bet
+ * against the player's balance; nothing here decides an outcome. The board only mirrors the maths so
  * the multiplier and profit shown are what the server will use.
  */
 export const useDiceGame = (config: DiceConfig): UseDiceGame => {
@@ -143,7 +142,6 @@ export const useDiceGame = (config: DiceConfig): UseDiceGame => {
   const [autoLeft, setAutoLeft] = useState<number | null>(null);
   const [history, setHistory] = useState<DiceRoll[]>([]);
   const [session, setSession] = useState<DiceSession>(EMPTY_SESSION);
-  const [rewards, setRewards] = useState<DiceRoll['rewards'] | null>(null);
   const [auto, setAuto] = useState<DiceAutoSettings>(DEFAULT_AUTO);
 
   /** Set synchronously, so a double-click cannot start two rolls before state catches up. */
@@ -174,13 +172,14 @@ export const useDiceGame = (config: DiceConfig): UseDiceGame => {
   const maxTarget = condition === 'OVER' ? round2(100 - minChance) : maxChance;
 
   /**
-   * Tell the rewards tray to refetch — at once, or at the end of the current
-   * window, so an autobet does not refetch the summary on every roll.
+   * Tell the wallet chip and the rewards tray to refetch — at once, or at the
+   * end of the current window, so an autobet does not refetch on every roll.
    */
-  const refreshRewards = useCallback((): void => {
+  const refreshAccount = useCallback((): void => {
     const fire = (): void => {
       refreshTimerRef.current = null;
       lastRefreshRef.current = Date.now();
+      requestBalanceRefresh();
       window.dispatchEvent(new Event(REWARDS_REFRESH_EVENT));
     };
 
@@ -210,9 +209,8 @@ export const useDiceGame = (config: DiceConfig): UseDiceGame => {
               wageredCents: current.wageredCents + toCents(result.amount),
               profitCents: current.profitCents + toCents(result.profit),
             }));
-            setRewards(result.rewards);
           }
-          refreshRewards();
+          refreshAccount();
           return result;
         }
         toast.error(res?.message || tRef.current('dice.rollFailed'));
@@ -225,7 +223,7 @@ export const useDiceGame = (config: DiceConfig): UseDiceGame => {
       }
       return null;
     },
-    [refreshRewards]
+    [refreshAccount]
   );
 
   const roll = useCallback(async (): Promise<void> => {
@@ -369,7 +367,6 @@ export const useDiceGame = (config: DiceConfig): UseDiceGame => {
     autoLeft,
     history,
     session,
-    rewards,
     auto,
     setAmountText,
     commitAmount,

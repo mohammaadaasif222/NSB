@@ -34,7 +34,7 @@ interface Props {
   /** True when the API was unreachable (as opposed to the game not existing). */
   failed: boolean;
   /**
-   * Demo Dice settings, for the Dice game only. When enabled the page plays
+   * Dice settings, for the Dice game only. When enabled the page plays
    * the game in place of the details view.
    */
   dice: DiceConfig | null;
@@ -251,7 +251,7 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
               </dl>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <PlayActions game={game} />
+                <PlayActions game={dice ? { ...game, launchable: false } : game} />
                 {def && (
                   <Link href={categoryHref(def.key)} className={SECONDARY}>
                     {t('game.moreFrom', { category: categoryTitle ?? '' })}
