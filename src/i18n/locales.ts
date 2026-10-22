@@ -619,6 +619,11 @@ const coreEn = {
   'search.popular': 'Popular right now',
   'search.minChars': 'Type at least {count} characters',
   'search.loadMore': 'Load more',
+  'search.kind.crash': 'Crash',
+  'search.kind.wheel': 'Wheel',
+  'search.kind.scratchCards': 'Scratch Cards',
+  'search.kind.hilo': 'Hi-Lo',
+  'search.kind.bingo': 'Bingo',
 
   // Placeholder pages for destinations that are not built yet
   'soon.heading': 'Coming soon',

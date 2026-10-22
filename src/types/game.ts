@@ -42,7 +42,15 @@ export type GameCollection =
   | 'lightning'
   | 'poker'
   | 'crash'
-  | 'instant-wins';
+  | 'instant-wins'
+  | 'mines'
+  | 'plinko'
+  | 'dice'
+  | 'wheel'
+  | 'scratch-cards'
+  | 'keno'
+  | 'hilo'
+  | 'bingo';
 
 export type GameType = 'STANDARD' | 'LIVE' | 'LOBBY';
 

@@ -1895,5 +1895,10 @@
   "lobby.rail.keno": "Keno",
   "lobby.rail.mines": "Mines",
   "lobby.rail.limbo": "Limbo",
-  "lobby.rail.dice": "Dice"
+  "lobby.rail.dice": "Dice",
+  "search.kind.crash": "Crash",
+  "search.kind.wheel": "Ruota",
+  "search.kind.scratchCards": "Gratta e vinci",
+  "search.kind.hilo": "Hi-Lo",
+  "search.kind.bingo": "Bingo"
 }

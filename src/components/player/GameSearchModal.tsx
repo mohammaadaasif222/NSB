@@ -17,17 +17,54 @@ import type { Game } from '@/types';
  */
 
 /**
- * The tabs along the top. The Casino Manager sheet asks for an Instant Wins
- * tab here (instead of an Instant Wins page); more tabs are one entry each.
+ * The tabs along the top, as the Casino Manager chose them. Instant Wins has
+ * no page of its own; it lives here, with a filter by kind.
  */
-const SEARCH_TABS: { key: string; labelKey: TranslationKey; list: ShelfListQuery }[] = [
+type SearchOption = { key: string; labelKey: TranslationKey; list: ShelfListQuery };
+
+const SEARCH_TABS: SearchOption[] = [
   { key: 'all', labelKey: 'search.tabAll', list: {} },
+  { key: 'slots', labelKey: 'dash.slots', list: { category: 'SLOTS' } },
+  { key: 'live', labelKey: 'dash.liveCasino', list: { type: 'LIVE' } },
+  { key: 'originals', labelKey: 'dash.originals', list: { category: 'ORIGINALS' } },
   {
     key: 'instant-wins',
     labelKey: 'lobby.chips.instantWins',
     list: { collection: 'instant-wins' },
   },
 ];
+
+/** The Instant Wins tab's filter, in the Casino Manager's order. */
+const INSTANT_KINDS: SearchOption[] = [
+  { key: 'all', labelKey: 'search.tabAll', list: { collection: 'instant-wins' } },
+  { key: 'crash', labelKey: 'search.kind.crash', list: { collection: 'crash', type: 'STANDARD' } },
+  { key: 'mines', labelKey: 'lobby.rail.mines', list: { collection: 'mines' } },
+  {
+    key: 'blackjack',
+    labelKey: 'lobby.chips.blackjack',
+    list: { collection: 'blackjack', type: 'STANDARD' },
+  },
+  { key: 'plinko', labelKey: 'lobby.rail.plinko', list: { collection: 'plinko' } },
+  {
+    key: 'roulette',
+    labelKey: 'lobby.chips.roulette',
+    list: { collection: 'roulette', type: 'STANDARD' },
+  },
+  { key: 'dice', labelKey: 'lobby.rail.dice', list: { collection: 'dice' } },
+  { key: 'wheel', labelKey: 'search.kind.wheel', list: { collection: 'wheel' } },
+  {
+    key: 'scratch-cards',
+    labelKey: 'search.kind.scratchCards',
+    list: { collection: 'scratch-cards' },
+  },
+  { key: 'keno', labelKey: 'lobby.rail.keno', list: { collection: 'keno' } },
+  { key: 'hilo', labelKey: 'search.kind.hilo', list: { collection: 'hilo' } },
+  { key: 'bingo', labelKey: 'search.kind.bingo', list: { collection: 'bingo' } },
+];
+
+const PILL = 'flex-shrink-0 rounded-full px-3 py-1 text-[12px] font-medium transition-colors';
+const PILL_ON = 'bg-[#ffe779]/15 text-[#ffe779]';
+const PILL_OFF = 'text-white/55 hover:bg-white/5 hover:text-white';
 
 /** Waits this long after the last keystroke before asking the server. */
 const TYPING_PAUSE_MS = 250;
@@ -64,6 +101,7 @@ const GameRow: FC<{ game: Game; onPick: () => void; newLabel: string }> = ({
 const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation();
   const [tab, setTab] = useState(SEARCH_TABS[0].key);
+  const [kind, setKind] = useState(INSTANT_KINDS[0].key);
   const [query, setQuery] = useState('');
   const [games, setGames] = useState<Game[]>([]);
   const [pagination, setPagination] = useState<Omit<CataloguePage, 'games'> | null>(null);
@@ -76,7 +114,11 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const term = query.trim();
   const tooShort = term.length > 0 && term.length < MIN_SEARCH_LENGTH;
-  const list = SEARCH_TABS.find((x) => x.key === tab)?.list ?? {};
+  const onInstant = tab === 'instant-wins';
+  const list =
+    (onInstant
+      ? INSTANT_KINDS.find((x) => x.key === kind)?.list
+      : SEARCH_TABS.find((x) => x.key === tab)?.list) ?? {};
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -98,7 +140,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
       return undefined;
     }
     const controller = new AbortController();
-    const key = `${tab}:${term}`;
+    const key = `${tab}:${kind}:${term}`;
     setLoading(true);
     setFailed(false);
     const timer = window.setTimeout(
@@ -122,7 +164,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
     };
     // `list` follows `tab`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [term, tab, tooShort]);
+  }, [term, tab, kind, tooShort]);
 
   const loadMore = (): void => {
     if (!pagination || loadingMore || loading) return;
@@ -160,7 +202,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
         onClick={(e) => e.stopPropagation()}
         className="rl-menu flex max-h-full w-full max-w-lg flex-col overflow-hidden rounded-2xl"
       >
-        <div className="flex items-center gap-2 border-b border-white/[0.08] p-3">
+        <div className="flex flex-shrink-0 items-center gap-2 border-b border-white/[0.08] p-3">
           <span className="flex-shrink-0 ps-1 text-white/40" aria-hidden="true">
             <SearchIcon size={17} />
           </span>
@@ -186,7 +228,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
         <div
           role="tablist"
           aria-label={t('search.title')}
-          className="flex gap-1.5 border-b border-white/[0.08] px-3 py-2"
+          className="rl-shelf flex flex-shrink-0 gap-1.5 border-b border-white/[0.08] px-3 py-2"
         >
           {SEARCH_TABS.map((x) => {
             const on = x.key === tab;
@@ -196,18 +238,44 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
                 type="button"
                 role="tab"
                 aria-selected={on}
-                onClick={() => setTab(x.key)}
-                className={`rounded-full px-3 py-1 text-[12px] font-medium transition-colors ${
-                  on
-                    ? 'bg-[#ffe779]/15 text-[#ffe779]'
-                    : 'text-white/55 hover:bg-white/5 hover:text-white'
-                }`}
+                onClick={() => {
+                  setTab(x.key);
+                  setKind(INSTANT_KINDS[0].key);
+                }}
+                className={`${PILL} ${on ? PILL_ON : PILL_OFF}`}
               >
                 {t(x.labelKey)}
               </button>
             );
           })}
         </div>
+
+        {/* Instant Wins narrows further by kind. */}
+        {onInstant && (
+          <div
+            role="radiogroup"
+            aria-label={t('lobby.chips.instantWins')}
+            className="rl-shelf flex flex-shrink-0 gap-1.5 border-b border-white/[0.08] px-3 py-2"
+          >
+            {INSTANT_KINDS.map((x) => {
+              const on = x.key === kind;
+              return (
+                <button
+                  key={x.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setKind(x.key)}
+                  className={`${PILL} border ${
+                    on ? 'border-[#ffe779]/40 text-[#ffe779]' : 'border-white/10 ' + PILL_OFF
+                  }`}
+                >
+                  {t(x.labelKey)}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar p-2">
           {tooShort && (
