@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
+import { fieldErrorMessage } from '@/lib/apiError';
 import { loginWithPassword } from '@/services/auth';
 import { analytics, failureReason, type AuthMethod } from '@/services/analytics';
 import { isPlatformRole } from '@/constants/roles';
@@ -112,7 +113,12 @@ export const useLoginForm = ({
     setInvalid(null);
     setSubmitting(true);
     try {
-      const res = await run((headers) => loginWithPassword(identifierFor(method, values), values.password, headers));
+      const res = await run((headers) => loginWithPassword(
+          identifierFor(method, values),
+          values.password,
+          headers,
+          method === 'mobile' ? values.dialCode : undefined
+        ));
       const token = res?.data?.token;
 
       // Password accepted, code owed: the server has sent it and holds the
@@ -161,7 +167,8 @@ export const useLoginForm = ({
       if (isStepUpCancelled(err)) return;
       const apiErr = err as ApiError;
       analytics.auth.loginFailed(tracked, failureReason(apiErr));
-      toast.error(apiErr?.message || t('loginModal.failed'));
+      // A 422 names the exact problem in `errors` (e.g. mobile vs country code); show that, not "Validation failed".
+      toast.error(fieldErrorMessage(err) || apiErr?.message || t('loginModal.failed'));
     } finally {
       setSubmitting(false);
     }

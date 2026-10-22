@@ -28,10 +28,15 @@ export const resendSignupOtp = (identifier: string) =>
   apiService.post('/auth/resend-otp', { identifier });
 
 
-export const loginWithPassword = async (identifier: string, password: string, headers?: Record<string, string>) =>
+export const loginWithPassword = async (
+  identifier: string,
+  password: string,
+  headers?: Record<string, string>,
+  countryCode?: string
+) =>
   apiService.post<Partial<LoginResponseData> & Partial<TwoFactorChallengeData>>(
     '/auth/user/login',
-    { identifier, password: await encryptPassword(password) },
+    { identifier, password: await encryptPassword(password), ...(countryCode ? { country_code: countryCode } : {}) },
     { headers }
   );
 
@@ -42,8 +47,8 @@ export const verifyLoginOtp = (challenge: string, code: string, headers?: Record
 export const resendLoginOtp = (challenge: string) =>
   apiService.post('/auth/login/resend-otp', { challenge });
 
-export const requestPasswordReset = (identifier: string) =>
-  apiService.post('/auth/forgot-password', { identifier });
+export const requestPasswordReset = (identifier: string, countryCode?: string) =>
+  apiService.post('/auth/forgot-password', { identifier, ...(countryCode ? { country_code: countryCode } : {}) });
 
 
 export const resetPassword = (identifier: string, code: string, newPassword: string) =>
