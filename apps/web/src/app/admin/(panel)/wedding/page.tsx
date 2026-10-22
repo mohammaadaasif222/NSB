@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ExternalLink, Pencil, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { type AdminCategory, LISTING_STATUSES, type ListingStatus, type ListingSummary, type Paginated } from "@nsb/shared";
-import { ListingThumb } from "@/components/admin/listing-thumb";
 import { adminApi, isUuid } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
-import { DeleteListingButton } from "../listings/delete-listing-button";
-import { ListingStatusButton } from "../listings/listing-status-button";
 import { WeddingSlots } from "./slots";
+import { WeddingListingsTable } from "./listings-table";
 
 export const metadata: Metadata = { title: "Wedding" };
 
@@ -123,69 +120,12 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
         )}
       </div>
 
-      <div className="a-tw">
-        <table className="a-t">
-          <thead>
-            <tr>
-              <th scope="col">Listing</th>
-              <th scope="col">Sub-category</th>
-              <th scope="col">Location</th>
-              <th scope="col">Added</th>
-              <th scope="col">Status</th>
-              <th scope="col">Featured</th>
-              <th scope="col">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {listings.items.length ? (
-              listings.items.map((l) => (
-                <tr key={l.id}>
-                  <td>
-                    <div className="a-nm">
-                      <ListingThumb name={l.name} imageUrl={l.coverImageUrl} />
-                      <div className="min-w-0">
-                        <Link href={`/admin/listings/${l.id}`} className="hover:text-(--admin-accent)">
-                          <b>{l.name}</b>
-                        </Link>
-                        <small>{l.locality ?? l.shortDescription}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{l.category.name}</td>
-                  <td>{l.area}</td>
-                  <td className="whitespace-nowrap text-zinc-500">{formatDateTime(l.createdAt)}</td>
-                  <td>
-                    <span className={`a-pl ${l.status}`}>{STATUS_LABEL[l.status]}</span>
-                  </td>
-                  <td>{l.isFeatured ? <span className="a-pl new">Featured</span> : <span className="text-zinc-500">—</span>}</td>
-                  <td>
-                    <div className="a-ac">
-                      {l.status === "live" && l.category.id !== wedding?.id && (
-                        <a href={`/wedding/${l.category.slug}/${l.slug}`} target="_blank" rel="noreferrer" title="View on site" aria-label={`View ${l.name} on the site`}>
-                          <ExternalLink size={15} aria-hidden />
-                        </a>
-                      )}
-                      <Link href={`/admin/listings/${l.id}`} title="Edit" aria-label={`Edit ${l.name}`}>
-                        <Pencil size={15} aria-hidden />
-                      </Link>
-                      <ListingStatusButton id={l.id} name={l.name} status={l.status} />
-                      <DeleteListingButton id={l.id} name={l.name} />
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="py-10 text-center text-zinc-500">
-                  {q || status ? "No listings match these filters." : "No listings here yet."}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <WeddingListingsTable
+        key={JSON.stringify({ sub: sub?.id, q, status, page })}
+        listings={listings.items}
+        weddingId={wedding?.id}
+        empty={q || status ? "No listings match these filters." : "No listings here yet."}
+      />
 
       <nav className="a-pg" aria-label="Pagination">
         <span>

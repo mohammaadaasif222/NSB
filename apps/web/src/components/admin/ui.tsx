@@ -15,6 +15,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
 
 export interface Column<T> {
   header: string;
+  headerContent?: ReactNode;
   cell: (row: T, index: number) => ReactNode;
   className?: string;
 }
@@ -54,7 +55,7 @@ export function DataTable<T>({
           <tr>
             {columns.map((c) => (
               <th key={c.header} scope="col" className={`px-3.5 py-3 font-bold whitespace-nowrap ${c.className ?? ""}`}>
-                {c.header}
+                {c.headerContent ?? c.header}
               </th>
             ))}
           </tr>

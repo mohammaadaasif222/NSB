@@ -19,20 +19,36 @@
   position: sticky;
   top: 0;
   height: 100dvh;
-  background: #fff;
+  background: var(--admin-surface);
   border-right: 1px solid var(--admin-line);
   display: flex;
   flex-direction: column;
   padding: 16px 12px;
   z-index: 70;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.a-sb::-webkit-scrollbar {
+  width: 4px;
+}
+.a-sb::-webkit-scrollbar-track {
+  background: transparent;
+}
+.a-sb::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
 }
 .a-sb-logo {
   display: block;
   position: relative;
+  flex: 0 0 auto;
   height: 46px;
   width: 140px;
-  margin: 4px 8px 16px;
+  margin: 8px 8px 12px;
+}
+.admin-panel.a-dark .a-sb-logo img {
+  filter: brightness(0) invert(1);
 }
 .a-nv h6 {
   margin: 16px 12px 6px;
@@ -108,7 +124,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: #fff;
+  background: var(--admin-surface);
   border-bottom: 1px solid var(--admin-line);
   display: flex;
   align-items: center;
@@ -152,7 +168,7 @@
   border: 1px solid var(--admin-line);
   border-radius: 5px;
   padding: 1px 6px;
-  background: #fff;
+  background: var(--admin-surface);
 }
 .a-gs:focus-within {
   border-color: var(--admin-accent);
@@ -162,7 +178,7 @@
   height: 38px;
   border-radius: 10px;
   border: 1px solid var(--admin-line);
-  background: #fff;
+  background: var(--admin-surface);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -182,7 +198,7 @@
   height: 8px;
   background: var(--admin-red);
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--admin-surface);
 }
 .a-av {
   width: 38px;
@@ -201,7 +217,7 @@
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
-  background: #fff;
+  background: var(--admin-surface);
   border: 1px solid var(--admin-line);
   border-radius: 14px;
   box-shadow: 0 24px 50px -20px rgba(15, 23, 42, 0.4);
@@ -271,7 +287,7 @@
   background: var(--admin-accent-soft);
 }
 .a-btn.g {
-  background: #fff;
+  background: var(--admin-surface);
   color: var(--admin-ink);
   border-color: var(--admin-line);
 }
@@ -282,6 +298,58 @@
 .a-btn.s {
   padding: 6px 12px;
   font-size: 13px;
+}
+.a-bulk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--admin-accent);
+  color: #fff;
+}
+.a-bulk-count {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.a-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.a-bulk-actions button {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.a-bulk-actions button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+.a-bulk-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.a-bulk-actions button:first-child {
+  background: #fff;
+  color: var(--admin-accent);
+}
+.a-bulk-actions button:first-child:hover:not(:disabled) {
+  background: var(--admin-accent-soft);
+}
+.a-listing-select {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--admin-accent);
+  cursor: pointer;
 }
 
 /* ---------- page header and cards ---------- */
@@ -303,7 +371,7 @@
   margin-top: 2px;
 }
 .a-card {
-  background: #fff;
+  background: var(--admin-surface);
   border: 1px solid var(--admin-line);
   border-radius: 16px;
   padding: 20px;
@@ -461,11 +529,11 @@ a.a-li:hover b {
 }
 .a-tl .a-gs {
   width: 240px;
-  background: #fff;
+  background: var(--admin-surface);
 }
 .a-sel {
   border: 1px solid var(--admin-line);
-  background: #fff;
+  background: var(--admin-surface);
   border-radius: 10px;
   padding: 8px 10px;
   font-size: 14px;
@@ -476,7 +544,7 @@ a.a-li:hover b {
 }
 .a-chp {
   border: 1px solid var(--admin-line);
-  background: #fff;
+  background: var(--admin-surface);
   border-radius: 999px;
   padding: 6px 14px;
   font-weight: 600;
@@ -500,7 +568,7 @@ a.a-li:hover b {
   overflow-x: auto;
   border: 1px solid var(--admin-line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--admin-surface);
 }
 .a-t {
   width: 100%;
@@ -547,7 +615,7 @@ a.a-li:hover b {
   height: 32px;
   border-radius: 8px;
   border: 1px solid var(--admin-line);
-  background: #fff;
+  background: var(--admin-surface);
   color: var(--admin-muted);
   cursor: pointer;
   display: grid;
@@ -583,7 +651,7 @@ a.a-li:hover b {
   padding: 0 6px;
   border-radius: 8px;
   border: 1px solid var(--admin-line);
-  background: #fff;
+  background: var(--admin-surface);
   font-weight: 600;
   display: grid;
   place-items: center;
@@ -619,7 +687,7 @@ a.a-li:hover b {
   border-radius: 14px;
   padding: 12px;
   margin-bottom: 10px;
-  background: #fff;
+  background: var(--admin-surface);
 }
 .a-hth {
   height: 84px;
@@ -689,7 +757,7 @@ a.a-li:hover b {
   display: block;
   border: 1px solid var(--admin-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--admin-surface);
   padding: 10px 12px;
   transition: border-color 0.15s, transform 0.1s;
 }
@@ -761,7 +829,7 @@ a.a-cell:hover {
   padding: 3px;
 }
 .a-crow-sub .a-seg {
-  background: #fff;
+  background: var(--admin-surface);
 }
 .a-seg span {
   padding: 5px 14px;
@@ -809,7 +877,7 @@ details.a-subs > summary {
 .a-stp button {
   position: relative;
   border: 1px solid var(--admin-line);
-  background: #fff;
+  background: var(--admin-surface);
   border-radius: 999px;
   padding: 7px 16px;
   font-weight: 600;

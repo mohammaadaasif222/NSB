@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Pencil, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { type AdminCategory, LISTING_STATUSES, type ListingStatus, type ListingSummary, type Paginated } from "@nsb/shared";
-import { Badge, DataTable, PageHeader, Pagination } from "@/components/admin/ui";
+import { PageHeader, Pagination } from "@/components/admin/ui";
 import { adminApi, isUuid } from "@/lib/api";
-import { DeleteListingButton } from "./delete-listing-button";
-import { formatDateTime } from "@/lib/format";
 import { ListingFilters, type ListingFilterValues } from "./listing-filters";
+import { ListingsTable } from "./listings-table";
 
 export const metadata: Metadata = { title: "Listings" };
 
@@ -51,10 +50,6 @@ export default async function ListingsPage({ searchParams }: PageProps<"/admin/l
   ]);
 
   const byId = new Map(categories.map((c) => [c.id, c]));
-  const parentName = (categoryId: string) => {
-    const parentId = byId.get(categoryId)?.parentId;
-    return parentId ? byId.get(parentId)?.name : undefined;
-  };
   const pageCount = Math.max(1, Math.ceil(listings.total / pageSize));
   const filtered = Object.values(filters).some(Boolean);
   const pageHref = (p: number) => {
@@ -76,54 +71,18 @@ export default async function ListingsPage({ searchParams }: PageProps<"/admin/l
         }
       />
       <ListingFilters categories={categories} values={filters} pageSize={pageSize} pageSizes={PAGE_SIZES} />
-      <DataTable
-        rows={listings.items}
-        rowKey={(l) => l.id}
+      <ListingsTable
+        key={JSON.stringify({ page, pageSize, filters })}
+        listings={listings.items}
+        parentNames={Object.fromEntries(
+          categories.flatMap((category) => {
+            const parentId = category.parentId;
+            const parent = parentId ? byId.get(parentId) : undefined;
+            return parent ? [[category.id, parent.name]] : [];
+          }),
+        )}
         empty={filtered ? "No listings match these filters." : "No listings yet."}
-        columns={[
-          {
-            header: "Sr. No.",
-            cell: (_, index) => (page - 1) * pageSize + index + 1,
-            className: "w-20",
-          },
-          {
-            header: "Business",
-            cell: (l) => (
-              <Link href={`/admin/listings/${l.id}`} className="font-medium text-zinc-900 hover:underline">
-                {l.name}
-              </Link>
-            ),
-          },
-          {
-            header: "Category",
-            cell: (l) => (
-              <>
-                {l.category.name}
-                {parentName(l.category.id) && <span className="block text-xs text-zinc-500">in {parentName(l.category.id)}</span>}
-              </>
-            ),
-          },
-          { header: "Area", cell: (l) => l.area },
-          {
-            header: "Status",
-            cell: (l) =>
-              l.status === "live" ? <Badge tone="good">Live</Badge> : <Badge>{l.status === "draft" ? "Draft" : "Hidden"}</Badge>,
-          },
-          { header: "Added", cell: (l) => formatDateTime(l.createdAt), className: "whitespace-nowrap text-zinc-600" },
-          { header: "Featured", cell: (l) => (l.isFeatured ? <Badge tone="good">Featured</Badge> : null) },
-          {
-            header: "Actions",
-            className: "w-24 text-right",
-            cell: (l) => (
-              <span className="flex justify-end gap-1">
-                <Link href={`/admin/listings/${l.id}`} aria-label={`Edit ${l.name}`} title="Edit" className="rounded p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">
-                  <Pencil className="size-4" aria-hidden />
-                </Link>
-                <DeleteListingButton id={l.id} name={l.name} />
-              </span>
-            ),
-          },
-        ]}
+        firstRowNumber={(page - 1) * pageSize + 1}
       />
       <Pagination page={page} pageCount={pageCount} href={pageHref} />
     </>

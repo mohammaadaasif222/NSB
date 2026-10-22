@@ -94,8 +94,10 @@ body {
   --admin-accent-hover: #12049e;
   --admin-accent-soft: #eef0ff;
   --admin-ink: #0f172a;
+  --admin-ink-soft: #334155;
   --admin-muted: #64748b;
   --admin-canvas: #f5f6fa;
+  --admin-surface: #fff;
   --admin-line: #e5e7ef;
   --admin-red: #df0709;
   --admin-ok: #15803d;
@@ -117,12 +119,15 @@ body {
 .admin-panel .bg-zinc-900 {
   background-color: var(--admin-accent);
 }
+.admin-panel .bg-white {
+  background-color: var(--admin-surface);
+}
 .admin-panel .text-zinc-900 {
   color: var(--admin-ink);
 }
 .admin-panel .text-zinc-800,
 .admin-panel .text-zinc-700 {
-  color: #334155;
+  color: var(--admin-ink-soft);
 }
 .admin-panel .text-zinc-600,
 .admin-panel .text-zinc-500 {
@@ -158,6 +163,24 @@ body {
 .admin-panel .focus\:ring-zinc-900:focus,
 .admin-panel .peer:focus-visible ~ .peer-focus-visible\:ring-zinc-900 {
   --tw-ring-color: var(--admin-accent);
+}
+
+.admin-panel.a-dark {
+  --admin-accent: #8b7dff;
+  --admin-accent-hover: #7666f2;
+  --admin-accent-soft: #282344;
+  --admin-ink: #f1f5f9;
+  --admin-ink-soft: #cbd5e1;
+  --admin-muted: #94a3b8;
+  --admin-canvas: #111827;
+  --admin-surface: #1e293b;
+  --admin-line: #334155;
+  --admin-ok: #4ade80;
+  --admin-ok-soft: #123524;
+  --admin-warn: #fbbf24;
+  --admin-warn-soft: #422d0d;
+  --admin-error-soft: #451a1a;
+  color-scheme: dark;
 }
 
 /* Admin login fills the screen with no page scrollbar, as in the design; very short screens scroll. */

@@ -3,10 +3,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Bell, Menu, Search } from "lucide-react";
+import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { ArrowUpRight, Bell, Menu, Moon, Search, Sun } from "lucide-react";
 import { AdminNav } from "./admin-nav";
 import { useUnreadEnquiries } from "./unread-enquiries";
+
+const ADMIN_THEME_KEY = "nsb-admin-theme";
+const ADMIN_THEME_EVENT = "nsb-admin-theme-change";
+const subscribeAdminTheme = (onChange: () => void) => {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(ADMIN_THEME_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(ADMIN_THEME_EVENT, onChange);
+  };
+};
+const getAdminTheme = () => window.localStorage.getItem(ADMIN_THEME_KEY) === "dark";
+const getServerAdminTheme = () => false;
 
 /** Top-bar title for the current page. */
 function titleFor(pathname: string) {
@@ -23,6 +36,7 @@ function titleFor(pathname: string) {
 export function AdminShell({ adminName, children }: { adminName: string; children: ReactNode }) {
   const pathname = usePathname();
   const unread = useUnreadEnquiries();
+  const darkMode = useSyncExternalStore(subscribeAdminTheme, getAdminTheme, getServerAdminTheme);
   const [navOpen, setNavOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const search = useRef<HTMLInputElement>(null);
@@ -54,7 +68,7 @@ export function AdminShell({ adminName, children }: { adminName: string; childre
   }, []);
 
   return (
-    <div className={`admin-panel a-app ${navOpen ? "a-nav-open" : ""}`}>
+    <div className={`admin-panel a-app ${navOpen ? "a-nav-open" : ""} ${darkMode ? "a-dark" : ""}`}>
       <div className="a-shade" onClick={() => setNavOpen(false)} aria-hidden />
       <aside className="a-sb">
         <Link href="/admin" className="a-sb-logo" aria-label="NSB Admin home">
@@ -82,6 +96,19 @@ export function AdminShell({ adminName, children }: { adminName: string; childre
             <span>View site</span>
             <ArrowUpRight size={15} aria-hidden />
           </Link>
+          <button
+            type="button"
+            className="a-ib"
+            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            aria-pressed={darkMode}
+            title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            onClick={() => {
+              window.localStorage.setItem(ADMIN_THEME_KEY, darkMode ? "light" : "dark");
+              window.dispatchEvent(new Event(ADMIN_THEME_EVENT));
+            }}
+          >
+            {darkMode ? <Sun size={18} aria-hidden /> : <Moon size={18} aria-hidden />}
+          </button>
           <Link
             href="/admin/enquiries?status=unread"
             className="a-ib"
