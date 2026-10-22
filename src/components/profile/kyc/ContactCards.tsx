@@ -92,7 +92,11 @@ const ContactCards: FC<Props> = ({ me, onChangeEmail }) => {
         title={t('verify.phoneNumber')}
         value={
           <>
-            <span className="min-w-0 truncate">{me.mobile || t('verify.notProvided')}</span>
+            <span className="min-w-0 truncate">
+              {me.mobile
+                ? `${me.country_code ? `+${me.country_code.replace(/\D/g, '')} ` : ''}${me.mobile}`
+                : t('verify.notProvided')}
+            </span>
             {/* No verification flag exists for the number — the tick follows
                 whether one is on file at all, not a confirmed one. */}
             {Boolean(me.mobile) && <VerifiedTick label={t('verify.phoneNumber')} />}

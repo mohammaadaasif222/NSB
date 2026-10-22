@@ -22,6 +22,30 @@ export async function fetchPromotionServer(slug: string): Promise<PromotionItem 
   return body?.data ?? null;
 }
 
+export async function fetchPromotionsPageServer(query: {
+  status: string;
+  page: number;
+  limit: number;
+}): Promise<PromotionsPage> {
+  const params = new URLSearchParams({
+    status: query.status,
+    page: String(query.page),
+    limit: String(query.limit),
+  });
+  const response = await fetch(`${API_BASE_URL}/promotions?${params}`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    throw new Error(`Promotions API responded ${response.status}`);
+  }
+  const body = (await response.json()) as { data?: PromotionsPage };
+  if (!body?.data || !Array.isArray(body.data.data)) {
+    throw new Error('Promotions API returned no list');
+  }
+  return body.data;
+}
+
 export async function fetchLivePromotionSlugs(): Promise<string[]> {
   const slugs: string[] = [];
   for (let page = 1, totalPages = 1; page <= totalPages && page <= 20; page += 1) {

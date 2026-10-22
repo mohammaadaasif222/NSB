@@ -413,6 +413,7 @@ const coreEn = {
   'role.player': 'Player',
   'role.vip': 'VIP Player',
   'dash.categories': 'Categories',
+  'dash.casinoHeading': 'Online Casino Games',
   'dash.gamesCount': '{count} games',
   'dash.viewAll': 'View All',
   'dash.online': '{count} Online',
@@ -633,6 +634,7 @@ const coreEn = {
   'browse.filterNew': 'New only',
   'browse.results': 'Results',
   'browse.clear': 'Clear filters',
+  'browse.loadMore': 'Load more games',
 
   // Account area: the left nav and its sections
   'profile.account': 'Account',

@@ -181,8 +181,6 @@ const MyGamesPage: FC<Props> = ({
           {!!favouriteProviders?.length && (
             <ProviderRow
               providers={favouriteProviders}
-              basePath="/casino"
-              query={{}}
               titleKey="favourites.providers"
               viewAll={false}
             />

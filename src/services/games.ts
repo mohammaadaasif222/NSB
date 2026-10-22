@@ -2,6 +2,7 @@ import apiService from '@/services/api';
 import { translate } from '@/i18n/translate';
 import type { TranslationKey } from '@/i18n/locales';
 import type { ShelfListQuery } from '@/constants/games';
+import type { SortKey } from '@/components/player/BrowseControls';
 import type {
   ApiError,
   Game,
@@ -52,15 +53,27 @@ export const currentGameDevice = (): GameDevice =>
  * page sends, so the slider and that page agree on order.
  */
 export async function fetchShelfPage(
-  list: ShelfListQuery,
+  list: ShelfListQuery | BrowseQuery,
   page: number,
-  limit: number
+  limit: number,
+  signal?: AbortSignal
 ): Promise<GameListResponse> {
-  const res = await apiService.get<GameListResponse>('/games', { ...list, page, limit });
+  const res = await apiService.get<GameListResponse>(
+    '/games',
+    { ...list, page, limit },
+    { signal }
+  );
   if (!res?.success || !Array.isArray(res.data?.data) || !res.data.pagination) {
     throw { message: res?.message || translate('myGames.failed') } satisfies ApiError;
   }
   return res.data;
+}
+
+export interface BrowseQuery extends Omit<ShelfListQuery, 'sort'> {
+  sort: SortKey;
+  search?: string;
+  provider?: string;
+  is_new?: boolean;
 }
 
 /* ------------------------------------------------------------------ */

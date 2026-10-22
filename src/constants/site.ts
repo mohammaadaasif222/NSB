@@ -34,6 +34,7 @@ export const SITE_LOGO = '/icon-512.png';
 export const INDEXED_STATIC_PATHS = [
   '/',
   '/casino',
+  '/providers',
   '/promotions',
   '/bonuses',
   '/rewards',

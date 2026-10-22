@@ -38,6 +38,7 @@ const ForgotPasswordStep: FC<ForgotPasswordStepProps> = ({ initialChannel, busy,
     await onRequest({
       channel,
       identifier: channel === 'email' ? email.trim().toLowerCase() : mobile,
+      ...(channel === 'mobile' ? { countryCode: dialCode } : {}),
     });
   };
 
