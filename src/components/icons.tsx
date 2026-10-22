@@ -735,6 +735,18 @@ export const CATEGORY_ICONS: Record<GameShelfKey, FC<IconProps>> = {
   trending: ArrowUpRightIcon,
   table: LayersIcon,
   'bonus-buys': GiftIcon,
+  'instant-wins': ZapIcon,
+  blackjack: LayersIcon,
+  roulette: ActivityIcon,
+  baccarat: DiamondIcon,
+  'game-shows': MicIcon,
+  'live-popular': TrophyIcon,
+  'live-new': SparklesIcon,
+  'live-blackjack': LayersIcon,
+  'live-roulette': ActivityIcon,
+  'live-game-shows': MicIcon,
+  'live-baccarat': DiamondIcon,
+  'live-lightning': ZapIcon,
 };
 
 export const ShieldCheckIcon: FC<IconProps> = (p) => (

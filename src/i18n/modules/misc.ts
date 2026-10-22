@@ -7,6 +7,8 @@ export const en = {
   'misc.meta.description':
     'ROLLUCK is a crypto casino with originals, slots, live casino, table games and new releases. 18+. Play responsibly.',
   'misc.meta.homeTitle': 'ROLLUCK — Crypto Casino: Originals, Slots & Live Casino',
+  'misc.meta.liveCasino':
+    'Live blackjack, roulette, baccarat and game shows with real dealers at ROLLUCK.',
   'misc.meta.casino':
     'Browse the ROLLUCK casino: originals, slots, live dealer tables, table games and bonus buys, all playable with crypto.',
   'misc.meta.category':

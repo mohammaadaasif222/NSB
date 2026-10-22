@@ -1,4 +1,11 @@
-import type { Game, GameCategory, GameMode, GameShelfKey, GameType } from '@/types/game';
+import type {
+  Game,
+  GameCategory,
+  GameCollection,
+  GameMode,
+  GameShelfKey,
+  GameType,
+} from '@/types/game';
 import type { TranslationKey } from '@/i18n/locales';
 
 /** What a shelf's "View all" page asks the list endpoint for. */
@@ -11,6 +18,8 @@ export interface ShelfListQuery {
   genre?: string;
   buy_feature?: boolean;
   provider?: string;
+  /** A lobby collection (blackjack, instant-wins…). */
+  collection?: GameCollection;
 }
 
 /**
@@ -34,6 +43,46 @@ export const GAME_SHELVES = [
   { key: 'trending', titleKey: 'dash.trending', list: { sort: 'trending' } },
   { key: 'table', titleKey: 'dash.tableGames', list: { genre: 'table' } },
   { key: 'bonus-buys', titleKey: 'dash.bonusBuys', list: { buy_feature: true } },
+  {
+    key: 'instant-wins',
+    titleKey: 'lobby.chips.instantWins',
+    list: { collection: 'instant-wins' },
+  },
+  { key: 'blackjack', titleKey: 'lobby.chips.blackjack', list: { collection: 'blackjack' } },
+  { key: 'roulette', titleKey: 'lobby.chips.roulette', list: { collection: 'roulette' } },
+  { key: 'baccarat', titleKey: 'lobby.chips.baccarat', list: { collection: 'baccarat' } },
+  { key: 'game-shows', titleKey: 'lobby.chips.gameShows', list: { collection: 'game-shows' } },
+  {
+    key: 'live-popular',
+    titleKey: 'lobby.live.popular',
+    list: { type: 'LIVE', sort: 'popular' },
+  },
+  { key: 'live-new', titleKey: 'lobby.live.new', list: { type: 'LIVE', category: 'NEW_RELEASE' } },
+  {
+    key: 'live-blackjack',
+    titleKey: 'lobby.chips.blackjack',
+    list: { type: 'LIVE', collection: 'blackjack' },
+  },
+  {
+    key: 'live-roulette',
+    titleKey: 'lobby.chips.roulette',
+    list: { type: 'LIVE', collection: 'roulette' },
+  },
+  {
+    key: 'live-game-shows',
+    titleKey: 'lobby.chips.gameShows',
+    list: { type: 'LIVE', collection: 'game-shows' },
+  },
+  {
+    key: 'live-baccarat',
+    titleKey: 'lobby.chips.baccarat',
+    list: { type: 'LIVE', collection: 'baccarat' },
+  },
+  {
+    key: 'live-lightning',
+    titleKey: 'lobby.live.lightning',
+    list: { type: 'LIVE', collection: 'lightning' },
+  },
 ] as const satisfies readonly {
   key: GameShelfKey;
   titleKey: TranslationKey;
@@ -46,7 +95,13 @@ export const SHELF_KEYS: GameShelfKey[] = GAME_SHELVES.map((s) => s.key);
 
 /** The shelves that are a single catalogue category, keyed by that category. */
 export const GAME_CATEGORIES = GAME_SHELVES.filter(
-  (s): s is Extract<GameShelfDef, { list: { category: GameCategory } }> => 'category' in s.list
+  (s): s is Extract<GameShelfDef, { list: { category: GameCategory } }> =>
+    'category' in s.list && !('type' in s.list)
+);
+
+/** The casino's shelves, as the category pages tab between them; the live lobby has its own. */
+export const CASINO_LISTING_KEYS: readonly GameShelfKey[] = SHELF_KEYS.filter(
+  (key) => !key.startsWith('live-')
 );
 
 /**
@@ -65,19 +120,40 @@ export const PLAYER_SHELF_KEYS: readonly GameShelfKey[] = [
 ];
 
 /**
- * The casino page's shelves. Featured is the operator's curated pick, which
- * this design titles "Recommended".
+ * The casino page's shelves, in the Casino Manager sheet's "Final" order.
+ * Featured is the operator's curated pick, titled "Recommended for you" until
+ * a per-player rule replaces it. The player's own rows (favourites, last
+ * played), Providers and the rows with nothing behind them yet (Drops & Wins,
+ * Hot) sit among these — Lobby's CASINO_INSERTS.
  */
 export const CASINO_SHELF_KEYS: readonly GameShelfKey[] = [
   'originals',
-  'slots',
-  'live',
-  'trending',
-  'new',
-  'popular',
   'featured',
-  'table',
-  'bonus-buys',
+  'new',
+  'live-popular',
+  'instant-wins',
+  'trending',
+  'blackjack',
+];
+
+/**
+ * The Live Casino lobby's rows, in the Casino Manager sheet's order. Live
+ * tables arrive slowly, so these rows stay on the page while empty and say
+ * "Coming soon" instead of disappearing.
+ */
+export const LIVE_SHELF_KEYS: readonly GameShelfKey[] = [
+  'live-popular',
+  'live-new',
+  'live-blackjack',
+  'live-roulette',
+  'live-game-shows',
+  'live-baccarat',
+  'live-lightning',
+];
+
+/** The home page draws one of two shelf sets, depending on who is signed in. */
+export const HOME_SHELF_KEYS: readonly GameShelfKey[] = [
+  ...new Set([...LOBBY_SHELF_KEYS, ...PLAYER_SHELF_KEYS]),
 ];
 
 /**
@@ -89,7 +165,8 @@ export const listMatches = (game: Game, list: ShelfListQuery): boolean =>
   (list.type === undefined || game.type === list.type) &&
   (list.genre === undefined ||
     (game.genre ?? '').toLowerCase().includes(list.genre.toLowerCase())) &&
-  (list.buy_feature === undefined || game.buy_feature === list.buy_feature);
+  (list.buy_feature === undefined || game.buy_feature === list.buy_feature) &&
+  (list.collection === undefined || (game.collections ?? []).includes(list.collection));
 
 /** Tiles per page on a category listing. The API caps `limit` at 50. */
 export const CATEGORY_PAGE_SIZE = 24;
@@ -109,6 +186,9 @@ export const categoryForKey = (value: string | string[] | undefined): GameShelfD
   }
   return shelfFor(raw);
 };
+
+/** Path of the Live Casino lobby. */
+export const LIVE_CASINO_HREF = '/live-casino';
 
 /** The category shelf for an API enum value. */
 export const categoryForEnum = (category: GameCategory): GameShelfDef =>

@@ -64,7 +64,8 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
   const { token } = useAuth();
 
   // The home page belongs to neither section; its designs light no tab.
-  const casino = pathname === '/casino' || pathname.startsWith('/game');
+  const casino =
+    pathname === '/casino' || pathname === '/live-casino' || pathname.startsWith('/game');
   const sports = pathname.startsWith('/sports');
   const profile = pathname.startsWith('/profile');
 

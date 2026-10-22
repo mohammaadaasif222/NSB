@@ -1,10 +1,11 @@
 import { useCallback, useRef, useState, type FC } from 'react';
 import type { Game, GameShelfKey } from '@/types';
-import { categoryHref, shelfFor } from '@/constants/games';
+import { LIVE_CASINO_HREF, categoryHref, shelfFor } from '@/constants/games';
 import { useTranslation } from '@/context/I18nContext';
 import { fetchShelfPage } from '@/services/games';
 import ScrollShelf from './ScrollShelf';
 import GameTile from './GameTile';
+import ComingSoonCard from './ComingSoonCard';
 
 interface Props {
   title: string;
@@ -21,6 +22,8 @@ interface Props {
   totalPages?: number;
   /** Games per page in that listing, so the pages fetched here follow on from it. */
   limit?: number;
+  /** Empty, say "Coming soon" instead of "no games" — for rows waiting on content. */
+  soon?: boolean;
 }
 
 /** The API's default page size, which the home shelves are rendered at. */
@@ -42,6 +45,7 @@ const GameRow: FC<Props> = ({
   page,
   totalPages,
   limit = DEFAULT_LIMIT,
+  soon = false,
 }) => {
   const { t } = useTranslation();
   const [games, setGames] = useState(initial);
@@ -97,14 +101,27 @@ const GameRow: FC<Props> = ({
 
   return (
     <ScrollShelf
+      id={`shelf-${shelfKey}`}
       title={title}
-      href={categoryHref(shelfKey)}
+      // An empty "coming soon" row has nothing to view all of.
+      // Live Casino's "View all" is its own lobby rather than a flat grid.
+      href={
+        soon && games.length === 0
+          ? undefined
+          : shelfKey === 'live'
+            ? LIVE_CASINO_HREF
+            : categoryHref(shelfKey)
+      }
       hasMore={hasMore}
       onLoadMore={loadMore}
       empty={
-        <p className="rl-liquid rounded-[calc(var(--u)*24)] px-[calc(var(--u)*16)] py-[calc(var(--u)*24)] text-center text-xs text-white/40">
-          {t('games.empty')}
-        </p>
+        soon ? (
+          <ComingSoonCard body={t('lobby.live.comingSoonBody')} />
+        ) : (
+          <p className="rl-liquid rounded-[calc(var(--u)*24)] px-[calc(var(--u)*16)] py-[calc(var(--u)*24)] text-center text-xs text-white/40">
+            {t('games.empty')}
+          </p>
+        )
       }
     >
       {games.map((game) => (

@@ -18,9 +18,7 @@ import chipRoulette from '@/assets/lobby/player/chip-roulette.svg';
 import chipBaccarat from '@/assets/lobby/player/chip-baccarat.svg';
 import chipGameShows from '@/assets/lobby/player/chip-gameshows.svg';
 import chipNewArrivals from '@/assets/lobby/player/chip-newarrivals.svg';
-import chipBonusBuys from '@/assets/lobby/player/chip-bonusbuys.svg';
 // The rail's own heart, so the chip and the Favourites nav entry read as one thing.
-import chipFavourites from '@/assets/lobby/rail/nav-favourites.svg';
 import Glyph from '@/components/player/Glyph';
 
 /*
@@ -334,21 +332,38 @@ interface Chip {
   signedIn?: boolean;
 }
 
+/**
+ * The casino page's menu, from the Casino Manager sheet's "Final" column.
+ * Live Casino opens its lobby (GameBrowser.chooseCategory); the rest filter
+ * the browser in place, across the whole catalogue.
+ */
 const CHIPS: Chip[] = [
   { key: 'lobby', labelKey: 'browse.lobby', icon: chipLobby },
-  { key: 'favourites', labelKey: 'nav.favourites', icon: chipFavourites, signedIn: true },
   { key: 'originals', labelKey: 'nav.originals', icon: chipOriginals },
   { key: 'slots', labelKey: 'dash.slots', icon: chipSlots },
   { key: 'live', labelKey: 'dash.liveCasino', icon: chipLive },
-  { labelKey: 'lobby.chips.blackjack', icon: chipLive },
-  { labelKey: 'lobby.chips.roulette', icon: chipRoulette },
-  { labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
-  { labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
+  { key: 'blackjack', labelKey: 'lobby.chips.blackjack', icon: chipLive },
+  { key: 'roulette', labelKey: 'lobby.chips.roulette', icon: chipRoulette },
+  { key: 'baccarat', labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
+  { key: 'game-shows', labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
   { key: 'table', labelKey: 'dash.tableGames', icon: chipOriginals },
-  { labelKey: 'lobby.chips.boostedRtp', icon: chipOriginals },
-  { key: 'new', labelKey: 'lobby.chips.newArrivals', icon: chipNewArrivals },
-  { key: 'bonus-buys', labelKey: 'dash.bonusBuys', icon: chipBonusBuys },
 ];
+
+/**
+ * The Live Casino lobby's menu, from the Casino Manager sheet. Each table
+ * chip jumps to its row on the page; Slots and Instant Wins open their pages.
+ */
+const LIVE_CHIPS: Chip[] = [
+  { key: 'lobby', labelKey: 'lobby.chips.home', icon: chipLobby },
+  { key: 'live-blackjack', labelKey: 'lobby.chips.blackjack', icon: chipLive },
+  { key: 'live-roulette', labelKey: 'lobby.chips.roulette', icon: chipRoulette },
+  { key: 'live-baccarat', labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
+  { key: 'live-game-shows', labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
+  { key: 'slots', labelKey: 'dash.slots', icon: chipSlots },
+  { key: 'instant-wins', labelKey: 'lobby.chips.instantWins', icon: chipNewArrivals },
+];
+
+export type ChipSet = 'casino' | 'live';
 
 /** A chip: 34px with 12px type on a phone, the design's 48px pill on desktop. */
 const CHIP =
@@ -389,42 +404,45 @@ export const CHIP_ROW =
 export const CategoryChips: FC<{
   active: ChipKey;
   onChange: (key: ChipKey) => void;
-}> = ({ active, onChange }) => {
+  set?: ChipSet;
+}> = ({ active, onChange, set = 'casino' }) => {
   const { t } = useTranslation();
   const { token } = useAuth();
 
   return (
     <div className={CHIP_ROW}>
-      {CHIPS.filter((chip) => !chip.signedIn || token).map((chip) => {
-        const text = t(chip.labelKey);
-        const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
+      {(set === 'live' ? LIVE_CHIPS : CHIPS)
+        .filter((chip) => !chip.signedIn || token)
+        .map((chip) => {
+          const text = t(chip.labelKey);
+          const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
 
-        if (!chip.key) {
+          if (!chip.key) {
+            return (
+              <span
+                key={text}
+                title={`${text} — ${t('common.soon')}`}
+                aria-disabled="true"
+                className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:filter-none`}
+              >
+                {icon}
+                {text}
+              </span>
+            );
+          }
+
+          const key = chip.key;
           return (
-            <span
-              key={text}
-              title={`${text} — ${t('common.soon')}`}
-              aria-disabled="true"
-              className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:filter-none`}
+            <ChipButton
+              key={key}
+              active={active === key}
+              onClick={() => onChange(key)}
+              icon={chip.icon}
             >
-              {icon}
               {text}
-            </span>
+            </ChipButton>
           );
-        }
-
-        const key = chip.key;
-        return (
-          <ChipButton
-            key={key}
-            active={active === key}
-            onClick={() => onChange(key)}
-            icon={chip.icon}
-          >
-            {text}
-          </ChipButton>
-        );
-      })}
+        })}
     </div>
   );
 };

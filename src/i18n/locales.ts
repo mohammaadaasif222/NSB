@@ -275,9 +275,9 @@ const coreEn = {
   'nav.rolluckOath': 'Rolluck Oath',
   'nav.tournaments': 'Tournaments',
   'tournament.active': 'Active',
-  'tournament.ended': "Ended",
-  'tournament.starts': "Starts: {date}",
-  'tournament.ends': "Ends: {date}",
+  'tournament.ended': 'Ended',
+  'tournament.starts': 'Starts: {date}',
+  'tournament.ends': 'Ends: {date}',
   'tournament.summary': 'Tournament Summary',
   'tournament.rewardsDistributed': 'Rewards distributed',
   'tournament.startDate': 'Start Date',
@@ -398,12 +398,12 @@ const coreEn = {
 
   // Wallet
   'wallet.real': 'Real Balance',
-  'wallet.primary': "Primary",
-  'wallet.rewards': "Rewards",
-  'wallet.balanceLabel': "Wallet Balance",
-  'wallet.totalLabel': "Wallet Total",
-  'wallet.assets': "My Assets",
-  'wallet.noAssets': "Nothing in your wallet yet.",
+  'wallet.primary': 'Primary',
+  'wallet.rewards': 'Rewards',
+  'wallet.balanceLabel': 'Wallet Balance',
+  'wallet.totalLabel': 'Wallet Total',
+  'wallet.assets': 'My Assets',
+  'wallet.noAssets': 'Nothing in your wallet yet.',
   'wallet.bonus': 'Bonus Balance',
 
   // Generic
@@ -615,6 +615,10 @@ const coreEn = {
   'search.empty': 'No games match "{query}"',
   'search.loading': 'Loading games…',
   'search.failed': 'Could not load the catalogue',
+  'search.tabAll': 'All',
+  'search.popular': 'Popular right now',
+  'search.minChars': 'Type at least {count} characters',
+  'search.loadMore': 'Load more',
 
   // Placeholder pages for destinations that are not built yet
   'soon.heading': 'Coming soon',
@@ -663,10 +667,10 @@ const coreEn = {
   'profile.contactSupport': 'Contact support',
 
   'avatar.title': 'Profile picture',
-  'avatar.pick': "Change avatar or upload photo",
-  'avatar.confirm': "Confirm",
-  'avatar.upload': "Upload a photo",
-  'avatar.preset': "Avatar {n}",
+  'avatar.pick': 'Change avatar or upload photo',
+  'avatar.confirm': 'Confirm',
+  'avatar.upload': 'Upload a photo',
+  'avatar.preset': 'Avatar {n}',
   'avatar.choose': 'Choose a picture',
   'avatar.save': 'Save picture',
   'avatar.dropTitle': 'Choose a picture',
@@ -801,7 +805,8 @@ const coreEn = {
   'ref.claimFailed': 'Could not collect your commission',
   'ref.codeCreated': 'Referral code created',
   'ref.codeFailed': 'Could not save the referral code',
-  'ref.tierNext': 'You earn {rate}% of the house edge. {needed} more active referrals unlock {next}%.',
+  'ref.tierNext':
+    'You earn {rate}% of the house edge. {needed} more active referrals unlock {next}%.',
   'ref.tierTop': 'You earn {rate}% of the house edge, the top tier.',
   'ref.heldNote': '{amount} is on hold while a referral is reviewed.',
   'ref.reviewNote': '{amount} collected and waiting for approval.',
@@ -809,9 +814,12 @@ const coreEn = {
   'ref.how.title': 'How referrals work',
   'ref.how.p1': 'Share your link. Anyone who signs up with it becomes your referral.',
   'ref.how.p2': 'A referral starts earning once the player makes a qualifying deposit.',
-  'ref.how.p3': 'You earn a share of the house edge on every real-money bet they place: bet × house edge × your commission rate.',
-  'ref.how.p4': 'Your rate grows with the number of active players you refer. Collect your earnings to your balance once they pass the minimum.',
-  'ref.how.p5': 'Referring yourself or accounts you control is not allowed. Linked accounts are held for review and their commission can be voided.',
+  'ref.how.p3':
+    'You earn a share of the house edge on every real-money bet they place: bet × house edge × your commission rate.',
+  'ref.how.p4':
+    'Your rate grows with the number of active players you refer. Collect your earnings to your balance once they pass the minimum.',
+  'ref.how.p5':
+    'Referring yourself or accounts you control is not allowed. Linked accounts are held for review and their commission can be voided.',
 
   // The Affiliate page
   'aff.title': 'Referral',
@@ -864,7 +872,8 @@ const coreEn = {
   'pref.receiveMarketing': 'Receive Marketing Offers',
   'pref.sound': 'Sound',
   'pref.soundEffects': 'Sound Effects',
-  'pref.soundEffectsNote': 'Plays a click when you tap buttons, cards, menus and fields. Saved on this device.',
+  'pref.soundEffectsNote':
+    'Plays a click when you tap buttons, cards, menus and fields. Saved on this device.',
 
   // Account area: the Security section
   'sec.changePassword': 'Change Password',
@@ -988,8 +997,10 @@ const coreEn = {
   'bonus.reason.outOfStock': 'This bonus has run out',
   'bonus.reason.depositUnvalued': 'We cannot value that deposit right now. Try again shortly.',
   'bonus.reason.depositUsed': 'That deposit already backs another bonus',
-  'bonus.reason.depositBelowMin': 'That deposit of {amount} is below the {minimum} this bonus needs',
-  'bonus.reason.depositAboveMax': 'That deposit of {amount} is above the {maximum} this bonus allows',
+  'bonus.reason.depositBelowMin':
+    'That deposit of {amount} is below the {minimum} this bonus needs',
+  'bonus.reason.depositAboveMax':
+    'That deposit of {amount} is above the {maximum} this bonus allows',
   'bonus.reason.windowClosed': 'The window to claim this bonus has closed',
   'bonus.reason.claimPrevious': 'Claim your {stage} first',
   'bonus.reason.wagerPrevious': 'Finish wagering your {stage} first',
@@ -1004,7 +1015,8 @@ const coreEn = {
   'bonus.regularOff': 'Regular bonuses are unavailable at the moment.',
   'bonus.retry': 'Try again',
   'bonus.switchedOff': 'Bonuses are unavailable',
-  'bonus.switchedOffNote': 'No bonus is on offer at the moment. Anything you already hold keeps running and can still be completed.',
+  'bonus.switchedOffNote':
+    'No bonus is on offer at the moment. Anything you already hold keeps running and can still be completed.',
   'bonus.winUpTo': 'Win up to',
   'bonus.youGet': 'You get',
   'bonus.welcomeTitle': 'WELCOME BONUSES',

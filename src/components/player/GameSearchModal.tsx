@@ -1,13 +1,36 @@
-import { useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
-import { MIN_SEARCH_LENGTH, gameMatches, searchCatalogue } from '@/services/catalogue';
-import { gameHref } from '@/constants/games';
+import { MIN_SEARCH_LENGTH, searchCatalogue, type CataloguePage } from '@/services/catalogue';
+import { gameHref, type ShelfListQuery } from '@/constants/games';
 import { CloseIcon, SearchIcon } from '@/components/icons';
+import type { TranslationKey } from '@/i18n/locales';
 import type { Game } from '@/types';
 
-const SEARCH_DELAY_MS = 250;
+/**
+ * Catalogue search, reached from the magnifier in the top bar.
+ *
+ * Searches on the server, so every game is reachable however large the
+ * catalogue grows. Each tab narrows the search to a shelf's filter; with
+ * nothing typed a tab lists its most-played games.
+ */
+
+/**
+ * The tabs along the top. The Casino Manager sheet asks for an Instant Wins
+ * tab here (instead of an Instant Wins page); more tabs are one entry each.
+ */
+const SEARCH_TABS: { key: string; labelKey: TranslationKey; list: ShelfListQuery }[] = [
+  { key: 'all', labelKey: 'search.tabAll', list: {} },
+  {
+    key: 'instant-wins',
+    labelKey: 'lobby.chips.instantWins',
+    list: { collection: 'instant-wins' },
+  },
+];
+
+/** Waits this long after the last keystroke before asking the server. */
+const TYPING_PAUSE_MS = 250;
 
 const GameRow: FC<{ game: Game; onPick: () => void; newLabel: string }> = ({
   game,
@@ -40,12 +63,20 @@ const GameRow: FC<{ game: Game; onPick: () => void; newLabel: string }> = ({
 
 const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation();
-  const [games, setGames] = useState<Game[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
+  const [tab, setTab] = useState(SEARCH_TABS[0].key);
   const [query, setQuery] = useState('');
+  const [games, setGames] = useState<Game[]>([]);
+  const [pagination, setPagination] = useState<Omit<CataloguePage, 'games'> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [failed, setFailed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // The query the shown results belong to; a page loaded for an older one is dropped.
+  const shownFor = useRef('');
+
+  const term = query.trim();
+  const tooShort = term.length > 0 && term.length < MIN_SEARCH_LENGTH;
+  const list = SEARCH_TABS.find((x) => x.key === tab)?.list ?? {};
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -61,51 +92,60 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
-  const trimmed = query.trim();
-  const term = trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '';
-
+  // A newer query aborts the request still on its way for the last one.
   useEffect(() => {
+    if (tooShort) {
+      return undefined;
+    }
     const controller = new AbortController();
+    const key = `${tab}:${term}`;
     setLoading(true);
     setFailed(false);
-
-    const timer = setTimeout(
+    const timer = window.setTimeout(
       () => {
-        searchCatalogue(term, controller.signal)
-          .then((page) => {
-            if (!controller.signal.aborted) {
-              setGames(page.games);
-              setTotal(page.total);
-            }
+        searchCatalogue(term, controller.signal, { list })
+          .then(({ games: found, ...paging }) => {
+            if (controller.signal.aborted) return;
+            shownFor.current = key;
+            setGames(found);
+            setPagination(paging);
           })
-          .catch(() => {
-            if (!controller.signal.aborted) {
-              setFailed(true);
-            }
-          })
-          .finally(() => {
-            if (!controller.signal.aborted) {
-              setLoading(false);
-            }
-          });
+          .catch(() => !controller.signal.aborted && setFailed(true))
+          .finally(() => !controller.signal.aborted && setLoading(false));
       },
-      term ? SEARCH_DELAY_MS : 0
+      // A tab switch or the first open needs no pause.
+      term ? TYPING_PAUSE_MS : 0
     );
-
     return () => {
-      clearTimeout(timer);
+      window.clearTimeout(timer);
       controller.abort();
     };
-  }, [term]);
+    // `list` follows `tab`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [term, tab, tooShort]);
 
-  const results = useMemo(
-    () =>
-      !trimmed || (term && !loading)
-        ? games
-        : games.filter((game) => gameMatches(game, trimmed.toLowerCase())),
-    [games, term, trimmed, loading]
-  );
-  const count = term && !loading ? total : results.length;
+  const loadMore = (): void => {
+    if (!pagination || loadingMore || loading) return;
+    const key = shownFor.current;
+    setLoadingMore(true);
+    searchCatalogue(term, undefined, { list, page: pagination.page + 1 })
+      .then(({ games: found, ...paging }) => {
+        if (shownFor.current !== key) return;
+        setGames((held) => {
+          const ids = new Set(held.map((g) => g.id));
+          return [...held, ...found.filter((g) => !ids.has(g.id))];
+        });
+        setPagination(paging);
+      })
+      .catch(() => undefined)
+      .finally(() => setLoadingMore(false));
+  };
+
+  // While the next answer is on its way the previous results stay, dimmed,
+  // rather than blinking out on every keystroke.
+  const firstLoad = loading && games.length === 0;
+  const ready = !firstLoad && !failed && !tooShort;
+  const more = ready && pagination !== null && pagination.page < pagination.totalPages;
 
   return (
     <div
@@ -143,33 +183,82 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
         </div>
 
+        <div
+          role="tablist"
+          aria-label={t('search.title')}
+          className="flex gap-1.5 border-b border-white/[0.08] px-3 py-2"
+        >
+          {SEARCH_TABS.map((x) => {
+            const on = x.key === tab;
+            return (
+              <button
+                key={x.key}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setTab(x.key)}
+                className={`rounded-full px-3 py-1 text-[12px] font-medium transition-colors ${
+                  on
+                    ? 'bg-[#ffe779]/15 text-[#ffe779]'
+                    : 'text-white/55 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                {t(x.labelKey)}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar p-2">
-          {loading && results.length === 0 && (
-            <p className="px-2 py-8 text-center text-xs text-white/40">{t('search.loading')}</p>
-          )}
-
-          {!loading && failed && (
-            <p className="px-2 py-8 text-center text-xs text-white/40">{t('search.failed')}</p>
-          )}
-
-          {!loading && !failed && results.length === 0 && (
+          {tooShort && (
             <p className="px-2 py-8 text-center text-xs text-white/40">
-              {trimmed ? t('search.empty', { query }) : t('games.empty')}
+              {t('search.minChars', { count: MIN_SEARCH_LENGTH })}
             </p>
           )}
 
-          {!failed && results.length > 0 && (
-            <ul>
-              {results.map((game) => (
-                <GameRow key={game.id} game={game} onPick={onClose} newLabel={t('game.new')} />
-              ))}
-            </ul>
+          {!tooShort && firstLoad && (
+            <p className="px-2 py-8 text-center text-xs text-white/40">{t('search.loading')}</p>
+          )}
+
+          {!tooShort && !firstLoad && failed && (
+            <p className="px-2 py-8 text-center text-xs text-white/40">{t('search.failed')}</p>
+          )}
+
+          {ready && games.length === 0 && (
+            <p className="px-2 py-8 text-center text-xs text-white/40">
+              {term ? t('search.empty', { query: term }) : t('games.empty')}
+            </p>
+          )}
+
+          {ready && games.length > 0 && (
+            <>
+              {!term && (
+                <p className="px-2 pb-1 pt-1 text-[11px] font-medium uppercase tracking-wide text-white/35">
+                  {t('search.popular')}
+                </p>
+              )}
+              <ul className={`transition-opacity ${loading ? 'opacity-50' : ''}`}>
+                {games.map((game) => (
+                  <GameRow key={game.id} game={game} onPick={onClose} newLabel={t('game.new')} />
+                ))}
+              </ul>
+              {more && (
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="mx-auto mt-1 block rounded-full px-4 py-1.5 text-[12px] font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50"
+                >
+                  {loadingMore ? t('search.loading') : t('search.loadMore')}
+                </button>
+              )}
+            </>
           )}
         </div>
 
-        {!failed && results.length > 0 && (
+        {ready && pagination !== null && pagination.total > 0 && (
           <p className="border-t border-white/[0.08] px-4 py-2 text-[11px] text-white/40">
-            {t('dash.gamesCount', { count })}
+            {t('dash.gamesCount', { count: pagination.total })}
           </p>
         )}
       </div>

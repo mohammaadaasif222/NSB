@@ -105,7 +105,8 @@ export const fetchFavourites = (): Promise<Game[]> =>
   listOrThrow<Game>('/games/favourites', 'myGames.failed');
 
 /** The games the player launched most recently, newest first. */
-export const fetchRecentGames = (): Promise<Game[]> => listOrThrow<Game>('/games/recent', 'myGames.failed');
+export const fetchRecentGames = (): Promise<Game[]> =>
+  listOrThrow<Game>('/games/recent', 'myGames.failed');
 
 /** The studios the player has hearted, newest-hearted first. */
 export const fetchFavouriteProviders = (): Promise<LobbyProvider[]> =>

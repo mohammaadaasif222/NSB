@@ -105,9 +105,11 @@ export interface HomeShelvesResult {
  * whole site down with it.
  */
 export async function fetchHomeShelves(
-  pages: Record<GameShelfKey, number>
+  keys: readonly GameShelfKey[],
+  pages: Partial<Record<GameShelfKey, number>>
 ): Promise<HomeShelvesResult> {
-  const query = new URLSearchParams(SHELF_KEYS.map((key) => [key, String(pages[key])]));
+  // The API fetches only the shelves named, so a page asks for its own.
+  const query = new URLSearchParams(keys.map((key) => [key, String(pages[key] ?? 1)]));
 
   try {
     const data = await getJson<HomeShelvesResponse>(`/games/home?${query}`);
@@ -121,7 +123,7 @@ export async function fetchHomeShelves(
   } catch (error) {
     logFailure('Home shelves fetch', error);
     return {
-      shelves: SHELF_KEYS.map((key) => emptyShelf(key, pages[key])),
+      shelves: keys.map((key) => emptyShelf(key, pages[key] ?? 1)),
       failed: true,
     };
   }

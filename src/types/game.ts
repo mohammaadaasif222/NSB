@@ -19,7 +19,30 @@ export type GameShelfKey =
   | 'popular'
   | 'trending'
   | 'table'
-  | 'bonus-buys';
+  | 'bonus-buys'
+  | 'instant-wins'
+  | 'blackjack'
+  | 'roulette'
+  | 'baccarat'
+  | 'game-shows'
+  | 'live-popular'
+  | 'live-new'
+  | 'live-blackjack'
+  | 'live-roulette'
+  | 'live-game-shows'
+  | 'live-baccarat'
+  | 'live-lightning';
+
+/** Lobby collections a game can sit in — GAME_COLLECTIONS on the backend. */
+export type GameCollection =
+  | 'blackjack'
+  | 'roulette'
+  | 'baccarat'
+  | 'game-shows'
+  | 'lightning'
+  | 'poker'
+  | 'crash'
+  | 'instant-wins';
 
 export type GameType = 'STANDARD' | 'LIVE' | 'LOBBY';
 
@@ -59,6 +82,8 @@ export interface Game {
   buy_feature: boolean;
   /** Whether the game can be opened right now. */
   launchable: boolean;
+  /** Lobby collections it sits in. */
+  collections: GameCollection[];
 }
 
 export type GamePagination = PaginationMeta;
