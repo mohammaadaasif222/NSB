@@ -651,6 +651,7 @@
   "stats.invalidEmail": "Introduza um endereço de e-mail válido",
   "stats.requestUnavailable": "Os pedidos de estatísticas ainda não estão disponíveis. Volte em breve.",
   "stats.close": "Fechar",
+  "stats.loadFailed": "Não foi possível carregar as suas estatísticas",
   "ref.referralCode": "Código de indicação",
   "ref.copied": "Copiado",
   "ref.orShare": "Ou partilhe nas redes sociais",

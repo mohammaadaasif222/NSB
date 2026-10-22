@@ -772,6 +772,7 @@ const coreEn = {
   'stats.invalidEmail': 'Please enter a valid email address',
   'stats.requestUnavailable': 'Statistics requests are not available yet. Please check back soon.',
   'stats.close': 'Close',
+  'stats.loadFailed': 'Could not load your statistics',
 
   // Account area: the Referral section
   'ref.referralCode': 'Referral Code',

@@ -651,6 +651,7 @@
   "stats.invalidEmail": "Veuillez saisir une adresse e-mail valide",
   "stats.requestUnavailable": "Les demandes de statistiques ne sont pas encore disponibles. Revenez bientôt.",
   "stats.close": "Fermer",
+  "stats.loadFailed": "Impossible de charger vos statistiques",
   "ref.referralCode": "Code de parrainage",
   "ref.copied": "Copié",
   "ref.orShare": "Ou partagez sur les réseaux sociaux",

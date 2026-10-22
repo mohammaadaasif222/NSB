@@ -651,6 +651,7 @@
   "stats.invalidEmail": "Lütfen geçerli bir e-posta adresi girin",
   "stats.requestUnavailable": "İstatistik talepleri henüz kullanılamıyor. Lütfen yakında tekrar kontrol edin.",
   "stats.close": "Kapat",
+  "stats.loadFailed": "İstatistikleriniz yüklenemedi",
   "ref.referralCode": "Referans Kodu",
   "ref.copied": "Kopyalandı",
   "ref.orShare": "Veya sosyal medyada paylaşın",

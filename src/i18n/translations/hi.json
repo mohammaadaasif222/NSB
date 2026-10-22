@@ -651,6 +651,7 @@
   "stats.invalidEmail": "कृपया एक मान्य ईमेल पता दर्ज करें",
   "stats.requestUnavailable": "आँकड़ों के अनुरोध अभी उपलब्ध नहीं हैं। कृपया जल्द ही फिर देखें।",
   "stats.close": "बंद करें",
+  "stats.loadFailed": "आपके आँकड़े लोड नहीं हो सके",
   "ref.referralCode": "रेफ़रल कोड",
   "ref.copied": "कॉपी हो गया",
   "ref.orShare": "या सोशल मीडिया पर शेयर करें",

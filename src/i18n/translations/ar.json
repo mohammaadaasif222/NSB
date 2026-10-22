@@ -651,6 +651,7 @@
   "stats.invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح",
   "stats.requestUnavailable": "طلبات الإحصائيات غير متاحة بعد. يرجى العودة قريبًا.",
   "stats.close": "إغلاق",
+  "stats.loadFailed": "تعذّر تحميل إحصائياتك",
   "ref.referralCode": "رمز الإحالة",
   "ref.copied": "تم النسخ",
   "ref.orShare": "أو شارك عبر وسائل التواصل الاجتماعي",
