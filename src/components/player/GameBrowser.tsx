@@ -152,14 +152,14 @@ const GameBrowser: FC<Props> = ({
   };
 
   const trimmed = browse.search.trim();
+  const wantedTerm = trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '';
   const browsing =
-    trimmed !== '' ||
+    wantedTerm !== '' ||
     browse.filter !== BROWSE_DEFAULTS.filter ||
     browse.sort !== BROWSE_DEFAULTS.sort ||
     provider !== '' ||
     category !== 'lobby';
 
-  const wantedTerm = trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '';
   useEffect(() => {
     if (!wantedTerm) {
       setTerm('');
@@ -270,8 +270,11 @@ const GameBrowser: FC<Props> = ({
 
   const onFavourites = category === 'favourites';
   const results = useMemo(
-    () => (onFavourites ? browseGames(favourites ?? [], { ...browse, provider }) : games),
-    [onFavourites, games, favourites, browse, provider]
+    () =>
+      onFavourites
+        ? browseGames(favourites ?? [], { ...browse, search: wantedTerm, provider })
+        : games,
+    [onFavourites, games, favourites, browse, wantedTerm, provider]
   );
 
   const stale = !onFavourites && (loading || settling);
@@ -364,8 +367,8 @@ const GameBrowser: FC<Props> = ({
 
           {!busy && !broke && results.length === 0 && (
             <p className="rl-glass rounded-2xl px-4 py-10 text-center text-xs text-white/40">
-              {trimmed
-                ? t('search.empty', { query: browse.search })
+              {wantedTerm
+                ? t('search.empty', { query: wantedTerm })
                 : t(onFavourites ? 'favourites.empty' : 'games.empty')}
             </p>
           )}

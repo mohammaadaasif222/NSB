@@ -105,7 +105,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
         : games.filter((game) => gameMatches(game, trimmed.toLowerCase())),
     [games, term, trimmed, loading]
   );
-  const count = term ? total : results.length;
+  const count = term && !loading ? total : results.length;
 
   return (
     <div
