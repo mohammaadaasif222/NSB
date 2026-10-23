@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -16,6 +16,17 @@ export const metadata: Metadata = {
   },
   description:
     "Find trusted wedding vendors in Noida, Greater Noida and Noida Extension. Explore venues, photographers, caterers and more, then connect with the right team for your celebration.",
+  // Opened from the home screen, iOS shows the site full-screen with a white status bar.
+  appleWebApp: { capable: true, title: "NSB", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
+};
+
+/** `viewport-fit=cover` lets the bottom bars sit clear of the iPhone home indicator (safe-area insets). */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

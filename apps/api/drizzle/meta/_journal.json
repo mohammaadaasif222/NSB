@@ -71,6 +71,13 @@
       "when": 1792162531121,
       "tag": "0009_lean_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792677694565,
+      "tag": "0010_classy_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

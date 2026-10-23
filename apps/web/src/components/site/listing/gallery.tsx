@@ -4,9 +4,13 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, Expand, ImageIcon, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-/** Photo collage (one large + two small, as on ezweddingz) with a popup viewer in the same style. */
+/**
+ * Photo collage (one large + two small, as on ezweddingz) with a popup viewer in the same style.
+ * Phones get a full-width swipeable strip of every photo instead, and the viewer fills the screen.
+ */
 export function Gallery({ name, images }: { name: string; images: string[] }) {
   const [open, setOpen] = useState<number | null>(null);
+  const [slide, setSlide] = useState(0);
   const [touchX, setTouchX] = useState<number | null>(null);
   const count = images.length;
   const step = useCallback((d: number) => setOpen((i) => (i === null ? i : (i + d + count) % count)), [count]);
@@ -41,7 +45,31 @@ export function Gallery({ name, images }: { name: string; images: string[] }) {
 
   return (
     <>
-      <div className={`grid h-[240px] gap-2.5 sm:h-[300px] ${side.length ? "sm:grid-cols-[2fr_1fr]" : ""}`}>
+      <div className="relative -mx-4 sm:hidden">
+        <div
+          className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto"
+          onScroll={(e) => setSlide(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
+        >
+          {images.map((src, i) => (
+            <button
+              key={`${src}-${i}`}
+              type="button"
+              onClick={() => setOpen(i)}
+              className="relative aspect-4/3 w-full shrink-0 snap-center bg-[#e5e7eb]"
+              aria-label={`Open photo ${i + 1} of ${name}`}
+            >
+              <Image src={src} alt={i === 0 ? name : ""} fill priority={i === 0} sizes="100vw" className="object-cover" />
+            </button>
+          ))}
+        </div>
+        {count > 1 && (
+          <span className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white tabular-nums">
+            <ImageIcon className="size-3.5" aria-hidden /> {slide + 1} / {count}
+          </span>
+        )}
+      </div>
+
+      <div className={`hidden h-[300px] gap-2.5 sm:grid ${side.length ? "sm:grid-cols-[2fr_1fr]" : ""}`}>
         <button
           type="button"
           onClick={() => setOpen(0)}
@@ -79,12 +107,12 @@ export function Gallery({ name, images }: { name: string; images: string[] }) {
           role="dialog"
           aria-modal="true"
           aria-label={`${name} photos`}
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-3 sm:p-6"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black sm:bg-black/70 sm:p-6"
           onClick={(e) => e.target === e.currentTarget && setOpen(null)}
         >
           {/* A centred dark panel over the dimmed page, as on ezweddingz. Swipe left/right on phones. */}
           <div
-            className="relative aspect-4/3 max-h-[75dvh] w-full max-w-[1024px] overflow-hidden rounded-2xl bg-[#111] shadow-2xl sm:aspect-auto sm:h-[min(80dvh,640px)]"
+            className="relative h-dvh w-full max-w-[1024px] overflow-hidden bg-[#111] sm:h-[min(80dvh,640px)] sm:rounded-2xl sm:shadow-2xl"
             onTouchStart={(e) => setTouchX(e.touches[0].clientX)}
             onTouchEnd={(e) => {
               if (touchX === null || count < 2) return;
@@ -98,7 +126,7 @@ export function Gallery({ name, images }: { name: string; images: string[] }) {
               type="button"
               onClick={() => setOpen(null)}
               aria-label="Close"
-              className="absolute top-3 right-3 flex size-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+              className="absolute top-[calc(0.75rem+env(safe-area-inset-top))] right-3 z-10 flex size-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
             >
               <X className="size-5" aria-hidden />
             </button>
@@ -122,7 +150,7 @@ export function Gallery({ name, images }: { name: string; images: string[] }) {
                 </button>
               </>
             )}
-            <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white tabular-nums">
+            <span className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-xs font-medium text-white tabular-nums">
               {open + 1} / {count}
             </span>
           </div>

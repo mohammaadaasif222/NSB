@@ -10,9 +10,14 @@ import {
   listingDetailsSchema,
   listingDetailsToQuickInfo,
   listingFormFor,
+  LISTING_AREAS,
+  type ListingCounts,
+  type ListingCountsQuery,
   type ListingInput,
   type ListingQuery,
   type ListingRating,
+  type LocationFilter,
+  type LocationOption,
   type ListingReview,
   type ListingSummary,
   type ListingUpdate,
@@ -100,6 +105,7 @@ const toDetail = (l: Row, category: CategoryRef, parent: ParentRef, gallery: Gal
     // The detail page lists plain services and sections separately.
     services: l.services,
     serviceGroups: l.serviceGroups,
+    tags: l.tags,
     address: l.address,
     about: l.about,
     quickInfo: shownQuickInfo(l, category.slug, parent),
@@ -123,6 +129,15 @@ const visible = and(
   eq(categories.isActive, true),
   or(isNull(parentCategory.id), eq(parentCategory.isActive, true)),
 )!;
+
+/** Localities are typed by hand, so "Sector 18" and " sector 18" are the same place. */
+const localityKey = sql<string>`lower(btrim(${listings.locality}))`;
+
+/** Conditions for the site's location filter (an area, optionally narrowed to a locality). */
+const locationFilters = ({ area, locality }: LocationFilter): SQL[] => [
+  ...(area ? [eq(listings.area, area)] : []),
+  ...(locality ? [sql`${localityKey} = lower(${locality.trim()})`] : []),
+];
 
 @Injectable()
 export class ListingsService {
@@ -220,11 +235,52 @@ export class ListingsService {
     await this.media.release(images);
   }
 
+  /**
+   * Areas and localities for the site's location filter, from live listings. Every area in
+   * LISTING_AREAS is offered, even before it has listings, so the picker never changes shape.
+   */
+  async locations(): Promise<LocationOption[]> {
+    const rows = await this.db
+      .select({ area: listings.area, name: sql<string | null>`min(btrim(${listings.locality}))`, count: count() })
+      .from(listings)
+      .innerJoin(categories, eq(listings.categoryId, categories.id))
+      .leftJoin(parentCategory, eq(categories.parentId, parentCategory.id))
+      .where(visible)
+      .groupBy(listings.area, localityKey);
+    return LISTING_AREAS.map((area) => {
+      const inArea = rows.filter((r) => r.area === area);
+      return {
+        area,
+        count: inArea.reduce((sum, r) => sum + r.count, 0),
+        localities: inArea
+          .filter((r): r is typeof r & { name: string } => !!r.name)
+          .map(({ name, count }) => ({ name, count }))
+          .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'en-IN', { numeric: true })),
+      };
+    });
+  }
+
+  /** Live listings per category in a location: per top-level category, or per sub-category of `parent`. */
+  async counts(query: ListingCountsQuery): Promise<ListingCounts> {
+    const slug = query.parent ? categories.slug : sql<string>`coalesce(${parentCategory.slug}, ${categories.slug})`;
+    const filters = [visible, ...locationFilters(query)];
+    if (query.parent) filters.push(eq(parentCategory.slug, query.parent));
+    const rows = await this.db
+      .select({ slug, count: count() })
+      .from(listings)
+      .innerJoin(categories, eq(listings.categoryId, categories.id))
+      .leftJoin(parentCategory, eq(categories.parentId, parentCategory.id))
+      .where(and(...filters))
+      .groupBy(slug);
+    return Object.fromEntries(rows.map((r) => [r.slug, r.count]));
+  }
+
   private async page(query: ListingQuery, extra: SQL[]): Promise<Paginated<ListingSummary>> {
     const { page, pageSize, limit, offset } = pageWindow(query.page, query.pageSize);
-    const filters = [...extra];
+    const filters = [...extra, ...locationFilters(query)];
     if (query.category) filters.push(eq(categories.slug, query.category));
     if (query.featured !== undefined) filters.push(eq(listings.isFeatured, query.featured));
+    if (query.tag) filters.push(sql`exists (select 1 from unnest(${listings.tags}) as t(tag) where lower(t.tag) = lower(${query.tag}))`);
     if (query.q) {
       const term = likeTerm(query.q);
       filters.push(

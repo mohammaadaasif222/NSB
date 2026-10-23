@@ -3,12 +3,13 @@ import { Search } from "lucide-react";
 
 /**
  * Search box for one category's listings. Submits as a GET to the same page (`?q=`), which
- * starts again at page 1 and keeps the chosen list/grid layout.
+ * starts again at page 1 and keeps the chosen list/grid layout and tag filter.
  */
-export function ListingSearch({ categoryName, q, view }: { categoryName: string; q?: string; view: "grid" | "list" }) {
+export function ListingSearch({ categoryName, q, view, tag }: { categoryName: string; q?: string; view: "grid" | "list"; tag?: string }) {
   return (
-    <Form action="" scroll={false} role="search" className="relative w-full sm:w-72">
+    <Form action="" scroll={false} role="search" className="relative min-w-0 flex-1 sm:w-72 sm:flex-none">
       <input type="hidden" name="view" value={view} />
+      {tag && <input type="hidden" name="tag" value={tag} />}
       <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden />
       <input
         type="search"

@@ -1,5 +1,5 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
-import type { Banner } from "@nsb/shared";
+import type { Banner, Category } from "@nsb/shared";
 import { CookieBar } from "@/components/site/cookie-bar";
 import { HERO_FALLBACK } from "@/components/site/nsb-home/content";
 import type { HeroSlide } from "@/components/site/nsb-home/hero-slides";
@@ -18,6 +18,7 @@ import {
   TopPicks,
 } from "@/components/site/nsb-home/sections";
 import { api } from "@/lib/api";
+import { getListingCounts, getLocationOptions, getSiteLocation } from "@/lib/location-server";
 import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
 import "./home.css";
 
@@ -32,10 +33,11 @@ const SLIDE_COLORS = ["s1", "s2", "s3"];
 /** Active banners from Admin › Banners; the demo's slides when there are none. */
 function heroSlides(banners: Banner[]): HeroSlide[] {
   const active = banners.filter((b) => b.isActive);
-  if (!active.length) return HERO_FALLBACK.map((s, i) => ({ ...s, key: `fallback-${i}`, image: null }));
+  if (!active.length) return HERO_FALLBACK.map((s, i) => ({ ...s, key: `fallback-${i}`, image: null, mobileImage: null }));
   return active.map((b, i) => ({
     key: b.id,
     image: b.imageUrl ?? b.mobileImageUrl,
+    mobileImage: b.mobileImageUrl,
     cls: SLIDE_COLORS[i % SLIDE_COLORS.length],
     tag: null,
     heading: b.heading,
@@ -47,14 +49,22 @@ function heroSlides(banners: Banner[]): HeroSlide[] {
 
 /** The home page from "NSB Live Demo.html", with its own header and footer. */
 export default async function HomePage() {
-  const [banners, { whatsapp }] = await Promise.all([api.get<Banner[]>("/banners"), getSiteSettings()]);
+  const location = await getSiteLocation();
+  const [banners, categories, { whatsapp }, locationOptions, counts] = await Promise.all([
+    api.get<Banner[]>("/banners"),
+    // Active top-level categories, in the order set in Admin › Home page.
+    api.get<Category[]>("/categories"),
+    getSiteSettings(),
+    getLocationOptions(),
+    getListingCounts(location),
+  ]);
 
   return (
     <div className={`nsb-home ${jakarta.variable}`}>
-      <HomeHeader />
+      <HomeHeader location={location} locationOptions={locationOptions} />
       <main>
         <HeroBanners slides={heroSlides(banners)} />
-        <Categories />
+        <Categories categories={categories} counts={counts} location={location} />
         <PopularMarkets />
         <Highlights />
         <TopPicks />
@@ -63,7 +73,7 @@ export default async function HomePage() {
         <BestDeals />
       </main>
       <Faqs />
-      <HomeFooter />
+      <HomeFooter categories={categories} />
       <BottomNav whatsappHref={whatsapp ? whatsappHref(whatsapp) : null} />
       <CookieBar />
     </div>

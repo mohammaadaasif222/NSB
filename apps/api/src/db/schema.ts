@@ -70,6 +70,11 @@ export const listings = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
+    /** Admin tags such as "Luxury" or "Banquet Halls"; the browse panels on category pages filter by them. */
+    tags: text('tags')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     quickInfo: jsonb('quick_info')
       .$type<QuickInfoItem[]>()
       .notNull()

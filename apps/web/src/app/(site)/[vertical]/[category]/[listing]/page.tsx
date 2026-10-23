@@ -44,7 +44,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h2 className="text-2xl font-semibold text-ink">{title}</h2>
+        <h2 className="text-xl font-semibold text-ink sm:text-2xl">{title}</h2>
         <span className="mt-2 block h-0.5 w-10 rounded bg-brand" aria-hidden />
       </div>
       {children}
@@ -96,7 +96,7 @@ export default async function ListingDetailPage({ params }: Props) {
 
         <header className="mt-4">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h1 className="text-[28px] leading-tight font-bold text-ink sm:text-4xl">{listing.name}</h1>
+            <h1 className="text-2xl leading-tight font-bold text-ink sm:text-4xl">{listing.name}</h1>
             <Link
               href={`/${vertical.slug}/${category.slug}`}
               className="rounded-full border border-brand/30 bg-brand-soft px-3 py-0.5 text-xs font-medium text-brand"
@@ -125,8 +125,8 @@ export default async function ListingDetailPage({ params }: Props) {
           </p>
         </header>
 
-        <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
-          <div className="flex min-w-0 flex-col gap-10">
+        <div className="mt-4 grid gap-8 sm:mt-5 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
+          <div className="flex min-w-0 flex-col gap-8 sm:gap-10">
             <Gallery name={listing.name} images={images} />
 
             {listing.videos.length > 0 && (
@@ -196,7 +196,7 @@ export default async function ListingDetailPage({ params }: Props) {
             </Section>
           </div>
 
-          <aside id="enquire" className="scroll-mt-4 lg:sticky lg:top-4">
+          <aside id="enquire" className="scroll-mt-32 lg:sticky lg:top-4 lg:scroll-mt-4">
             <EnquiryCard
               listingId={listing.id}
               vendorName={listing.name}
@@ -209,17 +209,17 @@ export default async function ListingDetailPage({ params }: Props) {
       </div>
 
       {/* Mobile: Enquire Now and WhatsApp stay reachable while scrolling, side by side in one row. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
         {chatHref ? (
           <div className="grid grid-cols-2 gap-3">
-            <a href="#enquire" className="flex h-11 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white hover:bg-brand-dark">
+            <a href="#enquire" className="flex h-12 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white transition-transform hover:bg-brand-dark active:scale-[0.97]">
               Enquire Now
             </a>
             <a
               href={chatHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-11 items-center justify-center gap-2 rounded-lg border border-[#25d366] bg-[#25d366]/10 text-sm font-semibold text-[#128c7e]"
+              className="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#25d366] bg-[#25d366]/10 text-sm font-semibold text-[#128c7e] transition-transform active:scale-[0.97]"
             >
               <MessageCircle className="size-5" aria-hidden /> WhatsApp
             </a>
@@ -230,7 +230,7 @@ export default async function ListingDetailPage({ params }: Props) {
               <p className="truncate text-sm font-semibold text-ink">{listing.name}</p>
               <p className="truncate text-xs text-muted">{place}</p>
             </div>
-            <a href="#enquire" className="shrink-0 rounded-lg bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-dark">
+            <a href="#enquire" className="shrink-0 rounded-xl bg-brand px-5 py-3 text-sm font-bold text-white transition-transform hover:bg-brand-dark active:scale-[0.97]">
               Enquire Now
             </a>
           </div>

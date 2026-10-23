@@ -10,6 +10,7 @@ import type {
   Banner,
   Category,
   ListingSummary,
+  LocationOption,
   Paginated,
   UploadedImage,
 } from '@nsb/shared';
@@ -319,6 +320,40 @@ describe('Admin CMS (e2e)', () => {
         expect(res.items.map((l) => l.id)).toEqual([listing.id]);
       }
       await admin.get('/api/admin/listings?categoryId=nope').expect(400);
+    });
+
+    it('saves tags without case duplicates and filters public listings by tag', async () => {
+      const res = await admin.patch(`/api/admin/listings/${listing.id}`).send({ tags: ['Luxury', ' Banquet Halls ', 'luxury'] }).expect(200);
+      expect((res.body as AdminListing).tags).toEqual(['Luxury', 'Banquet Halls']);
+      const total = async (tag: string) =>
+        ((await http().get(`/api/listings?category=${sub.slug}&tag=${encodeURIComponent(tag)}`).expect(200)).body as Paginated<ListingSummary>).total;
+      expect(await total('luxury')).toBe(1);
+      expect(await total('Banquet Halls')).toBe(1);
+      expect(await total('Hotels')).toBe(0);
+      // Untouched by a later update that leaves tags out.
+      await admin.patch(`/api/admin/listings/${listing.id}`).send({ about: 'Keep this text' }).expect(200);
+      expect(await total('Luxury')).toBe(1);
+    });
+
+    it('filters public listings and counts by location, matching localities case-insensitively', async () => {
+      await admin.patch(`/api/admin/listings/${listing.id}`).send({ area: 'Noida', locality: ' sector 18 ' }).expect(200);
+      const total = async (query: string) =>
+        ((await http().get(`/api/listings?category=${sub.slug}&${query}`).expect(200)).body as Paginated<ListingSummary>).total;
+      expect(await total('area=Noida&locality=Sector%2018')).toBe(1);
+      expect(await total('area=Noida')).toBe(1);
+      expect(await total('area=Noida&locality=Sector%2062')).toBe(0);
+      expect(await total('area=Greater%20Noida')).toBe(0);
+      await http().get('/api/listings?area=Delhi').expect(400);
+
+      const locations = (await http().get('/api/locations').expect(200)).body as LocationOption[];
+      expect(locations.map((l) => l.area)).toEqual(['Noida', 'Greater Noida', 'Noida Extension']);
+      expect(locations[0].localities.some((l) => l.name.toLowerCase() === 'sector 18' && l.count >= 1)).toBe(true);
+
+      const bySub = (await http().get(`/api/locations/counts?parent=${parent.slug}&area=Noida&locality=Sector%2018`).expect(200)).body;
+      expect(bySub).toEqual({ [sub.slug]: 1 });
+      const byTop = (await http().get('/api/locations/counts?area=Noida&locality=Sector%2018').expect(200)).body as Record<string, number>;
+      expect(byTop[parent.slug]).toBe(1);
+      expect(byTop[sub.slug]).toBeUndefined();
     });
 
     it('keeps omitted fields on a partial listing update', async () => {

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}</style>
+<title>Realty Roadmap Option B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column, matching the budget plan. Summary, new public pages, phase roadmap with Gantt, payment milestones, terms. */
+:root {
+  --bg: #f5f6fa; --surface: #ffffff; --ink: #0f172a; --mute: #5b6475; --line: #e3e6ef;
+  --blue: #1700d6; --blue-s: #eef0ff; --ok: #15803d; --okb: #e7f6ec; --gray: #94a3b8; --grayb: #eef1f5;
+  --new: #b45309; --newb: #fdf1e1;
+  --f: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1018; --surface: #161924; --ink: #f1f5f9; --mute: #9aa6b8; --line: #2a2f40;
+    --blue: #8b7dff; --blue-s: #1e1d48; --ok: #4ade80; --okb: #12301f; --gray: #64748b; --grayb: #222736;
+    --new: #fbbf24; --newb: #33270f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1018; --surface: #161924; --ink: #f1f5f9; --mute: #9aa6b8; --line: #2a2f40;
+  --blue: #8b7dff; --blue-s: #1e1d48; --ok: #4ade80; --okb: #12301f; --gray: #64748b; --grayb: #222736;
+  --new: #fbbf24; --newb: #33270f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f); -webkit-font-smoothing: antialiased; }
+.page { max-width: 1000px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 36px 72px; display: flex; flex-direction: column; gap: 36px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.02em; }
+h1 { font-size: clamp(28px, 4.4vw, 40px); line-height: 1.1; font-weight: 800; }
+h2 { font-size: 20px; font-weight: 800; }
+h3 { font-size: 16px; font-weight: 800; }
+p { margin: 0; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+.muted { color: var(--mute); }
+header { display: flex; flex-direction: column; gap: 10px; }
+header .lede { color: var(--mute); max-width: 68ch; }
+header .meta { font-size: 13px; color: var(--mute); }
+header a { color: var(--blue); font-weight: 600; }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sec-head { display: flex; flex-direction: column; gap: 4px; }
+.sec-head p { max-width: 70ch; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; }
+.kpi b { font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 13px; color: var(--mute); }
+
+.tag { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--newb); color: var(--new); white-space: nowrap; vertical-align: 2px; margin-left: 6px; }
+
+.pages { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pg { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.pg .url { font-family: var(--mono); font-size: 12.5px; color: var(--mute); background: var(--grayb); padding: 4px 8px; border-radius: 6px; align-self: flex-start; overflow-wrap: anywhere; }
+.pg ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 14px; }
+.pg .days { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--mute); border-top: 1px solid var(--line); padding-top: 10px; margin-top: auto; }
+.pg .days b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.tw { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 11px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+thead th { border-top: 0; font-size: 12px; font-weight: 700; color: var(--mute); background: var(--grayb); white-space: nowrap; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td small { display: block; color: var(--mute); font-size: 12.5px; }
+tfoot td { font-weight: 800; background: var(--grayb); }
+tr.ms td { background: var(--blue-s); color: var(--blue); font-weight: 700; font-size: 13px; padding: 8px 14px; }
+.mods { min-width: 680px; }
+
+.gantt { min-width: 760px; }
+.gantt td { padding: 7px 14px; border-top: 1px solid var(--line); }
+.gantt td.lbl { width: 240px; font-weight: 600; font-size: 13.5px; }
+.track { position: relative; height: 22px; }
+.track .grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(12, 1fr); }
+.track .grid i { border-left: 1px dashed var(--line); }
+.bar { position: absolute; top: 5px; height: 12px; border-radius: 6px; background: var(--gray); }
+.bar.new { background: var(--new); }
+.pay { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--blue); }
+.wk { display: grid; grid-template-columns: repeat(12, 1fr); font-size: 11px; color: var(--mute); }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--mute); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 18px; height: 8px; border-radius: 4px; display: inline-block; }
+
+.miles { display: grid; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.mile { display: grid; grid-template-columns: 76px 1fr auto; gap: 16px; align-items: start; padding: 16px 20px; border-top: 1px solid var(--line); }
+.mile:first-child { border-top: 0; }
+.mile .pct { font-size: 26px; font-weight: 800; color: var(--blue); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.mile .when { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+.mile h3 { font-size: 15px; }
+.mile p { font-size: 13.5px; color: var(--mute); }
+.mile .amt { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.mile.tot { background: var(--grayb); }
+.mile.tot .amt { color: var(--blue); }
+.mile > div { min-width: 0; }
+
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; min-width: 0; }
+.box h3 { margin-bottom: 8px; }
+.box ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
+.note { font-size: 13px; color: var(--mute); max-width: 80ch; }
+
+@media (max-width: 760px) {
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .pages, .two { grid-template-columns: 1fr; }
+  .mile { grid-template-columns: 60px 1fr; }
+  .mile .amt { grid-column: 2; text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <span class="eyebrow">Option B · Roadmap and payments</span>
+    <h1>Real estate platform roadmap</h1>
+    <p class="lede">The plan for Option B (built and tested by hand, no subscription). The admin, builder, agent and investor screens already exist as the demo frontend; this plan wires them to a real backend and adds two public pages buyers will see: the property listing page and the project page. All of it stays within the Option B price of ₹96,000.</p>
+    <p class="meta">Prepared 23 October 2026 · Based on the <a href="https://claude.ai/artifact/UAJkEG2Ny5poxNMJigWnyf" target="_blank" rel="noreferrer">budget plan</a> of 21 October 2026</p>
+  </header>
+
+  <section aria-label="Summary">
+    <div class="kpis">
+      <div class="kpi"><b>60 days</b><span>working days, one developer</span></div>
+      <div class="kpi"><b>12 weeks</b><span>to launch</span></div>
+      <div class="kpi"><b>₹96,000</b><span>total, no extra charge</span></div>
+      <div class="kpi"><b>5</b><span>payments, each tied to a demo</span></div>
+    </div>
+    <p class="note">The listing and project pages take 11 days. They fit inside the original 60 days because the admin, builder, agent and investor screens are already built in the demo, so those phases only need connecting to the backend instead of designing and building from scratch.</p>
+  </section>
+
+  <section aria-labelledby="pages-h">
+    <div class="sec-head"><h2 id="pages-h">The two new public pages</h2><p class="muted">Designed first as mockups for your approval, in the same look as the admin demo, then built for phone and desktop. Both pages read live data from the admin panel, so a project approved in admin appears on the site straight away.</p></div>
+    <div class="pages">
+      <article class="pg">
+        <h3>Listing page <span class="tag">New</span></h3>
+        <span class="url">/apartments-in-pune · /plots-in-nagpur</span>
+        <ul>
+          <li>Filters: city, locality, property type (Apartments, Villas &amp; Houses, Builder Floors, Plots, Commercial), budget, BHK, possession (ready or under construction)</li>
+          <li>Project cards: photo, name, builder, locality, price range, configurations, possession date, RERA badge</li>
+          <li>Sort by newest, price low to high, price high to low</li>
+          <li>Filter sheet on phones; pagination</li>
+          <li>Search-friendly URLs, page titles and descriptions for Google</li>
+        </ul>
+        <div class="days"><span>Design <b>1.5 days</b></span><span>Build <b>4 days</b></span></div>
+      </article>
+      <article class="pg">
+        <h3>Project page <span class="tag">New</span></h3>
+        <span class="url">/projects/green-valley-heights</span>
+        <ul>
+          <li>Photo gallery and key facts: price range, configurations, carpet area, possession date, RERA number</li>
+          <li>Price table by unit type (2 BHK, 3 BHK, plot sizes) with carpet area and price</li>
+          <li>Floor plans, amenities, location with nearby places, builder profile</li>
+          <li>Enquiry form and call-back request that go straight into the enquiry system and get assigned to an agent</li>
+          <li>Similar projects; title, description and share preview for Google and WhatsApp</li>
+        </ul>
+        <div class="days"><span>Design <b>1.5 days</b></span><span>Build <b>4 days</b></span></div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="mod-h">
+    <div class="sec-head"><h2 id="mod-h">Roadmap, phase by phase</h2><p class="muted">Work runs in this order. Each payment milestone ends with a demo on a test server for you to check.</p></div>
+    <div class="tw">
+      <table class="mods">
+        <thead><tr><th>Phase</th><th class="n">Days</th><th class="n">Weeks</th><th class="n">Cost</th></tr></thead>
+        <tbody>
+          <tr><td><b>Setup, sign-in and roles</b><small>Admin, builder, agent and investor logins connected to the existing screens; who can see and do what</small></td><td class="n">5</td><td class="n">W1</td><td class="n">₹8,000</td></tr>
+          <tr><td><b>Design: listing and project pages</b> <span class="tag">New</span><small>Phone and desktop mockups for both pages, one round of your changes</small></td><td class="n">3</td><td class="n">W2</td><td class="n">₹4,800</td></tr>
+          <tr><td><b>Projects and property types</b><small>5 property types, RERA check, approval flow, photos and floor plans upload</small></td><td class="n">8</td><td class="n">W2–W4</td><td class="n">₹12,800</td></tr>
+          <tr><td><b>Listing page build</b> <span class="tag">New</span><small>Filters, cards, sorting, search-friendly URLs</small></td><td class="n">4</td><td class="n">W4</td><td class="n">₹6,400</td></tr>
+          <tr class="ms"><td colspan="4">Milestone 1 · end of week 4 · payment 2</td></tr>
+          <tr><td><b>Project page build</b> <span class="tag">New</span><small>Gallery, price table, floor plans, amenities, location, enquiry form</small></td><td class="n">4</td><td class="n">W5</td><td class="n">₹6,400</td></tr>
+          <tr><td><b>Enquiry system</b><small>Website enquiries, auto-assign to agents, pipeline from New to Won, notes, site visits, late-call alerts</small></td><td class="n">8</td><td class="n">W5–W7</td><td class="n">₹12,800</td></tr>
+          <tr class="ms"><td colspan="4">Milestone 2 · week 7 · payment 3</td></tr>
+          <tr><td><b>Builder, agent and investor portals</b><small>Builder: projects, inventory, enquiries with hidden buyer numbers. Agent: leads, visits, commission. Investor: opportunities, interest, KYC</small></td><td class="n">14</td><td class="n">W7–W10</td><td class="n">₹22,400</td></tr>
+          <tr class="ms"><td colspan="4">Milestone 3 · week 10 · payment 4</td></tr>
+          <tr><td><b>Admin dashboard, reports and settings</b><small>KPIs, charts, agent leaderboard, people management, routing and commission settings</small></td><td class="n">6</td><td class="n">W10–W11</td><td class="n">₹9,600</td></tr>
+          <tr><td><b>Notifications</b><small>Email and in-app alerts for new enquiries, approvals and visits</small></td><td class="n">2</td><td class="n">W11</td><td class="n">₹3,200</td></tr>
+          <tr><td><b>Testing, launch and handover</b><small>Testing on phone and desktop, server setup, training call, documents</small></td><td class="n">6</td><td class="n">W11–W12</td><td class="n">₹9,600</td></tr>
+          <tr class="ms"><td colspan="4">Milestone 4 · launch, week 12 · final payment</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total</td><td class="n">60</td><td class="n">12 weeks</td><td class="n">₹96,000</td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="tl-h">
+    <div class="sec-head"><h2 id="tl-h">Timeline</h2><p class="muted">Weeks from the start date. Blue lines mark when each payment falls due.</p></div>
+    <div class="legend"><span><i style="background:var(--gray)"></i>Option B scope</span><span><i style="background:var(--new)"></i>New public pages</span><span><i style="background:var(--blue);width:3px;height:14px;border-radius:0"></i>Payment due</span></div>
+    <div class="tw">
+      <table class="gantt" aria-describedby="tl-h">
+        <thead><tr><th>Phase</th><th><div class="wk" id="wk"></div></th></tr></thead>
+        <tbody id="gantt"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="pay-h">
+    <div class="sec-head"><h2 id="pay-h">Payment schedule</h2><p class="muted">Each payment is due within 3 working days of you seeing the milestone demo. Work on the next phase starts once it is paid.</p></div>
+    <div class="miles">
+      <div class="mile"><span class="pct">20%</span><div><span class="when">Day 1 · week 1</span><h3>Advance to start</h3><p>Server and repository set up, sign-in work begins.</p></div><span class="amt">₹19,200</span></div>
+      <div class="mile"><span class="pct">20%</span><div><span class="when">Milestone 1 · end of week 4</span><h3>Sign-in, projects admin and listing page</h3><p>All four roles can log in. Admin can add and approve projects for all 5 property types. Page designs approved by you and the listing page working with real projects.</p></div><span class="amt">₹19,200</span></div>
+      <div class="mile"><span class="pct">25%</span><div><span class="when">Milestone 2 · week 7</span><h3>Project page live and enquiries flowing</h3><p>Project page working on the test server. An enquiry from a project page reaches admin and is assigned to an agent, who can move it through the pipeline.</p></div><span class="amt">₹24,000</span></div>
+      <div class="mile"><span class="pct">20%</span><div><span class="when">Milestone 3 · week 10</span><h3>Builder, agent and investor portals</h3><p>All three portals shown working end to end, including KYC uploads and hidden buyer numbers.</p></div><span class="amt">₹19,200</span></div>
+      <div class="mile"><span class="pct">15%</span><div><span class="when">Milestone 4 · week 12</span><h3>Launch and handover</h3><p>Site live on your domain, dashboard and notifications working, training call done, documents handed over.</p></div><span class="amt">₹14,400</span></div>
+      <div class="mile tot"><span class="pct">100%</span><div><h3>Total</h3><p>60 working days at ₹1,600 a day.</p></div><span class="amt">₹96,000</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="need-h">
+    <h2 id="need-h">What each side provides</h2>
+    <div class="two">
+      <div class="box"><h3>You provide</h3>
+        <ul>
+          <li>The existing demo frontend files</li>
+          <li>Brand name, logo and colours</li>
+          <li>5 to 10 real projects: photos, floor plans, RERA numbers, prices by unit type, amenities</li>
+          <li>Cities and localities you want to show first</li>
+          <li>Domain name and server, or approval to buy them on your account</li>
+          <li>One person to review each milestone demo within 2 working days</li>
+        </ul>
+      </div>
+      <div class="box"><h3>Not included in the price</h3>
+        <ul>
+          <li>Server and domain: about ₹600 to ₹900 a month, paid to the provider</li>
+          <li>SMS or WhatsApp messages: charged per message by the provider</li>
+          <li>Online booking payments through a payment gateway (can be quoted separately)</li>
+          <li>Mobile apps for Play Store or App Store</li>
+          <li>New features after the scope is agreed (quoted separately)</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">The 12-week plan has no spare days, so it depends on reviews coming back within 2 working days and on the scope staying as listed here. If a review takes longer, the launch date moves by the same amount. Prices assume one full-stack developer at ₹1,600 per working day, 5 working days a week. This estimate is valid for 30 days.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var W = 12;
+  // [phase, start week, length in weeks, is new]; weeks counted from 0, 5 working days a week.
+  var rows = [
+    ["Setup, sign-in and roles", 0, 1.0, 0],
+    ["Design: listing and project pages", 1.0, 0.6, 1],
+    ["Projects and property types", 1.6, 1.6, 0],
+    ["Listing page build", 3.2, 0.8, 1],
+    ["Project page build", 4.0, 0.8, 1],
+    ["Enquiry system", 4.8, 1.6, 0],
+    ["Builder, agent and investor portals", 6.4, 2.8, 0],
+    ["Dashboard, reports, settings", 9.2, 1.2, 0],
+    ["Notifications", 10.4, 0.4, 0],
+    ["Testing, launch and handover", 10.8, 1.2, 0]
+  ];
+  var pays = [0, 4, 6.4, 9.2, 12];
+  var pct = function (w) { return (w / W * 100).toFixed(2) + "%"; };
+  var wk = "";
+  for (var i = 1; i <= W; i++) wk += "<span>W" + i + "</span>";
+  document.getElementById("wk").innerHTML = wk;
+  var cols = '<div class="grid">' + new Array(W + 1).join("<i></i>") + "</div>";
+  var marks = pays.map(function (p) {
+    return '<span class="pay" style="left:calc(' + pct(p) + ' - ' + (p === W ? 2 : 0) + 'px)"></span>';
+  }).join("");
+  document.getElementById("gantt").innerHTML = rows.map(function (r) {
+    return '<tr><td class="lbl">' + r[0] + '</td><td><div class="track">' + cols + marks +
+      '<span class="bar' + (r[3] ? " new" : "") + '" style="left:' + pct(r[1]) + ";width:" + pct(r[2]) + '"></span></div></td></tr>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

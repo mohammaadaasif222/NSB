@@ -5,6 +5,37 @@ import { ChevronDown, ChevronUp, GripVertical } from "lucide-react";
 import { IconButton } from "./form";
 
 /**
+ * Optimistic ordering for any reorderable list: `move` shows the new order at once, then
+ * `save` stores it (it gets the ids in their new order) and returns false to roll back.
+ * The order resets whenever the server sends a new `items` array.
+ */
+export function useOptimisticOrder<T>(
+  items: T[],
+  getId: (item: T) => string,
+  save: (ids: string[]) => Promise<boolean>,
+  disabled?: boolean,
+) {
+  const [source, setSource] = useState(items);
+  const [order, setOrder] = useState(items);
+  if (items !== source) {
+    setSource(items);
+    setOrder(items);
+  }
+
+  const move = async (from: number, to: number) => {
+    if (disabled || from === to || to < 0 || to >= order.length) return;
+    const previous = order;
+    const next = [...order];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    setOrder(next);
+    if (!(await save(next.map(getId)))) setOrder(previous);
+  };
+
+  return { order, move };
+}
+
+/**
  * A list the admin can reorder by dragging (desktop) or with the arrow buttons (touch and
  * keyboard). The new order shows immediately; `onReorder` saves it and returns false to roll back.
  *
@@ -28,38 +59,31 @@ export function SortableList<T>({
   layout?: "list" | "rows";
   children: (item: T, arrows: ReactNode) => ReactNode;
 }) {
-  // Local order for optimistic moves; reset whenever the server sends a new list.
-  const [source, setSource] = useState(items);
-  const [order, setOrder] = useState(items);
+  const { order, move } = useOptimisticOrder(items, getId, onReorder, disabled);
   const [dragging, setDragging] = useState<number | null>(null);
-  if (items !== source) {
-    setSource(items);
-    setOrder(items);
-  }
-
-  const move = async (from: number, to: number) => {
-    if (disabled || from === to || to < 0 || to >= order.length) return;
-    const previous = order;
-    const next = [...order];
-    const [item] = next.splice(from, 1);
-    next.splice(to, 0, item);
-    setOrder(next);
-    if (!(await onReorder(next.map(getId)))) setOrder(previous);
-  };
+  /** The row being dragged over, highlighted as the drop target. */
+  const [over, setOver] = useState<number | null>(null);
 
   const arrows = (item: T, i: number) => (
-    <span className="flex flex-col">
-      <IconButton label={`Move ${getLabel(item)} up`} disabled={disabled || i === 0} onClick={() => move(i, i - 1)} className="p-0.5">
-        <ChevronUp className="size-4" aria-hidden />
-      </IconButton>
-      <IconButton
-        label={`Move ${getLabel(item)} down`}
-        disabled={disabled || i === order.length - 1}
-        onClick={() => move(i, i + 1)}
-        className="p-0.5"
-      >
-        <ChevronDown className="size-4" aria-hidden />
-      </IconButton>
+    <span className="flex items-center gap-0.5">
+      {layout === "rows" && (
+        <span className={`hidden text-zinc-400 sm:block ${disabled ? "" : "cursor-grab active:cursor-grabbing"}`} title="Drag to reorder" aria-hidden>
+          <GripVertical className="size-4" />
+        </span>
+      )}
+      <span className="flex flex-col">
+        <IconButton label={`Move ${getLabel(item)} up`} disabled={disabled || i === 0} onClick={() => move(i, i - 1)} className="p-0.5">
+          <ChevronUp className="size-4" aria-hidden />
+        </IconButton>
+        <IconButton
+          label={`Move ${getLabel(item)} down`}
+          disabled={disabled || i === order.length - 1}
+          onClick={() => move(i, i + 1)}
+          className="p-0.5"
+        >
+          <ChevronDown className="size-4" aria-hidden />
+        </IconButton>
+      </span>
     </span>
   );
 
@@ -79,6 +103,7 @@ export function SortableList<T>({
             if (dragging === null) return;
             e.preventDefault();
             e.stopPropagation();
+            if (over !== i) setOver(i);
           }}
           onDrop={(e) => {
             if (dragging === null) return;
@@ -86,17 +111,17 @@ export function SortableList<T>({
             e.stopPropagation();
             void move(dragging, i);
             setDragging(null);
+            setOver(null);
           }}
           onDragEnd={(e) => {
             e.stopPropagation();
             setDragging(null);
+            setOver(null);
           }}
           className={
             layout === "rows"
-              ? dragging === i
-                ? "opacity-50"
-                : undefined
-              : `flex items-start gap-2 bg-white px-2 py-2 ${dragging === i ? "opacity-50" : ""}`
+              ? `rounded-[14px] ${dragging === i ? "opacity-50" : ""} ${over === i && dragging !== i ? "outline-2 outline-offset-2 outline-[#1700d6]" : ""}`
+              : `flex items-start gap-2 bg-white px-2 py-2 ${dragging === i ? "opacity-50" : ""} ${over === i && dragging !== i ? "bg-zinc-100" : ""}`
           }
         >
           {layout === "rows" ? (

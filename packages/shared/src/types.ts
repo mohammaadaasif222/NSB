@@ -11,6 +11,17 @@ export interface Paginated<T> {
   pageSize: number;
 }
 
+/** One area on the location filter, with the localities that have live listings (most listings first). */
+export interface LocationOption {
+  area: string;
+  /** Live listings in the whole area, with or without a locality. */
+  count: number;
+  localities: { name: string; count: number }[];
+}
+
+/** Live listings per category slug for a location (see listingCountsQuerySchema). */
+export type ListingCounts = Record<string, number>;
+
 export interface AdminUser {
   id: string;
   email: string;
@@ -103,6 +114,8 @@ export interface ListingDetail extends ListingSummary {
   videos: ListingVideo[];
   /** Headed service sections, after the plain services list. */
   serviceGroups: ServiceGroup[];
+  /** Admin filter tags, e.g. "Luxury" or "Banquet Halls". */
+  tags: string[];
   googleRating: number | null;
   googleReviewCount: number | null;
   googleMapsUrl: string | null;

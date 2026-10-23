@@ -26,6 +26,8 @@ export type ListingVideoKind = (typeof LISTING_VIDEO_KINDS)[number];
 
 /** Most videos and Shorts one listing can show. */
 export const MAX_LISTING_VIDEOS = 12;
+/** Filter tags per listing (Admin › listing form › Tags). */
+export const MAX_LISTING_TAGS = 20;
 
 /** Choices for "Event type" on wedding enquiries. Stored as plain text, so other verticals can use their own list. */
 export const WEDDING_EVENT_TYPES = ['Wedding', 'Engagement', 'Reception', 'Haldi & Mehendi', 'Sangeet', 'Other'] as const;

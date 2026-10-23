@@ -15,6 +15,9 @@ import {
   type AdminListing,
   type AdminListingQuery,
   adminListingQuerySchema,
+  type ListingCounts,
+  type ListingCountsQuery,
+  listingCountsQuerySchema,
   type ListingDetail,
   type ListingInput,
   listingInputSchema,
@@ -23,6 +26,7 @@ import {
   type ListingSummary,
   type ListingUpdate,
   listingUpdateSchema,
+  type LocationOption,
   type Paginated,
 } from '@nsb/shared';
 import { ZodPipe } from '../../common/zod.pipe.js';
@@ -41,6 +45,22 @@ export class ListingsController {
   @Get(':slug')
   get(@Param('slug') slug: string): Promise<ListingDetail> {
     return this.listings.getBySlug(slug);
+  }
+}
+
+/** The site's location filter: the areas and localities it offers, and listings per category in one. */
+@Controller('locations')
+export class LocationsController {
+  constructor(private readonly listings: ListingsService) {}
+
+  @Get()
+  list(): Promise<LocationOption[]> {
+    return this.listings.locations();
+  }
+
+  @Get('counts')
+  counts(@Query(new ZodPipe(listingCountsQuerySchema)) query: ListingCountsQuery): Promise<ListingCounts> {
+    return this.listings.counts(query);
   }
 }
 

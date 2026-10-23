@@ -58,6 +58,22 @@ body {
   color: var(--color-ink);
 }
 
+/* Phones: feel like an app. No grey flash on tap, no double-tap zoom delay, no font boost on rotate. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+a,
+button,
+summary,
+label,
+[role="button"] {
+  touch-action: manipulation;
+}
+
 /* Home hero: the active slide dot fills over one autoplay interval. */
 @keyframes hero-progress {
   from {

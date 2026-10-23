@@ -5,12 +5,13 @@ import {
   IMAGE_STORAGE_PROVIDERS,
   LISTING_STATUSES,
   LISTING_VIDEO_KINDS,
+  MAX_LISTING_TAGS,
   MAX_LISTING_VIDEOS,
   MAX_SERVICE_GROUPS,
   REVIEW_SOURCES,
   SMTP_SECURITY,
 } from './constants.js';
-import { listingDetailsInputSchema } from './listing-forms.js';
+import { LISTING_AREAS, listingDetailsInputSchema } from './listing-forms.js';
 import { youTubeId } from './youtube.js';
 
 const trimmed = (max: number) =>
@@ -150,6 +151,11 @@ const listingFields = z.object({
   shortDescription: trimmed(240),
   about: z.string().trim().max(5000),
   services: z.array(trimmed(120)).max(30),
+  /** Filter tags, e.g. "Luxury" or "Banquet Halls". Duplicates (ignoring case) are dropped. */
+  tags: z
+    .array(trimmed(40))
+    .max(MAX_LISTING_TAGS)
+    .transform((tags) => tags.filter((t, i) => tags.findIndex((u) => u.toLowerCase() === t.toLowerCase()) === i)),
   quickInfo: z.array(quickInfoItemSchema).max(12),
   /** Receives this vendor's enquiry alerts. Optional: blank means the vendor gets no email. */
   email: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? null : v), z.email().trim().toLowerCase().nullable()),
@@ -179,6 +185,7 @@ export const listingInputSchema = listingFields.extend({
   details: listingFields.shape.details.optional(),
   about: listingFields.shape.about.default(''),
   services: listingFields.shape.services.default([]),
+  tags: listingFields.shape.tags.default([]),
   quickInfo: listingFields.shape.quickInfo.default([]),
   gallery: listingFields.shape.gallery.default([]),
   videos: listingFields.shape.videos.default([]),
@@ -196,6 +203,16 @@ export type ListingInput = z.infer<typeof listingInputSchema>;
 export const listingUpdateSchema = listingFields.partial();
 export type ListingUpdate = z.infer<typeof listingUpdateSchema>;
 
+/**
+ * The site's location filter: one of LISTING_AREAS, optionally narrowed to a locality such as
+ * "Sector 18". Localities are free text on listings, so they match case-insensitively.
+ */
+export const locationFilterSchema = z.object({
+  area: blankAsUndefined(z.enum(LISTING_AREAS)),
+  locality: blankAsUndefined(z.string().trim().min(1).max(120)),
+});
+export type LocationFilter = z.infer<typeof locationFilterSchema>;
+
 export const listingQuerySchema = paginationSchema.extend({
   category: slugSchema.optional(),
   /** Matches the listing name, area, locality or short description. */
@@ -204,8 +221,17 @@ export const listingQuerySchema = paginationSchema.extend({
     .enum(['true', 'false'])
     .transform((v) => v === 'true')
     .optional(),
+  ...locationFilterSchema.shape,
+  /** One admin tag, matched ignoring case (the browse panels' "Luxury", "Hotels"…). */
+  tag: blankAsUndefined(z.string().trim().min(1).max(40)),
 });
 export type ListingQuery = z.infer<typeof listingQuerySchema>;
+
+/** Live listings per category in a location: top-level categories, or one parent's sub-categories. */
+export const listingCountsQuerySchema = locationFilterSchema.extend({
+  parent: slugSchema.optional(),
+});
+export type ListingCountsQuery = z.infer<typeof listingCountsQuerySchema>;
 
 export const adminListingQuerySchema = listingQuerySchema.extend({
   /** A category id; a top-level category also matches the listings of its sub-categories. */

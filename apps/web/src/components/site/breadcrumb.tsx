@@ -7,9 +7,9 @@ export interface Crumb {
 }
 
 /** The last crumb is the current page. */
-export function Breadcrumb({ items }: { items: Crumb[] }) {
+export function Breadcrumb({ items, className }: { items: Crumb[]; className?: string }) {
   return (
-    <nav aria-label="Breadcrumb">
+    <nav aria-label="Breadcrumb" className={className}>
       <ol className="flex flex-wrap items-center gap-1 text-sm text-muted">
         {items.map((item, i) => (
           <li key={item.label} className="flex items-center gap-1">

@@ -98,7 +98,7 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
         ))}
       </nav>
 
-      {wedding && <WeddingSlots weddingId={wedding.id} subs={subs} selected={sub} />}
+      {/* {wedding && <WeddingSlots weddingId={wedding.id} subs={subs} selected={sub} />} */}
 
       <div className="a-tl">
         <form action="/admin/wedding" className="a-gs" role="search">

@@ -24,6 +24,7 @@ export const ICON = {
   home: "M4 11l8-7 8 7v9H4zM10 20v-6h4v6",
   heart: "M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.500-7 10-7 10z",
   chat: "M4 5h16v11H9l-5 4z",
+  phone: "M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2",
   building: "M4 21V8l8-5 8 5v13M9 21v-6h6v6",
   sparkle:
     "M12 3l1.8 5.2L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800zM19 17l.7 1.800 1.800.7-1.800.7L19 22l-.7-1.800-1.800-.7 1.800-.7z",
@@ -37,7 +38,6 @@ export const ICON = {
 } as const;
 
 export const LOGO = `${IMG}/logo.png`;
-export const AREAS = ["Noida", "Greater Noida", "Gr. Noida West"];
 
 /** Hero slides shown when no banner is active in Admin › Banners. */
 export const HERO_FALLBACK = [
@@ -69,24 +69,37 @@ export const TRUST = [
 ];
 
 /** "Browse by category": live categories link to their page, the rest show a "Soon" tag. */
-export const CATEGORIES: { name: string; sub?: string; icon: string; link?: string; wedding?: boolean }[] = [
-  { name: "Wedding", sub: "Venues, makeup & more", icon: ICON.heart, link: "/wedding", wedding: true },
-  { name: "Real Estate", sub: "Builders & projects", icon: ICON.building, link: "/real-estate" },
-  { name: "Tattoo Studios", icon: "M4 20l1-4L16 5l3 3L8 19zM13 8l3 3" },
-  { name: "Restaurants", icon: ICON.fork },
-  { name: "Loans & Finance", icon: "M7 5h10M7 9h10M8 5c5 0 6 5 0 5l7 9" },
-  { name: "Interior Services", icon: "M3 12a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3zM5 12V9a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v3M6 17v2M18 17v2" },
-  { name: "Beauty & Spa", icon: ICON.sparkle },
-  { name: "Home Decor", icon: "M9 3h6l3 9H6zM12 12v8M8 21h8" },
-  { name: "Travel Services", icon: "M3 13l18-8-6 15-3-6zM12 14l4-4" },
-  { name: "Fitness & Gym", icon: "M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12" },
-  { name: "Electronics", icon: "M13 2L5 14h6l-1 8 8-12h-6z" },
-  { name: "AC Repair", icon: "M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9" },
-  { name: "Refurbished Laptops", icon: "M5 6h14v9H5zM3 18h18" },
-  { name: "Cafes", icon: "M5 8h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM16 9h2a2 2 0 0 1 0 4h-2M8 3v2M12 3v2" },
-  { name: "Event Services", icon: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" },
-  { name: "9 more", sub: "Opening soon", icon: "M5 12h.01M12 12h.01M19 12h.01" },
-];
+/**
+ * How each top-level category looks in "Browse by category", by slug. The list and its order
+ * come from Admin › Home page › Browse by category; a category missing here gets DEFAULT_LOOK.
+ * `live` categories link to their page; the rest show "Soon".
+ */
+export interface CategoryLook {
+  sub?: string;
+  icon: string;
+  live?: boolean;
+  wedding?: boolean;
+}
+export const CATEGORY_LOOK: Record<string, CategoryLook> = {
+  wedding: { sub: "Venues, makeup & more", icon: ICON.heart, live: true, wedding: true },
+  "real-estate": { sub: "Builders & projects", icon: ICON.building, live: true },
+  "tattoo-studios": { icon: "M4 20l1-4L16 5l3 3L8 19zM13 8l3 3" },
+  restaurants: { icon: ICON.fork },
+  "loans-finance": { icon: "M7 5h10M7 9h10M8 5c5 0 6 5 0 5l7 9" },
+  "interior-services": { icon: "M3 12a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3zM5 12V9a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v3M6 17v2M18 17v2" },
+  "beauty-spa": { icon: ICON.sparkle },
+  "home-decor": { icon: "M9 3h6l3 9H6zM12 12v8M8 21h8" },
+  "travel-services": { icon: "M3 13l18-8-6 15-3-6zM12 14l4-4" },
+  "fitness-gym": { icon: "M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12" },
+  electronics: { icon: "M13 2L5 14h6l-1 8 8-12h-6z" },
+  "ac-repair": { icon: "M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9" },
+  "refurbished-laptops": { icon: "M5 6h14v9H5zM3 18h18" },
+  cafes: { icon: "M5 8h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM16 9h2a2 2 0 0 1 0 4h-2M8 3v2M12 3v2" },
+  "event-services": { icon: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" },
+};
+export const DEFAULT_LOOK: CategoryLook = { icon: ICON.grid };
+/** The design's last card, after the admin's categories. */
+export const MORE_CATEGORIES = { name: "9 more", sub: "Opening soon", icon: "M5 12h.01M12 12h.01M19 12h.01" };
 
 export const MARKETS = [
   { name: "Sector 18", g: "g1" },

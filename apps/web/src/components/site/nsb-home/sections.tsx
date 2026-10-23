@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Category, ListingCounts, LocationOption } from "@nsb/shared";
+import { LocationPicker } from "@/components/site/location-picker";
+import { locationPlace, type SiteLocation } from "@/lib/location";
 import { HomeLink, Icon } from "./bits";
 import {
   BRANDS,
-  CATEGORIES,
+  CATEGORY_LOOK,
   DEALS,
+  DEFAULT_LOOK,
   FAQS,
   HIGHLIGHTS,
   HOW_IT_WORKS,
@@ -12,6 +16,7 @@ import {
   JOHRI,
   LOGO,
   MARKETS,
+  MORE_CATEGORIES,
   PICKS,
   PRODUCTS,
   QUICK_LINKS,
@@ -20,10 +25,15 @@ import {
   TRUST,
 } from "./content";
 import { type HeroSlide, HeroSlides } from "./hero-slides";
-import { LocationMenu } from "./location-menu";
+import { ShowMore } from "./show-more";
 
-/** Header from the demo. Search, cart and login are shown as designed but not wired up (not Phase-1). */
-export function HomeHeader() {
+/** Categories shown on phones before "Show more". */
+const PHONE_CATEGORIES = 6;
+
+const lookOf = (c: Category) => CATEGORY_LOOK[c.slug] ?? DEFAULT_LOOK;
+
+/** Header from the demo. The location picker filters every page; search, cart and login are not wired up (not Phase-1). */
+export function HomeHeader({ location, locationOptions }: { location: SiteLocation | null; locationOptions: LocationOption[] }) {
   return (
     <header className="hd">
       <div className="w bar">
@@ -34,7 +44,7 @@ export function HomeHeader() {
           <Icon d={ICON.search} size={18} />
           <input type="search" placeholder="Search wedding venues, salons, AC repair…" aria-label="Search" />
         </label>
-        <LocationMenu />
+        <LocationPicker variant="home" current={location} options={locationOptions} />
         <a className="ct" href="#" aria-label="Cart">
           <Icon d={ICON.bag} />
           <i>0</i>
@@ -85,32 +95,42 @@ export function HeroBanners({ slides }: { slides: HeroSlide[] }) {
   );
 }
 
-export function Categories() {
+/**
+ * Browse by category: the active top-level categories in the order set in Admin › Home page.
+ * With a location chosen, live categories show how many listings they have there.
+ */
+export function Categories({ categories, counts, location }: { categories: Category[]; counts: ListingCounts; location: SiteLocation | null }) {
+  const place = locationPlace(location);
   return (
     <section id="categories">
       <div className="w">
         <div className="sh">
           <h2>Browse by category</h2>
         </div>
+        {/* The categories plus the "more opening soon" tile. */}
+        <ShowMore hiddenCount={Math.max(0, categories.length + 1 - PHONE_CATEGORIES)}>
         <div className="cats">
-          {CATEGORIES.map((c) => {
+          {categories.map((c) => {
+            const look = lookOf(c);
+            const n = counts[c.slug] ?? 0;
+            const sub = look.live && location ? (n ? `${n} in ${place}` : `None in ${place} yet`) : look.sub;
             const body = (
               <>
                 <span className="ci">
-                  <Icon d={c.icon} size={26} />
+                  <Icon d={look.icon} size={26} />
                 </span>
                 <b>{c.name}</b>
-                {c.sub && <small>{c.sub}</small>}
+                {sub && <small>{sub}</small>}
               </>
             );
-            return c.link ? (
-              <Link key={c.name} className={`cat live${c.wedding ? " wed" : ""}`} href={c.link}>
+            return look.live ? (
+              <Link key={c.id} className={`cat live${look.wedding ? " wed" : ""}`} href={`/${c.slug}`}>
                 <span className="lv">
                   <i />
                   Live
                 </span>
                 {body}
-                {c.wedding && (
+                {look.wedding && (
                   <span className="cf">
                     <i />
                     <i />
@@ -122,13 +142,22 @@ export function Categories() {
                 )}
               </Link>
             ) : (
-              <div key={c.name} className="cat soon" aria-disabled="true">
+              <div key={c.id} className="cat soon" aria-disabled="true">
                 <span className="sn">Soon</span>
                 {body}
               </div>
             );
           })}
+          <div className="cat soon" aria-disabled="true">
+            <span className="sn">Soon</span>
+            <span className="ci">
+              <Icon d={MORE_CATEGORIES.icon} size={26} />
+            </span>
+            <b>{MORE_CATEGORIES.name}</b>
+            <small>{MORE_CATEGORIES.sub}</small>
+          </div>
         </div>
+        </ShowMore>
       </div>
     </section>
   );
@@ -391,7 +420,7 @@ export function Faqs() {
   );
 }
 
-export function HomeFooter() {
+export function HomeFooter({ categories }: { categories: Category[] }) {
   return (
     <footer>
       <div className="w">
@@ -401,6 +430,10 @@ export function HomeFooter() {
               <Image className="flg" src={LOGO} alt="Noida Super Bazaar" width={560} height={283} />
             </Link>
             <p>Your trusted hyperlocal discovery platform for Noida. Connecting you with verified local businesses and services.</p>
+            <a className="fph" href="tel:+919811590088">
+              <Icon d={ICON.phone} size={18} stroke={1.8} />
+              +91 98115 90088
+            </a>
             <div className="tb">
               <span>
                 <Icon d={ICON.shield} size={22} stroke={1.8} />
@@ -437,9 +470,9 @@ export function HomeFooter() {
               Categories
             </h4>
             <ul className="fl2">
-              {CATEGORIES.filter((c) => c.link).map((c) => (
-                <li key={c.name}>
-                  <Link href={c.link!}>
+              {categories.filter((c) => lookOf(c).live).map((c) => (
+                <li key={c.id}>
+                  <Link href={`/${c.slug}`}>
                     <Icon d={ICON.chevronRight} size={14} stroke={1.8} />
                     {c.name}
                   </Link>

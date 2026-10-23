@@ -103,8 +103,8 @@ export function SiteFooter({ categories }: { categories: Category[] }) {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="size-4 shrink-0 text-brand" aria-hidden />
-              <a href="tel:+911234567890" className="hover:text-brand">
-                +91 12345 67890
+              <a href="tel:+919811590088" className="hover:text-brand">
+                +91 98115 90088
               </a>
             </li>
             <li className="flex items-center gap-2">

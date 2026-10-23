@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { type CSSProperties, useRef, useState } from "react";
 import { HomeLink, Icon } from "./bits";
 import { ICON } from "./content";
 
@@ -8,6 +8,8 @@ import { ICON } from "./content";
 export interface HeroSlide {
   key: string;
   image: string | null;
+  /** Shown instead of `image` on phones, when set. */
+  mobileImage: string | null;
   cls: string;
   tag: string | null;
   heading: string;
@@ -40,10 +42,10 @@ export function HeroSlides({ slides }: { slides: HeroSlide[] }) {
           s.image ? (
             <HomeLink
               key={s.key}
-              className="slide"
+              className="slide img"
               href={s.link}
               aria-label={s.heading}
-              style={{ background: `url("${s.image}") center/cover no-repeat` }}
+              style={{ "--img": `url("${s.image}")`, ...(s.mobileImage && { "--img-m": `url("${s.mobileImage}")` }) } as CSSProperties}
             />
           ) : (
             <div key={s.key} className={`slide ${s.cls}`}>

@@ -1,15 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, MapPin, Search, ShoppingBag } from "lucide-react";
+import { ChevronDown, Search, ShoppingBag } from "lucide-react";
+import type { LocationOption } from "@nsb/shared";
+import type { SiteLocation } from "@/lib/location";
+import { LocationPicker } from "./location-picker";
 
 /**
- * Header from the home design. Search, location, cart and login are shown as designed
- * but not wired up: search and customer accounts are not part of Phase-1.
+ * Header from the home design. The location picker filters every page; search, cart and login
+ * are shown as designed but not wired up: search and customer accounts are not part of Phase-1.
  */
-export function SiteHeader() {
+export function SiteHeader({ location, locationOptions }: { location: SiteLocation | null; locationOptions: LocationOption[] }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-[#f3f4f6] bg-white py-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] lg:static lg:py-3 lg:shadow-none">
-      <div className="container-page flex flex-wrap items-center justify-between gap-x-3 gap-y-3 sm:gap-x-6">
+    <header className="sticky top-0 z-50 border-b border-[#f3f4f6] bg-white/95 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-md lg:static lg:bg-white lg:py-3 lg:shadow-none lg:backdrop-blur-none">
+      <div className="container-page flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5 sm:gap-x-6">
         <Link href="/" className="relative block h-10 w-24 shrink-0 sm:h-[52px] sm:w-[124px]" aria-label="Noida Super Bazaar home">
           <Image src="/images/brand/logo.png" alt="Noida Super Bazaar" fill priority sizes="124px" className="object-contain" />
         </Link>
@@ -28,21 +31,13 @@ export function SiteHeader() {
             <input
               type="search"
               placeholder="Search for shops, services, deals in Noida..."
-              className="h-[38px] w-full rounded-lg border border-[#e5e7eb] bg-surface pr-1 pl-[41px] text-base text-ink sm:text-sm outline-none placeholder:text-muted focus:border-brand sm:rounded-l-none"
+              className="h-10 w-full rounded-full border border-[#e5e7eb] bg-surface pr-1 pl-[41px] text-base text-ink outline-none placeholder:text-muted focus:border-brand sm:h-[38px] sm:rounded-l-none sm:rounded-r-lg sm:text-sm"
             />
           </label>
         </form>
 
         <div className="flex shrink-0 items-center gap-3 sm:gap-6">
-          <button type="button" className="flex items-center gap-1">
-            <span className="flex rounded-full bg-brand-soft p-1.5">
-              <MapPin className="size-4 text-brand" aria-hidden />
-            </span>
-            <span className="hidden pl-1 text-sm leading-5 font-medium whitespace-nowrap text-[#4b5563] sm:inline">
-              Noida, Sector 18
-            </span>
-            <ChevronDown className="size-5 text-muted" aria-hidden />
-          </button>
+          <LocationPicker variant="site" current={location} options={locationOptions} />
           <a href="#" className="relative block" aria-label="Cart">
             <span className="flex rounded-full bg-[#f3f4f6] p-2">
               <ShoppingBag className="size-5 text-[#4b5563] sm:size-6" aria-hidden />

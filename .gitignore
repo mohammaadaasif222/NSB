@@ -16,3 +16,5 @@ apps/api/uploads/
 
 # Local notes with credentials; never ship or commit
 cred.txt
+/NSBLiveDemoold.html
+/nsb-live-demo.html

@@ -1,6 +1,7 @@
 /**
  * "Venues by budget" / "Venues by type" side panels on the category listing page, styled after
- * WedMeGood. Static design content for now: the tiles do not filter yet (filters are Phase-2).
+ * WedMeGood. Each tile's label is a listing tag: the tile shows listings tagged with it, and the
+ * admin listing form offers these labels as tags. Renaming a label here means re-tagging listings.
  * Photos are Unsplash placeholders, like the demo vendors; swap in NSB photos before launch.
  */
 
@@ -86,4 +87,9 @@ const PANELS: Record<string, BrowsePanel[]> = {
 /** Panels for a sub-category; other categories get a budget panel with neutral photos. */
 export function browsePanels(categorySlug: string, categoryName: string): BrowsePanel[] {
   return PANELS[categorySlug] ?? [budget(categoryName, ["1542665952-14513db15293", "1524824267900-2fa9cbf7a506", "1526568929-7cdd510e77fd", "1549895058-36748fa6c6a7"])];
+}
+
+/** Tag suggestions for the admin listing form: each panel's labels, under the panel's title. */
+export function browseTagGroups(categorySlug: string, categoryName: string): { title: string; tags: string[] }[] {
+  return browsePanels(categorySlug, categoryName).map((p) => ({ title: p.title, tags: p.tiles.map((t) => t.label) }));
 }

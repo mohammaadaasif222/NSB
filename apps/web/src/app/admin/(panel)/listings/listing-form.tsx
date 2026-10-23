@@ -18,6 +18,7 @@ import {
   type ListingUpdate,
   type ListingVideo,
   type ListingVideoKind,
+  MAX_LISTING_TAGS,
   MAX_LISTING_VIDEOS,
   type QuickInfoItem,
   youTubeId,
@@ -26,9 +27,11 @@ import { Affix, Button, Field, IconButton, Select, slugify, TextArea, TextInput,
 import { ImageListUpload, ImageUpload, useSessionUploads } from "@/components/admin/image-upload";
 import { DetailsSection, type DetailsDraft, detailsFromDraft, draftFromDetails, FormSection } from "@/components/admin/listing-fields";
 import { draftFromGroups, groupsFromDraft, type ServiceGroupDraft, ServiceGroupsEditor } from "@/components/admin/service-groups-editor";
+import { TagPicker } from "@/components/admin/tag-picker";
 import { useAdminAction } from "@/components/admin/use-admin-action";
 import { ListingCard, type ListingView } from "@/components/site/listing/listing-card";
 import { adminClient } from "@/lib/admin-client";
+import { browseTagGroups } from "@/lib/browse-panels";
 
 const MAX_QUICK_INFO = 12;
 
@@ -141,6 +144,7 @@ export function ListingForm({
   const [quickInfo, setQuickInfo] = useState<QuickInfoItem[]>(listing?.savedQuickInfo ?? []);
   const [gallery, setGallery] = useState<string[]>(listing?.gallery.map((g) => g.url) ?? []);
   const [videos, setVideos] = useState<ListingVideo[]>(listing?.videos ?? []);
+  const [tags, setTags] = useState<string[]>(listing?.tags ?? []);
   const setVideo = (i: number, patch: Partial<ListingVideo>) => setVideos((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   const addVideo = (kind: ListingVideoKind) => setVideos((rows) => [...rows, { kind, url: "" }]);
   const set = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) => setValues((v) => ({ ...v, [key]: value }));
@@ -184,6 +188,7 @@ export function ListingForm({
       locality: optional(values.locality, listing?.locality),
       address: optional(values.address, listing?.address),
       services,
+      tags,
       serviceGroups: groupsFromDraft(groups),
       googleRating: values.googleRating.trim() ? Number(values.googleRating) : null,
       googleReviewCount: values.googleReviewCount.trim() ? Number(values.googleReviewCount) : null,
@@ -471,6 +476,16 @@ export function ListingForm({
               <span className="text-[13px] font-semibold text-zinc-900">Service sections</span>
               <ServiceGroupsEditor rows={groups} onChange={setGroups} errors={errors} />
             </div>
+          </FormSection>
+
+          <FormSection title="Tags" tag="Site filters">
+            <TagPicker
+              value={tags}
+              onChange={setTags}
+              groups={sub ? browseTagGroups(sub.slug, sub.name) : []}
+              max={MAX_LISTING_TAGS}
+              error={errors.tags}
+            />
           </FormSection>
 
           {structured && top && (
