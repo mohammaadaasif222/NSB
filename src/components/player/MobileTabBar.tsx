@@ -20,17 +20,13 @@ import headsetIcon from '@/assets/lobby/tabbar/headset.svg';
 import roulette from '@/assets/lobby/tabbar/roulette.webp';
 import ball from '@/assets/lobby/tabbar/ball.webp';
 
-/** The bar's dark glass, shared by its pills and its round buttons. */
 const GLASS = 'rl-drop-pane bg-black/45 backdrop-blur-xl';
-/** One icon button in a pill: the design's 40-tall hit, lit on #252937. */
 const ITEM =
   'flex h-10 min-w-0 flex-1 items-center justify-center rounded-[44px] text-[#f0f1f5] transition-colors';
 const ITEM_ON = 'bg-[#252937]';
 const ITEM_IDLE = 'hover:bg-white/5';
-/** The 50px round buttons: back, and the collapsed bar's menu. */
 const DISC = `${GLASS} flex h-[50px] w-[50px] items-center justify-center rounded-full text-[#f0f1f5]`;
 
-/** Each section's render, and the coloured glow the design hangs under it. */
 const SECTION = {
   casino: {
     src: roulette.src,
@@ -41,13 +37,6 @@ const SECTION = {
 } as const;
 type Section = keyof typeof SECTION;
 
-/**
- * - `bar`: the pill (Menu, Search, Rewards, Chat, and Profile once signed in)
- *   with the current section's button beside it.
- * - `switch`: that button opened — back, and Casino / Sports to pick from.
- * - `collapsed`: scrolled down, the bar folds to one round menu button.
- * - `wide`: that button opened — Menu, Casino, Sports, Search and Chat.
- */
 type Mode = 'bar' | 'switch' | 'collapsed' | 'wide';
 
 const IconItem: FC<{
@@ -86,23 +75,7 @@ const SectionArt: FC<{ section: Section; className: string }> = ({ section, clas
   />
 );
 
-/**
- * The phone's bottom bar, as the mobile designs draw it ("Menu" component,
- * Variant3–8). A floating glass pill, 16 in and 24 up, with the current
- * section's button beside it hanging off the screen's edge. Tapping that
- * button swaps the bar for a Casino / Sports switch; scrolling down folds the
- * bar to a single round button, which opens the wide bar, and scrolling back
- * up restores it.
- *
- * Menu opens the menu panel; Search the game search; Rewards the rewards page
- * (promotions when rewards are off); Chat the built-in chat, or Intercom when
- * that is the one switched on; Profile the account menu.
- *
- * Above the bar's end floats the support button, the design's 60px headset
- * disc, 13 over the bar: Intercom when it is switched on, otherwise the
- * built-in chat — which needs an account, so a signed-out visitor is asked to
- * log in. It steps away while the menu panel or the chat is open.
- */
+
 const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
   menuOpen,
   onToggleMenu,
@@ -133,9 +106,6 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
 
   const section: Section = pathname.startsWith('/sports') ? 'sports' : 'casino';
   const profile = pathname.startsWith('/profile');
-
-  const casino =
-    pathname === '/casino' || pathname === '/live-casino' || pathname.startsWith('/game');
 
   // A new page starts on the full bar.
   useEffect(() => setMode('bar'), [pathname]);
@@ -259,7 +229,6 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
           />
           {chatItem}
           {token && (
-            // Opens the account menu over the bar, as the desktop's profile button does.
             <ProfileMenu
               placement="above-tabbar"
               className="flex min-w-0 flex-1"
@@ -281,8 +250,6 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
           )}
         </div>
 
-        {/* The section's button: 82 wide, 12 after the pill, its far end
-            running off the screen as drawn. Opens the Casino / Sports switch. */}
         <button
           type="button"
           onClick={() => setMode('switch')}

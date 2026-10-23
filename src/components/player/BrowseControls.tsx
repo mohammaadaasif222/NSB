@@ -18,16 +18,9 @@ import chipRoulette from '@/assets/lobby/player/chip-roulette.svg';
 import chipBaccarat from '@/assets/lobby/player/chip-baccarat.svg';
 import chipGameShows from '@/assets/lobby/player/chip-gameshows.svg';
 import chipNewArrivals from '@/assets/lobby/player/chip-newarrivals.svg';
-// The rail's own heart, so the chip and the Favourites nav entry read as one thing.
 import Glyph from '@/components/player/Glyph';
 
-/*
- * The catalogue browser's controls — search, the three dropdowns and the
- * category chips — drawn as the signed-in lobby design does. Sized in `--u`
- * (see PlayerLayout): the design's px on desktop, scaled with the page.
- */
 
-/** The design's small dark glass, which every control here sits on. */
 const GLASS = 'rl-glass-btn';
 
 /* ==================================================================== */
@@ -66,14 +59,10 @@ export const SearchField: FC<{
 interface DropdownProps {
   icon: StaticImageData;
   label: string;
-  /** The label on a phone, where the design names the control, not its value. */
   phoneLabel?: string;
   children: (close: () => void) => ReactNode;
-  /** Gold, as an active chip is: a filter is set. */
   active?: boolean;
-  /** Which edge the menu lines up with; `end` by default. */
   align?: 'start' | 'end';
-  /** On a phone, open as a sheet along the bottom of the screen. */
   sheetOnPhone?: boolean;
 }
 
@@ -181,9 +170,7 @@ export const Option: FC<{
   selected: boolean;
   onSelect: () => void;
   children: ReactNode;
-  /** A count drawn at the end, such as how many games an option leaves. */
   count?: number;
-  /** One of several that can be on together: a checkbox rather than a radio. */
   multi?: boolean;
 }> = ({ selected, onSelect, children, count, multi = false }) => (
   <button
@@ -234,7 +221,6 @@ export interface BrowseState {
   search: string;
   sort: SortKey;
   filter: FilterKey;
-  /** A studio's name; empty for every studio. */
   provider: string;
 }
 
@@ -282,7 +268,6 @@ export const browseGames = (
 export const BrowseToolbar: FC<{
   state: BrowseState;
   onChange: (patch: Partial<BrowseState>) => void;
-  /** Studios to offer in the provider picker. */
   providers: string[];
 }> = ({ state, onChange, providers }) => {
   const { t } = useTranslation();
@@ -380,14 +365,9 @@ export type ChipKey = GameShelfKey | 'lobby' | 'favourites';
  * and tagged "Soon".
  */
 interface Chip {
-  /** The shelf it filters to; absent for a chip with nothing behind it yet. */
   key?: ChipKey;
   labelKey: TranslationKey;
   icon: StaticImageData;
-  /**
-   * Only drawn for a signed-in player — the list behind it is their own, so
-   * to a visitor the chip would be a dead end onto an empty grid.
-   */
   signedIn?: boolean;
 }
 
@@ -424,11 +404,9 @@ const LIVE_CHIPS: Chip[] = [
 
 export type ChipSet = 'casino' | 'live';
 
-/** A chip: 34px with 12px type on a phone, the design's 48px pill on desktop. */
 const CHIP =
   'inline-flex h-[34px] flex-shrink-0 items-center gap-[5px] rounded-full px-3 text-[12px] leading-5 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 
-/** The active chip: Rubik, gold, and a glow — stronger on the phone's smaller chip, as drawn. */
 const CHIP_ON =
   'font-rubik font-medium text-[#ffe779] shadow-[0_0_12px_rgba(255,231,121,0.5)] lg:shadow-[0_0_calc(var(--u)*17.6)_rgba(255,231,121,0.2)]';
 
