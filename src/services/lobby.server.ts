@@ -1,6 +1,11 @@
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { SHELF_KEYS } from '@/constants/games';
-import { fetchHomeShelves, fetchLobbyProviders, parsePageParam } from '@/services/games.server';
+import {
+  fetchHomeShelves,
+  fetchLobbyProviders,
+  fetchRegisteredTodayCount,
+  parsePageParam,
+} from '@/services/games.server';
 import { fetchFaqsServer } from '@/services/faqs.server';
 import type { FaqItem } from '@/services/faqs';
 import type { GameShelf, GameShelfKey, LobbyProvider } from '@/types';
@@ -12,6 +17,7 @@ export interface LobbyProps {
   providers: LobbyProvider[];
   catalogueFailed: boolean;
   faqs: FaqItem[];
+  registeredToday: number | null;
 }
 
 /**
@@ -38,10 +44,11 @@ export const getLobbyProps = async (
   ) as Record<GameShelfKey, number>;
 
   // In parallel: three independent public reads, and the page waits on all of them.
-  const [{ shelves, failed }, providers, faqs] = await Promise.all([
+  const [{ shelves, failed }, providers, faqs, registeredToday] = await Promise.all([
     fetchHomeShelves(pages),
     fetchLobbyProviders(),
     fetchFaqsServer(),
+    fetchRegisteredTodayCount(),
   ]);
 
   return {
@@ -50,6 +57,7 @@ export const getLobbyProps = async (
       providers,
       catalogueFailed: failed,
       faqs,
+      registeredToday,
     },
   };
 };

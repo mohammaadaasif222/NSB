@@ -4,7 +4,7 @@ import { FacebookMark, GmailMark, TelegramMark, WhatsappMark } from '@/component
 import { MailIcon, PhoneIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
 import SocialDot from '@/components/auth/SocialDot';
-import { LOBBY_STATS } from '@/constants/stats';
+import { useRegisteredTodayLabel } from '@/hooks/useRegisteredToday';
 
 import type { SignupMethod } from '@/types';
 
@@ -29,11 +29,12 @@ const MethodStep: FC<MethodStepProps> = ({
   googleBusy,
 }) => {
   const { t } = useTranslation();
+  const registeredToday = useRegisteredTodayLabel();
 
   return (
     <div className="space-y-3">
       <AuthMethodList
-        tab={t('registerModal.registeredToday', { count: LOBBY_STATS.registeredToday })}
+        tab={registeredToday}
         methods={[
           {
             id: 'gmail',
