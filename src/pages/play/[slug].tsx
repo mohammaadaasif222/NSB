@@ -213,13 +213,14 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
 
   const explicitRatio = launch?.display_ratio ?? game.display_ratio;
   const ratio = explicitRatio ?? DEFAULT_RATIO;
-  // Tequity (and any adapter whose catalogue doesn't publish a game aspect
-  // ratio) renders in a fluid layout. For those we omit the width
-  // constraint entirely — the frame then fills the content column
-  // automatically — and only hint the height via aspectRatio. Alea Play
-  // and Pragmatic Play publish their ratio and keep the original
-  // width-constrained sizing so their art stays intact.
-  const unknownRatio = explicitRatio === null || explicitRatio === undefined;
+  // Tequity games render in a fluid layout and have no catalogue-published
+  // aspect ratio. For those we drop the width constraint entirely (the
+  // frame then fills the content column from close-button to fullscreen
+  // button) and only hint height via aspectRatio. Scoped STRICTLY to the
+  // TEQUITY aggregator — not just "any game with null ratio" — so an
+  // Alea Play / Pragmatic Play game that happens to miss a ratio stays
+  // on the original width-constrained sizing it was designed for.
+  const isTequity = launch?.aggregator_code === 'TEQUITY';
   // Desktop: the game's own shape, as large as the viewport allows. Mobile
   // builds fill the screen whatever shape the desktop build has. The offsets
   // cover the sticky top bar (with its winners ticker), this page's header row
@@ -228,7 +229,7 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
     ? { width: '100%', height: '100%' }
     : launch?.device === 'MOBILE'
       ? { width: '100%', height: 'calc(100dvh - 12.5rem)' }
-      : unknownRatio
+      : isTequity
         ? // No width — fill the content column — aspectRatio only.
           { aspectRatio: `100 / ${ratio}` }
         : {
