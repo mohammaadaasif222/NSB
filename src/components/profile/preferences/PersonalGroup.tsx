@@ -22,12 +22,12 @@ const PersonalGroup: FC<Props> = ({ me, onChangeUsername, onChangeTimezone }) =>
   const timezone = me.timezone || DEFAULT_TIMEZONE;
   const timezoneKey = timezoneLabelKey(timezone);
 
-  const rows = [
+  const rows: { key: string; label: string; value: string; onChange: (() => void) | null }[] = [
     {
       key: 'username',
       label: t('profile.username'),
       value: me.username || t('profile.notSet'),
-      onChange: onChangeUsername,
+      onChange: me.username_changed_at ? null : onChangeUsername,
     },
     {
       key: 'timezone',
@@ -50,7 +50,7 @@ const PersonalGroup: FC<Props> = ({ me, onChangeUsername, onChangeTimezone }) =>
               <span className="max-w-[calc(var(--u)*144)] truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
                 {row.value}
               </span>
-              <RowButton onClick={row.onChange}>{t('profile.change')}</RowButton>
+              {row.onChange && <RowButton onClick={row.onChange}>{t('profile.change')}</RowButton>}
             </span>
           </PrefRowShell>
         ))}

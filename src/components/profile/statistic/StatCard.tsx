@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import type { StatTile } from '@/components/profile/statistic/mockStats';
+import type { StatTile } from '@/components/profile/statistic/statRanges';
 
 /**
  * One figure and what it counts, centred in a glass tile.

@@ -34,7 +34,7 @@ interface Props {
   /** True when the API was unreachable (as opposed to the game not existing). */
   failed: boolean;
   /**
-   * Demo Dice settings, for the Dice game only. When enabled the page plays
+   * Dice settings, for the Dice game only. When enabled the page plays
    * the game in place of the details view.
    */
   dice: DiceConfig | null;
@@ -74,7 +74,14 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
   const { openLogin } = useAuthModal();
 
   if (!game.launchable) {
-    return (
+    return token ? (
+      <span
+        aria-disabled="true"
+        className="inline-flex items-center justify-center rounded-lg bg-slate-800/60 border border-slate-800 px-6 py-2.5 text-sm font-semibold text-slate-400 cursor-not-allowed"
+      >
+        {t('game.unavailable')}
+      </span>
+    ) : (
       <button
         type="button"
         onClick={() => openLogin()}
@@ -244,7 +251,7 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
               </dl>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <PlayActions game={game} />
+                <PlayActions game={dice ? { ...game, launchable: false } : game} />
                 {def && (
                   <Link href={categoryHref(def.key)} className={SECONDARY}>
                     {t('game.moreFrom', { category: categoryTitle ?? '' })}

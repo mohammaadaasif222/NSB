@@ -20,6 +20,7 @@ import {
   type ReactionKind,
   type ReactionSummary,
   type ReactionUpdate,
+  type ReplyRef,
 } from '@/services/chat';
 import { realtimeService, type ConnectionState } from '@/services/realtimeService';
 
@@ -75,13 +76,18 @@ interface GroupChat {
   /** ms until this account may post again, or 0. Counts down. */
   cooldownMs: number;
   /** Returns true when the message was accepted. */
-  send: (body: string, replyTo?: string | null) => Promise<boolean>;
+  send: (body: string, replyTo?: string | null, quote?: ReplyRef | null) => Promise<boolean>;
   /**
    * React to somebody else's message. Pass the reaction the player CLICKED —
    * sending the one already held clears it, and the server decides that.
    */
   react: (messageId: string, reaction: ReactionKind) => Promise<void>;
-  sendVoice: (clip: Blob, durationMs: number, replyTo?: string | null) => Promise<boolean>;
+  sendVoice: (
+    clip: Blob,
+    durationMs: number,
+    replyTo?: string | null,
+    quote?: ReplyRef | null
+  ) => Promise<boolean>;
   remove: (messageId: string) => Promise<boolean>;
   report: (messageId: string, reason: string) => Promise<void>;
 }
@@ -182,6 +188,20 @@ const applyReaction = (current: ChatMessage[], update: ReactionUpdate): ChatMess
     },
   };
 
+  return next;
+};
+
+const withQuote = (
+  current: ChatMessage[],
+  messageId: string,
+  quote: ReplyRef | null
+): ChatMessage[] => {
+  if (!quote) return current;
+  const index = current.findIndex((message) => message.id === messageId);
+  if (index === -1 || current[index].reply_to) return current;
+
+  const next = [...current];
+  next[index] = { ...next[index], reply_to: quote };
   return next;
 };
 
@@ -426,7 +446,11 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
 
   /* --- sending ----------------------------------------------------------- */
   const send = useCallback(
-    async (body: string, replyTo: string | null = null): Promise<boolean> => {
+    async (
+      body: string,
+      replyTo: string | null = null,
+      quote: ReplyRef | null = null
+    ): Promise<boolean> => {
       const trimmed = body.trim();
       if (trimmed.length === 0 || sending) return false;
 
@@ -440,7 +464,7 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
           // Shown at once rather than waiting for the socket to bring it
           // back, so the composer clears the instant the message is real.
           // The socket copy arrives moments later and `merge` drops it.
-          setMessages((current) => merge(current, [message]));
+          setMessages((current) => withQuote(merge(current, [message]), message.id, quote));
         }
 
         // The server's own floor is authoritative; this mirrors it so the
@@ -496,7 +520,12 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
   );
 
   const sendVoice = useCallback(
-    async (clip: Blob, durationMs: number, replyTo: string | null = null): Promise<boolean> => {
+    async (
+      clip: Blob,
+      durationMs: number,
+      replyTo: string | null = null,
+      quote: ReplyRef | null = null
+    ): Promise<boolean> => {
       if (sending) return false;
 
       setSending(true);
@@ -504,7 +533,9 @@ export const useGroupChat = (room: ChatRoom = DEFAULT_CHAT_ROOM): GroupChat => {
 
       try {
         const message = await sendVoiceMessage(clip, durationMs, room, replyTo);
-        if (message) setMessages((current) => merge(current, [message]));
+        if (message) {
+          setMessages((current) => withQuote(merge(current, [message]), message.id, quote));
+        }
         startCooldown(limits.slow_mode_ms);
         return true;
       } catch (err) {

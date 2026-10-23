@@ -23,6 +23,7 @@ import TopWinnersTicker from '@/components/player/TopWinnersTicker';
 import LanguagePicker from '@/components/LanguagePicker';
 import HeaderPopover from '@/components/player/HeaderPopover';
 import NotificationPanel from '@/components/player/NotificationPanel';
+import { useNotifications } from '@/hooks/useNotifications';
 import ChatPanel from '@/components/player/ChatPanel';
 import ChatDrawer, { CHAT_TOGGLE_EVENT } from '@/components/player/ChatDrawer';
 import { DEFAULT_CHAT_ROOM, isChatRoom, type ChatRoom } from '@/services/chat';
@@ -138,6 +139,8 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
     isChatRoom(locale) ? locale : DEFAULT_CHAT_ROOM
   );
   const closePanel = useCallback(() => setPanel(null), []);
+  const notifications = useNotifications(panel === 'notifications');
+  const hasUnread = notifications.unread.personal + notifications.unread.platform > 0;
 
   // The phone's tab bar opens chat by event; the drawer lives here.
   useEffect(() => {
@@ -338,14 +341,16 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                         alt=""
                         className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
                       />
-                      <span
-                        className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-[#fcd535] lg:right-[calc(var(--u)*13)] lg:top-[calc(var(--u)*13)]"
-                        aria-hidden="true"
-                      />
+                      {hasUnread && (
+                        <span
+                          className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-[#fcd535] lg:right-[calc(var(--u)*13)] lg:top-[calc(var(--u)*13)]"
+                          aria-hidden="true"
+                        />
+                      )}
                     </IconButton>
                   }
                 >
-                  <NotificationPanel onClose={closePanel} />
+                  <NotificationPanel onClose={closePanel} feed={notifications} />
                 </HeaderPopover>
 
                 {/* The platform's own chat. Independent of the Intercom
