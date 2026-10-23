@@ -1,5 +1,10 @@
 import type { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
-import { fetchHomeShelves, fetchLobbyProviders, parsePageParam } from '@/services/games.server';
+import {
+  fetchHomeShelves,
+  fetchLobbyProviders,
+  fetchRegisteredTodayCount,
+  parsePageParam,
+} from '@/services/games.server';
 import { fetchFaqsServer } from '@/services/faqs.server';
 import type { FaqItem } from '@/services/faqs';
 import type { GameShelf, GameShelfKey, LobbyProvider } from '@/types';
@@ -11,11 +16,10 @@ export interface LobbyProps {
   providers: LobbyProvider[];
   catalogueFailed: boolean;
   faqs: FaqItem[];
+  registeredToday: number | null;
 }
 
 /**
- * getServerSideProps for the lobby pages.
- *
  * getServerSideProps for a lobby page that draws `keys`.
  *
  * Kept out of the page files so `/`, `/casino` and `/live-casino` share one
@@ -39,11 +43,12 @@ export const lobbyProps =
       keys.map((key) => [key, parsePageParam(context.query[key])])
     ) as Record<GameShelfKey, number>;
 
-    // In parallel: three independent public reads, and the page waits on all of them.
-    const [{ shelves, failed }, providers, faqs] = await Promise.all([
+    // In parallel: four independent public reads, and the page waits on all of them.
+    const [{ shelves, failed }, providers, faqs, registeredToday] = await Promise.all([
       fetchHomeShelves(keys, pages),
       fetchLobbyProviders(),
       fetchFaqsServer(),
+      fetchRegisteredTodayCount(),
     ]);
 
     return {
@@ -52,6 +57,7 @@ export const lobbyProps =
         providers,
         catalogueFailed: failed,
         faqs,
+        registeredToday,
       },
     };
   };

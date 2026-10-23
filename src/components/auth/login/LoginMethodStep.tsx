@@ -3,7 +3,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { GmailMark } from '@/components/brand';
 import { MailIcon, PhoneIcon, UserIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
-import { LOBBY_STATS } from '@/constants/stats';
+import { useRegisteredTodayLabel } from '@/hooks/useRegisteredToday';
 
 import type { LoginMethod } from '@/types';
 
@@ -16,11 +16,12 @@ interface LoginMethodStepProps {
 /** First screen of login: Gmail, or a password with username / mobile / email. */
 const LoginMethodStep: FC<LoginMethodStepProps> = ({ onSelectMethod, onGoogle, googleBusy }) => {
   const { t } = useTranslation();
+  const registeredToday = useRegisteredTodayLabel();
 
   return (
     <AuthMethodList
       tab={t('loginModal.suggestion')}
-      phoneTab={t('registerModal.registeredToday', { count: LOBBY_STATS.registeredToday })}
+      phoneTab={registeredToday}
       methods={[
         {
           id: 'gmail',

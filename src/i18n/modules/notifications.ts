@@ -1,0 +1,35 @@
+export const en = {
+  'notif.loadFailed': 'Could not load notifications',
+  'notif.platformEmpty': 'There are no announcements right now.',
+  'notif.open': 'Open',
+  'notif.bonusGranted.title': 'Bonus activated',
+  'notif.bonusGranted.freeBet': '{bonus}: a {amount} free bet is ready to use.',
+  'notif.bonusGranted.cashWagering':
+    '{bonus}: {amount} added to your bonus balance. Wager {wagering} to unlock it.',
+  'notif.bonusGranted.cash': '{bonus}: {amount} added to your bonus balance.',
+  'notif.bonusGranted.spins': '{bonus}: {spins} free spins are ready to play.',
+  'notif.bonusGranted.plain': '{bonus} is now active.',
+  'notif.bonusCredited.title': 'Bonus credited',
+  'notif.bonusCredited.body': '{bonus}: {amount} has been added to your balance.',
+  'notif.bonusCompleted.title': 'Bonus completed',
+  'notif.bonusCompleted.body':
+    'You met the wagering requirement for {bonus}. Your bonus funds are now in your real balance.',
+  'notif.bonusExpired.title': 'Bonus expired',
+  'notif.bonusExpired.body': '{bonus} expired before its wagering requirement was met.',
+  'notif.bonusForfeited.title': 'Bonus forfeited',
+  'notif.bonusForfeited.player': 'You gave up {bonus}.',
+  'notif.bonusForfeited.maxBet': '{bonus} was forfeited: a bet went over its {maxBet} maximum bet.',
+  'notif.bonusForfeited.system': '{bonus} was forfeited.',
+  'notif.bonusCancelled.title': 'Bonus cancelled',
+  'notif.bonusCancelled.body': '{bonus} was cancelled. Reason: {reason}',
+  'notif.rewardClaimable.title': '{reward} ready to claim',
+  'notif.rewardClaimable.body':
+    '{reward}: {amount} is waiting for you. Claim it before it expires.',
+  'notif.rewardClaimed.title': '{reward} claimed',
+  'notif.rewardClaimed.body': '{amount} has been added to your balance.',
+  'notif.rolloverStarted.title': 'Rollover started',
+  'notif.rolloverStarted.body':
+    'Wager {required} to complete the rollover on your {deposit} deposit before withdrawing it.',
+  'notif.rolloverCompleted.title': 'Rollover completed',
+  'notif.rolloverCompleted.body': 'The rollover on your {deposit} deposit is complete.',
+};

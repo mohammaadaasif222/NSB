@@ -415,8 +415,9 @@ export function EventListeners() {
 
       toast.success(
         <div>
-          <div className="font-semibold">✅ {translate('misc.realtime.okTitle')}</div>
-          <div className="text-sm mt-2">{data.message}</div>
+          {/* <div className="font-semibold">✅ {translate('misc.realtime.okTitle')}</div> */}
+          <div className="font-semibold">{data.message}</div>
+          {/* <div className="text-sm mt-2">{data.message}</div> */}
           <div className="text-xs mt-1 opacity-75">
             {translate('misc.realtime.random', { value: data.randomNumber })} •{' '}
             {new Date(data.timestamp).toLocaleTimeString(currentLocale())}
