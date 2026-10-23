@@ -53,20 +53,41 @@ export interface Order {
  * Permissive signatures — the real hook used positional args that LocalCurrencyTab
  * still passes. The stub accepts anything and ignores it.
  */
+// Frozen singleton so every call returns the SAME reference. Callers that
+// have `fetchOffers` / `fetchCryptos` / `createOrder` in a useEffect
+// dependency array (LocalCurrencyTab does) would otherwise see a new ref on
+// every render, re-fire the effect, re-render, loop. The old
+// `return { ... }` built fresh objects per call and caused exactly that:
+// /api/d24/payment-methods fired continuously while the local-currency tab
+// was open.
+const STABLE: Readonly<{
+  cryptos: Cryptocurrency[];
+  loadingCryptos: boolean;
+  errorCryptos: string | null;
+  fetchCryptos: (...args: unknown[]) => Promise<void>;
+  offers: Offer[];
+  loadingOffers: boolean;
+  errorOffers: string | null;
+  fetchOffers: (...args: unknown[]) => Promise<Offer[]>;
+  creatingOrder: boolean;
+  errorCreateOrder: string | null;
+  createOrder: (...args: unknown[]) => Promise<Order | null>;
+}> = Object.freeze({
+  cryptos: [] as Cryptocurrency[],
+  loadingCryptos: false,
+  errorCryptos: null,
+  fetchCryptos: async () => undefined,
+
+  offers: [] as Offer[],
+  loadingOffers: false,
+  errorOffers: null,
+  fetchOffers: async () => [],
+
+  creatingOrder: false,
+  errorCreateOrder: null,
+  createOrder: async () => null,
+});
+
 export function useChangellyBuyCrypto() {
-  return {
-    cryptos: [] as Cryptocurrency[],
-    loadingCryptos: false,
-    errorCryptos: null as string | null,
-    fetchCryptos: async (..._args: unknown[]): Promise<void> => undefined,
-
-    offers: [] as Offer[],
-    loadingOffers: false,
-    errorOffers: null as string | null,
-    fetchOffers: async (..._args: unknown[]): Promise<Offer[]> => [],
-
-    creatingOrder: false,
-    errorCreateOrder: null as string | null,
-    createOrder: async (..._args: unknown[]): Promise<Order | null> => null,
-  };
+  return STABLE;
 }
