@@ -1,7 +1,6 @@
 import type { GetServerSideProps } from 'next';
 
-import { DEFAULT_LOCALE, SITE_URL, localizedPath } from '@/constants/site';
-import { LOCALES } from '@/i18n/locales';
+import { DEFAULT_LOCALE, SITE_URL } from '@/constants/site';
 
 const Robots = (): null => null;
 
@@ -18,7 +17,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res, locale }) =>
     'Disallow: /*?auth=',
     'Disallow: /*&auth=',
     '',
-    ...LOCALES.map((l) => `Sitemap: ${SITE_URL}${localizedPath(l, '/sitemap.xml')}`),
+    `Sitemap: ${SITE_URL}/sitemap.xml`,
     '',
   ].join('\n');
 

@@ -564,7 +564,6 @@ const LocalCurrencyTab: FC = () => {
 
   // Handle payer form submission - validate and proceed to embedded deposit
   const handlePayerFormSubmit = () => {
-    // Validate required payer fields (document/document_type are optional - some payment methods may not need them)
     if (!payer.first_name) {
       toast.error('First name is required');
       return;
@@ -575,6 +574,18 @@ const LocalCurrencyTab: FC = () => {
     }
     if (!payer.email) {
       toast.error('Email is required');
+      return;
+    }
+    // Document type + id are required for every D24 country we accept
+    // deposits from — the gateway rejects the embedded flow without them,
+    // and showing the error here is friendlier than surfacing a provider
+    // error after the user has already loaded the checkout iframe.
+    if (!payer.document_type?.trim()) {
+      toast.error('Document type is required');
+      return;
+    }
+    if (!payer.document?.trim()) {
+      toast.error('Document ID is required');
       return;
     }
 
@@ -745,14 +756,10 @@ const LocalCurrencyTab: FC = () => {
         </p>
 
         <div className="mt-4 space-y-3.5">
-          {/* Document Type - Dynamically loaded based on country */}
+          {/* Document Type - Dynamically loaded based on country. Required: D24 rejects the embedded flow without it. */}
           <WalletField
             htmlFor="payer-doc-type"
-            label={
-              countryDocumentTypes.length > 0
-                ? t('acct.local.documentType')
-                : `${t('acct.local.documentType')} (${t('acct.local.optional')})`
-            }
+            label={`${t('acct.local.documentType')} *`}
             hint={docType?.validation}
           >
             {loadingDocTypes ? (
@@ -786,11 +793,7 @@ const LocalCurrencyTab: FC = () => {
 
           <WalletField
             htmlFor="payer-doc"
-            label={
-              countryDocumentTypes.length > 0
-                ? `${t('acct.local.documentId')} (${t('acct.local.optional')})`
-                : t('acct.local.documentId')
-            }
+            label={`${t('acct.local.documentId')} *`}
             hint={docType?.example}
           >
             <div className={WALLET_PILL}>

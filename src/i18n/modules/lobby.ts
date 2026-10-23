@@ -186,4 +186,11 @@ export const en = {
 
   // Game pages
   'lobby.game.breadcrumb': 'Breadcrumb',
+
+  'lobby.providers.title': 'Game Providers',
+  'lobby.providers.intro': 'Every studio in the ROLLUCK casino. Pick a provider to see all of its games.',
+  'lobby.providers.games': '{provider} Games',
+  'lobby.providers.count': '{count} games from {provider}, all playable with crypto.',
+  'lobby.providers.empty': 'No games from this provider yet.',
+  'lobby.providers.more': 'More providers',
 } as const;

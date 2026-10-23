@@ -14,6 +14,7 @@ import * as rgModule from './modules/rg';
 import * as legalModule from './modules/legal';
 import * as contentModule from './modules/content';
 import * as miscModule from './modules/misc';
+import * as notificationsModule from './modules/notifications';
 
 export const LOCALES = ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'] as const;
 
@@ -413,6 +414,7 @@ const coreEn = {
   'role.player': 'Player',
   'role.vip': 'VIP Player',
   'dash.categories': 'Categories',
+  'dash.casinoHeading': 'Online Casino Games',
   'dash.gamesCount': '{count} games',
   'dash.viewAll': 'View All',
   'dash.online': '{count} Online',
@@ -470,9 +472,6 @@ const coreEn = {
   'notFound.body2': 'Try going back to our homepage.',
   'notFound.cta': 'Go to homepage',
 
-  'dice.demo': 'Demo',
-  'dice.demoNotice':
-    'Demo play: no balance is used and nothing is paid out. Every roll still counts as a wager toward your VIP tier, rakeback and cashback.',
   'dice.odds': 'RTP {rtp}% · house edge {edge}%',
   'dice.manual': 'Manual',
   'dice.auto': 'Auto',
@@ -571,6 +570,7 @@ const coreEn = {
   'chat.reportConfirm': 'Confirm',
   'chat.reportSent': 'Thanks — our moderators will review this message',
   'chat.reportFailed': 'Could not send your report',
+  'chat.online': '{count} online',
   'chat.room': 'Chat room',
   'chat.roomSwitch': 'Switch chat room',
   'chat.rules': 'Chat rules',
@@ -633,6 +633,7 @@ const coreEn = {
   'browse.filterNew': 'New only',
   'browse.results': 'Results',
   'browse.clear': 'Clear filters',
+  'browse.loadMore': 'Load more games',
 
   // Account area: the left nav and its sections
   'profile.account': 'Account',
@@ -769,7 +770,15 @@ const coreEn = {
   'stats.submit': 'Submit',
   'stats.invalidEmail': 'Please enter a valid email address',
   'stats.requestUnavailable': 'Statistics requests are not available yet. Please check back soon.',
+  'stats.formatLabel': 'Format',
+  'stats.formatText': 'Text (in the email)',
+  'stats.formatPdf': 'PDF',
+  'stats.formatExcel': 'Excel (.xlsx)',
+  'stats.sending': 'Sending…',
+  'stats.sent': 'Your statistics have been sent to {email}',
+  'stats.sendFailed': 'We could not send your statistics. Please try again.',
   'stats.close': 'Close',
+  'stats.loadFailed': 'Could not load your statistics',
 
   // Account area: the Referral section
   'ref.referralCode': 'Referral Code',
@@ -1104,6 +1113,7 @@ const en = {
   ...legalModule.en,
   ...contentModule.en,
   ...miscModule.en,
+  ...notificationsModule.en,
 } as const;
 
 export type TranslationKey = keyof typeof en;

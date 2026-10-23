@@ -28,10 +28,19 @@ export const resendSignupOtp = (identifier: string) =>
   apiService.post('/auth/resend-otp', { identifier });
 
 
-export const loginWithPassword = async (identifier: string, password: string, headers?: Record<string, string>) =>
+export const loginWithPassword = async (
+  identifier: string,
+  password: string,
+  headers?: Record<string, string>,
+  countryCode?: string
+) =>
   apiService.post<Partial<LoginResponseData> & Partial<TwoFactorChallengeData>>(
     '/auth/user/login',
-    { identifier, password: await encryptPassword(password) },
+    {
+      identifier,
+      password: await encryptPassword(password),
+      ...(countryCode ? { country_code: countryCode } : {}),
+    },
     { headers }
   );
 
@@ -42,8 +51,11 @@ export const verifyLoginOtp = (challenge: string, code: string, headers?: Record
 export const resendLoginOtp = (challenge: string) =>
   apiService.post('/auth/login/resend-otp', { challenge });
 
-export const requestPasswordReset = (identifier: string) =>
-  apiService.post('/auth/forgot-password', { identifier });
+export const requestPasswordReset = (identifier: string, countryCode?: string) =>
+  apiService.post('/auth/forgot-password', {
+    identifier,
+    ...(countryCode ? { country_code: countryCode } : {}),
+  });
 
 
 export const resetPassword = (identifier: string, code: string, newPassword: string) =>
@@ -67,3 +79,11 @@ export const linkTelegramAccount = (telegram: TelegramAuthData) =>
 
 export const unlinkAccount = (provider: LinkProvider) =>
   apiService.delete<{ unlinked: true }>(`/auth/linked-accounts/${encodeURIComponent(provider)}`);
+
+/** Signed-in player with no email: send a code to the address they want to add. */
+export const requestAddEmailOtp = (email: string) =>
+  apiService.post('/auth/email/request-otp', { email });
+
+/** Confirm that code; the email is then saved to the account as verified. */
+export const verifyAddEmail = (email: string, code: string) =>
+  apiService.post<{ verified: boolean; email: string }>('/auth/email/verify', { email, code });

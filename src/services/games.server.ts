@@ -134,13 +134,27 @@ export async function fetchHomeShelves(
  * providers are decoration on the landing page, not something worth failing
  * the whole render over.
  */
+export async function fetchRegisteredTodayCount(): Promise<number | null> {
+  try {
+    const data = await getJson<{ registered_today?: unknown }>('/statistics/public');
+    return typeof data?.registered_today === 'number' ? data.registered_today : null;
+  } catch (error) {
+    logFailure('Public statistics fetch', error);
+    return null;
+  }
+}
+
 export async function fetchLobbyProviders(): Promise<LobbyProvider[]> {
+  return (await fetchProviders()) ?? [];
+}
+
+export async function fetchProviders(): Promise<LobbyProvider[] | null> {
   try {
     const data = await getJson<LobbyProvider[]>('/game-providers');
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(data) ? data : null;
   } catch (error) {
     logFailure('Providers fetch', error);
-    return [];
+    return null;
   }
 }
 

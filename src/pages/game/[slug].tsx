@@ -13,9 +13,14 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { DICE_SLUG } from '@/constants/dice';
-import { categoryForEnum, categoryHref, gameHref, playHref } from '@/constants/games';
+import { categoryForEnum, categoryHref, gameHref, playHref, providerHref } from '@/constants/games';
 import { absoluteUrl, localizedPath } from '@/constants/site';
-import { fetchDiceConfig, fetchGameBySlug, fetchShelfList } from '@/services/games.server';
+import {
+  fetchDiceConfig,
+  fetchGameBySlug,
+  fetchProviders,
+  fetchShelfList,
+} from '@/services/games.server';
 import { markUnavailable } from '@/utils/unavailable.server';
 import { fetchWinnerGames } from '@/services/myGames.server';
 import type { DiceConfig, Game } from '@/types';
@@ -29,12 +34,13 @@ interface Props {
   /** True when the API was unreachable (as opposed to the game not existing). */
   failed: boolean;
   /**
-   * Demo Dice settings, for the Dice game only. When enabled the page plays
+   * Dice settings, for the Dice game only. When enabled the page plays
    * the game in place of the details view.
    */
   dice: DiceConfig | null;
   /** Real games for the Recent Winners row at the foot of the page. */
   winnerGames: Game[];
+  providerSlug: string | null;
 }
 
 /**
@@ -68,7 +74,14 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
   const { openLogin } = useAuthModal();
 
   if (!game.launchable) {
-    return (
+    return token ? (
+      <span
+        aria-disabled="true"
+        className="inline-flex items-center justify-center rounded-lg bg-slate-800/60 border border-slate-800 px-6 py-2.5 text-sm font-semibold text-slate-400 cursor-not-allowed"
+      >
+        {t('game.unavailable')}
+      </span>
+    ) : (
       <button
         type="button"
         onClick={() => openLogin()}
@@ -99,7 +112,7 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
   );
 };
 
-const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames }) => {
+const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, providerSlug }) => {
   const { t, locale } = useTranslation();
 
   if (!game) {
@@ -216,7 +229,16 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames }) => {
               </h1>
               <p className="mt-1.5 text-sm text-slate-400">
                 {t('game.provider')}:{' '}
-                <span className="text-slate-200 font-medium">{game.provider}</span>
+                {providerSlug ? (
+                  <Link
+                    href={providerHref(providerSlug)}
+                    className="text-slate-200 font-medium underline-offset-2 hover:text-white hover:underline"
+                  >
+                    {game.provider}
+                  </Link>
+                ) : (
+                  <span className="text-slate-200 font-medium">{game.provider}</span>
+                )}
               </p>
 
               <dl className="mt-6 grid grid-cols-3 gap-3 max-w-md">
@@ -229,7 +251,17 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames }) => {
               </dl>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <PlayActions game={game} />
+                {/*
+                  Only disable the launch button when the NATIVE dice game is
+                  actually enabled. The /dice slug used to belong exclusively
+                  to our native in-house dice (DiceGame.tsx) which doesn't go
+                  through an aggregator — but Tequity's catalogue also ships
+                  a "dice" game that we now treat as a Tequity Original. If
+                  `dice` config comes back with `enabled: false`, there is no
+                  native dice to render here, and the game is a normal
+                  aggregator game whose `launchable` flag should be respected.
+                */}
+                <PlayActions game={dice?.enabled ? { ...game, launchable: false } : game} />
                 {def && (
                   <Link href={categoryHref(def.key)} className={SECONDARY}>
                     {t('game.moreFrom', { category: categoryTitle ?? '' })}
@@ -272,15 +304,25 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
 
   if (lookup.status === 'failed') {
     markUnavailable({ req, res });
-    return { props: { game: null, related: [], failed: true, dice: null, winnerGames: [] } };
+    return {
+      props: {
+        game: null,
+        related: [],
+        failed: true,
+        dice: null,
+        winnerGames: [],
+        providerSlug: null,
+      },
+    };
   }
 
   const { category } = lookup.game;
-  const [shelf, dice] = await Promise.all([
+  const [shelf, dice, providers] = await Promise.all([
     // Eleven, so there are still ten once the current title is dropped. A
     // synced game on no shelf has nothing to be related to.
     category ? fetchShelfList({ category }, 1, 11) : Promise.resolve(null),
     lookup.game.slug === DICE_SLUG ? fetchDiceConfig() : Promise.resolve(null),
+    fetchProviders(),
   ]);
   const related = shelf ? shelf.data.filter((g) => g.slug !== lookup.game.slug).slice(0, 10) : [];
 
@@ -291,6 +333,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
       failed: false,
       dice,
       winnerGames: await fetchWinnerGames(related),
+      providerSlug: providers?.find((p) => p.name === lookup.game.provider)?.slug ?? null,
     },
   };
 };

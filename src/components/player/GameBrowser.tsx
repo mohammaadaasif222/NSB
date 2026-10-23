@@ -3,8 +3,9 @@ import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useFavourites } from '@/context/FavouritesContext';
-import { fetchCatalogue, providersOf } from '@/services/catalogue';
-import { LOBBY_SHELF_KEYS, listMatches, shelfFor } from '@/constants/games';
+import { MIN_SEARCH_LENGTH } from '@/services/catalogue';
+import { fetchShelfPage, type BrowseQuery } from '@/services/games';
+import { CATEGORY_PAGE_SIZE, LOBBY_SHELF_KEYS, shelfFor } from '@/constants/games';
 import GameRow from '@/components/player/GameRow';
 import GameTile from '@/components/player/GameTile';
 import {
@@ -51,7 +52,10 @@ interface Props {
    * casino page's providers and tournaments — each after the shelf named.
    */
   inserts?: readonly ShelfInsert[];
+  providers?: string[];
 }
+
+const SEARCH_DELAY_MS = 250;
 
 export interface ShelfInsert {
   /** Stable React key. */
@@ -67,10 +71,7 @@ export interface ShelfInsert {
  * Two modes. Idle — nothing typed or picked — renders the server's shelves
  * as sliders, which fetch their further pages as they are slid, and means the
  * section is complete in the first HTML. As soon as any control is used it switches to
- * a flat result grid built from the catalogue fetched in the browser, because
- * the API cannot search or sort across pages for us. The catalogue is only
- * fetched once, lazily, the first time a control is touched — an idle visitor
- * never pays for it.
+ * a flat result grid.
  */
 const GameBrowser: FC<Props> = ({
   shelves,
@@ -80,15 +81,20 @@ const GameBrowser: FC<Props> = ({
   titles = {},
   chipsOnPhone = false,
   inserts = [],
+  providers = [],
 }) => {
   const { t } = useTranslation();
   const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
 
   const [games, setGames] = useState<Game[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [wanted, setWanted] = useState(false);
+  const [term, setTerm] = useState('');
 
   const [browse, setBrowse] = useState<Omit<BrowseState, 'provider'>>(BROWSE_DEFAULTS);
   const [provider, setProvider] = useState<string>('');
@@ -146,46 +152,93 @@ const GameBrowser: FC<Props> = ({
   };
 
   const trimmed = browse.search.trim();
+  const wantedTerm = trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '';
   const browsing =
-    trimmed !== '' ||
+    wantedTerm !== '' ||
     browse.filter !== BROWSE_DEFAULTS.filter ||
     browse.sort !== BROWSE_DEFAULTS.sort ||
     provider !== '' ||
     category !== 'lobby';
 
-  // Pull the catalogue the first time it is actually needed, not on mount.
-  //
-  // Guarded against unmount only — NOT against this effect re-running. The
-  // first version cancelled on every dependency change, and it set `wanted`
-  // itself: that re-ran the effect at once, the cleanup marked the fetch
-  // cancelled, and the catalogue that arrived a moment later was thrown away.
-  // Search, filter, sort and the provider picker all sat on "Loading games…"
-  // for ever, with every request answered.
-  const mounted = useRef(true);
   useEffect(() => {
-    // Set on mount too, not only initialised: React's dev StrictMode mounts,
-    // unmounts and remounts, and a flag left false by that rehearsal would
-    // discard the result exactly as before.
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!browsing || wanted) {
+    if (!wantedTerm) {
+      setTerm('');
       return;
     }
-    setWanted(true);
+    const timer = setTimeout(() => setTerm(wantedTerm), SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [wantedTerm]);
+  const settling = wantedTerm !== term;
+
+  const query = useMemo<BrowseQuery | null>(() => {
+    if (!browsing || settling || category === 'favourites') {
+      return null;
+    }
+    return {
+      ...(category === 'lobby' ? {} : shelfFor(category).list),
+      sort: browse.sort,
+      ...(term ? { search: term } : {}),
+      ...(provider ? { provider } : {}),
+      ...(browse.filter === 'new' ? { is_new: true } : {}),
+    };
+  }, [browsing, settling, category, browse.sort, browse.filter, term, provider]);
+
+  const latest = useRef<BrowseQuery | null>(null);
+  useEffect(() => {
+    latest.current = query;
+    if (!query) {
+      return;
+    }
+    const controller = new AbortController();
     setLoading(true);
+    setFailed(false);
 
-    fetchCatalogue()
-      .then((all) => mounted.current && setGames(all))
-      .catch(() => mounted.current && setFailed(true))
-      .finally(() => mounted.current && setLoading(false));
-  }, [browsing, wanted]);
+    fetchShelfPage(query, 1, CATEGORY_PAGE_SIZE, controller.signal)
+      .then((res) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setGames(res.data);
+        setTotal(res.pagination.total);
+        setPage(res.pagination.page);
+        setTotalPages(res.pagination.totalPages);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setFailed(true);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
 
-  const providers = useMemo(() => providersOf(games), [games]);
+    return () => controller.abort();
+  }, [query]);
+
+  const loadMore = (): void => {
+    const requested = query;
+    if (!requested || loadingMore) {
+      return;
+    }
+    setLoadingMore(true);
+    fetchShelfPage(requested, page + 1, CATEGORY_PAGE_SIZE)
+      .then((res) => {
+        if (latest.current !== requested) {
+          return;
+        }
+        setGames((current) => {
+          const seen = new Set(current.map((g) => g.id));
+          return [...current, ...res.data.filter((g) => !seen.has(g.id))];
+        });
+        setTotal(res.pagination.total);
+        setPage(res.pagination.page);
+        setTotalPages(res.pagination.totalPages);
+      })
+      .catch(() => undefined)
+      .finally(() => setLoadingMore(false));
+  };
 
   // A shelf with nothing on it (no live games catalogued yet, say) is left
   // out rather than drawn as an empty bar — unless every shelf is empty, when
@@ -215,23 +268,19 @@ const GameBrowser: FC<Props> = ({
   const insertsAt = (anchor: GameShelfKey | 'lead'): ReactNode =>
     placed.get(anchor)?.map((insert) => <Fragment key={insert.id}>{insert.node}</Fragment>);
 
-  const results = useMemo(() => {
-    // Favourites come from the player's own list, not the catalogue: that is
-    // capped at PAGE_CAP games, so filtering it would quietly lose a
-    // favourite past the ceiling.
-    if (category === 'favourites') {
-      return browseGames(favourites ?? [], { ...browse, provider });
-    }
-    const inCategory =
-      category === 'lobby' ? games : games.filter((g) => listMatches(g, shelfFor(category).list));
-    return browseGames(inCategory, { ...browse, provider });
-  }, [games, favourites, category, browse, provider]);
-
-  // On Favourites the grid waits on that list rather than the catalogue,
-  // which is still being pulled in the background for the provider picker.
   const onFavourites = category === 'favourites';
-  const busy = onFavourites ? favourites === null : loading;
+  const results = useMemo(
+    () =>
+      onFavourites
+        ? browseGames(favourites ?? [], { ...browse, search: wantedTerm, provider })
+        : games,
+    [onFavourites, games, favourites, browse, wantedTerm, provider]
+  );
+
+  const stale = !onFavourites && (loading || settling);
+  const busy = onFavourites ? favourites === null : stale && games.length === 0;
   const broke = onFavourites ? favouritesFailed : failed;
+  const count = onFavourites ? results.length : total;
 
   const clear = (): void => {
     setBrowse(BROWSE_DEFAULTS);
@@ -289,9 +338,9 @@ const GameBrowser: FC<Props> = ({
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-[17px] font-semibold text-white sm:text-[19px]">
               {t('browse.results')}
-              {!busy && !broke && (
+              {!busy && !broke && !stale && (
                 <span className="ms-2 text-xs font-normal text-white/40">
-                  {t('dash.gamesCount', { count: results.length })}
+                  {t('dash.gamesCount', { count })}
                 </span>
               )}
             </h2>
@@ -318,17 +367,35 @@ const GameBrowser: FC<Props> = ({
 
           {!busy && !broke && results.length === 0 && (
             <p className="rl-glass rounded-2xl px-4 py-10 text-center text-xs text-white/40">
-              {trimmed
-                ? t('search.empty', { query: browse.search })
+              {wantedTerm
+                ? t('search.empty', { query: wantedTerm })
                 : t(onFavourites ? 'favourites.empty' : 'games.empty')}
             </p>
           )}
 
           {!busy && !broke && results.length > 0 && (
-            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+            <div
+              aria-busy={stale}
+              className={`grid grid-cols-3 gap-2.5 transition-opacity sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 ${
+                stale ? 'opacity-60' : ''
+              }`}
+            >
               {results.map((game) => (
                 <GameTile key={game.id} game={game} surface="browse" />
               ))}
+            </div>
+          )}
+
+          {!onFavourites && !busy && !broke && page < totalPages && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={loadingMore || stale}
+                className="rl-btn-ghost rounded-lg px-5 py-2 text-xs font-medium disabled:opacity-50"
+              >
+                {loadingMore ? t('search.loading') : t('browse.loadMore')}
+              </button>
             </div>
           )}
         </div>

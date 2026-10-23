@@ -8,7 +8,7 @@ import { formatRewardAmount } from '@/utils/money';
 import type { RewardType, RewardTypeSummary } from '@/types';
 import RewardDetailModal from './RewardDetailModal';
 import RewardInfoButton from './RewardInfoButton';
-import { CARD, GHOST_BUTTON, GOLD_BUTTON, ICON_WELL, LABEL, PILL } from './rewardStyles';
+import { CARD, GHOST_BUTTON, GOLD_BUTTON, ICON_WELL, LABEL } from './rewardStyles';
 
 interface Props {
   reward: RewardTypeSummary;
@@ -20,9 +20,8 @@ interface Props {
 }
 
 /**
- * One reward on the rewards page: what can be claimed now and until when, what
- * is still building up and when it turns claimable, and the rate at the
- * player's tier.
+ * One reward on the rewards page: what can be claimed now and until when, and
+ * what is still building up and when it turns claimable.
  *
  * The card carries only what changes — the figure, the countdown, the Claim
  * button. What a reward *is*, how often it settles, how a claim splits across
@@ -61,16 +60,11 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
         <span className={ICON_WELL(claimable)} aria-hidden="true">
           <Icon size={20} />
         </span>
-        <div className="flex items-center gap-1.5">
-          {reward.rate_percentage !== null && (
-            <span className={PILL}>{t('rewards.rate', { percent: reward.rate_percentage })}</span>
-          )}
-          <RewardInfoButton
-            reward={title}
-            open={infoOpen}
-            onClick={() => setInfoOpen((open) => !open)}
-          />
-        </div>
+        <RewardInfoButton
+          reward={title}
+          open={infoOpen}
+          onClick={() => setInfoOpen((open) => !open)}
+        />
       </div>
 
       <h3 className="mt-3 text-[16px] leading-6 font-medium text-[#f0f1f5]">{title}</h3>

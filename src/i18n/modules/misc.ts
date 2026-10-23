@@ -21,6 +21,10 @@ export const en = {
     'ROLLUCK bonuses: the welcome pack and regular bonuses, with the terms and wagering for each.',
   'misc.meta.rewards':
     'ROLLUCK rewards and VIP levels: rakeback, cashback and the perks unlocked at every tier.',
+  'misc.meta.providers':
+    'Every game provider at ROLLUCK, the crypto casino. Pick a studio to browse all of its slots and live games.',
+  'misc.meta.provider':
+    'Play {provider} games at ROLLUCK, the crypto casino: {count} titles to browse, each with its details and RTP.',
 
   // Auth fields and helpers
   'misc.otp.digit': 'Digit {n}',

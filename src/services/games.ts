@@ -2,6 +2,7 @@ import apiService from '@/services/api';
 import { translate } from '@/i18n/translate';
 import type { TranslationKey } from '@/i18n/locales';
 import type { ShelfListQuery } from '@/constants/games';
+import type { SortKey } from '@/components/player/BrowseControls';
 import type {
   ApiError,
   Game,
@@ -39,12 +40,14 @@ export async function launchGame(
 }
 
 /**
- * The device version to ask for. Viewport and pointer rather than the
- * User-Agent: a narrow touch layout wants the mobile build whatever the
- * browser claims to be.
+ * The device version to ask for. Viewport-width only: a touch-enabled
+ * laptop / desktop (coarse pointer + wide screen) is still a desktop for
+ * layout purposes, and asking for the mobile iframe build there forced the
+ * cramped mobile styling (`calc(100dvh - 12.5rem)`) on it. If the viewport
+ * is phone-sized we ask for the mobile build regardless of pointer type.
  */
 export const currentGameDevice = (): GameDevice =>
-  window.matchMedia('(max-width: 767px), (pointer: coarse)').matches ? 'MOBILE' : 'DESKTOP';
+  window.matchMedia('(max-width: 767px)').matches ? 'MOBILE' : 'DESKTOP';
 
 /**
  * One page of a shelf's listing, fetched in the browser as its slider nears
@@ -52,15 +55,27 @@ export const currentGameDevice = (): GameDevice =>
  * page sends, so the slider and that page agree on order.
  */
 export async function fetchShelfPage(
-  list: ShelfListQuery,
+  list: ShelfListQuery | BrowseQuery,
   page: number,
-  limit: number
+  limit: number,
+  signal?: AbortSignal
 ): Promise<GameListResponse> {
-  const res = await apiService.get<GameListResponse>('/games', { ...list, page, limit });
+  const res = await apiService.get<GameListResponse>(
+    '/games',
+    { ...list, page, limit },
+    { signal }
+  );
   if (!res?.success || !Array.isArray(res.data?.data) || !res.data.pagination) {
     throw { message: res?.message || translate('myGames.failed') } satisfies ApiError;
   }
   return res.data;
+}
+
+export interface BrowseQuery extends Omit<ShelfListQuery, 'sort'> {
+  sort: SortKey;
+  search?: string;
+  provider?: string;
+  is_new?: boolean;
 }
 
 /* ------------------------------------------------------------------ */

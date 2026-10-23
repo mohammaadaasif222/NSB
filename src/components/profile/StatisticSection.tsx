@@ -1,27 +1,77 @@
-import { useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import RangeFilter from '@/components/profile/statistic/RangeFilter';
 import StatCard from '@/components/profile/statistic/StatCard';
 import RequestStatsRow from '@/components/profile/statistic/RequestStatsRow';
 import RequestStatsModal from '@/components/profile/statistic/RequestStatsModal';
 import {
-  AMOUNT_TILES,
-  HEADLINE_TILES,
+  apiRangeOf,
   type StatRange,
-} from '@/components/profile/statistic/mockStats';
+  type StatTile,
+} from '@/components/profile/statistic/statRanges';
+import { getMyStatistics } from '@/services/statistics';
+import type { ApiError, MyStatistics } from '@/types';
 
-/**
- * Play statistics.
- *
- * NOT WIRED — every figure is mock. The backend records balances but not a bet
- * history, so there is nothing to total up yet; each tile needs a wagering
- * endpoint behind it. The numbers live in `statistic/mockStats.ts`, which is
- * the one file to replace when that lands.
- */
+const EMPTY = '—';
+
 const StatisticSection: FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { formatCurrencyDisplay } = useCurrencyConversion();
   const [range, setRange] = useState<StatRange>('lifetime');
+  const [stats, setStats] = useState<MyStatistics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const tRef = useRef(t);
+  tRef.current = t;
+  const request = useRef(0);
+
+  useEffect(() => {
+    const id = ++request.current;
+    setLoading(true);
+    setError(null);
+    getMyStatistics(apiRangeOf(range))
+      .then((res) => {
+        if (id !== request.current) return;
+        if (res?.success && res.data) {
+          setStats(res.data);
+        } else {
+          setError(res?.message || tRef.current('stats.loadFailed'));
+        }
+      })
+      .catch((err) => {
+        if (id !== request.current) return;
+        setError((err as ApiError)?.message || tRef.current('stats.loadFailed'));
+      })
+      .finally(() => {
+        if (id === request.current) setLoading(false);
+      });
+  }, [range]);
+
+  const count = (value: number | undefined): string =>
+    value === undefined ? EMPTY : value.toLocaleString(locale);
+  const money = (value: string | undefined): string =>
+    value === undefined ? EMPTY : formatCurrencyDisplay(value);
+  const day = (iso: string): string =>
+    new Date(iso).toLocaleDateString(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+
+  const headlineTiles: StatTile[] = [
+    { key: 'totalBets', labelKey: 'stats.totalBets', value: count(stats?.bet_count) },
+    { key: 'totalWins', labelKey: 'stats.totalWins', value: count(stats?.win_count) },
+  ];
+  const amountTiles: StatTile[] = [
+    { key: 'bestBetWin', labelKey: 'stats.bestBetWin', value: money(stats?.best_round_win) },
+    { key: 'bestGameWin', labelKey: 'stats.bestGameWin', value: money(stats?.best_game_win) },
+    { key: 'totalWagered', labelKey: 'stats.totalWagered', value: money(stats?.wagered) },
+  ];
+  const rangeLabel = stats?.starts_at ? `${day(stats.starts_at)} - ${day(stats.ends_at)}` : '';
   // Section-local: the page's modal state is for the settings dialogs, and
   // this one is only reachable from here.
   const [requestOpen, setRequestOpen] = useState(false);
@@ -51,29 +101,42 @@ const StatisticSection: FC = () => {
           their own row instead of beside the title, as the design draws them. */}
       <div className="flex flex-col items-start gap-[calc(var(--u)*12)] lg:flex-row lg:items-center lg:gap-[calc(var(--u)*18)]">
         <h2 className={SECTION_HEADING}>{t('profile.statistic')}</h2>
-        <RangeFilter active={range} onSelect={setRange} />
+        <RangeFilter active={range} onSelect={setRange} rangeLabel={rangeLabel} />
       </div>
+
+      {error && (
+        <p role="alert" className="mt-[calc(var(--u)*16)] text-sm leading-6 text-[#ff6b6b]">
+          {error}
+        </p>
+      )}
 
       {/* Two wide tiles, then three narrower ones — as the design splits them.
           The gaps differ because the tile widths do: 2×593 and 3×392 each
           leave a different remainder across the same 1208. */}
-      <div className="mt-[calc(var(--u)*29)] grid gap-[calc(var(--u)*22)] sm:grid-cols-2">
-        {HEADLINE_TILES.map((tile) => (
-          <StatCard key={tile.key} tile={tile} />
-        ))}
-      </div>
+      <div
+        aria-busy={loading}
+        className={`transition-opacity ${loading && stats ? 'opacity-60' : ''}`}
+      >
+        <div className="mt-[calc(var(--u)*29)] grid gap-[calc(var(--u)*22)] sm:grid-cols-2">
+          {headlineTiles.map((tile) => (
+            <StatCard key={tile.key} tile={tile} />
+          ))}
+        </div>
 
-      <div className="mt-[calc(var(--u)*20)] grid gap-[calc(var(--u)*16)] sm:grid-cols-3">
-        {AMOUNT_TILES.map((tile) => (
-          <StatCard key={tile.key} tile={tile} />
-        ))}
+        <div className="mt-[calc(var(--u)*20)] grid gap-[calc(var(--u)*16)] sm:grid-cols-3">
+          {amountTiles.map((tile) => (
+            <StatCard key={tile.key} tile={tile} />
+          ))}
+        </div>
       </div>
 
       <div className="mt-[calc(var(--u)*45)]">
         <RequestStatsRow onOpen={() => setRequestOpen(true)} />
       </div>
 
-      {requestOpen && <RequestStatsModal onClose={() => setRequestOpen(false)} />}
+      {requestOpen && (
+        <RequestStatsModal range={apiRangeOf(range)} onClose={() => setRequestOpen(false)} />
+      )}
     </div>
   );
 };

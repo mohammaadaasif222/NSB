@@ -32,9 +32,8 @@ export interface RewardSplit {
 /**
  * One reward on GET /rewards/me.
  *
- * Amounts are exact decimal strings in USD: `claimable_amount` and
- * `claimed_total` are cents, the accruals (`pending_amount`,
- * `claimable_total`) carry 8 places. Format them; never add them up here.
+ * Amounts are exact decimal strings in USD, up to 8 places. Format them;
+ * never add them up here.
  */
 export interface RewardTypeSummary {
   type: RewardType;

@@ -7,7 +7,6 @@
  */
 export const LOBBY_STATS = {
   online: '1,625',
-  registeredToday: '1.2K',
   todaysWinnings: '$3.8M',
   biggestWin: '$250K',
 };

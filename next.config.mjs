@@ -11,6 +11,13 @@ const REMOTE_IMAGE_HOSTS = [
   // Pragmatic Play. Mirrors PP_ICON_BASE_URL in the backend's
   // `pragmatic-play.config.ts`; if that env var is overridden, add its host too.
   'common-static.ppgames.net',
+  // Tequity staging CDN. Also catches the fake fallback URL our mapper used
+  // to generate for games Tequity didn't send artwork for — kept here so a
+  // stale DB row with that URL does not crash the SSR render even after the
+  // mapper stopped producing it. Those rows null-out on the next catalog
+  // sync; this whitelist entry can be removed once Tequity publishes a real
+  // asset host.
+  'cdn.tech0189.tech',
   // Our own asset bucket: the site artwork marketing re-exports without a
   // deploy. Mirrors ASSET_CDN in `src/constants/cdn.ts` — the two have to
   // move together, and both still point at the staging bucket.
@@ -30,6 +37,10 @@ const nextConfig = {
 
   async headers() {
     return [
+      {
+        source: '/:path*',
+        headers: [{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }],
+      },
       {
         source: '/fonts/:file*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],

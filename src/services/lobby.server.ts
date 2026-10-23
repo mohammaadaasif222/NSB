@@ -1,6 +1,13 @@
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { SHELF_KEYS } from '@/constants/games';
-import { fetchHomeShelves, fetchLobbyProviders, parsePageParam } from '@/services/games.server';
+import {
+  fetchHomeShelves,
+  fetchLobbyProviders,
+  fetchRegisteredTodayCount,
+  parsePageParam,
+} from '@/services/games.server';
+import { fetchFaqsServer } from '@/services/faqs.server';
+import type { FaqItem } from '@/services/faqs';
 import type { GameShelf, GameShelfKey, LobbyProvider } from '@/types';
 
 /** What every lobby-style page (home, casino) is rendered from. */
@@ -8,9 +15,9 @@ export interface LobbyProps {
   shelves: GameShelf[];
   /** The Providers row, curated in the admin console. Empty hides the row. */
   providers: LobbyProvider[];
-  /** The page's query, echoed back so pager links can preserve it. */
-  query: Record<string, string>;
   catalogueFailed: boolean;
+  faqs: FaqItem[];
+  registeredToday: number | null;
 }
 
 /**
@@ -36,27 +43,21 @@ export const getLobbyProps = async (
     SHELF_KEYS.map((key) => [key, parsePageParam(context.query[key])])
   ) as Record<GameShelfKey, number>;
 
-  // In parallel: two independent public reads, and the page waits on both.
-  const [{ shelves, failed }, providers] = await Promise.all([
+  // In parallel: three independent public reads, and the page waits on all of them.
+  const [{ shelves, failed }, providers, faqs, registeredToday] = await Promise.all([
     fetchHomeShelves(pages),
     fetchLobbyProviders(),
+    fetchFaqsServer(),
+    fetchRegisteredTodayCount(),
   ]);
-
-  // Normalised copy of the query for the pager links: single-valued strings,
-  // and page-1 entries dropped so hrefs stay short.
-  const query: Record<string, string> = {};
-  for (const key of SHELF_KEYS) {
-    if (pages[key] > 1) {
-      query[key] = String(pages[key]);
-    }
-  }
 
   return {
     props: {
       shelves,
       providers,
-      query,
       catalogueFailed: failed,
+      faqs,
+      registeredToday,
     },
   };
 };

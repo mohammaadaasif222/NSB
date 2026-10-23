@@ -8,17 +8,20 @@ import EmailAccountRow from '@/components/profile/EmailAccountRow';
 import LinkedAccountsGroup from '@/components/profile/LinkedAccountsGroup';
 import ToggleSwitch from '@/components/profile/ToggleSwitch';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
+import { ContactPhoneIcon } from '@/components/icons';
 
 interface Props {
   me: ApiUser;
   onToggle2FA: () => void;
   onChangeAvatar: () => void;
+  /** Opens "Add & Verify Email" for an account with no email. */
+  onAddEmail?: () => void;
 }
 
 /** Identity, the email behind the account, 2FA, and third-party links. */
-const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar }) => {
+const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar, onAddEmail }) => {
   const { t, locale } = useTranslation();
-  const { two_factor: twoFactorOn } = usePlatformFeatures();
+  const { two_factor: twoFactorOn, email_verification: emailVerificationOn } = usePlatformFeatures();
 
   const joined = me.created_at
     ? new Date(me.created_at).toLocaleDateString(locale, {
@@ -46,7 +49,22 @@ const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar }) => {
 
       {/* 32 from the ID line to the first group label, 30 between groups. */}
       <div className="mt-[calc(var(--u)*32)] space-y-[calc(var(--u)*30)]">
-        <EmailAccountRow email={me.email} verified={me.is_email_verified} />
+        {me.mobile && (
+          <FieldGroup label={t('verify.phoneNumber')}>
+            <SettingRow
+              icon={<ContactPhoneIcon size={20} strokeWidth={1.5} />}
+              title={t('verify.phoneNumber')}
+              detail={`${me.country_code ? `+${me.country_code.replace(/\D/g, '')} ` : ''}${me.mobile}`}
+              layout="inline"
+            />
+          </FieldGroup>
+        )}
+
+        <EmailAccountRow
+          email={me.email}
+          verified={me.is_email_verified}
+          onAddEmail={!me.email && emailVerificationOn ? onAddEmail : undefined}
+        />
 
         {twoFactorOn && (
           <FieldGroup label={t('profile.twoFactorShort')}>

@@ -10,6 +10,7 @@ export interface ShelfListQuery {
   /** A word within the game's genre, matched case-insensitively. */
   genre?: string;
   buy_feature?: boolean;
+  provider?: string;
 }
 
 /**
@@ -49,12 +50,15 @@ export const GAME_CATEGORIES = GAME_SHELVES.filter(
 );
 
 /**
- * The shelves each lobby shows, in order, as the designs draw them. The
- * signed-out page's are Originals, New Releases and Featured Lobby — all three
- * curated, so each shows once games are assigned to it in the console and is
- * left out while it is empty.
+ * The shelves each lobby shows, in order.
  */
-export const LOBBY_SHELF_KEYS: readonly GameShelfKey[] = ['originals', 'new', 'featured'];
+export const LOBBY_SHELF_KEYS: readonly GameShelfKey[] = [
+  'originals',
+  'slots',
+  'live',
+  'new',
+  'featured',
+];
 export const PLAYER_SHELF_KEYS: readonly GameShelfKey[] = [
   'originals',
   'slots',
@@ -116,6 +120,11 @@ export const categoryForEnum = (category: GameCategory): GameShelfDef =>
 /** Path of the listing page for a shelf. */
 export const categoryHref = (key: GameShelfKey, page = 1): string =>
   page > 1 ? `/games/${key}?page=${page}` : `/games/${key}`;
+
+export const PROVIDERS_PATH = '/providers';
+
+export const providerHref = (slug: string, page = 1): string =>
+  `${PROVIDERS_PATH}/${encodeURIComponent(slug)}${page > 1 ? `?page=${page}` : ''}`;
 
 /** Path of a game's detail page. */
 export const gameHref = (slug: string): string => `/game/${encodeURIComponent(slug)}`;

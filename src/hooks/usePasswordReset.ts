@@ -12,6 +12,8 @@ export interface ResetTarget {
   channel: ContactChannel;
   /** Email, or mobile digits, as sent to the API. */
   identifier: string;
+  /** Dial code for a mobile identifier, e.g. "+91". */
+  countryCode?: string;
 }
 
 export type ResetOutcome = 'done' | 'bad-code' | 'failed';
@@ -40,7 +42,7 @@ export const usePasswordReset = () => {
     setBusy(true);
     try {
       analytics.auth.passwordResetRequested();
-      const res = await requestPasswordReset(next.identifier);
+      const res = await requestPasswordReset(next.identifier, next.countryCode);
       if (!res?.success) {
         toast.error(res?.message || t('loginModal.codeFailed'));
         return false;
@@ -61,7 +63,7 @@ export const usePasswordReset = () => {
     if (!target) return;
     try {
       analytics.auth.otpResent('password_reset');
-      const res = await requestPasswordReset(target.identifier);
+      const res = await requestPasswordReset(target.identifier, target.countryCode);
       if (!res?.success) toast.error(res?.message || t('loginModal.codeFailed'));
     } catch (err) {
       toast.error(firstError(err) || t('loginModal.codeFailed'));

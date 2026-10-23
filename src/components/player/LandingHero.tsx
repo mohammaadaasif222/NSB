@@ -16,7 +16,6 @@ import telegramIcon from '@/assets/lobby/telegram.svg';
 import facebookIcon from '@/assets/lobby/facebook.svg';
 import whatsappIcon from '@/assets/lobby/whatsapp.svg';
 import chevronDown from '@/assets/lobby/chevron-down.svg';
-import starIcon from '@/assets/lobby/star.svg';
 import trustPrivacy from '@/assets/lobby/trust-privacy.svg';
 import trustFair from '@/assets/lobby/trust-fair.svg';
 import trustBolt from '@/assets/lobby/trust-bolt.svg';
@@ -30,6 +29,7 @@ import { WinnersRow } from '@/components/player/TopWinnersTicker';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
 import { SECTION_ART } from '@/constants/cdn';
 import { LOBBY_STATS } from '@/constants/stats';
+import { useRegisteredTodayLabel } from '@/hooks/useRegisteredToday';
 import type { TranslationKey } from '@/i18n/locales';
 
 /* ==================================================================== */
@@ -195,9 +195,10 @@ const SocialDisc: FC<{
  * its mobile form with the number already filled in, so validation, the OTP
  * step and the rest of signup live in one place.
  */
-const SignupTeaser: FC = () => {
+const SignupTeaser: FC<{ registeredToday: number | null }> = ({ registeredToday }) => {
   const { openRegister } = useAuthModal();
   const { t } = useTranslation();
+  const registeredLabel = useRegisteredTodayLabel(registeredToday);
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
 
@@ -221,9 +222,11 @@ const SignupTeaser: FC = () => {
   return (
     <div className="flex w-full max-w-[calc(var(--u)*346)] flex-col items-center lg:max-w-[calc(var(--u)*435)]">
       {/* A tab resting on the field's top edge, its foot tucked under it. */}
-      <span className="-mb-[calc(var(--u)*4)] flex h-[calc(var(--u)*37)] items-start rounded-t-[calc(var(--u)*10)] border border-b-0 border-[#252937] bg-[#07080a] px-[calc(var(--u)*11)] pt-[calc(var(--u)*7)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#f0f1f5] lg:h-[calc(var(--u)*42)] lg:px-[calc(var(--u)*15)] lg:pt-[calc(var(--u)*9)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))]">
-        {t('registerModal.registeredToday', { count: LOBBY_STATS.registeredToday })}
-      </span>
+      {registeredLabel && (
+        <span className="-mb-[calc(var(--u)*4)] flex h-[calc(var(--u)*37)] items-start rounded-t-[calc(var(--u)*10)] border border-b-0 border-[#252937] bg-[#07080a] px-[calc(var(--u)*11)] pt-[calc(var(--u)*7)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#f0f1f5] lg:h-[calc(var(--u)*42)] lg:px-[calc(var(--u)*15)] lg:pt-[calc(var(--u)*9)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))]">
+          {registeredLabel}
+        </span>
+      )}
 
       <form onSubmit={submit} className="relative w-full">
         <label
@@ -441,7 +444,7 @@ const TRUST: { icon: StaticImageData; label: TranslationKey }[] = [
  * Vertical rhythm is set with explicit margins rather than centring in a
  * fixed height, so each gap can match the design independently.
  */
-const LandingHero: FC = () => {
+const LandingHero: FC<{ registeredToday: number | null }> = ({ registeredToday }) => {
   const { t } = useTranslation();
 
   return (
@@ -455,11 +458,11 @@ const LandingHero: FC = () => {
 
       <div className="hidden items-center justify-between gap-[calc(var(--u)*12)] lg:flex">
         <OnlinePill label={t('dash.online', { count: LOBBY_STATS.online })} />
-        <span className="inline-flex items-center gap-[calc(var(--u)*9)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#f0f1f5]">
+        {/* <span className="inline-flex items-center gap-[calc(var(--u)*9)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[calc(var(--u)*24)] text-[#f0f1f5]">
           <span>{t('lobby.hero.todaysWinnings', { amount: LOBBY_STATS.todaysWinnings })}</span>
           <img src={starIcon.src} alt="" className="h-[calc(var(--u)*18)] w-[calc(var(--u)*18)]" />
           <span>{t('lobby.hero.biggestWin', { amount: LOBBY_STATS.biggestWin })}</span>
-        </span>
+        </span> */}
       </div>
 
       {/* --- Headline and sign-up -------------------------------------- */}
@@ -470,7 +473,7 @@ const LandingHero: FC = () => {
         </h1>
 
         <div className="mt-[calc(var(--u)*22)] flex w-full justify-center lg:mt-[calc(var(--u)*25)]">
-          <SignupTeaser />
+          <SignupTeaser registeredToday={registeredToday} />
         </div>
 
         <div className="mt-[calc(var(--u)*40)] hidden items-center justify-center gap-[calc(var(--u)*24)] lg:flex">

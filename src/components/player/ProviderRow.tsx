@@ -1,10 +1,10 @@
 import { useState, type CSSProperties, type FC } from 'react';
-import Link, { type LinkProps } from 'next/link';
+import Link from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
 import { useFavourites } from '@/context/FavouritesContext';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
 import ScrollShelf from '@/components/player/ScrollShelf';
-import { BROWSE_ANCHOR } from '@/components/player/GameBrowser';
+import { PROVIDERS_PATH, providerHref } from '@/constants/games';
 import type { TranslationKey } from '@/i18n/locales';
 import type { LobbyProvider } from '@/types';
 import { getImageProps, type StaticImageData } from 'next/image';
@@ -66,10 +66,7 @@ const logoBox = (ratio: number): CSSProperties => {
   };
 };
 
-const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = ({
-  provider,
-  href,
-}) => {
+export const ProviderCard: FC<{ provider: LobbyProvider }> = ({ provider }) => {
   const { isFavouriteProvider, toggleProvider } = useFavourites();
   const [broken, setBroken] = useState(false);
   const bundled = BUNDLED_LOGOS[provider.slug];
@@ -92,11 +89,7 @@ const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = (
   return (
     <div className="group @container relative h-[calc(var(--u)*103)] [--logo-w:83.6cqw] lg:[--logo-w:65.7cqw]">
       <Link
-        href={href}
-        // The lobby's own browser does the filtering, so this is a query
-        // change on the page already open — no server render, no scroll jump.
-        shallow
-        scroll={false}
+        href={providerHref(provider.slug)}
         title={`${provider.name} · ${provider.game_count}`}
         className="rl-liquid-glow flex h-full w-full items-center justify-center rounded-[calc(var(--u)*24)] px-[calc(var(--u)*10)] text-center transition-colors hover:bg-white/[0.11] focus:outline-none focus-visible:bg-white/[0.11] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*20)]"
       >
@@ -135,16 +128,11 @@ const ProviderCard: FC<{ provider: LobbyProvider; href: LinkProps['href'] }> = (
 interface Props {
   /** Curated in the admin console, already filtered and ordered by the API. */
   providers: LobbyProvider[];
-  /** The lobby route — plates filter the browser on the page they are on. */
-  basePath: string;
-  /** The page's shelf query, kept so a filter does not reset shelf paging. */
-  query: Record<string, string>;
   /** The heading. The lobby's own row says "Provider". */
   titleKey?: TranslationKey;
   /**
-   * Offer "View all" — no studio directory exists, so it opens the browser,
-   * whose provider picker lists every studio. Off where the row is already
-   * the whole of what it lists: the player's favourites.
+   * Offer "View all". Off where the row is already the whole of what it
+   * lists: the player's favourites.
    */
   viewAll?: boolean;
 }
@@ -158,17 +146,9 @@ interface Props {
  * It used to be derived from the `provider` text on whichever games the page
  * had loaded, so it could not be ordered or given artwork, and each plate
  * linked to /games/slots?provider=… — a page that ignores `provider`, so the
- * click opened every slot rather than that studio's games. A plate now opens
- * the lobby's own game browser with that provider selected, which searches
- * every category.
+ * click opened every slot rather than that studio's games.
  */
-const ProviderRow: FC<Props> = ({
-  providers,
-  basePath,
-  query,
-  titleKey = 'dash.providers',
-  viewAll = true,
-}) => {
+const ProviderRow: FC<Props> = ({ providers, titleKey = 'dash.providers', viewAll = true }) => {
   const { t } = useTranslation();
 
   if (providers.length === 0) {
@@ -176,21 +156,9 @@ const ProviderRow: FC<Props> = ({
   }
 
   return (
-    <ScrollShelf
-      title={t(titleKey)}
-      href={viewAll ? `${basePath}#${BROWSE_ANCHOR}` : undefined}
-      paged
-    >
+    <ScrollShelf title={t(titleKey)} href={viewAll ? PROVIDERS_PATH : undefined} paged>
       {providers.map((provider) => (
-        <ProviderCard
-          key={provider.id}
-          provider={provider}
-          href={{
-            pathname: basePath,
-            query: { ...query, provider: provider.name },
-            hash: BROWSE_ANCHOR,
-          }}
-        />
+        <ProviderCard key={provider.id} provider={provider} />
       ))}
     </ScrollShelf>
   );
