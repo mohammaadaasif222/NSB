@@ -2,6 +2,7 @@ import type {
   DiceConfig,
   Game,
   GameListResponse,
+  TagFilterGroup,
   GameShelf,
   GameShelfKey,
   HomeShelvesResponse,
@@ -105,9 +106,11 @@ export interface HomeShelvesResult {
  * whole site down with it.
  */
 export async function fetchHomeShelves(
-  pages: Record<GameShelfKey, number>
+  keys: readonly GameShelfKey[],
+  pages: Partial<Record<GameShelfKey, number>>
 ): Promise<HomeShelvesResult> {
-  const query = new URLSearchParams(SHELF_KEYS.map((key) => [key, String(pages[key])]));
+  // The API fetches only the shelves named, so a page asks for its own.
+  const query = new URLSearchParams(keys.map((key) => [key, String(pages[key] ?? 1)]));
 
   try {
     const data = await getJson<HomeShelvesResponse>(`/games/home?${query}`);
@@ -121,7 +124,7 @@ export async function fetchHomeShelves(
   } catch (error) {
     logFailure('Home shelves fetch', error);
     return {
-      shelves: SHELF_KEYS.map((key) => emptyShelf(key, pages[key])),
+      shelves: keys.map((key) => emptyShelf(key, pages[key] ?? 1)),
       failed: true,
     };
   }
@@ -140,6 +143,17 @@ export async function fetchRegisteredTodayCount(): Promise<number | null> {
     return typeof data?.registered_today === 'number' ? data.registered_today : null;
   } catch (error) {
     logFailure('Public statistics fetch', error);
+    return null;
+  }
+}
+
+/** The lobby's tag filters (empty when none are public), or null when the call fails. */
+export async function fetchTagFilters(): Promise<TagFilterGroup[] | null> {
+  try {
+    const data = await getJson<{ groups: TagFilterGroup[] }>('/games/tag-filters');
+    return Array.isArray(data?.groups) ? data.groups.filter((g) => g.tags.length > 0) : null;
+  } catch (error) {
+    logFailure('Tag filters fetch', error);
     return null;
   }
 }

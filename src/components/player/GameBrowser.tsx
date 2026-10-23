@@ -5,7 +5,13 @@ import { useTranslation } from '@/context/I18nContext';
 import { useFavourites } from '@/context/FavouritesContext';
 import { MIN_SEARCH_LENGTH } from '@/services/catalogue';
 import { fetchShelfPage, type BrowseQuery } from '@/services/games';
-import { CATEGORY_PAGE_SIZE, LOBBY_SHELF_KEYS, shelfFor } from '@/constants/games';
+import {
+  CATEGORY_PAGE_SIZE,
+  LIVE_CASINO_HREF,
+  LOBBY_SHELF_KEYS,
+  categoryHref,
+  shelfFor,
+} from '@/constants/games';
 import GameRow from '@/components/player/GameRow';
 import GameTile from '@/components/player/GameTile';
 import {
@@ -53,6 +59,12 @@ interface Props {
    */
   inserts?: readonly ShelfInsert[];
   providers?: string[];
+  /**
+   * The Live Casino lobby: its own chips, which jump to rows on the page
+   * rather than filtering, and rows that stay up saying "Coming soon" while
+   * they have no tables.
+   */
+  live?: boolean;
 }
 
 const SEARCH_DELAY_MS = 250;
@@ -82,10 +94,14 @@ const GameBrowser: FC<Props> = ({
   chipsOnPhone = false,
   inserts = [],
   providers = [],
+  live = false,
 }) => {
   const { t } = useTranslation();
   const router = useRouter();
   const sectionRef = useRef<HTMLElement>(null);
+  const chipsRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [chipsStuck, setChipsStuck] = useState(false);
 
   const [games, setGames] = useState<Game[]>([]);
   const [total, setTotal] = useState(0);
@@ -248,8 +264,8 @@ const GameBrowser: FC<Props> = ({
       .map((key) => shelves.find((s) => s.key === key))
       .filter((s): s is GameShelf => s !== undefined);
     const stocked = listed.filter((s) => s.games.length > 0);
-    return stocked.length > 0 ? stocked : listed;
-  }, [shelves, shelfKeys]);
+    return live || stocked.length === 0 ? listed : stocked;
+  }, [shelves, shelfKeys, live]);
 
   // Each insert follows its shelf, or — if that shelf was left out — the
   // nearest shown shelf before it, so the row keeps its place in the order.
@@ -282,6 +298,78 @@ const GameBrowser: FC<Props> = ({
   const broke = onFavourites ? favouritesFailed : failed;
   const count = onFavourites ? results.length : total;
 
+  // The chips stay pinned under the top bar; they only take a backdrop while
+  // pinned, so at rest they sit on the page like any other row.
+  useEffect(() => {
+    if (!controls) return undefined;
+    let frame = 0;
+    const measure = (): void => {
+      frame = 0;
+      const el = chipsRef.current;
+      if (!el) return;
+      const pinnedAt = parseFloat(getComputedStyle(el).top) || 0;
+      setChipsStuck(el.getBoundingClientRect().top <= pinnedAt + 1 && window.scrollY > 0);
+    };
+    const onScroll = (): void => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [controls]);
+
+  const [liveChip, setLiveChip] = useState<ChipKey>('lobby');
+
+  // Where the chips' foot sits once pinned. Measured from their sticky
+  // offset, not where they are now: picked from the top of the page, they
+  // have not pinned yet, and aiming under them would stop short.
+  const pinnedChipsFoot = (): number => {
+    const el = chipsRef.current;
+    if (!el) return 0;
+    return (parseFloat(getComputedStyle(el).top) || 0) + el.offsetHeight;
+  };
+
+  // Brings `target` up to just under the pinned chips.
+  const scrollUnderChips = (target: Element): void => {
+    const top = target.getBoundingClientRect().top;
+    window.scrollBy({ top: top - pinnedChipsFoot() - 16, behavior: 'smooth' });
+  };
+
+  // Live chips are a table of contents: a row on this page, or another page.
+  const chooseLive = (next: ChipKey): void => {
+    setLiveChip(next);
+    if (next === 'lobby') {
+      sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    const row = document.getElementById(`shelf-${next}`);
+    if (row) {
+      scrollUnderChips(row);
+    } else if (next !== 'favourites') {
+      void router.push(categoryHref(next));
+    }
+  };
+
+  // A chip picked from the pinned row brings the new list up to just under
+  // it, instead of leaving the player deep in the old one. Live Casino has a
+  // lobby of its own to go to.
+  const chooseCategory = (next: ChipKey): void => {
+    if (next === 'live') {
+      void router.push(LIVE_CASINO_HREF);
+      return;
+    }
+    setCategory(next);
+    const body = bodyRef.current?.getBoundingClientRect();
+    if (body && body.top < pinnedChipsFoot()) {
+      window.scrollBy({ top: body.top - pinnedChipsFoot() - 16, behavior: 'smooth' });
+    }
+  };
+
   const clear = (): void => {
     setBrowse(BROWSE_DEFAULTS);
     chooseProvider('');
@@ -308,16 +396,28 @@ const GameBrowser: FC<Props> = ({
         />
       )}
 
-      {/* --- Category chips: desktop only on the lobby, everywhere on casino */}
+      {/* --- Category chips: desktop only on the lobby, everywhere on casino;
+          pinned under the top bar while the page scrolls */}
       {controls && (
-        <div className={chipsOnPhone ? '' : 'hidden lg:block'}>
-          <CategoryChips active={category} onChange={setCategory} />
+        <div
+          ref={chipsRef}
+          // Pinned flush to the bar's foot, so nothing scrolls past in a gap
+          // between them; the padding is the breathing room instead.
+          className={`sticky top-[var(--player-bar-h,66px)] z-20 -mx-3 px-3 py-2 transition-[background-color,backdrop-filter] lg:top-[calc(var(--u)*20+var(--player-bar-h,80px))] lg:mx-0 lg:rounded-b-[calc(var(--u)*24)] lg:px-[calc(var(--u)*12)] lg:py-[calc(var(--u)*12)] ${
+            chipsStuck ? 'bg-[#07080b]/90 backdrop-blur-xl' : ''
+          } ${chipsOnPhone ? '' : 'hidden lg:block'}`}
+        >
+          {live ? (
+            <CategoryChips active={liveChip} onChange={chooseLive} set="live" />
+          ) : (
+            <CategoryChips active={category} onChange={chooseCategory} />
+          )}
         </div>
       )}
 
       {/* --- Body ------------------------------------------------------- */}
       {!browsing ? (
-        <div className="space-y-10 lg:space-y-[calc(var(--u)*80)]">
+        <div ref={bodyRef} className="space-y-10 lg:space-y-[calc(var(--u)*80)]">
           {insertsAt('lead')}
           {lobbyShelves.map((shelf) => (
             <Fragment key={shelf.key}>
@@ -328,13 +428,14 @@ const GameBrowser: FC<Props> = ({
                 page={shelf.pagination.page}
                 totalPages={shelf.pagination.totalPages}
                 limit={shelf.pagination.limit}
+                soon={live}
               />
               {insertsAt(shelf.key)}
             </Fragment>
           ))}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div ref={bodyRef} className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-[17px] font-semibold text-white sm:text-[19px]">
               {t('browse.results')}

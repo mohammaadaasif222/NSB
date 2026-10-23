@@ -18,9 +18,7 @@ import chipRoulette from '@/assets/lobby/player/chip-roulette.svg';
 import chipBaccarat from '@/assets/lobby/player/chip-baccarat.svg';
 import chipGameShows from '@/assets/lobby/player/chip-gameshows.svg';
 import chipNewArrivals from '@/assets/lobby/player/chip-newarrivals.svg';
-import chipBonusBuys from '@/assets/lobby/player/chip-bonusbuys.svg';
 // The rail's own heart, so the chip and the Favourites nav entry read as one thing.
-import chipFavourites from '@/assets/lobby/rail/nav-favourites.svg';
 import Glyph from '@/components/player/Glyph';
 
 /*
@@ -71,13 +69,27 @@ interface DropdownProps {
   /** The label on a phone, where the design names the control, not its value. */
   phoneLabel?: string;
   children: (close: () => void) => ReactNode;
+  /** Gold, as an active chip is: a filter is set. */
+  active?: boolean;
+  /** Which edge the menu lines up with; `end` by default. */
+  align?: 'start' | 'end';
+  /** On a phone, open as a sheet along the bottom of the screen. */
+  sheetOnPhone?: boolean;
 }
 
 /**
  * A toolbar dropdown: the design's pill — icon, label and, on desktop, a
  * chevron — with its menu anchored under it. Closes on click-away and Escape.
  */
-export const Dropdown: FC<DropdownProps> = ({ icon, label, phoneLabel, children }) => {
+export const Dropdown: FC<DropdownProps> = ({
+  icon,
+  label, 
+  phoneLabel,
+  children,
+  active = false,
+  align = 'end',
+  sheetOnPhone = false,
+}) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -110,7 +122,7 @@ export const Dropdown: FC<DropdownProps> = ({ icon, label, phoneLabel, children 
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`${GLASS} flex h-12 w-full items-center justify-center gap-1 rounded-full px-3 text-[14px] min-[420px]:px-4 leading-5 text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:min-w-[calc(var(--u)*150)] lg:justify-start lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]`}
+        className={`${GLASS} ${active ? CHIP_ON : ''} flex h-12 w-full items-center justify-center gap-1 rounded-full px-3 text-[14px] min-[420px]:px-4 leading-5 ${active ? '' : 'text-[#f0f1f5]'} lg:h-[calc(var(--u)*48)] lg:min-w-[calc(var(--u)*150)] lg:justify-start lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]`}
       >
         <img
           src={icon.src}
@@ -135,32 +147,66 @@ export const Dropdown: FC<DropdownProps> = ({ icon, label, phoneLabel, children 
       </button>
 
       {open && (
-        <div
-          role="menu"
-          className="rl-menu thin-scrollbar absolute end-0 top-[calc(100%+6px)] z-30 max-h-72 w-56 overflow-y-auto rounded-xl py-1"
-        >
-          {children(() => setOpen(false))}
-        </div>
+        <>
+          {sheetOnPhone && (
+            <div
+              aria-hidden
+              className="fixed inset-0 z-[60] bg-black/55 lg:hidden"
+              onClick={() => setOpen(false)}
+            />
+          )}
+          <div
+            role="menu"
+            className={`rl-menu thin-scrollbar ${align === 'start' ? 'start-0' : 'end-0'} ${
+              sheetOnPhone
+                ? 'max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:top-auto max-lg:z-[61] max-lg:max-h-[70vh] max-lg:w-auto max-lg:rounded-b-none max-lg:rounded-t-2xl max-lg:pb-6 max-lg:pt-3'
+                : ''
+            } absolute top-[calc(100%+6px)] z-30 max-h-72 w-56 overflow-y-auto rounded-xl py-1`}
+          >
+            {sheetOnPhone && (
+              <div
+                aria-hidden
+                className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/25 lg:hidden"
+              />
+            )}
+            {children(() => setOpen(false))}
+          </div>
+        </>
       )}
     </div>
   );
 };
 
-export const Option: FC<{ selected: boolean; onSelect: () => void; children: ReactNode }> = ({
-  selected,
-  onSelect,
-  children,
-}) => (
+export const Option: FC<{
+  selected: boolean;
+  onSelect: () => void;
+  children: ReactNode;
+  /** A count drawn at the end, such as how many games an option leaves. */
+  count?: number;
+  /** One of several that can be on together: a checkbox rather than a radio. */
+  multi?: boolean;
+}> = ({ selected, onSelect, children, count, multi = false }) => (
   <button
     type="button"
-    role="menuitemradio"
+    role={multi ? 'menuitemcheckbox' : 'menuitemradio'}
     aria-checked={selected}
     onClick={onSelect}
-    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
+    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors max-lg:py-3 max-lg:text-sm ${
       selected ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'
     }`}
   >
-    <span className="truncate">{children}</span>
+    {multi && (
+      <span
+        aria-hidden
+        className={`flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded border text-[10px] ${
+          selected ? 'border-[#ffe779] bg-[#ffe779] text-black' : 'border-white/30'
+        }`}
+      >
+        {selected ? '✓' : ''}
+      </span>
+    )}
+    <span className="min-w-0 flex-1 truncate">{children}</span>
+    {count !== undefined && <span className="tabular-nums text-white/35">{count}</span>}
   </button>
 );
 
@@ -345,21 +391,38 @@ interface Chip {
   signedIn?: boolean;
 }
 
+/**
+ * The casino page's menu, from the Casino Manager sheet's "Final" column.
+ * Live Casino opens its lobby (GameBrowser.chooseCategory); the rest filter
+ * the browser in place, across the whole catalogue.
+ */
 const CHIPS: Chip[] = [
   { key: 'lobby', labelKey: 'browse.lobby', icon: chipLobby },
-  { key: 'favourites', labelKey: 'nav.favourites', icon: chipFavourites, signedIn: true },
   { key: 'originals', labelKey: 'nav.originals', icon: chipOriginals },
   { key: 'slots', labelKey: 'dash.slots', icon: chipSlots },
   { key: 'live', labelKey: 'dash.liveCasino', icon: chipLive },
-  { labelKey: 'lobby.chips.blackjack', icon: chipLive },
-  { labelKey: 'lobby.chips.roulette', icon: chipRoulette },
-  { labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
-  { labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
+  { key: 'blackjack', labelKey: 'lobby.chips.blackjack', icon: chipLive },
+  { key: 'roulette', labelKey: 'lobby.chips.roulette', icon: chipRoulette },
+  { key: 'baccarat', labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
+  { key: 'game-shows', labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
   { key: 'table', labelKey: 'dash.tableGames', icon: chipOriginals },
-  { labelKey: 'lobby.chips.boostedRtp', icon: chipOriginals },
-  { key: 'new', labelKey: 'lobby.chips.newArrivals', icon: chipNewArrivals },
-  { key: 'bonus-buys', labelKey: 'dash.bonusBuys', icon: chipBonusBuys },
 ];
+
+/**
+ * The Live Casino lobby's menu, from the Casino Manager sheet. Each table
+ * chip jumps to its row on the page; Slots and Instant Wins open their pages.
+ */
+const LIVE_CHIPS: Chip[] = [
+  { key: 'lobby', labelKey: 'lobby.chips.home', icon: chipLobby },
+  { key: 'live-blackjack', labelKey: 'lobby.chips.blackjack', icon: chipLive },
+  { key: 'live-roulette', labelKey: 'lobby.chips.roulette', icon: chipRoulette },
+  { key: 'live-baccarat', labelKey: 'lobby.chips.baccarat', icon: chipBaccarat },
+  { key: 'live-game-shows', labelKey: 'lobby.chips.gameShows', icon: chipGameShows },
+  { key: 'slots', labelKey: 'dash.slots', icon: chipSlots },
+  { key: 'instant-wins', labelKey: 'lobby.chips.instantWins', icon: chipNewArrivals },
+];
+
+export type ChipSet = 'casino' | 'live';
 
 /** A chip: 34px with 12px type on a phone, the design's 48px pill on desktop. */
 const CHIP =
@@ -400,42 +463,45 @@ export const CHIP_ROW =
 export const CategoryChips: FC<{
   active: ChipKey;
   onChange: (key: ChipKey) => void;
-}> = ({ active, onChange }) => {
+  set?: ChipSet;
+}> = ({ active, onChange, set = 'casino' }) => {
   const { t } = useTranslation();
   const { token } = useAuth();
 
   return (
     <div className={CHIP_ROW}>
-      {CHIPS.filter((chip) => !chip.signedIn || token).map((chip) => {
-        const text = t(chip.labelKey);
-        const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
+      {(set === 'live' ? LIVE_CHIPS : CHIPS)
+        .filter((chip) => !chip.signedIn || token)
+        .map((chip) => {
+          const text = t(chip.labelKey);
+          const icon = <Glyph src={chip.icon.src} className={CHIP_ICON} />;
 
-        if (!chip.key) {
+          if (!chip.key) {
+            return (
+              <span
+                key={text}
+                title={`${text} — ${t('common.soon')}`}
+                aria-disabled="true"
+                className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:filter-none`}
+              >
+                {icon}
+                {text}
+              </span>
+            );
+          }
+
+          const key = chip.key;
           return (
-            <span
-              key={text}
-              title={`${text} — ${t('common.soon')}`}
-              aria-disabled="true"
-              className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:filter-none`}
+            <ChipButton
+              key={key}
+              active={active === key}
+              onClick={() => onChange(key)}
+              icon={chip.icon}
             >
-              {icon}
               {text}
-            </span>
+            </ChipButton>
           );
-        }
-
-        const key = chip.key;
-        return (
-          <ChipButton
-            key={key}
-            active={active === key}
-            onClick={() => onChange(key)}
-            icon={chip.icon}
-          >
-            {text}
-          </ChipButton>
-        );
-      })}
+        })}
     </div>
   );
 };

@@ -428,6 +428,35 @@ export const CloseIcon: FC<IconProps> = (p) => (
   </Svg>
 );
 
+/** Enter full screen: four corners pushed outwards. */
+export const MaximizeIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+    <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+    <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+    <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+  </Svg>
+);
+
+/** Leave full screen: the same corners drawn back in. */
+export const MinimizeIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M8 3v3a2 2 0 0 1-2 2H3" />
+    <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
+    <path d="M3 16h3a2 2 0 0 1 2 2v3" />
+    <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
+  </Svg>
+);
+
+/** Open in a window of its own: a frame with an arrow leaving it. */
+export const PopoutIcon: FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M15 3h6v6" />
+    <path d="M10 14 21 3" />
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+  </Svg>
+);
+
 export const LinkIcon: FC<IconProps> = (p) => (
   <Svg {...p}>
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -735,6 +764,18 @@ export const CATEGORY_ICONS: Record<GameShelfKey, FC<IconProps>> = {
   trending: ArrowUpRightIcon,
   table: LayersIcon,
   'bonus-buys': GiftIcon,
+  'instant-wins': ZapIcon,
+  blackjack: LayersIcon,
+  roulette: ActivityIcon,
+  baccarat: DiamondIcon,
+  'game-shows': MicIcon,
+  'live-popular': TrophyIcon,
+  'live-new': SparklesIcon,
+  'live-blackjack': LayersIcon,
+  'live-roulette': ActivityIcon,
+  'live-game-shows': MicIcon,
+  'live-baccarat': DiamondIcon,
+  'live-lightning': ZapIcon,
 };
 
 export const ShieldCheckIcon: FC<IconProps> = (p) => (

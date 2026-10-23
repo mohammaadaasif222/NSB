@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
-import { categoryHref } from '@/constants/games';
+import { LIVE_CASINO_HREF, categoryHref } from '@/constants/games';
 import LanguagePicker from '@/components/LanguagePicker';
 import type { TranslationKey } from '@/i18n/locales';
 
@@ -182,7 +182,7 @@ const SiteFooter: FC = () => {
     { label: t('browse.filterAll'), href: '/casino' },
     { label: t('nav.originals'), href: categoryHref('originals') },
     { label: t('dash.slots'), href: categoryHref('slots') },
-    { label: t('dash.liveCasino') },
+    { label: t('dash.liveCasino'), href: LIVE_CASINO_HREF },
     { label: t('dash.tableGames') },
     { label: t('lobby.footer.providers') },
   ];

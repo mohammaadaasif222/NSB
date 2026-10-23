@@ -15,6 +15,7 @@ import apiService from '@/services/api';
 import { analytics } from '@/services/analytics';
 import { translate } from '@/i18n/translate';
 import { forgetAllSignedUrls } from '@/lib/signedAssets';
+import { SIGNED_IN_EVENT } from '@/constants/events';
 import {
   clearSession,
   expireSession,
@@ -137,6 +138,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const login = (newToken: string): void => {
     writeSession(newToken);
     setToken(newToken);
+    window.dispatchEvent(new Event(SIGNED_IN_EVENT));
   };
 
   /**

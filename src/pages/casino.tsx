@@ -3,7 +3,8 @@ import type { GetServerSideProps } from 'next';
 
 import Lobby from '@/components/player/Lobby';
 import { useTranslation } from '@/context/I18nContext';
-import { getLobbyProps, type LobbyProps } from '@/services/lobby.server';
+import { lobbyProps, type LobbyProps } from '@/services/lobby.server';
+import { CASINO_SHELF_KEYS } from '@/constants/games';
 
 /**
  * The casino lobby: the catalogue page — banner, search and chips over every
@@ -23,6 +24,6 @@ const Casino: FC<LobbyProps> = (props) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<LobbyProps> = getLobbyProps;
+export const getServerSideProps: GetServerSideProps<LobbyProps> = lobbyProps(CASINO_SHELF_KEYS);
 
 export default Casino;

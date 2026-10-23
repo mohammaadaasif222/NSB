@@ -10,6 +10,7 @@ import type {
   GameLaunch,
   GameListResponse,
   GameMode,
+  LiveStats,
   LobbyProvider,
 } from '@/types';
 
@@ -107,7 +108,8 @@ export const fetchFavourites = (): Promise<Game[]> =>
   listOrThrow<Game>('/games/favourites', 'myGames.failed');
 
 /** The games the player launched most recently, newest first. */
-export const fetchRecentGames = (): Promise<Game[]> => listOrThrow<Game>('/games/recent', 'myGames.failed');
+export const fetchRecentGames = (): Promise<Game[]> =>
+  listOrThrow<Game>('/games/recent', 'myGames.failed');
 
 /** The studios the player has hearted, newest-hearted first. */
 export const fetchFavouriteProviders = (): Promise<LobbyProvider[]> =>
@@ -120,3 +122,23 @@ export const setFavourite = (slug: string, favourite: boolean): Promise<void> =>
 /** Hearts or unhearts a studio. Idempotent either way. */
 export const setProviderFavourite = (slug: string, favourite: boolean): Promise<void> =>
   setHearted('/game-providers', slug, favourite);
+
+/**
+ * The player's live stats since `since` — on one game when `game` is a slug,
+ * on every game otherwise. Needs the player's token.
+ */
+export async function fetchLiveStats(
+  since: string,
+  game: string | null,
+  signal?: AbortSignal
+): Promise<LiveStats> {
+  const res = await apiService.get<LiveStats>(
+    '/games/live-stats',
+    game ? { since, game } : { since },
+    { signal }
+  );
+  if (!res?.success || !res.data) {
+    throw { message: res?.message || translate('game.stats.failed') } satisfies ApiError;
+  }
+  return res.data;
+}

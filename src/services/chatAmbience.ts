@@ -329,9 +329,34 @@ const ANSWERS: Record<string, readonly string[]> = {
   'dinner or one more game 🤔': ['@{name} dinner first lol', '@{name} food wins'],
 };
 
-export const VOICE_CLIPS: readonly string[] = ['male_voice_1.mp3', 'female_voice_1.mp3'];
+export const VOICE_CLIPS: readonly string[] = [
+  'female_voice_1.mp3',
+  'female_voice_2.mp3',
+  'female_voice_3.mp3',
+  'female_voice_4.mp3',
+  'female_voice_5.mp3',
+  'female_voice_6.mp3',
+  'female_voice_7.wav',
+  'female_voice_8.mp3',
+  'female_voice_9.mp3',
+  'female_voice_10.mp3',
+  'male_voice_1.mp3',
+  'male_voice_2.mp3',
+  'male_voice_3.mp3',
+  'male_voice_4.mp3',
+  'male_voice_5.mp3',
+  'male_voice_6.mp3',
+  'brb_food.mp3',
+  'chill_vibes.mp3',
+  'coffee.mp3',
+  'dog_sandwich.mp3',
+  'late_night.mp3',
+  'plinko_laugh.mp3',
+  'whats_everyone_playing.mp3',
+  'yo_chat.mp3',
+];
 
-const VOICE_SPREAD = Math.max(22, Math.ceil(240 / Math.max(1, VOICE_CLIPS.length)));
+const VOICE_SPREAD = 3.33;
 
 export const voiceClipUrl = (file: string): string => `/chat-voices/${encodeURIComponent(file)}`;
 
@@ -434,7 +459,7 @@ const fromBag = (
   slot: number,
   spread = 1
 ): string | null => {
-  const size = pool.length * spread;
+  const size = Math.max(pool.length, Math.round(pool.length * spread));
   const cycle = Math.floor(slot / size);
   const order = bagOrder(size, pool.length, label, room, cycle);
   const value = order[((slot % size) + size) % size];

@@ -19,11 +19,45 @@ export type GameShelfKey =
   | 'popular'
   | 'trending'
   | 'table'
-  | 'bonus-buys';
+  | 'bonus-buys'
+  | 'instant-wins'
+  | 'blackjack'
+  | 'roulette'
+  | 'baccarat'
+  | 'game-shows'
+  | 'live-popular'
+  | 'live-new'
+  | 'live-blackjack'
+  | 'live-roulette'
+  | 'live-game-shows'
+  | 'live-baccarat'
+  | 'live-lightning';
+
+/** Lobby collections a game can sit in — GAME_COLLECTIONS on the backend. */
+export type GameCollection =
+  | 'blackjack'
+  | 'roulette'
+  | 'baccarat'
+  | 'game-shows'
+  | 'lightning'
+  | 'poker'
+  | 'crash'
+  | 'instant-wins'
+  | 'mines'
+  | 'plinko'
+  | 'dice'
+  | 'wheel'
+  | 'scratch-cards'
+  | 'keno'
+  | 'hilo'
+  | 'bingo';
 
 export type GameType = 'STANDARD' | 'LIVE' | 'LOBBY';
 
 export type GameVolatility = 'LOW' | 'LOW_MED' | 'MED' | 'MED_HIGH' | 'HIGH';
+
+/** LOCAL: this casino's own; POOLED: shared across casinos. */
+export type GameJackpotType = 'NONE' | 'LOCAL' | 'POOLED';
 
 /** REAL stakes the wallet; DEMO plays with play money. */
 export type GameMode = 'REAL' | 'DEMO';
@@ -57,8 +91,15 @@ export interface Game {
   demo_available: boolean;
   /** Whether the bonus round can be bought outright (the Bonus Buys shelf). */
   buy_feature: boolean;
+  jackpot_type: GameJackpotType | null;
+  /** The studio's maximum win as a multiple of the stake. */
+  max_win_multiplier: number | null;
+  /** YYYY-MM-DD. */
+  release_date: string | null;
   /** Whether the game can be opened right now. */
   launchable: boolean;
+  /** Lobby collections it sits in. */
+  collections: GameCollection[];
 }
 
 export type GamePagination = PaginationMeta;
@@ -95,6 +136,15 @@ export interface HomeShelvesResponse {
 }
 
 /** GET /games?category=… */
+/** GET /games/tag-filters: the Tag Manager groups the operator shows players. */
+export interface TagFilterGroup {
+  key: string;
+  name: string;
+  /** False: one tag of the group at a time (an RTP band). */
+  multiple: boolean;
+  tags: { slug: string; name: string; color: string | null; games: number }[];
+}
+
 export interface GameListResponse {
   data: Game[];
   pagination: GamePagination;
@@ -128,4 +178,24 @@ export interface GameLaunch {
   display_currency: string;
   /** Why `currency` differs from `display_currency`; null when they match. */
   currency_fallback: 'UNSUPPORTED_BY_PROVIDER' | 'NO_RATE' | null;
+}
+
+/**
+ * GET /games/live-stats — the player's own real-money rounds since `since`.
+ * Amounts are exact decimal strings in `currency` (the USD wallet).
+ */
+export interface LiveStats {
+  /** Where the window really starts, after the server clamped it. */
+  since: string;
+  /** The game slug the stats cover; null for every game. */
+  game: string | null;
+  currency: string;
+  rounds: number;
+  /** Settled rounds that paid more than they staked, and less. */
+  wins: number;
+  losses: number;
+  wagered: string;
+  profit: string;
+  /** Running profit after each of the most recent rounds, oldest first. */
+  points: string[];
 }

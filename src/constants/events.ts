@@ -21,3 +21,10 @@ export const REWARDS_REFRESH_EVENT = 'rewards:refresh';
  * what the wallet chip shows.
  */
 export const BONUS_REFRESH_EVENT = 'bonus:refresh';
+
+/**
+ * A player just signed in — any route: the login form, a social login, two
+ * factor, registration. Not fired when a stored session is restored on load,
+ * so the login pop-up shows once per sign-in, not on every page refresh.
+ */
+export const SIGNED_IN_EVENT = 'auth:signed-in';

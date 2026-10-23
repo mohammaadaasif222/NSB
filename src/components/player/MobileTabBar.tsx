@@ -134,6 +134,9 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
   const section: Section = pathname.startsWith('/sports') ? 'sports' : 'casino';
   const profile = pathname.startsWith('/profile');
 
+  const casino =
+    pathname === '/casino' || pathname === '/live-casino' || pathname.startsWith('/game');
+
   // A new page starts on the full bar.
   useEffect(() => setMode('bar'), [pathname]);
 
