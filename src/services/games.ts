@@ -40,12 +40,14 @@ export async function launchGame(
 }
 
 /**
- * The device version to ask for. Viewport and pointer rather than the
- * User-Agent: a narrow touch layout wants the mobile build whatever the
- * browser claims to be.
+ * The device version to ask for. Viewport-width only: a touch-enabled
+ * laptop / desktop (coarse pointer + wide screen) is still a desktop for
+ * layout purposes, and asking for the mobile iframe build there forced the
+ * cramped mobile styling (`calc(100dvh - 12.5rem)`) on it. If the viewport
+ * is phone-sized we ask for the mobile build regardless of pointer type.
  */
 export const currentGameDevice = (): GameDevice =>
-  window.matchMedia('(max-width: 767px), (pointer: coarse)').matches ? 'MOBILE' : 'DESKTOP';
+  window.matchMedia('(max-width: 767px)').matches ? 'MOBILE' : 'DESKTOP';
 
 /**
  * One page of a shelf's listing, fetched in the browser as its slider nears

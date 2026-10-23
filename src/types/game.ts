@@ -160,6 +160,13 @@ export interface GameLaunch {
   device: GameDevice;
   locale: string;
   display_ratio: number | null;
+  /**
+   * Stable aggregator code (game_aggregators.code — "TEQUITY", "ALEA_PLAY",
+   * "PRAGMATIC_PLAY"). Lets us branch frame styling on the actual source
+   * without string-matching the provider name, which is the STUDIO name
+   * ("alchemist-provider") rather than the aggregator itself.
+   */
+  aggregator_code: string;
   game: { id: string; slug: string; title: string };
   /**
    * What the game shows and takes bets in: the player's display currency

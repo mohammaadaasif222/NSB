@@ -281,7 +281,17 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
               )}
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <PlayActions game={dice ? { ...game, launchable: false } : game} />
+                {/*
+                  Only disable the launch button when the NATIVE dice game is
+                  actually enabled. The /dice slug used to belong exclusively
+                  to our native in-house dice (DiceGame.tsx) which doesn't go
+                  through an aggregator — but Tequity's catalogue also ships
+                  a "dice" game that we now treat as a Tequity Original. If
+                  `dice` config comes back with `enabled: false`, there is no
+                  native dice to render here, and the game is a normal
+                  aggregator game whose `launchable` flag should be respected.
+                */}
+                <PlayActions game={dice?.enabled ? { ...game, launchable: false } : game} />
                 {def && (
                   <Link href={categoryHref(def.key)} className={SECONDARY}>
                     {t('game.moreFrom', { category: categoryTitle ?? '' })}
