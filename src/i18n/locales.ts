@@ -770,6 +770,13 @@ const coreEn = {
   'stats.submit': 'Submit',
   'stats.invalidEmail': 'Please enter a valid email address',
   'stats.requestUnavailable': 'Statistics requests are not available yet. Please check back soon.',
+  'stats.formatLabel': 'Format',
+  'stats.formatText': 'Text (in the email)',
+  'stats.formatPdf': 'PDF',
+  'stats.formatExcel': 'Excel (.xlsx)',
+  'stats.sending': 'Sending…',
+  'stats.sent': 'Your statistics have been sent to {email}',
+  'stats.sendFailed': 'We could not send your statistics. Please try again.',
   'stats.close': 'Close',
   'stats.loadFailed': 'Could not load your statistics',
 
