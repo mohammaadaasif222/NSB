@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useDiceGame } from '@/hooks/useDiceGame';
+import { useRewards } from '@/hooks/useRewards';
 import { formatAmount, formatRewardAmount, withCurrency } from '@/utils/money';
 import type { DiceConfig, DiceRoll, Game } from '@/types';
 
@@ -88,21 +89,17 @@ const RecentRolls: FC<{ history: DiceRoll[] }> = ({ history }) => {
   );
 };
 
-/**
- * Demo Dice: pick a target and roll over or under it.
- *
- * Plays without a balance. Every roll is still recorded as a wager, so the
- * session totals sit beside where the player's VIP tier, rakeback and cashback
- * stand after each roll — which is what the game is here to test.
- */
 const DiceGame: FC<Props> = ({ game, config }) => {
   const { t } = useTranslation();
   const { token, hydrated } = useAuth();
   const dice = useDiceGame(config);
 
   const { currency } = config;
-  const { session, rewards } = dice;
+  const { session } = dice;
   const { rewards: rewardsOn } = usePlatformFeatures();
+  const { summary: rewards } = useRewards();
+  const rakeback = rewards?.rewards.find((entry) => entry.type === 'RAKEBACK' && entry.enabled);
+  const cashback = rewards?.rewards.find((entry) => entry.type === 'CASHBACK' && entry.enabled);
   const last = dice.history[0] ?? null;
   const conditionLabel = dice.condition === 'OVER' ? t('dice.rollOver') : t('dice.rollUnder');
 
@@ -110,14 +107,9 @@ const DiceGame: FC<Props> = ({ game, config }) => {
     <section className="space-y-4" aria-labelledby="dice-title">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 id="dice-title" className="text-2xl font-extrabold text-white sm:text-3xl">
-              {game.title}
-            </h1>
-            <span className="rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-300">
-              {t('dice.demo')}
-            </span>
-          </div>
+          <h1 id="dice-title" className="text-2xl font-extrabold text-white sm:text-3xl">
+            {game.title}
+          </h1>
           <p className="mt-1 text-sm text-slate-400">
             {t('game.provider')}:{' '}
             <span className="font-medium text-slate-200">{game.provider}</span>
@@ -127,10 +119,6 @@ const DiceGame: FC<Props> = ({ game, config }) => {
           {t('dice.odds', { rtp: config.rtp.toFixed(2), edge: config.house_edge.toFixed(2) })}
         </p>
       </header>
-
-      <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs leading-relaxed text-amber-200">
-        {t('dice.demoNotice')}
-      </p>
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(260px,320px)_1fr]">
         <DiceBetPanel dice={dice} config={config} authReady={hydrated} signedIn={!!token} />
@@ -250,22 +238,14 @@ const DiceGame: FC<Props> = ({ game, config }) => {
             </div>
             {rewards ? (
               <dl className="mt-3 grid grid-cols-3 gap-2">
-                <Stat label={t('dice.tier')} value={rewards.tier ?? t('dice.noTier')} />
+                <Stat label={t('dice.tier')} value={rewards.tier?.name ?? t('dice.noTier')} />
                 <Stat
                   label={t('dice.rakeback')}
-                  value={
-                    rewards.rakeback
-                      ? formatRewardAmount(rewards.rakeback.pending_amount, currency)
-                      : '—'
-                  }
+                  value={rakeback ? formatRewardAmount(rakeback.pending_amount, currency) : '—'}
                 />
                 <Stat
                   label={t('dice.cashback')}
-                  value={
-                    rewards.cashback
-                      ? formatRewardAmount(rewards.cashback.pending_amount, currency)
-                      : '—'
-                  }
+                  value={cashback ? formatRewardAmount(cashback.pending_amount, currency) : '—'}
                 />
               </dl>
             ) : (

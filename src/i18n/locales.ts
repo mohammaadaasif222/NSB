@@ -471,9 +471,6 @@ const coreEn = {
   'notFound.body2': 'Try going back to our homepage.',
   'notFound.cta': 'Go to homepage',
 
-  'dice.demo': 'Demo',
-  'dice.demoNotice':
-    'Demo play: no balance is used and nothing is paid out. Every roll still counts as a wager toward your VIP tier, rakeback and cashback.',
   'dice.odds': 'RTP {rtp}% · house edge {edge}%',
   'dice.manual': 'Manual',
   'dice.auto': 'Auto',
@@ -572,6 +569,7 @@ const coreEn = {
   'chat.reportConfirm': 'Confirm',
   'chat.reportSent': 'Thanks — our moderators will review this message',
   'chat.reportFailed': 'Could not send your report',
+  'chat.online': '{count} online',
   'chat.room': 'Chat room',
   'chat.roomSwitch': 'Switch chat room',
   'chat.rules': 'Chat rules',
@@ -781,6 +779,7 @@ const coreEn = {
   'stats.invalidEmail': 'Please enter a valid email address',
   'stats.requestUnavailable': 'Statistics requests are not available yet. Please check back soon.',
   'stats.close': 'Close',
+  'stats.loadFailed': 'Could not load your statistics',
 
   // Account area: the Referral section
   'ref.referralCode': 'Referral Code',

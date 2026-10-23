@@ -1,4 +1,4 @@
-/** The catalogue game that plays as demo Dice rather than showing its details page. */
+/** The catalogue game that plays as Dice rather than showing its details page. */
 export const DICE_SLUG = 'dice';
 
 /** The bet and win chance a fresh board starts on. */

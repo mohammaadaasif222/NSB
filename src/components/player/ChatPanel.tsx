@@ -13,6 +13,8 @@ import {
 import { useTranslation } from '@/context/I18nContext';
 import { useMe } from '@/context/UserContext';
 import { useGroupChat } from '@/hooks/useGroupChat';
+import { useChatAmbience } from '@/hooks/useChatAmbience';
+import { useSupportChat } from '@/context/SupportChatContext';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import EmojiPopover from '@/components/player/EmojiPopover';
 import ChatRoomPicker from '@/components/player/ChatRoomPicker';
@@ -430,6 +432,49 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
     report,
   } = useGroupChat(room);
 
+  const { chatAmbienceEnabled } = useSupportChat();
+  const ambience = useChatAmbience(room, chatAmbienceEnabled);
+
+  const combined = useMemo(() => {
+    if (ambience.messages.length === 0) return messages;
+    return [...messages, ...ambience.messages].sort((a, b) => {
+      const delta = Date.parse(a.at) - Date.parse(b.at);
+      return delta !== 0 ? delta : a.id.localeCompare(b.id);
+    });
+  }, [messages, ambience.messages]);
+
+  const { isAmbient, react: reactAmbient } = ambience;
+
+  const reactAny = useCallback(
+    (messageId: string, reaction: ReactionKind): void => {
+      if (isAmbient(messageId)) {
+        reactAmbient(messageId, reaction);
+        return;
+      }
+      void react(messageId, reaction);
+    },
+    [isAmbient, reactAmbient, react]
+  );
+
+  const reportAny = useCallback(
+    async (messageId: string, reason: string): Promise<void> => {
+      if (isAmbient(messageId)) return;
+      await report(messageId, reason);
+    },
+    [isAmbient, report]
+  );
+
+  const quoteOf = (message: ChatMessage | null): ReplyRef | null =>
+    message
+      ? {
+          id: message.id,
+          user_id: message.user_id,
+          name: message.name,
+          body: message.kind === 'voice' ? '' : message.body.slice(0, 140),
+          kind: message.kind ?? 'text',
+        }
+      : null;
+
   const recorder = useVoiceRecorder();
 
   const [draft, setDraft] = useState('');
@@ -455,10 +500,10 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
   }, [room]);
 
   useEffect(() => {
-    if (replyingTo && !messages.some((message) => message.id === replyingTo.id)) {
+    if (replyingTo && !combined.some((message) => message.id === replyingTo.id)) {
       setReplyingTo(null);
     }
-  }, [messages, replyingTo]);
+  }, [combined, replyingTo]);
 
   useEffect(() => {
     if (!flashId) return undefined;
@@ -497,7 +542,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
 
   useLayoutEffect(() => {
     if (pinned.current) endRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages]);
+  }, [combined]);
 
   const cooling = cooldownMs > 0;
   const tooLong = draft.trim().length > limits.max_length;
@@ -506,13 +551,13 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
 
   const participants = useMemo<MentionRef[]>(() => {
     const byId = new Map<string, MentionRef>();
-    for (const message of messages) {
+    for (const message of combined) {
       if (message.user_id !== me?.id && !byId.has(message.user_id)) {
         byId.set(message.user_id, { user_id: message.user_id, name: message.name });
       }
     }
     return [...byId.values()];
-  }, [messages, me?.id]);
+  }, [combined, me?.id]);
 
   const suggestions = useMemo(
     () => (mentionAt === null ? [] : matchParticipants(participants, mentionText)),
@@ -521,8 +566,8 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
 
   const rows = useMemo(
     () =>
-      messages.map((message, i) => {
-        const previous = messages[i - 1];
+      combined.map((message, i) => {
+        const previous = combined[i - 1];
         return {
           message,
           grouped:
@@ -533,7 +578,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
             Date.parse(message.at) - Date.parse(previous.at) < GROUPING_WINDOW_MS,
         };
       }),
-    [messages]
+    [combined]
   );
 
   const syncMention = (value: string, caret: number): void => {
@@ -631,11 +676,15 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
     setMentionAt(null);
     setReplyingTo(null);
 
-    void send(body, quoted?.id ?? null).then((accepted) => {
-      if (accepted) return;
-      setDraft((current) => (current.length === 0 ? body : current));
-      if (quoted) setReplyingTo((current) => current ?? quoted);
-    });
+    const local = quoted && isAmbient(quoted.id);
+
+    void send(body, local ? null : (quoted?.id ?? null), local ? quoteOf(quoted) : null).then(
+      (accepted) => {
+        if (accepted) return;
+        setDraft((current) => (current.length === 0 ? body : current));
+        if (quoted) setReplyingTo((current) => current ?? quoted);
+      }
+    );
   };
 
   const startRecording = (): void => {
@@ -651,8 +700,14 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
         return;
       }
       const quoted = replyingTo;
+      const local = quoted && isAmbient(quoted.id);
       setReplyingTo(null);
-      void sendVoice(result.clip, result.durationMs, quoted?.id ?? null);
+      void sendVoice(
+        result.clip,
+        result.durationMs,
+        local ? null : (quoted?.id ?? null),
+        local ? quoteOf(quoted) : null
+      );
     });
   };
 
@@ -680,6 +735,18 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
           <ChevronLeftIcon size={22} className="rtl:rotate-180" />
         </button>
         <ChatRoomPicker room={room} onChange={onRoomChange} label={t('chat.roomSwitch')} />
+
+        {ambience.online !== null && (
+          <span className="flex flex-shrink-0 items-center gap-1.5 text-[11px] font-medium text-slate-400">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <span className="tabular-nums">
+              {t('chat.online', { count: ambience.online.toLocaleString() })}
+            </span>
+          </span>
+        )}
 
         <div className="ms-auto flex items-center gap-1">
           <button
@@ -715,13 +782,13 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
         <ChatReportDialog
           message={reportTarget}
           onClose={closeReport}
-          onSubmit={report}
+          onSubmit={reportAny}
           onReported={onReported}
         />
 
-        {loading && messages.length === 0 ? (
+        {loading && combined.length === 0 ? (
           <Empty message={t('chat.loading')} />
-        ) : messages.length === 0 ? (
+        ) : combined.length === 0 ? (
           <Empty message={t('chat.empty')} />
         ) : (
           <div
@@ -738,7 +805,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
                   grouped={grouped}
                   flashing={flashId === message.id}
                   meId={me?.id}
-                  onReact={react}
+                  onReact={reactAny}
                   onDelete={remove}
                   onReply={startReply}
                   onReport={setReportTarget}

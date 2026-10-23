@@ -28,6 +28,7 @@ export interface IntercomIdentityResponse {
 export interface SupportChatSettings {
   intercom_chat_enabled: boolean;
   internal_chat_enabled: boolean;
+  chat_ambience_enabled?: boolean;
   /**
    * Intercom workspace App ID, served at runtime so the switch above works
    * without a rebuild. Empty means not configured on the API, and the bubble

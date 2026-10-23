@@ -1,11 +1,12 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { RangeCalendarIcon, RangeCloseIcon } from '@/components/profile/statistic/statisticIcons';
-import { MOCK_RANGE_LABEL, STAT_RANGES, type StatRange } from './mockStats';
+import { STAT_RANGES, type StatRange } from './statRanges';
 
 interface Props {
   active: StatRange;
   onSelect: (range: StatRange) => void;
+  rangeLabel: string;
 }
 
 /* Chip and date pill share a height and a radius; only the ink and the
@@ -16,14 +17,10 @@ const PILL =
 /**
  * The period chips and the explicit date range beside them.
  *
- * The chips carry real selection state — that is the shape the section will
- * need once a stats endpoint exists, and it is what a refetch would key off.
- * The figures behind them are mock either way, so nothing here filters yet.
- *
  * The date range is display-only: there is no picker, and a control that
  * opened one it could not apply would be worse than a label.
  */
-const RangeFilter: FC<Props> = ({ active, onSelect }) => {
+const RangeFilter: FC<Props> = ({ active, onSelect, rangeLabel }) => {
   const { t } = useTranslation();
 
   return (
@@ -61,7 +58,7 @@ const RangeFilter: FC<Props> = ({ active, onSelect }) => {
           <RangeCalendarIcon />
         </span>
 
-        <span className="tabular-nums text-[#9da2b4]">{MOCK_RANGE_LABEL}</span>
+        <span className="tabular-nums text-[#9da2b4]">{rangeLabel || '—'}</span>
 
         <span
           title={t('common.soon')}

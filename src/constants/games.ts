@@ -105,12 +105,15 @@ export const CASINO_LISTING_KEYS: readonly GameShelfKey[] = SHELF_KEYS.filter(
 );
 
 /**
- * The shelves each lobby shows, in order, as the designs draw them. The
- * signed-out page's are Originals, New Releases and Featured Lobby — all three
- * curated, so each shows once games are assigned to it in the console and is
- * left out while it is empty.
+ * The shelves each lobby shows, in order.
  */
-export const LOBBY_SHELF_KEYS: readonly GameShelfKey[] = ['originals', 'new', 'featured'];
+export const LOBBY_SHELF_KEYS: readonly GameShelfKey[] = [
+  'originals',
+  'slots',
+  'live',
+  'new',
+  'featured',
+];
 export const PLAYER_SHELF_KEYS: readonly GameShelfKey[] = [
   'originals',
   'slots',
