@@ -411,10 +411,11 @@ const ConnectionNote: FC<{ state: ConnectionState; label: string }> = ({ state, 
 interface PanelProps {
   onClose: () => void;
   room: ChatRoom;
+  rooms: readonly ChatRoom[];
   onRoomChange: (room: ChatRoom) => void;
 }
 
-const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
+const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
   const { t } = useTranslation();
   const { me } = useMe();
   const {
@@ -734,7 +735,12 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, onRoomChange }) => {
         >
           <ChevronLeftIcon size={22} className="rtl:rotate-180" />
         </button>
-        <ChatRoomPicker room={room} onChange={onRoomChange} label={t('chat.roomSwitch')} />
+        <ChatRoomPicker
+          room={room}
+          rooms={rooms}
+          onChange={onRoomChange}
+          label={t('chat.roomSwitch')}
+        />
 
         {ambience.online !== null && (
           <span className="flex flex-shrink-0 items-center gap-1.5 text-[11px] font-medium text-slate-400">
