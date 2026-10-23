@@ -179,3 +179,23 @@ export interface GameLaunch {
   /** Why `currency` differs from `display_currency`; null when they match. */
   currency_fallback: 'UNSUPPORTED_BY_PROVIDER' | 'NO_RATE' | null;
 }
+
+/**
+ * GET /games/live-stats — the player's own real-money rounds since `since`.
+ * Amounts are exact decimal strings in `currency` (the USD wallet).
+ */
+export interface LiveStats {
+  /** Where the window really starts, after the server clamped it. */
+  since: string;
+  /** The game slug the stats cover; null for every game. */
+  game: string | null;
+  currency: string;
+  rounds: number;
+  /** Settled rounds that paid more than they staked, and less. */
+  wins: number;
+  losses: number;
+  wagered: string;
+  profit: string;
+  /** Running profit after each of the most recent rounds, oldest first. */
+  points: string[];
+}
