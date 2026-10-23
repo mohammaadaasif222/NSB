@@ -10,6 +10,7 @@ import { EnquiriesModule } from './modules/enquiries/enquiries.module.js';
 import { HealthController } from './modules/health/health.controller.js';
 import { ListingsModule } from './modules/listings/listings.module.js';
 import { MediaModule } from './modules/media/media.module.js';
+import { ProjectsModule } from './modules/projects/projects.module.js';
 import { SettingsModule } from './modules/settings/settings.module.js';
 
 @Module({
@@ -21,6 +22,7 @@ import { SettingsModule } from './modules/settings/settings.module.js';
     AuthModule,
     CategoriesModule,
     ListingsModule,
+    ProjectsModule,
     BannersModule,
     EnquiriesModule,
     SettingsModule,

@@ -18,8 +18,9 @@ interface Tab {
  */
 export function MobileTabBar({ whatsappHref }: { whatsappHref: string | null }) {
   const path = usePathname();
-  // /wedding/wedding-venues/some-vendor: a vendor page.
-  if (path.split("/").filter(Boolean).length >= 3) return null;
+  const parts = path.split("/").filter(Boolean);
+  // /wedding/wedding-venues/some-vendor and /real-estate/some-project have their own bottom bar.
+  if (parts.length >= 3 || (parts[0] === "real-estate" && parts.length === 2)) return null;
 
   const tabs: Tab[] = [
     { label: "Home", href: "/", Icon: Home, active: (p) => p === "/" },

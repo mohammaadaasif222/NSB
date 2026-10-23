@@ -1,0 +1,31 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import type { AdminProject, AdminSettings } from "@nsb/shared";
+import { adminApi, ApiError, isUuid } from "@/lib/api";
+import { ProjectForm } from "../project-form";
+import { DeleteProjectButton } from "../projects-table";
+
+export const metadata: Metadata = { title: "Edit real estate listing" };
+
+async function getProject(id: string) {
+  if (!isUuid(id)) notFound();
+  try {
+    return await adminApi.get<AdminProject>(`/admin/projects/${id}`);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) notFound();
+    throw err;
+  }
+}
+
+export default async function EditProjectPage({ params }: PageProps<"/admin/real-estate/[id]">) {
+  const { id } = await params;
+  const [project, settings] = await Promise.all([getProject(id), adminApi.get<AdminSettings>("/admin/settings")]);
+  return (
+    <ProjectForm
+      key={project.updatedAt}
+      project={project}
+      maxUploadBytes={settings.maxUploadBytes}
+      actions={<DeleteProjectButton id={project.id} name={project.name} redirectTo="/admin/real-estate" label="Delete" />}
+    />
+  );
+}

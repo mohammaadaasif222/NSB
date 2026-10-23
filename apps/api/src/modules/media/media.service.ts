@@ -17,8 +17,8 @@ import {
   type UploadedImage,
 } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
-import { banners, categories, listingImages, listings, media } from '../../db/schema.js';
-import { PROVIDER_LABELS, SettingsService } from '../settings/settings.service.js';
+import { banners, categories, listingImages, listings, media, projects, settings } from '../../db/schema.js';
+import { PROJECT_SIDE_AD_KEY, PROVIDER_LABELS, SettingsService } from '../settings/settings.service.js';
 import { readImageInfo } from './image-info.js';
 import type { ImageStorage } from './storage/image-storage.js';
 import { CloudinaryImageStorage } from './storage/cloudinary.storage.js';
@@ -40,6 +40,12 @@ const inUse = sql`(
   or exists (select 1 from ${categories} where ${categories.imageUrl} = ${media.url})
   or exists (select 1 from ${listings} where ${listings.coverImageUrl} = ${media.url})
   or exists (select 1 from ${listingImages} where ${listingImages.url} = ${media.url})
+  or exists (select 1 from ${projects} where ${media.url} = any(${projects.photos}))
+  or exists (
+    select 1 from ${projects}, jsonb_array_elements(${projects.configurations}) as plan(c)
+    where plan.c->>'plan2dUrl' = ${media.url} or plan.c->>'plan3dUrl' = ${media.url}
+  )
+  or exists (select 1 from ${settings} where ${settings.key} = ${PROJECT_SIDE_AD_KEY} and ${settings.value}->>'imageUrl' = ${media.url})
 )`;
 
 /** 1×1 transparent PNG for connection tests. */

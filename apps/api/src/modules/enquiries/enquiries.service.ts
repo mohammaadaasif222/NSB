@@ -1,13 +1,27 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and, count, desc, eq, gte, ilike, inArray, isNotNull, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
-import { type Enquiry, type EnquiryInput, type EnquiryQuery, listingPlace, type Paginated, type UnreadCount } from '@nsb/shared';
+import {
+  type Enquiry,
+  type EnquiryInput,
+  type EnquiryQuery,
+  formatPrice,
+  GENERAL_PROPERTY_LEAD,
+  listingPlace,
+  type Paginated,
+  type ProjectEnquiryInput,
+  type ProjectEnquiryResult,
+  projectPlace,
+  REAL_ESTATE_SLUG,
+  type UnreadCount,
+} from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
 import { categories, enquiries } from '../../db/schema.js';
 import { istDayStart } from '../../common/dates.js';
 import { likeTerm } from '../../common/like.js';
 import { pageWindow } from '../../common/pagination.js';
 import { ListingsService } from '../listings/listings.service.js';
-import { NotificationsService } from '../notifications/notifications.service.js';
+import { type EnquiryNotice, NotificationsService } from '../notifications/notifications.service.js';
+import { ProjectsService } from '../projects/projects.service.js';
 
 type Row = typeof enquiries.$inferSelect;
 
@@ -20,6 +34,17 @@ const toEnquiry = (r: Row): Enquiry => ({
   readAt: r.readAt?.toISOString() ?? null,
 });
 
+const yesNo = (v: boolean) => (v ? 'Yes' : 'No');
+
+/** The View Number form's answers, as the lead's message (shown in the admin, the CSV and the alert email). */
+const projectLeadMessage = (input: ProjectEnquiryInput) =>
+  [
+    `${input.source} request`,
+    `Property dealer: ${yesNo(input.isDealer)}`,
+    `Planning to buy in: ${input.buyWithin ?? 'Not given'}`,
+    `Interested in a home loan: ${yesNo(input.homeLoan)}`,
+    `Interested in site visits: ${yesNo(input.siteVisit)}`,
+  ].join('\n');
 
 @Injectable()
 export class EnquiriesService {
@@ -28,6 +53,7 @@ export class EnquiriesService {
   constructor(
     @Inject(DB) private readonly db: Database,
     private readonly listings: ListingsService,
+    private readonly projects: ProjectsService,
     private readonly notifications: NotificationsService,
   ) {}
 
@@ -45,25 +71,88 @@ export class EnquiriesService {
     const enquiry = toEnquiry(row);
 
     // The lead is saved; a failed alert must never lose it or fail the request.
-    this.notifications
-      .enquiryReceived({
-        enquiry,
-        listing: {
-          id: listing.id,
-          slug: listing.slug,
-          area: listingPlace(listing),
-          quickInfo,
-          services: listing.services,
-          vendorEmail: listing.email,
-          vendorPhone: listing.phone,
-          notifyVendor: listing.notifyVendor,
-          categorySlug: category.slug,
-          parent,
-        },
-      })
-      .catch((err: unknown) => this.logger.error(`Alert failed for enquiry ${enquiry.id}`, err));
+    this.notify({
+      enquiry,
+      listing: {
+        id: listing.id,
+        slug: listing.slug,
+        area: listingPlace(listing),
+        quickInfo,
+        services: listing.services,
+        vendorEmail: listing.email,
+        vendorPhone: listing.phone,
+        notifyVendor: listing.notifyVendor,
+        categorySlug: category.slug,
+        parent,
+      },
+    });
 
     return enquiry;
+  }
+
+  /**
+   * A real estate lead (View Number and the other project buttons). It is filed under the Real
+   * Estate category, and the visitor gets the advertiser's number in return, as the project page
+   * promises. Without a project it is a "help me choose" callback for the NSB team.
+   */
+  async createForProject(input: ProjectEnquiryInput): Promise<ProjectEnquiryResult> {
+    const project = input.projectId ? await this.projects.forLead(input.projectId) : null;
+    const [category] = await this.db
+      .select({ id: categories.id, name: categories.name })
+      .from(categories)
+      .where(eq(categories.slug, REAL_ESTATE_SLUG));
+    const [row] = await this.db
+      .insert(enquiries)
+      .values({
+        name: input.name,
+        mobile: input.mobile,
+        message: projectLeadMessage(input),
+        source: input.source,
+        projectId: project?.id ?? null,
+        listingName: project?.name ?? GENERAL_PROPERTY_LEAD,
+        categoryId: category?.id ?? null,
+        categoryName: category?.name ?? 'Real Estate',
+      })
+      .returning();
+    const enquiry = toEnquiry(row);
+
+    // Alerts go to NSB only: advertisers get the lead from NSB, not by email.
+    this.notify({
+      enquiry,
+      listing: project && {
+        id: project.id,
+        slug: project.slug,
+        area: projectPlace(project),
+        quickInfo: [
+          { label: 'Builder', value: project.builder },
+          { label: 'Listed by', value: `${project.advertiserName} (${project.advertiserType})` },
+          { label: 'Starting price', value: project.minPrice ? `₹${formatPrice(project.minPrice)}` : 'On request' },
+          { label: 'Possession', value: [project.possessionStatus, project.possessionDate].filter(Boolean).join(', ') },
+          ...(project.reraId ? [{ label: 'RERA ID', value: project.reraId }] : []),
+        ],
+        services: [],
+        vendorEmail: null,
+        vendorPhone: project.phone,
+        notifyVendor: false,
+        categorySlug: REAL_ESTATE_SLUG,
+        parent: null,
+        path: `/real-estate/${project.slug}`,
+      },
+    });
+
+    return {
+      id: enquiry.id,
+      advertiserName: project?.advertiserName ?? null,
+      phone: project?.phone ?? null,
+      brochureUrl: project?.brochureUrl ?? null,
+    };
+  }
+
+  /** The lead is saved; a failed alert must never lose it or fail the request. */
+  private notify(notice: EnquiryNotice) {
+    this.notifications
+      .enquiryReceived(notice)
+      .catch((err: unknown) => this.logger.error(`Alert failed for enquiry ${notice.enquiry.id}`, err));
   }
 
   async list(query: EnquiryQuery): Promise<Paginated<Enquiry>> {
@@ -91,6 +180,7 @@ export class EnquiriesService {
       filters.push(or(eq(enquiries.categoryId, query.categoryId), inArray(enquiries.categoryId, subs))!);
     }
     if (query.listingId) filters.push(eq(enquiries.listingId, query.listingId));
+    if (query.projectId) filters.push(eq(enquiries.projectId, query.projectId));
     if (query.status) filters.push(query.status === 'unread' ? isNull(enquiries.readAt) : isNotNull(enquiries.readAt));
     if (query.from) filters.push(gte(enquiries.createdAt, istDayStart(query.from)));
     if (query.to) filters.push(lt(enquiries.createdAt, sql`${istDayStart(query.to)} + interval '1 day'`));

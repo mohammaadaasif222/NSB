@@ -11,7 +11,9 @@ const lead: Enquiry = {
   budget: '₹5 lakh',
   eventType: 'Wedding',
   listingId: null,
+  projectId: null,
   listingName: 'Royal Banquet',
+  source: null,
   categoryId: null,
   categoryName: 'Wedding Venues',
   createdAt: '2026-10-09T10:00:00.000Z',
@@ -23,7 +25,7 @@ describe('enquiriesCsv', () => {
 
   it('keeps Name, Mobile and Email in their own columns, with a BOM for Excel', () => {
     expect(bomHeader.startsWith('﻿')).toBe(true);
-    expect(bomHeader.slice(1)).toBe('"Received","Name","Mobile","Email","Event","Preferred date","Budget","Message","Listing","Category","Status"');
+    expect(bomHeader.slice(1)).toBe('"Received","Name","Mobile","Email","Event","Preferred date","Budget","Message","Lead type","Listing","Category","Status"');
     expect(row).toContain('"Asha ""AK"" Kapoor","9876543210","asha@example.com","Wedding","2027-02-14","₹5 lakh"');
     expect(row.endsWith('"Royal Banquet","Wedding Venues","Unread"')).toBe(true);
   });

@@ -13,6 +13,20 @@ export function PageHeader({ title, description, actions }: { title: string; des
   );
 }
 
+/** One KPI tile in an .a-kp row: icon, label, big value and a note. */
+export function Kpi({ label, value, note, icon }: { label: string; value: ReactNode; note: string; icon: ReactNode }) {
+  return (
+    <div className="a-card">
+      <div className="a-ic">{icon}</div>
+      <div>
+        <span>{label}</span>
+        <b>{value}</b>
+        <small>{note}</small>
+      </div>
+    </div>
+  );
+}
+
 export interface Column<T> {
   header: string;
   headerContent?: ReactNode;

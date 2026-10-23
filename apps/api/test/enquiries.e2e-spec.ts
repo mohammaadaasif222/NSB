@@ -211,7 +211,7 @@ describe('Enquiries and email alerts (e2e)', () => {
     expect(res.headers['content-type']).toMatch(/^text\/csv/);
     expect(res.headers['content-disposition']).toMatch(/attachment; filename="nsb-enquiries-\d{4}-\d{2}-\d{2}\.csv"/);
     const lines = (res.text as string).replace(/^﻿/, '').trim().split('\r\n');
-    expect(lines[0]).toBe('"Received","Name","Mobile","Email","Event","Preferred date","Budget","Message","Listing","Category","Status"');
+    expect(lines[0]).toBe('"Received","Name","Mobile","Email","Event","Preferred date","Budget","Message","Lead type","Listing","Category","Status"');
     expect(lines.slice(1)).toHaveLength(3); // Asha, Ravi and Meera from this run
     expect(lines.find((l) => l.includes(`Meera ${run}`))).toContain(`"Meera ${run}","9988776655","meera@example.com"`);
     await http().get('/api/admin/enquiries/export').expect(401);

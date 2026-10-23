@@ -107,6 +107,21 @@ export const IMAGE_SLOTS = {
     anyOrientation: true,
     folder: 'listings',
   },
+  /** 2D or 3D floor plan on a real estate project page; shown whole (object-contain), never cropped. */
+  'floor-plan': {
+    label: 'Floor plan',
+    recommended: { width: 1600, height: 1200, ratio: 'any shape; the whole plan is shown' },
+    min: { width: 400, height: 300 },
+    anyOrientation: true,
+    folder: 'floor-plans',
+  },
+  /** Sponsored card in the real estate project page sidebar: about 290×96. */
+  ad: {
+    label: 'Sidebar ad image',
+    recommended: { width: 700, height: 240, ratio: '3:1' },
+    min: { width: 300, height: 100 },
+    folder: 'ads',
+  },
 } as const satisfies Record<string, ImageSlot>;
 
 export type ImageSlotKey = keyof typeof IMAGE_SLOTS;

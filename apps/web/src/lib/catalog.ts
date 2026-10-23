@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import type { CategoryDetail, ListingDetail } from "@nsb/shared";
+import type { CategoryDetail, ListingDetail, ProjectDetail } from "@nsb/shared";
 import { api, ApiError } from "./api";
 
 /** GET that turns an API 404 into the Next.js not-found page. */
@@ -20,3 +20,8 @@ export const getListing = cache((slug: string) => getOr404<ListingDetail>(`/list
 
 export const listingPath = (vertical: string, category: string, listing: string) =>
   `/${vertical}/${category}/${listing}`;
+
+export const getProject = cache((slug: string) => getOr404<ProjectDetail>(`/projects/${encodeURIComponent(slug)}`));
+
+/** A real estate project page. */
+export const projectPath = (slug: string) => `/real-estate/${slug}`;

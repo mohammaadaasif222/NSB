@@ -9,6 +9,8 @@ import {
   type ImageStorageProvider,
   type ListingSidebarSettings,
   listingSidebarSchema,
+  type ProjectSideAd,
+  projectSideAdSchema,
   type SettingsUpdate,
   type SiteSettings,
   SMTP_SECURITY,
@@ -49,7 +51,11 @@ const KEYS = {
   email: 'email.smtp',
   whatsapp: 'contact.whatsapp',
   listingSidebar: 'site.listingSidebar',
+  projectSideAd: 'realEstate.projectSideAd',
 } as const;
+
+/** Its imageUrl is an upload, so the media cleanup checks this key before deleting a file. */
+export const PROJECT_SIDE_AD_KEY = KEYS.projectSideAd;
 
 /** Until an admin changes it, the listing page shows both side cards. */
 const DEFAULT_LISTING_SIDEBAR: ListingSidebarSettings = { enabled: true, budget: true, type: true };
@@ -94,6 +100,7 @@ interface Saved {
   email: SavedEmail | null;
   whatsapp: WhatsappSettings | null;
   listingSidebar: ListingSidebarSettings | null;
+  projectSideAd: ProjectSideAd | null;
 }
 
 interface Resolved<T> {
@@ -162,15 +169,17 @@ export class SettingsService {
       email: this.describeEmail(saved.email),
       whatsapp: saved.whatsapp,
       listingSidebar: saved.listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
+      projectSideAd: saved.projectSideAd,
     };
   }
 
-  /** What the public website needs: the WhatsApp button only while it is switched on. */
+  /** What the public website needs: the WhatsApp button and the project page ad only while switched on. */
   async siteSettings(): Promise<SiteSettings> {
-    const { whatsapp, listingSidebar } = await this.load();
+    const { whatsapp, listingSidebar, projectSideAd } = await this.load();
     return {
       whatsapp: whatsapp?.enabled ? { number: whatsapp.number, message: whatsapp.message } : null,
       listingSidebar: listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
+      projectSideAd: projectSideAd?.enabled ? projectSideAd : null,
     };
   }
 
@@ -215,6 +224,7 @@ export class SettingsService {
       }
       if (input.whatsapp !== undefined) next.whatsapp = input.whatsapp;
       if (input.listingSidebar) next.listingSidebar = input.listingSidebar;
+      if (input.projectSideAd !== undefined) next.projectSideAd = input.projectSideAd;
       if (input.imageStorage) next.imageStorage = input.imageStorage;
 
       const active = this.active(next);
@@ -232,6 +242,7 @@ export class SettingsService {
       await this.write(tx, KEYS.email, next.email, input.email !== undefined);
       await this.write(tx, KEYS.whatsapp, next.whatsapp, input.whatsapp !== undefined);
       await this.write(tx, KEYS.listingSidebar, next.listingSidebar, !!input.listingSidebar);
+      await this.write(tx, KEYS.projectSideAd, next.projectSideAd, input.projectSideAd !== undefined);
     });
     return this.get();
   }
@@ -340,6 +351,7 @@ export class SettingsService {
       email: parse(savedEmailSchema, value(KEYS.email)),
       whatsapp: parse(savedWhatsappSchema, value(KEYS.whatsapp)),
       listingSidebar: parse(listingSidebarSchema, value(KEYS.listingSidebar)),
+      projectSideAd: parse(projectSideAdSchema, value(KEYS.projectSideAd)),
     };
   }
 

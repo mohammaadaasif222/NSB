@@ -8,7 +8,8 @@ import { MailService } from './mail.service.js';
 
 export interface EnquiryNotice {
   enquiry: Enquiry;
-  listing: EnquiryListing;
+  /** Null for a lead about no listing in particular (real estate "Get a callback"). */
+  listing: EnquiryListing | null;
 }
 
 /**
@@ -30,7 +31,7 @@ export class NotificationsService {
 
   /** Emails the NSB recipients and, if enabled, the vendor. Rejects if any email failed. */
   async enquiryReceived({ enquiry, listing }: EnquiryNotice): Promise<void> {
-    const { vendorEmail } = listing;
+    const vendorEmail = listing?.vendorEmail;
     const config = await this.settings.smtpConfig();
     if (!config?.enabled) {
       this.logger.log(`Enquiry ${enquiry.id} saved; email alerts are off`);
@@ -39,7 +40,7 @@ export class NotificationsService {
     const sends = [
       { label: 'NSB recipients', send: () => this.mail.send(config, config.adminRecipients, adminEnquiryEmail(enquiry, listing, this.siteUrl)) },
       // The site-wide switch (Settings) and the listing's own switch must both allow it.
-      ...(config.notifyVendor && listing.notifyVendor && vendorEmail
+      ...(config.notifyVendor && listing?.notifyVendor && vendorEmail
         ? [{ label: 'vendor', send: () => this.mail.send(config, [vendorEmail], vendorEnquiryEmail(enquiry)) }]
         : []),
     ];

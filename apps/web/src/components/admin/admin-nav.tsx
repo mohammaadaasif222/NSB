@@ -21,6 +21,7 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
     links: [
       { href: "/admin/home", label: "Home page", Icon: Home, also: ["/admin/banners", "/admin/categories"] },
       { href: "/admin/wedding", label: "Wedding", Icon: Heart, also: ["/admin/listings"] },
+      { href: "/admin/real-estate", label: "Real Estate", Icon: Building2 },
     ],
   },
   { title: "Inbox", links: [{ href: "/admin/enquiries", label: "Enquiries", Icon: Users }] },
@@ -28,7 +29,6 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
 ];
 
 const SOON: { label: string; Icon: LucideIcon; tag: string }[] = [
-  { label: "Real Estate", Icon: Building2, tag: "Next" },
   { label: "Brand Stores", Icon: Store, tag: "Soon" },
   { label: "Schools", Icon: Lock, tag: "Soon" },
 ];

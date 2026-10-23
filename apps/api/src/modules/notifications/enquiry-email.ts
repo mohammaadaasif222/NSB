@@ -21,6 +21,8 @@ export interface EnquiryListing {
   categorySlug: string;
   /** The category's parent (e.g. Wedding); null for a top-level category. */
   parent: { name: string; slug: string } | null;
+  /** Site path of the page when it is not /vertical/category/slug, e.g. a real estate project. */
+  path?: string;
 }
 
 interface Link {
@@ -92,8 +94,9 @@ const leadRows = (e: Enquiry): [string, string][] => [
   ['Name', e.name],
   ['Mobile', `+91 ${e.mobile}`],
   ...(e.eventType ? [['Event', e.eventType] as [string, string]] : []),
-  ['Preferred date', dateOnly.format(new Date(`${e.preferredDate}T00:00:00Z`))],
-  ['Budget', e.budget || 'Not given'],
+  ...(e.preferredDate ? [['Preferred date', dateOnly.format(new Date(`${e.preferredDate}T00:00:00Z`))] as [string, string]] : []),
+  // Real estate leads say which button they came from; vendor enquiries carry a budget.
+  e.source ? ['Lead type', e.source] : ['Budget', e.budget || 'Not given'],
   ...(e.email ? [['Email', e.email] as [string, string]] : []),
 ];
 
@@ -107,8 +110,10 @@ const contactLinks = (e: Enquiry): Link[] => [
 ];
 
 /** Public page of the listing, when the site address is known and the category sits under a vertical. */
-const listingUrl = (l: EnquiryListing, siteUrl?: string) =>
-  siteUrl && l.parent ? new URL(`/${l.parent.slug}/${l.categorySlug}/${l.slug}`, siteUrl).toString() : undefined;
+const listingUrl = (l: EnquiryListing, siteUrl?: string) => {
+  const path = l.path ?? (l.parent ? `/${l.parent.slug}/${l.categorySlug}/${l.slug}` : null);
+  return siteUrl && path ? new URL(path, siteUrl).toString() : undefined;
+};
 
 /** Service names with their detail in brackets, e.g. "Catering (in-house only)". */
 const serviceLabel = (service: string) => {

@@ -14,7 +14,7 @@ import {
 import { LISTING_AREAS, listingDetailsInputSchema } from './listing-forms.js';
 import { youTubeId } from './youtube.js';
 
-const trimmed = (max: number) =>
+export const trimmed = (max: number) =>
   z.string().trim().min(1, 'This field is required').max(max, `Keep it under ${max} characters`);
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 
@@ -48,7 +48,7 @@ export const orderSchema = z.object({
 export type OrderInput = z.infer<typeof orderSchema>;
 
 /** Empty query-string values (from a GET filter form) count as "not set". */
-const blankAsUndefined = <T extends z.ZodType>(schema: T) => z.preprocess((v) => (v === '' ? undefined : v), schema.optional());
+export const blankAsUndefined = <T extends z.ZodType>(schema: T) => z.preprocess((v) => (v === '' ? undefined : v), schema.optional());
 
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -136,7 +136,7 @@ export const serviceGroupSchema = z.object({
 export type ServiceGroup = z.infer<typeof serviceGroupSchema>;
 
 /** Blank form values become null, so a cleared field is saved as "not set". */
-const blankAsNull = <T extends z.ZodType>(schema: T) => z.preprocess((v) => (v === '' ? null : v), schema.nullable());
+export const blankAsNull = <T extends z.ZodType>(schema: T) => z.preprocess((v) => (v === '' ? null : v), schema.nullable());
 
 // Update schemas come from the default-free field sets: zod applies defaults even inside
 // .partial(), which would reset omitted fields on every PATCH.
@@ -400,6 +400,24 @@ export const listingSidebarSchema = z.object({
 });
 export type ListingSidebarSettings = z.infer<typeof listingSidebarSchema>;
 
+/** A link on the site (/schools) or a full https:// address; blank for none. */
+const siteOrWebLink = z
+  .string()
+  .trim()
+  .max(300)
+  .refine((v) => v === '' || /^\/(?!\/)\S*$/.test(v) || /^https?:\/\/\S+$/.test(v), 'Use a site path such as /schools or a full https:// link');
+
+/** Sponsored card in the real estate project page sidebar, below the callback box. Sponsors only, never another project. */
+export const projectSideAdSchema = z.object({
+  enabled: z.boolean(),
+  title: trimmed(80),
+  text: z.string().trim().max(240),
+  buttonLabel: z.string().trim().max(30),
+  link: siteOrWebLink,
+  imageUrl: imageUrlSchema.nullable(),
+});
+export type ProjectSideAd = z.infer<typeof projectSideAdSchema>;
+
 export const settingsUpdateSchema = z.object({
   /** Where new uploads go. Existing images keep working from wherever they were stored. */
   imageStorage: z.enum(IMAGE_STORAGE_PROVIDERS).optional(),
@@ -412,6 +430,8 @@ export const settingsUpdateSchema = z.object({
   whatsapp: whatsappSettingsSchema.nullable().optional(),
   /** Which side cards the category listing page shows (list view, desktop). */
   listingSidebar: listingSidebarSchema.optional(),
+  /** Real estate project page sidebar ad; null removes it. */
+  projectSideAd: projectSideAdSchema.nullable().optional(),
 });
 export type SettingsUpdate = z.infer<typeof settingsUpdateSchema>;
 /** What the browser sends (the Firebase key file as text). */
@@ -442,6 +462,8 @@ export const enquiryQuerySchema = paginationSchema.extend({
   /** A top-level category also matches enquiries for its sub-categories. */
   categoryId: blankAsUndefined(z.uuid()),
   listingId: blankAsUndefined(z.uuid()),
+  /** Leads for one real estate project. */
+  projectId: blankAsUndefined(z.uuid()),
   status: blankAsUndefined(z.enum(ENQUIRY_STATUSES)),
   /** Received on or after / on or before these dates (India time). */
   from: blankAsUndefined(z.iso.date()),

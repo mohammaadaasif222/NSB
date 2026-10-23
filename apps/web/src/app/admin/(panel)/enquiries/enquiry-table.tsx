@@ -62,11 +62,14 @@ export function EnquiryTable({ enquiries, empty }: { enquiries: Enquiry[]; empty
             cell: (e) => (
               <>
                 {e.listingName}
-                <span className="block text-zinc-500">{e.categoryName}</span>
+                <span className="block text-zinc-500">
+                  {e.categoryName}
+                  {e.source && ` · ${e.source}`}
+                </span>
               </>
             ),
           },
-          { header: "Date", cell: (e) => formatDate(e.preferredDate), className: "whitespace-nowrap" },
+          { header: "Date", cell: (e) => (e.preferredDate ? formatDate(e.preferredDate) : "—"), className: "whitespace-nowrap" },
           { header: "Message", cell: (e) => <p className="line-clamp-2 max-w-xs">{e.message}</p> },
           {
             header: "",
@@ -122,10 +125,16 @@ function EnquiryDetails({ enquiry: e, pending, onUnread }: { enquiry: Enquiry; p
           </Row>
         )}
         {e.eventType && <Row label="Event">{e.eventType}</Row>}
-        <Row label="Preferred date">{formatDate(e.preferredDate)}</Row>
-        <Row label="Budget">{e.budget || "Not given"}</Row>
-        <Row label="Listing">
-          {e.listingId ? (
+        {e.preferredDate && <Row label="Preferred date">{formatDate(e.preferredDate)}</Row>}
+        {e.source ? <Row label="Lead type">{e.source}</Row> : <Row label="Budget">{e.budget || "Not given"}</Row>}
+        <Row label={e.source ? "Project" : "Listing"}>
+          {e.projectId ? (
+            <Link href={`/admin/real-estate/${e.projectId}`} className="underline-offset-2 hover:underline">
+              {e.listingName}
+            </Link>
+          ) : e.source ? (
+            e.listingName
+          ) : e.listingId ? (
             <Link href={`/admin/listings/${e.listingId}`} className="underline-offset-2 hover:underline">
               {e.listingName}
             </Link>

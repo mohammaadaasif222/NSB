@@ -907,6 +907,151 @@ details.a-subs > summary {
   color: var(--admin-accent);
 }
 
+/* ---------- real estate ---------- */
+/* Page tabs (All listings · Sponsors & ads) use the step pills as links. */
+.a-stp a {
+  border: 1px solid var(--admin-line);
+  background: var(--admin-surface);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--admin-ink);
+}
+.a-stp a:hover {
+  border-color: var(--admin-accent);
+}
+.a-stp a[aria-current="page"] {
+  background: var(--admin-accent);
+  color: #fff;
+  border-color: var(--admin-accent);
+}
+.a-amg2 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.a-am2 {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--admin-line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.a-am2:has(input:checked) {
+  border-color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+}
+.a-am2 input {
+  accent-color: var(--admin-accent);
+}
+.a-hc {
+  border: 1px solid var(--admin-line);
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+.a-pgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+.a-pbx {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px dashed var(--admin-line);
+  border-radius: 12px;
+  padding: 8px;
+  background: var(--admin-surface);
+}
+.a-pth2 {
+  position: relative;
+  width: 84px;
+  height: 64px;
+  border-radius: 8px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  color: var(--admin-muted);
+  flex: none;
+  border: 1px solid var(--admin-line);
+  overflow: hidden;
+}
+.a-pth2 img {
+  object-fit: contain;
+}
+.a-pc .im {
+  position: relative;
+  aspect-ratio: 4/3;
+  border-radius: 12px;
+  background: linear-gradient(150deg, var(--admin-accent-soft), var(--admin-line));
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.a-pc .im img {
+  object-fit: cover;
+}
+.a-pc .im .a-pl {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+}
+.a-pc h4 {
+  font-size: 16px;
+  font-weight: 800;
+}
+.a-pc p {
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+.a-pc .pr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.a-pc .pr b {
+  color: var(--admin-accent);
+  font-size: 17px;
+}
+.a-meter {
+  height: 8px;
+  background: var(--admin-canvas);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 0 0 8px;
+}
+.a-meter i {
+  display: block;
+  height: 100%;
+  background: var(--admin-accent);
+  border-radius: 99px;
+}
+.a-info.e {
+  background: var(--admin-error-soft);
+}
+.a-info.w {
+  background: var(--admin-warn-soft);
+}
+@media (max-width: 1000px) {
+  .a-pgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .a-amg2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) {
   .a-kp {

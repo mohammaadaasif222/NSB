@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
+  bigint,
   boolean,
   date,
   index,
@@ -12,7 +13,24 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import type { ImageStorageProvider, ListingDetails, ListingStatus, ListingVideo, QuickInfoItem, ReviewSource, ServiceGroup } from '@nsb/shared';
+import type {
+  Advertiser,
+  AdvertiserType,
+  ImageStorageProvider,
+  ListingDetails,
+  ListingStatus,
+  ListingVideo,
+  NearbyPlace,
+  PossessionStatus,
+  ProjectConfiguration,
+  ProjectFaq,
+  ProjectSpecifications,
+  ProjectType,
+  ProjectVideo,
+  QuickInfoItem,
+  ReviewSource,
+  ServiceGroup,
+} from '@nsb/shared';
 
 const id = () => uuid('id').primaryKey().defaultRandom();
 const createdAt = () =>
@@ -164,6 +182,67 @@ export const banners = pgTable(
 );
 
 /**
+ * Real estate projects: one listing and one advertiser (the builder or a broker) per project.
+ * Nested parts of the project page are jsonb; min_price and bedrooms are derived on save for the
+ * listing page's sort and filters.
+ */
+export const projects = pgTable(
+  'projects',
+  {
+    id: id(),
+    type: text('type').$type<ProjectType>().notNull(),
+    /** One of LISTING_AREAS. */
+    area: text('area').notNull(),
+    /** Sector or address, e.g. Sector 150. */
+    locality: text('locality').notNull(),
+    name: text('name').notNull(),
+    /** From the name and area (projectSlug), so one project cannot be listed twice in an area. */
+    slug: text('slug').notNull().unique(),
+    builder: text('builder').notNull(),
+    reraId: text('rera_id').notNull().default(''),
+    possessionStatus: text('possession_status').$type<PossessionStatus>().notNull(),
+    possessionDate: text('possession_date').notNull().default(''),
+    launchDate: text('launch_date').notNull().default(''),
+    isPremium: boolean('is_premium').notNull().default(false),
+    units: integer('units'),
+    landArea: text('land_area').notNull().default(''),
+    towers: integer('towers'),
+    about: text('about').notNull().default(''),
+    highlights: text('highlights').array().notNull().default(sql`'{}'::text[]`),
+    configurations: jsonb('configurations').$type<ProjectConfiguration[]>().notNull().default([]),
+    amenities: text('amenities').array().notNull().default(sql`'{}'::text[]`),
+    specifications: jsonb('specifications').$type<ProjectSpecifications>().notNull(),
+    nearby: jsonb('nearby').$type<NearbyPlace[]>().notNull().default([]),
+    advertiser: jsonb('advertiser').$type<Advertiser>().notNull(),
+    /** advertiser.name and type, as columns for search and the admin's advertiser count. */
+    advertiserName: text('advertiser_name').notNull(),
+    advertiserType: text('advertiser_type').$type<AdvertiserType>().notNull(),
+    faqs: jsonb('faqs').$type<ProjectFaq[]>().notNull().default([]),
+    /** First photo is the cover. */
+    photos: text('photos').array().notNull().default(sql`'{}'::text[]`),
+    videoUrl: text('video_url'),
+    videoChapters: text('video_chapters').notNull().default(''),
+    videos: jsonb('videos').$type<ProjectVideo[]>().notNull().default([]),
+    /** Given to a visitor only after they share their number. */
+    brochureUrl: text('brochure_url'),
+    /** The advertiser's number: private, shown to a visitor only after View Number. */
+    phone: text('phone'),
+    /** Lowest configuration price (rupees); null when every price is on request. */
+    minPrice: bigint('min_price', { mode: 'number' }),
+    /** Bedroom counts of the configurations, for the 2/3/4+ BHK chips. */
+    bedrooms: integer('bedrooms').array().notNull().default(sql`'{}'::integer[]`),
+    termStart: date('term_start', { mode: 'string' }).notNull(),
+    termMonths: integer('term_months').notNull().default(12),
+    status: text('status').$type<ListingStatus>().notNull().default('draft'),
+    metaTitle: text('meta_title').notNull().default(''),
+    metaDescription: text('meta_description').notNull().default(''),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('projects_status_area_idx').on(t.status, t.area)],
+);
+
+/**
  * Images uploaded through the admin panel, keyed by the URL that records store. Tells the API
  * which provider holds each file so it can delete it once no record uses it. URLs not in this
  * table (seeded /images paths, pasted links) are never deleted.
@@ -202,6 +281,10 @@ export const enquiries = pgTable(
     listingId: uuid('listing_id').references(() => listings.id, {
       onDelete: 'set null',
     }),
+    /** Real estate leads; set to null when the project is deleted (the lead keeps its name). */
+    projectId: uuid('project_id').references(() => projects.id, {
+      onDelete: 'set null',
+    }),
     listingName: text('listing_name').notNull(),
     categoryId: uuid('category_id').references(() => categories.id, {
       onDelete: 'set null',
@@ -210,12 +293,15 @@ export const enquiries = pgTable(
     name: text('name').notNull(),
     mobile: text('mobile').notNull(),
     message: text('message').notNull(),
-    preferredDate: date('preferred_date', { mode: 'string' }).notNull(),
+    /** Event date on vendor enquiries; null on real estate leads. */
+    preferredDate: date('preferred_date', { mode: 'string' }),
     budget: text('budget'),
     /** e.g. Wedding, Engagement; optional. */
     eventType: text('event_type'),
     /** The lead's email, if they gave one. */
     email: text('email'),
+    /** Real estate leads: the button used (View Number, Site visit, …). */
+    source: text('source'),
     createdAt: createdAt(),
     /** First opened by an admin; null while unread (drives the unread badge). */
     readAt: timestamp('read_at', { withTimezone: true }),
@@ -225,5 +311,6 @@ export const enquiries = pgTable(
     index('enquiries_unread_idx').on(t.createdAt).where(sql`${t.readAt} is null`),
     index('enquiries_category_idx').on(t.categoryId),
     index('enquiries_listing_idx').on(t.listingId),
+    index('enquiries_project_idx').on(t.projectId),
   ],
 );

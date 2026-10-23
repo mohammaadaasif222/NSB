@@ -1,12 +1,14 @@
-import { and, eq, inArray, like, min } from 'drizzle-orm';
+import { and, eq, inArray, like, min, or } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import type { ListingVideo, QuickInfoItem } from '@nsb/shared';
 import { loadEnvFile } from '../config/env.js';
-import { banners, categories, listingImages, listings } from './schema.js';
+import { projectValues } from '../modules/projects/project-values.js';
+import { demoProjects } from './demo-projects.js';
+import { banners, categories, listingImages, listings, projects } from './schema.js';
 
 /**
- * Demo vendors and hero banners for design review and testing. Not real businesses.
+ * Demo vendors, real estate projects and hero banners for design review and testing. Not real businesses.
  *   npm run db:seed:demo             add them (skips any that already exist)
  *   npm run db:seed:demo -- --remove delete them before launch
  * Every demo vendor uses an @example.com email, so enquiry alerts never reach a real inbox.
@@ -197,6 +199,8 @@ const DEMO_BANNERS = [
 ];
 const DEMO_BANNER_URLS = DEMO_BANNERS.map((b) => b.imageUrl);
 
+const DEMO_PROJECTS = demoProjects().map(projectValues);
+
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);
 
@@ -212,6 +216,12 @@ try {
       .where(inArray(banners.imageUrl, DEMO_BANNER_URLS))
       .returning({ id: banners.id });
     console.log(`Removed ${removedBanners.length} demo banners`);
+    // A demo project is removed only while its slug and RERA ID are both still the demo's.
+    const removedProjects = await db
+      .delete(projects)
+      .where(or(...DEMO_PROJECTS.map((p) => and(eq(projects.slug, p.slug), eq(projects.reraId, p.reraId)))))
+      .returning({ id: projects.id });
+    console.log(`Removed ${removedProjects.length} demo projects`);
   } else {
     const cats = await db
       .select({ id: categories.id, slug: categories.slug })
@@ -266,6 +276,9 @@ try {
       await db.insert(banners).values(missing.map((b, i) => ({ ...b, sortOrder: start + i })));
     }
     console.log(`Demo banners added: ${missing.length}`);
+
+    const addedProjects = await db.insert(projects).values(DEMO_PROJECTS).onConflictDoNothing({ target: projects.slug }).returning({ id: projects.id });
+    console.log(`Demo projects added: ${addedProjects.length}`);
   }
 } finally {
   await pool.end();

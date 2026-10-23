@@ -1,6 +1,6 @@
 import type { ImageStorageProvider, ListingStatus, ReviewSource, SmtpSecurity } from './constants.js';
 import type { ListingDetails } from './listing-forms.js';
-import type { ListingSidebarSettings, ListingVideo, QuickInfoItem, ServiceGroup } from './schemas.js';
+import type { ListingSidebarSettings, ListingVideo, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
 
 /** API response shapes shared by the API (producer) and web (consumer). Dates are ISO strings. */
 
@@ -156,12 +156,18 @@ export interface Enquiry {
   name: string;
   mobile: string;
   message: string;
-  preferredDate: string;
+  /** The event date on vendor enquiries; null on real estate leads. */
+  preferredDate: string | null;
   budget: string | null;
   eventType: string | null;
   email: string | null;
   listingId: string | null;
+  /** Set on real estate leads (null once the project is deleted). */
+  projectId: string | null;
+  /** Vendor listing or project name, kept when it is deleted. */
   listingName: string;
+  /** Real estate leads: the button used, e.g. View Number or Site visit. */
+  source: string | null;
   categoryId: string | null;
   categoryName: string;
   createdAt: string;
@@ -201,6 +207,8 @@ export interface AdminSettings {
   /** Null until an admin saves a WhatsApp number. */
   whatsapp: WhatsappSettings | null;
   listingSidebar: ListingSidebarSettings;
+  /** Null until an admin saves the project page sidebar ad. */
+  projectSideAd: ProjectSideAd | null;
 }
 
 export interface WhatsappSettings {
@@ -216,6 +224,8 @@ export interface SiteSettings {
   /** Present only while the WhatsApp button is switched on. */
   whatsapp: Pick<WhatsappSettings, 'number' | 'message'> | null;
   listingSidebar: ListingSidebarSettings;
+  /** Present only while the ad is switched on. */
+  projectSideAd: ProjectSideAd | null;
 }
 
 /** SMTP settings without the password. */

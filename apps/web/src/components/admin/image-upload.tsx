@@ -43,7 +43,8 @@ async function precheck(file: File, slot: ImageSlotKey, maxBytes: number): Promi
   return null;
 }
 
-function useUploader(slot: ImageSlotKey, maxBytes: number, onUploaded: (url: string) => void) {
+/** Checks and uploads one image to a slot; `onUploaded` records it for the form's cleanup. */
+export function useUploader(slot: ImageSlotKey, maxBytes: number, onUploaded: (url: string) => void) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

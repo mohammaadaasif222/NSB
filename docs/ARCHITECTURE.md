@@ -54,6 +54,7 @@ modules/
   auth/                  login/logout/me, AdminGuard, @CurrentAdmin (global module)
   categories/            public read + admin create/update/reorder
   listings/              public list/detail + admin CRUD, gallery
+  projects/              real estate projects: public list/detail/localities + admin CRUD, stats, duplicate check
   banners/               public active banners + admin CRUD and reorder
   media/                 image uploads: validation, storage providers (Cloudinary | Firebase | local), cleanup
   settings/              admin-editable settings: storage provider and its credentials (encrypted)
@@ -67,6 +68,7 @@ modules/
 - Public routes live under `/api/<resource>`. Admin routes live under `/api/admin/<resource>` and use `@UseGuards(AdminGuard)`. Each module has a public controller and an admin controller over one service.
 - Validate every body and query with `new ZodPipe(schemaFromShared)`. Return types come from `@nsb/shared`.
 - Public responses never include a vendor's email or phone (`ListingDetail`). Admin responses do (`AdminListing`).
+- One deliberate exception, from the demo's View Number flow: `POST /api/enquiries/project` saves the lead first and then returns the project advertiser's phone (and brochure link). `ProjectDetail` itself never carries them.
 - An enquiry copies the listing name and category name when it is saved. Deleting the listing sets `listing_id` to null, and the lead keeps its source.
 - A failed notification must never fail the enquiry request or lose the lead. The lead is saved first.
 - A listing's vendor email is optional, and each listing has `notify_vendor` (default on). The vendor is emailed only when Settings › "Also email the vendor" is on, the listing's switch is on, and it has an email; otherwise the lead reaches NSB only.
@@ -110,6 +112,11 @@ modules/
 | GET | `/api/admin/enquiries/unread-count` (polled by the admin bell) | admin |
 | PATCH | `/api/admin/enquiries/:id` `{ read }` · POST `/api/admin/enquiries/read-all` | admin |
 | POST | `/api/admin/notifications/test-email` `{ to? }` | admin |
+| GET | `/api/projects?area=&locality=&q=&bhk=2\|3\|4&possession=&sort=rel\|lo\|hi&page=&pageSize=` · `/api/projects/localities?area=` · `/api/projects/:slug` (with up to 3 similar) | – |
+| POST | `/api/enquiries/project` `{ projectId?, name, mobile, isDealer, buyWithin?, homeLoan, siteVisit, agreed, source }` → `{ id, advertiserName, phone, brochureUrl }` | – |
+| GET, POST | `/api/admin/projects?q=&type=&area=&status=live\|draft\|hidden\|expired&sort=new\|exp\|lead\|az` | admin |
+| GET | `/api/admin/projects/stats` · `/api/admin/projects/duplicate?name=&area=&exclude=` → `{ duplicate }` | admin |
+| GET, PATCH, DELETE | `/api/admin/projects/:id` | admin |
 
 ## Data model
 
@@ -129,14 +136,24 @@ banners       id, image_url, mobile_image_url (both optional), heading, subheadi
 media         id, url (unique), provider (cloudinary|firebase|local), storage_key, account
               (cloud name or bucket), mime_type, bytes, width, height, created_at
 settings      key (pk), value jsonb, updated_at
-enquiries     id, listing_id → listings (set null), listing_name, category_id → categories
-              (set null), category_name, name, mobile, message, preferred_date, budget, event_type (optional), created_at,
+enquiries     id, listing_id → listings (set null), project_id → projects (set null), listing_name,
+              category_id → categories (set null), category_name, name, mobile, message, preferred_date
+              (null on real estate leads), budget, event_type (optional), source (real estate button), created_at,
               read_at (null = unread)
+projects      id, type (apartments|villas|plots), area (LISTING_AREAS), locality, name, slug (unique, from
+              name + area), builder, rera_id, possession_status/date, launch_date, is_premium, units,
+              land_area, towers, about, highlights[], configurations jsonb [{title, price, superArea,
+              carpetArea, plan2dUrl, plan3dUrl}], amenities[], specifications jsonb, nearby jsonb,
+              advertiser jsonb (+ advertiser_name/type columns), faqs jsonb, photos[] (first = cover),
+              video_url, video_chapters, videos jsonb, brochure_url, phone (private), min_price and
+              bedrooms[] (derived on save), term_start, term_months, status, meta_title/description
 ```
 
 **Images.** Admins upload through `POST /api/admin/uploads`, then save the returned URL on the record (records keep plain URL columns). The API checks the file's bytes (JPEG, PNG or WebP only), size (`UPLOAD_MAX_MB`, default 5) and dimensions per slot (`IMAGE_SLOTS` in `@nsb/shared`, which also holds the recommended sizes shown in the admin). The provider for new uploads is an admin setting: Cloudinary (signed REST API), Firebase Storage (Google Cloud Storage JSON API with a service-account JWT; files get a Firebase download-token URL) or local disk (`UPLOAD_DIR`, served at `/api/uploads/`, a Docker volume in production). No SDKs are used. Cloudinary and Firebase credentials are entered in Admin › Settings and stored in `settings` with the secret parts encrypted (AES-256-GCM, key from `SETTINGS_ENCRYPTION_KEY` or else `JWT_SECRET`); the API never returns them. `CLOUDINARY_*` env vars still work as a fallback. Each upload gets a `media` row recording its provider and account (cloud name or bucket), so existing images keep working after the setting changes, and a file is never deleted with a different account's credentials (it is kept and logged instead). When a record drops an image (replaced, removed or deleted), `MediaService.release()` deletes the file only if no banner, category, listing or gallery row still uses that URL. URLs without a `media` row (seeded `/images/...`, demo Unsplash photos) are never deleted. A new image column must be added to the `inUse` check in `media.service.ts`.
 
 **Enquiry alerts.** When an enquiry is saved, `NotificationsService` emails the NSB recipients and, if enabled, the vendor, using the SMTP settings saved in Admin › Settings (password encrypted like the storage secrets). Sending happens after the response; a failed email is logged and never loses the lead. `SITE_URL` adds an "Open in the admin panel" link. The admin panel shows the unread count in a bell and the nav, polling `unread-count` every 30 seconds while visible; opening an enquiry marks it read.
+
+**Real estate.** Builder projects, not vendors: one listing and one advertiser (the builder, or one broker) per project. The admin form's eight steps (`/admin/real-estate`) are the sections of the project page, as in `nsb-live-demo.html`. A project in the same area under the same name (ignoring case and punctuation) is refused with 409. Public pages show Live projects only, and only while the `real-estate` category is active. Leads are enquiries filed under the Real Estate category with `project_id` and `source`; the NSB alert email links the project page, and advertisers are never emailed. Admin › Real Estate › Sponsors & ads edits the project page sidebar ad (`realEstate.projectSideAd` setting, in `GET /api/site-settings` while switched on); its image is covered by the media in-use check, as are project photos and floor plans. Demo projects: `npm run db:seed:demo` (removed with `-- --remove` while slug and RERA ID still match). Not built: the demo's location-sponsor slot booking; the list page's ad strip, Shorts row, promo strip and location-sponsor card are static design content.
 
 **Visibility.** Inactive categories stay in the admin panel but disappear from the public site together with their sub-categories and listings. Inactive banners are likewise admin-only.
 
@@ -164,7 +181,7 @@ Next 16 rules apply: `params`, `searchParams` and `cookies()` are async, `fetch`
 
 **Listing and detail pages:** the listing page defaults to list view (`?view=list`; use `?view=grid` for grid), with a `?q=` search box and numbered `?page=` pagination; the vendor profile uses only roadmap fields. In list view only, desktop shows static "by budget" / "by type" side cards (`lib/browse-panels.ts`); they do not filter yet and use Unsplash placeholder photos. A card shows key info as two label/value pairs plus two chips (the first four quick-info items). The detail page shows a Videos section when the listing has YouTube links: Videos (16:9) then Shorts (9:16); each loads the youtube-nocookie player only when tapped. The enquiry card follows the ezweddingz booking card: headline price (first quick-info item), event type (wedding vertical) and date, a big Enquire now button that opens name, mobile, budget and requirement, and the WhatsApp button. It sits in a sticky side card (stacked under the content on mobile, with a fixed Enquire bar). Demo vendors and three photo hero banners: `npm run db:seed:demo`; remove both before launch with `npm run db:seed:demo -- --remove` (vendors all use @example.com emails; banners are matched by their image URL; photos are hotlinked from Unsplash).
 
-**URLs:** `/` (home), `/[vertical]` (one landing template, e.g. `/wedding`), `/[vertical]/[category]` (M3), `/[vertical]/[category]/[vendor-slug]` (M3), `/admin/…`.
+**URLs:** `/` (home), `/[vertical]` (one landing template, e.g. `/wedding`), `/[vertical]/[category]` (M3), `/[vertical]/[category]/[vendor-slug]` (M3), `/real-estate` and `/real-estate/[project]` (static segment, wins over `/[vertical]`; styles in `real-estate.css`, `re-` classes), `/admin/…`.
 
 **Layout:** `container-page` is up to 1536px wide (matching kalasquare.com). On phones the site follows an app layout: sticky header, swipeable `ScrollRow` card rows (arrows on desktop), a 4-column category icon grid, and `MobileTabBar` (Home, Categories, Wedding, WhatsApp) on every page except vendor pages, which keep their own Enquire bar.
 

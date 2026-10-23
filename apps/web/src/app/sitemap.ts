@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import type { Category, CategoryDetail, ListingSummary, Paginated } from "@nsb/shared";
+import type { Category, CategoryDetail, ListingSummary, Paginated, ProjectSummary } from "@nsb/shared";
 import { api } from "@/lib/api";
-import { listingPath } from "@/lib/catalog";
+import { listingPath, projectPath } from "@/lib/catalog";
 import { CATEGORY_PAGES_ENABLED } from "@/lib/flags";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * /sitemap.xml: the home page, every vertical (/wedding), every sub-category
- * (/wedding/wedding-venues) and every live listing. Built from the public API on each request,
+ * (/wedding/wedding-venues), every live listing and every live real estate project. Built from the public API on each request,
  * so it follows what admins publish. Only categories the API exposes (active ones) are included.
  * If the API is unreachable the sitemap still answers with the home page rather than a 500.
  */
@@ -53,7 +53,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    return [...home, ...categoryUrls, ...listingUrls];
+    // Real estate lists projects, not sub-categories; /real-estate is in categoryUrls already.
+    const projectUrls: MetadataRoute.Sitemap = [];
+    for (let page = 1, total = Infinity; (page - 1) * 100 < total; page++) {
+      const batch = await api.get<Paginated<ProjectSummary>>(`/projects?page=${page}&pageSize=100`);
+      total = batch.total;
+      if (batch.items.length === 0) break;
+      for (const project of batch.items) {
+        projectUrls.push({ url: `${SITE_URL}${projectPath(project.slug)}`, lastModified: project.createdAt, changeFrequency: "weekly", priority: 0.6 });
+      }
+    }
+
+    return [...home, ...categoryUrls, ...listingUrls, ...projectUrls];
   } catch (err) {
     console.error("sitemap: could not load categories or listings", err);
     return home;

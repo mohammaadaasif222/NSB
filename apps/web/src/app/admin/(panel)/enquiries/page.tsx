@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Download } from "lucide-react";
 import { type AdminCategory, ENQUIRY_STATUSES, type Enquiry, type EnquiryStatus, type Paginated } from "@nsb/shared";
 import { PageHeader, Pagination } from "@/components/admin/ui";
@@ -30,6 +31,8 @@ export default async function EnquiriesPage({ searchParams }: PageProps<"/admin/
   const query = await searchParams;
   const filters = readFilters(query);
   const page = Math.max(1, Number.parseInt(one(query.page), 10) || 1);
+  // Admin › Real Estate links a project's lead count here.
+  const projectId = isUuid(one(query.project)) ? one(query.project) : "";
 
   const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
   if (filters.q) params.set("q", filters.q);
@@ -37,18 +40,20 @@ export default async function EnquiriesPage({ searchParams }: PageProps<"/admin/
   if (filters.status) params.set("status", filters.status);
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
+  if (projectId) params.set("projectId", projectId);
 
   const [enquiries, categories] = await Promise.all([
     adminApi.get<Paginated<Enquiry>>(`/admin/enquiries?${params}`),
     adminApi.get<AdminCategory[]>("/admin/categories"),
   ]);
 
-  const filtered = Object.values(filters).some(Boolean);
+  const filtered = Object.values(filters).some(Boolean) || !!projectId;
   // Export the same leads the filters show (all pages), with the API's parameter names.
   const exportQuery = new URLSearchParams([...params].filter(([k]) => k !== "page" && k !== "pageSize")).toString();
   const pageCount = Math.max(1, Math.ceil(enquiries.total / PAGE_SIZE));
   const pageHref = (p: number) => {
     const sp = new URLSearchParams(Object.entries(filters).filter(([, v]) => v));
+    if (projectId) sp.set("project", projectId);
     if (p > 1) sp.set("page", String(p));
     return `/admin/enquiries${sp.size ? `?${sp}` : ""}`;
   };
@@ -73,6 +78,14 @@ export default async function EnquiriesPage({ searchParams }: PageProps<"/admin/
         }
       />
       <EnquiryFilters categories={categories} values={filters} />
+      {projectId && (
+        <p className="a-info mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
+          Showing the leads of {enquiries.items[0]?.listingName ?? "one project"}.
+          <Link href="/admin/enquiries" className="font-semibold text-(--admin-accent) hover:underline">
+            Show all enquiries
+          </Link>
+        </p>
+      )}
       <EnquiryTable enquiries={enquiries.items} empty={filtered ? "No enquiries match these filters." : "No enquiries yet."} />
       <Pagination page={page} pageCount={pageCount} href={pageHref} />
     </>

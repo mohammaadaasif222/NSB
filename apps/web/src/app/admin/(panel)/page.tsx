@@ -3,6 +3,7 @@ import type { AdminCategory, Banner, Enquiry, ListingSummary, Paginated, UnreadC
 import { ChevronRight, Heart, Home, ListChecks, MessageSquareText, Shapes, Star, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import { ListingThumb, hueOf } from "@/components/admin/listing-thumb";
+import { Kpi } from "@/components/admin/ui";
 import { adminApi } from "@/lib/api";
 
 const DAY = 86_400_000;
@@ -24,19 +25,6 @@ async function enquiriesSince(from: string) {
     if (items.length >= res.total || res.items.length === 0) break;
   }
   return items;
-}
-
-function Kpi({ label, value, note, icon }: { label: string; value: ReactNode; note: string; icon: ReactNode }) {
-  return (
-    <div className="a-card">
-      <div className="a-ic">{icon}</div>
-      <div>
-        <span>{label}</span>
-        <b>{value}</b>
-        <small>{note}</small>
-      </div>
-    </div>
-  );
 }
 
 function SectionRow({ href, icon, title, note }: { href: string; icon: ReactNode; title: string; note: string }) {

@@ -9,6 +9,9 @@ import {
   type EnquiryUpdate,
   enquiryUpdateSchema,
   type Paginated,
+  type ProjectEnquiryInput,
+  projectEnquiryInputSchema,
+  type ProjectEnquiryResult,
   type UnreadCount,
 } from '@nsb/shared';
 import { ZodPipe } from '../../common/zod.pipe.js';
@@ -25,6 +28,15 @@ export class EnquiriesController {
   async create(@Body(new ZodPipe(enquiryInputSchema)) body: EnquiryInput): Promise<{ id: string }> {
     const { id } = await this.enquiries.create(body);
     return { id };
+  }
+
+  /**
+   * Real estate View Number form. Returns the advertiser's number (and brochure link): the
+   * project page shows them only to visitors who leave their details.
+   */
+  @Post('project')
+  createForProject(@Body(new ZodPipe(projectEnquiryInputSchema)) body: ProjectEnquiryInput): Promise<ProjectEnquiryResult> {
+    return this.enquiries.createForProject(body);
   }
 }
 
