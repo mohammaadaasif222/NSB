@@ -17,6 +17,7 @@ import { BetslipProvider } from '@/context/BetslipContext';
 import RouteProgress from '@/components/RouteProgress';
 import AuthGate from '@/components/AuthGate';
 import AccountReviewNotice from '@/components/risk/AccountReviewNotice';
+import LoginPopup from '@/components/player/LoginPopup';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import RegionRestrictedModal from '@/components/modals/RegionRestrictedModal';
 import Analytics from '@/components/analytics/Analytics';
@@ -89,7 +90,7 @@ export default function App({ Component, pageProps }: AppProps) {
                         {/* Outside AuthModalProvider so the login and sign-up modals can
                         reach the step-up prompt through useSeonGuard() too. */}
                         <SeonGuardProvider>
-                        <AuthModalProvider>
+                          <AuthModalProvider>
                             {/* Inside AuthModalProvider: hearting signed out opens login. */}
                             <FavouritesProvider>
                               {/* Above the pages, so sportsbook picks survive moving between them. */}
@@ -98,31 +99,32 @@ export default function App({ Component, pageProps }: AppProps) {
                                 <Component {...pageProps} />
                               </BetslipProvider>
                             </FavouritesProvider>
-                          <SeonAgentWarmup />
-                          <RegionRestrictedModal />
-                          {/* A bar at the top edge, not an overlay: a link
+                            <SeonAgentWarmup />
+                            <RegionRestrictedModal />
+                            {/* A bar at the top edge, not an overlay: a link
                           swaps the route in place and must not blank the page
                           the player is on. */}
-                          <RouteProgress />
-                          {/* The one full-screen splash, and only on arrival:
+                            <RouteProgress />
+                            {/* The one full-screen splash, and only on arrival:
                           after RouteProgress so that on a first load, where
                           both could be showing, this one wins the overlap. */}
-                          <AuthGate />
-                        <AccountReviewNotice />
-                          {/* Outside the page so the bubble survives route changes,
+                            <AuthGate />
+                            <AccountReviewNotice />
+                            <LoginPopup />
+                            {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching
                           Intercom off removes it without a deploy. */}
-                          <IntercomLauncher />
-                          <ToastContainer
-                            position="top-right"
-                            autoClose={3000}
-                            newestOnTop
-                            closeOnClick
-                            pauseOnHover
-                            draggable
-                            theme="dark"
-                          />
-                        </AuthModalProvider>
+                            <IntercomLauncher />
+                            <ToastContainer
+                              position="top-right"
+                              autoClose={3000}
+                              newestOnTop
+                              closeOnClick
+                              pauseOnHover
+                              draggable
+                              theme="dark"
+                            />
+                          </AuthModalProvider>
                         </SeonGuardProvider>
                       </SupportChatProvider>
                     </CurrencyConversionProvider>
