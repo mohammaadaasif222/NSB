@@ -1937,11 +1937,6 @@
   "game.feature.pooledJackpot": "Ortak jackpot",
   "allGames.title": "Tüm oyunlar",
   "allGames.meta": "ROLLUCK'taki tüm oyunlara göz atın ve filtreleri birleştirin: sağlayıcı, RTP, volatilite, Bonus Satın Al, jackpotlar ve daha fazlası.",
-  "allGames.filters": "Filtreler",
-  "allGames.filtersCount": "Filtreler ({count})",
-  "allGames.provider": "Sağlayıcı",
-  "allGames.anyProvider": "Tüm sağlayıcılar",
-  "allGames.sortBy": "Sırala",
   "allGames.sort.popular": "En popüler",
   "allGames.sort.trending": "Trend",
   "allGames.sort.new": "En yeni",
@@ -1952,5 +1947,11 @@
   "allGames.remove": "Filtreyi kaldır",
   "allGames.clear": "Tümünü temizle",
   "allGames.empty": "Bu filtrelere uyan oyun yok.",
-  "allGames.noFilters": "Daha fazla filtre yolda."
+  "allGames.allTypes": "Tümü",
+  "allGames.any": "Herhangi",
+  "allGames.maxWinAtLeast": "{value}x veya üzeri",
+  "allGames.release": "Çıkış tarihi",
+  "allGames.release.30": "Son 30 gün",
+  "allGames.release.90": "Son 3 ay",
+  "allGames.release.365": "Son 12 ay"
 }

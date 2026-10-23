@@ -25,6 +25,12 @@ export interface ShelfListQuery {
   collection?: GameCollection;
   /** Tag Manager slugs, comma-separated: any within a group, every group. */
   tags?: string;
+  /** What the player typed; results come back by relevance. */
+  search?: string;
+  /** A maximum win of at least this multiple of the stake. */
+  max_win_min?: number;
+  /** Released within this many days. */
+  released_within_days?: number;
 }
 
 /**

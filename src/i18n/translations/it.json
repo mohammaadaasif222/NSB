@@ -1937,11 +1937,6 @@
   "game.feature.pooledJackpot": "Jackpot condiviso",
   "allGames.title": "Tutti i giochi",
   "allGames.meta": "Sfoglia tutti i giochi di ROLLUCK e combina i filtri: provider, RTP, volatilità, acquisto bonus, jackpot e altro.",
-  "allGames.filters": "Filtri",
-  "allGames.filtersCount": "Filtri ({count})",
-  "allGames.provider": "Provider",
-  "allGames.anyProvider": "Qualsiasi provider",
-  "allGames.sortBy": "Ordina per",
   "allGames.sort.popular": "I più popolari",
   "allGames.sort.trending": "Di tendenza",
   "allGames.sort.new": "I più nuovi",
@@ -1952,5 +1947,11 @@
   "allGames.remove": "Rimuovi filtro",
   "allGames.clear": "Cancella tutto",
   "allGames.empty": "Nessun gioco corrisponde a questi filtri.",
-  "allGames.noFilters": "Altri filtri in arrivo."
+  "allGames.allTypes": "Tutti",
+  "allGames.any": "Qualsiasi",
+  "allGames.maxWinAtLeast": "{value}x o più",
+  "allGames.release": "Data di uscita",
+  "allGames.release.30": "Ultimi 30 giorni",
+  "allGames.release.90": "Ultimi 3 mesi",
+  "allGames.release.365": "Ultimi 12 mesi"
 }

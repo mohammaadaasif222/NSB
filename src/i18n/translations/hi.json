@@ -1937,11 +1937,6 @@
   "game.feature.pooledJackpot": "साझा जैकपॉट",
   "allGames.title": "सभी गेम",
   "allGames.meta": "ROLLUCK के सभी गेम देखें और फ़िल्टर मिलाएँ: प्रोवाइडर, RTP, वोलैटिलिटी, बोनस बाय, जैकपॉट और भी बहुत कुछ।",
-  "allGames.filters": "फ़िल्टर",
-  "allGames.filtersCount": "फ़िल्टर ({count})",
-  "allGames.provider": "प्रोवाइडर",
-  "allGames.anyProvider": "कोई भी प्रोवाइडर",
-  "allGames.sortBy": "क्रम से",
   "allGames.sort.popular": "सबसे लोकप्रिय",
   "allGames.sort.trending": "ट्रेंडिंग",
   "allGames.sort.new": "सबसे नए",
@@ -1952,5 +1947,11 @@
   "allGames.remove": "फ़िल्टर हटाएँ",
   "allGames.clear": "सब हटाएँ",
   "allGames.empty": "इन फ़िल्टरों से कोई गेम मेल नहीं खाता।",
-  "allGames.noFilters": "और फ़िल्टर जल्द आ रहे हैं।"
+  "allGames.allTypes": "सभी",
+  "allGames.any": "कोई भी",
+  "allGames.maxWinAtLeast": "{value}x या ज़्यादा",
+  "allGames.release": "रिलीज़ की तारीख",
+  "allGames.release.30": "पिछले 30 दिन",
+  "allGames.release.90": "पिछले 3 महीने",
+  "allGames.release.365": "पिछले 12 महीने"
 }

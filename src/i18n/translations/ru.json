@@ -1937,11 +1937,6 @@
   "game.feature.pooledJackpot": "Общий джекпот",
   "allGames.title": "Все игры",
   "allGames.meta": "Смотрите все игры ROLLUCK и сочетайте фильтры: провайдер, RTP, волатильность, покупка бонуса, джекпоты и многое другое.",
-  "allGames.filters": "Фильтры",
-  "allGames.filtersCount": "Фильтры ({count})",
-  "allGames.provider": "Провайдер",
-  "allGames.anyProvider": "Любой провайдер",
-  "allGames.sortBy": "Сортировка",
   "allGames.sort.popular": "Самые популярные",
   "allGames.sort.trending": "В тренде",
   "allGames.sort.new": "Новинки",
@@ -1952,5 +1947,11 @@
   "allGames.remove": "Убрать фильтр",
   "allGames.clear": "Сбросить всё",
   "allGames.empty": "Нет игр, подходящих под эти фильтры.",
-  "allGames.noFilters": "Скоро появятся новые фильтры."
+  "allGames.allTypes": "Все",
+  "allGames.any": "Любой",
+  "allGames.maxWinAtLeast": "{value}x и выше",
+  "allGames.release": "Дата выхода",
+  "allGames.release.30": "Последние 30 дней",
+  "allGames.release.90": "Последние 3 месяца",
+  "allGames.release.365": "Последние 12 месяцев"
 }

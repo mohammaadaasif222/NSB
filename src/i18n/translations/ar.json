@@ -1937,11 +1937,6 @@
   "game.feature.pooledJackpot": "جائزة كبرى مشتركة",
   "allGames.title": "كل الألعاب",
   "allGames.meta": "تصفّح كل ألعاب ROLLUCK واجمع بين الفلاتر: المزوّد ونسبة RTP والتقلب وشراء المكافأة والجوائز الكبرى والمزيد.",
-  "allGames.filters": "الفلاتر",
-  "allGames.filtersCount": "الفلاتر ({count})",
-  "allGames.provider": "المزوّد",
-  "allGames.anyProvider": "أي مزوّد",
-  "allGames.sortBy": "ترتيب حسب",
   "allGames.sort.popular": "الأكثر شعبية",
   "allGames.sort.trending": "رائجة",
   "allGames.sort.new": "الأحدث",
@@ -1952,5 +1947,11 @@
   "allGames.remove": "إزالة الفلتر",
   "allGames.clear": "مسح الكل",
   "allGames.empty": "لا توجد ألعاب تطابق هذه الفلاتر.",
-  "allGames.noFilters": "المزيد من الفلاتر قريباً."
+  "allGames.allTypes": "الكل",
+  "allGames.any": "أي",
+  "allGames.maxWinAtLeast": "{value}x أو أكثر",
+  "allGames.release": "تاريخ الإصدار",
+  "allGames.release.30": "آخر 30 يومًا",
+  "allGames.release.90": "آخر 3 أشهر",
+  "allGames.release.365": "آخر 12 شهرًا"
 }

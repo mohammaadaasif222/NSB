@@ -67,13 +67,26 @@ interface DropdownProps {
   icon: StaticImageData;
   label: string;
   children: (close: () => void) => ReactNode;
+  /** Gold, as an active chip is: a filter is set. */
+  active?: boolean;
+  /** Which edge the menu lines up with; `end` by default. */
+  align?: 'start' | 'end';
+  /** On a phone, open as a sheet along the bottom of the screen. */
+  sheetOnPhone?: boolean;
 }
 
 /**
  * A toolbar dropdown: the design's pill — icon, label and, on desktop, a
  * chevron — with its menu anchored under it. Closes on click-away and Escape.
  */
-export const Dropdown: FC<DropdownProps> = ({ icon, label, children }) => {
+export const Dropdown: FC<DropdownProps> = ({
+  icon,
+  label,
+  children,
+  active = false,
+  align = 'end',
+  sheetOnPhone = false,
+}) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -106,7 +119,7 @@ export const Dropdown: FC<DropdownProps> = ({ icon, label, children }) => {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`${GLASS} flex h-12 w-full items-center justify-center gap-1 rounded-full px-4 text-[14px] leading-5 text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:min-w-[calc(var(--u)*150)] lg:justify-start lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]`}
+        className={`${GLASS} ${active ? CHIP_ON : ''} flex h-12 w-full items-center justify-center gap-1 rounded-full px-4 text-[14px] leading-5 ${active ? '' : 'text-[#f0f1f5]'} lg:h-[calc(var(--u)*48)] lg:min-w-[calc(var(--u)*150)] lg:justify-start lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]`}
       >
         <img
           src={icon.src}
@@ -124,32 +137,66 @@ export const Dropdown: FC<DropdownProps> = ({ icon, label, children }) => {
       </button>
 
       {open && (
-        <div
-          role="menu"
-          className="rl-menu thin-scrollbar absolute end-0 top-[calc(100%+6px)] z-30 max-h-72 w-56 overflow-y-auto rounded-xl py-1"
-        >
-          {children(() => setOpen(false))}
-        </div>
+        <>
+          {sheetOnPhone && (
+            <div
+              aria-hidden
+              className="fixed inset-0 z-[60] bg-black/55 lg:hidden"
+              onClick={() => setOpen(false)}
+            />
+          )}
+          <div
+            role="menu"
+            className={`rl-menu thin-scrollbar ${align === 'start' ? 'start-0' : 'end-0'} ${
+              sheetOnPhone
+                ? 'max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:top-auto max-lg:z-[61] max-lg:max-h-[70vh] max-lg:w-auto max-lg:rounded-b-none max-lg:rounded-t-2xl max-lg:pb-6 max-lg:pt-3'
+                : ''
+            } absolute top-[calc(100%+6px)] z-30 max-h-72 w-56 overflow-y-auto rounded-xl py-1`}
+          >
+            {sheetOnPhone && (
+              <div
+                aria-hidden
+                className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/25 lg:hidden"
+              />
+            )}
+            {children(() => setOpen(false))}
+          </div>
+        </>
       )}
     </div>
   );
 };
 
-export const Option: FC<{ selected: boolean; onSelect: () => void; children: ReactNode }> = ({
-  selected,
-  onSelect,
-  children,
-}) => (
+export const Option: FC<{
+  selected: boolean;
+  onSelect: () => void;
+  children: ReactNode;
+  /** A count drawn at the end, such as how many games an option leaves. */
+  count?: number;
+  /** One of several that can be on together: a checkbox rather than a radio. */
+  multi?: boolean;
+}> = ({ selected, onSelect, children, count, multi = false }) => (
   <button
     type="button"
-    role="menuitemradio"
+    role={multi ? 'menuitemcheckbox' : 'menuitemradio'}
     aria-checked={selected}
     onClick={onSelect}
-    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
+    className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors max-lg:py-3 max-lg:text-sm ${
       selected ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'
     }`}
   >
-    <span className="truncate">{children}</span>
+    {multi && (
+      <span
+        aria-hidden
+        className={`flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded border text-[10px] ${
+          selected ? 'border-[#ffe779] bg-[#ffe779] text-black' : 'border-white/30'
+        }`}
+      >
+        {selected ? '✓' : ''}
+      </span>
+    )}
+    <span className="min-w-0 flex-1 truncate">{children}</span>
+    {count !== undefined && <span className="tabular-nums text-white/35">{count}</span>}
   </button>
 );
 
