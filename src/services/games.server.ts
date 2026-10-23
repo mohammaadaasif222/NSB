@@ -2,6 +2,7 @@ import type {
   DiceConfig,
   Game,
   GameListResponse,
+  TagFilterGroup,
   GameShelf,
   GameShelfKey,
   HomeShelvesResponse,
@@ -142,6 +143,17 @@ export async function fetchRegisteredTodayCount(): Promise<number | null> {
     return typeof data?.registered_today === 'number' ? data.registered_today : null;
   } catch (error) {
     logFailure('Public statistics fetch', error);
+    return null;
+  }
+}
+
+/** The lobby's tag filters (empty when none are public), or null when the call fails. */
+export async function fetchTagFilters(): Promise<TagFilterGroup[] | null> {
+  try {
+    const data = await getJson<{ groups: TagFilterGroup[] }>('/games/tag-filters');
+    return Array.isArray(data?.groups) ? data.groups.filter((g) => g.tags.length > 0) : null;
+  } catch (error) {
+    logFailure('Tag filters fetch', error);
     return null;
   }
 }

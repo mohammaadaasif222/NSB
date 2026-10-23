@@ -12,14 +12,19 @@ import type { TranslationKey } from '@/i18n/locales';
 export interface ShelfListQuery {
   category?: GameCategory;
   type?: GameType;
-  /** `popular`: most played ever; `trending`: most played this week. */
-  sort?: 'popular' | 'trending';
+  /**
+   * `popular`: most played ever; `trending`: most played this week; `new`:
+   * latest release first; `rtp`: highest first; `az` / `za`: by title.
+   */
+  sort?: 'popular' | 'trending' | 'new' | 'rtp' | 'az' | 'za';
   /** A word within the game's genre, matched case-insensitively. */
   genre?: string;
   buy_feature?: boolean;
   provider?: string;
   /** A lobby collection (blackjack, instant-wins…). */
   collection?: GameCollection;
+  /** Tag Manager slugs, comma-separated: any within a group, every group. */
+  tags?: string;
 }
 
 /**
@@ -202,6 +207,9 @@ export const categoryHref = (key: GameShelfKey, page = 1): string =>
   page > 1 ? `/games/${key}?page=${page}` : `/games/${key}`;
 
 export const PROVIDERS_PATH = '/providers';
+
+/** Every game, with the combinable filters. */
+export const ALL_GAMES_PATH = '/games/all';
 
 export const providerHref = (slug: string, page = 1): string =>
   `${PROVIDERS_PATH}/${encodeURIComponent(slug)}${page > 1 ? `?page=${page}` : ''}`;

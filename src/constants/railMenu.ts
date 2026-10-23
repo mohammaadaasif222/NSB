@@ -1,5 +1,5 @@
 import type { TranslationKey } from '@/i18n/locales';
-import { LIVE_CASINO_HREF, categoryHref, gameHref } from '@/constants/games';
+import { ALL_GAMES_PATH, LIVE_CASINO_HREF, categoryHref, gameHref } from '@/constants/games';
 import { DICE_SLUG } from '@/constants/dice';
 import { sportHref } from '@/constants/sportsbook';
 
@@ -46,9 +46,10 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
       { labelKey: 'lobby.rail.dropsWins' },
       { labelKey: 'dash.slots', href: categoryHref('slots') },
       { labelKey: 'lobby.rail.latestReleases', href: categoryHref('new') },
-      { labelKey: 'lobby.rail.highRtp' },
+      { labelKey: 'lobby.rail.highRtp', href: `${ALL_GAMES_PATH}?sort=rtp` },
       { labelKey: 'dash.bonusBuys', href: categoryHref('bonus-buys') },
       { labelKey: 'lobby.rail.holdWin' },
+      { labelKey: 'allGames.title', href: ALL_GAMES_PATH },
     ],
   },
   live: {

@@ -56,6 +56,9 @@ export type GameType = 'STANDARD' | 'LIVE' | 'LOBBY';
 
 export type GameVolatility = 'LOW' | 'LOW_MED' | 'MED' | 'MED_HIGH' | 'HIGH';
 
+/** LOCAL: this casino's own; POOLED: shared across casinos. */
+export type GameJackpotType = 'NONE' | 'LOCAL' | 'POOLED';
+
 /** REAL stakes the wallet; DEMO plays with play money. */
 export type GameMode = 'REAL' | 'DEMO';
 
@@ -88,6 +91,11 @@ export interface Game {
   demo_available: boolean;
   /** Whether the bonus round can be bought outright (the Bonus Buys shelf). */
   buy_feature: boolean;
+  jackpot_type: GameJackpotType | null;
+  /** The studio's maximum win as a multiple of the stake. */
+  max_win_multiplier: number | null;
+  /** YYYY-MM-DD. */
+  release_date: string | null;
   /** Whether the game can be opened right now. */
   launchable: boolean;
   /** Lobby collections it sits in. */
@@ -128,6 +136,15 @@ export interface HomeShelvesResponse {
 }
 
 /** GET /games?category=… */
+/** GET /games/tag-filters: the Tag Manager groups the operator shows players. */
+export interface TagFilterGroup {
+  key: string;
+  name: string;
+  /** False: one tag of the group at a time (an RTP band). */
+  multiple: boolean;
+  tags: { slug: string; name: string; color: string | null; games: number }[];
+}
+
 export interface GameListResponse {
   data: Game[];
   pagination: GamePagination;
