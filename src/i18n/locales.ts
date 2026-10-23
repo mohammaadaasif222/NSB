@@ -657,6 +657,11 @@ const coreEn = {
   'dash.wageredShort': '{amount} Wagered',
   'dash.remainingToUnlock': '{amount} remaining to unlock your bonus',
   'dash.remainingToUnlockShort': 'remaining to unlock your bonus',
+  'dash.journeyTitle': 'Your gaming journey starts here',
+  'dash.journeyBody':
+    'Make your first deposit to unlock exclusive welcome rewards and start playing.',
+  'dash.depositNow': 'Deposit Now',
+  'dash.exploreGames': 'Explore Games',
   'dash.unlockBonus': 'Unlock your welcome bonus',
 
   // Header game search

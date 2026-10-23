@@ -17,7 +17,6 @@ import sportsIcon from '@/assets/lobby/rail/tab-sports.svg';
 import liveIcon from '@/assets/lobby/player/chip-live.svg';
 import supportIcon from '@/assets/lobby/rail/tab-chat.svg';
 import chevronGlyph from '@/assets/lobby/rail/bar-chevron.svg';
-import betsIcon from '@/assets/lobby/rail/nav-bets.svg';
 // import themeIcon from '@/assets/lobby/rail/nav-theme.svg';
 import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
 import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
@@ -665,15 +664,6 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
                 {groupRow('live')}
               </>
             )}
-            <RailLink
-              href="/my-bets"
-              active={pathname === '/my-bets'}
-              icon={icon(betsIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.myBets')}
-            </RailLink>
             {/* <RailLink
             onSelect={() => setThemeOpen(true)}
             active={false}

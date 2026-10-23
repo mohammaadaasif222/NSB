@@ -1,10 +1,16 @@
-import type { CSSProperties, FC, ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
+import { useWallet } from '@/context/WalletContext';
+import { getRolloverSummary } from '@/services/rollover';
+import WalletModal from '@/components/wallet/WalletModal';
+import { ChevronRightIcon } from '@/components/icons';
 import { fullNameOf } from '@/types/profile';
+import type { RolloverSummary } from '@/types';
+import walletGlyph from '@/assets/lobby/rail/bar-wallet.svg';
 import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import casinoArt from '@/assets/lobby/player/panel-casino.webp';
 import sportsArt from '@/assets/lobby/player/panel-sports.webp';
@@ -14,18 +20,40 @@ import editPencil from '@/assets/lobby/player/edit-pencil.svg';
 import promoArt from '@/assets/lobby/player/promo-banner.webp';
 import promoArtMobile from '@/assets/lobby/player/promo-banner-mobile.webp';
 
-/**
- * Wagering requirement on the player's active bonus.
- *
- * There is no wagering endpoint yet — /balance/me returns the two pot totals
- * and nothing about bonus progress — so these figures are illustrative, in the
- * same spirit as the winners strip. Every number rendered below is derived
- * from this one object, so swapping it for the real payload is the whole of
- * the change once the endpoint exists.
- */
-const WAGERING = { wagered: 650, required: 1000 };
+const usd = (value: number, locale: string): string =>
+  `$${value.toLocaleString(locale, {
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    maximumFractionDigits: 2,
+  })}`;
 
-const usd = (value: number, locale: string): string => `$${value.toLocaleString(locale)}`;
+const useWagering = (enabled: boolean): { rollover: RolloverSummary | null; loaded: boolean } => {
+  const [rollover, setRollover] = useState<RolloverSummary | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+    let active = true;
+    getRolloverSummary()
+      .then((res) => {
+        if (active && res?.success && res.data) {
+          setRollover(res.data);
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) {
+          setLoaded(true);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [enabled]);
+
+  return { rollover, loaded };
+};
 
 /*
  * Sized in `--u` (see PlayerLayout): the design's px on desktop, scaled with
@@ -191,6 +219,42 @@ const RemainingPill: FC<{ children: ReactNode }> = ({ children }) => (
   </span>
 );
 
+const JourneyPrompt: FC<{ onDeposit: () => void }> = ({ onDeposit }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col items-center text-center lg:pt-[calc(var(--u)*12)]">
+      <h2 className="text-[20px] font-semibold leading-7 text-white lg:text-[length:max(min(var(--tf,11px),26px),calc(var(--u)*26))] lg:leading-[calc(var(--u)*34)]">
+        {t('dash.journeyTitle')}
+      </h2>
+      <p className="mt-2 max-w-[300px] text-[13px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*10)] lg:max-w-[max(240px,calc(var(--u)*300))] lg:text-[length:max(min(var(--tf,11px),13px),calc(var(--u)*13))] lg:leading-[1.5]">
+        {t('dash.journeyBody')}
+      </p>
+      <div className="mt-5 flex items-center gap-3 lg:mt-[calc(var(--u)*22)] lg:gap-[calc(var(--u)*12)]">
+        <button
+          type="button"
+          onClick={onDeposit}
+          className="rl-btn-gold inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[15px] font-medium lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*8)] lg:px-[calc(var(--u)*20)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))]"
+        >
+          <img
+            src={walletGlyph.src}
+            alt=""
+            className="h-5 w-5 lg:h-[calc(var(--u)*22)] lg:w-[calc(var(--u)*22)]"
+          />
+          {t('dash.depositNow')}
+        </button>
+        <Link
+          href="/casino"
+          className="rl-btn-ghost [--tw-inset-shadow:0_0_#0000] inline-flex h-11 items-center gap-1 whitespace-nowrap rounded-full px-4 text-[13px] font-medium lg:h-[calc(var(--u)*48)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(var(--tf,11px),13px),calc(var(--u)*13))]"
+        >
+          {t('dash.exploreGames')}
+          <ChevronRightIcon size={16} className="rtl:-scale-x-100" />
+        </Link>
+      </div>
+    </div>
+  );
+};
+
 /* ==================================================================== */
 /* Player panel                                                          */
 /* ==================================================================== */
@@ -204,10 +268,15 @@ const RemainingPill: FC<{ children: ReactNode }> = ({ children }) => (
 const PlayerPanel: FC = () => {
   const { t, locale } = useTranslation();
   const name = useDisplayName();
+  const { summary: wallet } = useWallet();
+  const [walletOpen, setWalletOpen] = useState(false);
 
-  const { wagered, required } = WAGERING;
-  const percent = Math.min(100, Math.round((wagered / required) * 100));
-  const remaining = Math.max(0, required - wagered);
+  const newPlayer = wallet?.has_deposited === false;
+  const { rollover, loaded } = useWagering(!newPlayer);
+  const required = Number(rollover?.total_required ?? 0);
+  const wagered = Number(rollover?.total_completed ?? 0);
+  const remaining = Number(rollover?.total_remaining ?? 0);
+  const percent = Math.round(rollover?.progress ?? 0);
 
   return (
     <section className="rl-liquid relative overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*415)] lg:rounded-[calc(var(--u)*34)]">
@@ -250,50 +319,58 @@ const PlayerPanel: FC = () => {
 
       {/* --- Wagering --------------------------------------------------- */}
       <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[22px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*16)]">
-        {/* The small print here keeps the design's proportions to the 16px
+        {newPlayer ? (
+          <JourneyPrompt onDeposit={() => setWalletOpen(true)} />
+        ) : (
+          <div className={`flex flex-col transition-opacity ${loaded ? '' : 'opacity-0'}`}>
+            {/* The small print here keeps the design's proportions to the 16px
             heading when the panel is scaled down: its floor is the heading's
             floor in the same ratio (10/16, 12/16), not the shared one, so the
             badge and the line beside it never outgrow the heading. */}
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-[calc(var(--u)*4)]">
-            <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:font-normal lg:leading-[calc(var(--u)*24)]">
-              {t('dash.wageringProgress')}
-            </span>
-            <span className="hidden items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[0.5em] text-[length:max(calc(var(--tf,11px)*0.625),calc(var(--u)*10))] leading-[calc(1.6em-2px)] text-[#03b739] lg:inline-flex">
-              {percent}%
-            </span>
-          </span>
-          <span className="text-[12px] font-medium leading-5 text-white lg:hidden">
-            {t('dash.percentComplete', { percent })}
-          </span>
-          <span className="hidden text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
-            {t('dash.wagered', { amount: usd(wagered, locale) })}
-          </span>
-        </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-[calc(var(--u)*4)]">
+                <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:font-normal lg:leading-[calc(var(--u)*24)]">
+                  {t('dash.wageringProgress')}
+                </span>
+                <span className="hidden items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[0.5em] text-[length:max(calc(var(--tf,11px)*0.625),calc(var(--u)*10))] leading-[calc(1.6em-2px)] text-[#03b739] lg:inline-flex">
+                  {percent}%
+                </span>
+              </span>
+              <span className="text-[12px] font-medium leading-5 text-white lg:hidden">
+                {t('dash.percentComplete', { percent })}
+              </span>
+              <span className="hidden text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
+                {t('dash.wagered', { amount: usd(wagered, locale) })}
+              </span>
+            </div>
 
-        {/* Phone: the bar, with its ends and the amount so far. */}
-        <div className="mt-[15px] lg:hidden">
-          <ProgressBar percent={percent} label={t('dash.wageringProgress')} />
-          <div className="mt-[14px] flex items-center justify-between text-[12px] leading-[22px] text-[#9da2b4]">
-            <span>{usd(0, locale)}</span>
-            <span className="text-[14px] font-medium text-white">
-              {t('dash.wageredShort', { amount: usd(wagered, locale) })}
-            </span>
-            <span>{usd(required, locale)}</span>
-          </div>
-          <div className="mt-4 flex justify-center">
-            <RemainingPill>
-              {t('dash.remainingToUnlock', { amount: usd(remaining, locale) })}
-            </RemainingPill>
-          </div>
-        </div>
+            {/* Phone: the bar, with its ends and the amount so far. */}
+            <div className="mt-[15px] lg:hidden">
+              <ProgressBar percent={percent} label={t('dash.wageringProgress')} />
+              <div className="mt-[14px] flex items-center justify-between text-[12px] leading-[22px] text-[#9da2b4]">
+                <span>{usd(0, locale)}</span>
+                <span className="text-[14px] font-medium text-white">
+                  {t('dash.wageredShort', { amount: usd(wagered, locale) })}
+                </span>
+                <span>{usd(required, locale)}</span>
+              </div>
+              <div className="mt-4 flex justify-center">
+                <RemainingPill>
+                  {t('dash.remainingToUnlock', { amount: usd(remaining, locale) })}
+                </RemainingPill>
+              </div>
+            </div>
 
-        {/* Desktop: the remaining amount on the odometer. */}
-        <div className="hidden flex-col items-center gap-[calc(var(--u)*16)] lg:mt-[calc(var(--u)*24)] lg:flex">
-          <Odometer value={remaining} />
-          <RemainingPill>{t('dash.remainingToUnlockShort')}</RemainingPill>
-        </div>
+            {/* Desktop: the remaining amount on the odometer. */}
+            <div className="hidden flex-col items-center gap-[calc(var(--u)*16)] lg:mt-[calc(var(--u)*24)] lg:flex">
+              <Odometer value={Math.ceil(remaining)} />
+              <RemainingPill>{t('dash.remainingToUnlockShort')}</RemainingPill>
+            </div>
+          </div>
+        )}
       </div>
+
+      <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
     </section>
   );
 };
