@@ -6,13 +6,9 @@ import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { LIVE_CASINO_HREF, categoryHref } from '@/constants/games';
 import LanguagePicker from '@/components/LanguagePicker';
 import type { TranslationKey } from '@/i18n/locales';
+import { useSocialLinks } from '@/hooks/useSocialLinks';
 
 import { PAYMENT_MARK, ROLLUCK_LOGO } from '@/constants/cdn';
-import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
-import instagram from '@/assets/lobby/footer/social-instagram.svg';
-import facebook from '@/assets/lobby/footer/social-facebook.svg';
-import xSocial from '@/assets/lobby/footer/social-x.svg';
-import telegram from '@/assets/lobby/footer/social-telegram.svg';
 import questions from '@/assets/lobby/footer/contact-questions.svg';
 import bug from '@/assets/lobby/footer/contact-bug.svg';
 import partner from '@/assets/lobby/footer/contact-partner.svg';
@@ -23,14 +19,6 @@ import payVisa from '@/assets/lobby/footer/pay-visa.webp';
 import payApple from '@/assets/lobby/footer/pay-applepay.svg';
 import payGoogle from '@/assets/lobby/footer/pay-googlepay.svg';
 import chevronDown from '@/assets/lobby/faq-chevron-down.svg';
-
-const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
-  { icon: whatsapp, label: 'WhatsApp', href: 'https://wa.me/' },
-  { icon: instagram, label: 'Instagram', href: 'https://instagram.com/' },
-  { icon: facebook, label: 'Facebook', href: 'https://facebook.com/' },
-  { icon: xSocial, label: 'X', href: 'https://x.com/' },
-  { icon: telegram, label: 'Telegram', href: 'https://t.me/' },
-];
 
 const CONTACTS: { icon: StaticImageData; label: TranslationKey; email: string }[] = [
   { icon: questions, label: 'lobby.footer.contactQuestions', email: 'support@xyzlife.top' },
@@ -164,6 +152,7 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  */
 const SiteFooter: FC = () => {
   const { t } = useTranslation();
+  const socialLinks = useSocialLinks();
   const {
     rewards: rewardsOn,
     promotions: promotionsOn,
@@ -299,7 +288,7 @@ const SiteFooter: FC = () => {
         </Link>
 
         <div className="order-3 flex items-center gap-[calc(var(--u)*12)] lg:order-2">
-          {SOCIALS.map(({ icon, label, href }) => (
+          {socialLinks.map(({ icon, label, href }) => (
             <a
               key={label}
               href={href}
