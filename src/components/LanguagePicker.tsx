@@ -156,11 +156,11 @@ const LanguagePicker: FC<Props> = ({
   }, []);
 
   const triggerClass = glass
-    ? 'glass-pill flex h-10 items-center gap-1.5 px-2.5 text-[14px] text-white'
+    ? 'glass-pill flex h-10 items-center gap-1.5 px-2.5 font-rubik text-[14px] text-white'
     : iconOnly
       ? 'rl-glass-btn inline-flex h-10 w-10 items-center justify-center rounded-full lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]'
       : shell
-        ? 'rl-glass-btn flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*6)] rounded-full ps-[calc(var(--u)*12)] pe-[calc(var(--u)*15)] text-[length:max(11px,calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white'
+        ? 'rl-glass-btn flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*6)] rounded-full ps-[calc(var(--u)*12)] pe-[calc(var(--u)*15)] font-rubik text-[length:max(11px,calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white'
         : 'flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors';
 
   // Where the list opens. The auth card's rises over its own trigger, as the

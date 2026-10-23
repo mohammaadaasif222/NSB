@@ -18,8 +18,8 @@ import { ChatIcon } from '@/components/icons';
  * that with both switched on a player sees two clearly separate things instead
  * of two chat icons side by side.
  *
- * On a phone page with the tab bar it is hidden: the bar has its own Chat tab,
- * and the bubble would sit on top of it.
+ * On a phone page with the tab bar it is hidden: the bar brings its own
+ * support button (MobileTabBar), shown whichever chat is switched on.
  */
 const IntercomLauncher: FC = () => {
   const { intercomEnabled, openIntercom } = useSupportChat();

@@ -2,7 +2,6 @@ import { Fragment, type FC } from 'react';
 
 import { useTranslation } from '@/context/I18nContext';
 
-
 export interface Countdown {
   day: string;
   hr: string;
@@ -22,7 +21,6 @@ export const countdownParts = (ms: number): Countdown => {
   };
 };
 
-
 const SIZES = {
   sm: {
     shell: 'rounded-[16px] p-[4px] lg:rounded-[calc(var(--u)*22)] lg:p-[calc(var(--u)*5)]',
@@ -37,16 +35,17 @@ const SIZES = {
     cell: 'py-1.5',
   },
   wide: {
-    shell: 'rounded-[16px] p-[4px] lg:rounded-[calc(var(--u)*22)] lg:p-[calc(var(--u)*6.5)]',
-    cellRadius: 'rounded-l-[13px] lg:rounded-l-[calc(var(--u)*22)]',
-    cellRadiusEnd: 'rounded-r-[13px] lg:rounded-r-[calc(var(--u)*22)]',
-    gap: 'w-[9px] lg:w-[calc(var(--u)*18)]',
+    shell:
+      'rounded-[22px] px-[4px] pb-[5px] pt-[6px] lg:rounded-[calc(var(--u)*22)] lg:p-[calc(var(--u)*6.5)]',
+    cellRadius: 'rounded-l-[18px] lg:rounded-l-[calc(var(--u)*22)]',
+    cellRadiusEnd: 'rounded-r-[18px] lg:rounded-r-[calc(var(--u)*22)]',
+    gap: 'w-[10px] lg:w-[calc(var(--u)*18)]',
     value:
-      'text-[20px] leading-7 lg:text-[length:max(14px,calc(var(--u)*28))] lg:leading-[calc(var(--u)*36)]',
+      'text-[28px] leading-9 lg:text-[length:max(14px,calc(var(--u)*28))] lg:leading-[calc(var(--u)*36)]',
     label:
-      'text-[11px] leading-4 lg:text-[length:max(9px,calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]',
-    sep: 'text-[20px] lg:text-[length:max(14px,calc(var(--u)*28))]',
-    cell: 'py-1.5 lg:py-[calc(var(--u)*11)]',
+      'text-[12px] leading-5 lg:text-[length:max(9px,calc(var(--u)*12))] lg:leading-[calc(var(--u)*20)]',
+    sep: 'text-[28px] lg:text-[length:max(14px,calc(var(--u)*28))]',
+    cell: 'py-[5px] lg:py-[calc(var(--u)*11)]',
   },
   lg: {
     shell: 'rounded-[20px] p-[5px] lg:rounded-[calc(var(--u)*32)] lg:p-[calc(var(--u)*6)]',

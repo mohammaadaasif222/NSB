@@ -189,8 +189,8 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             <Image
               src={wordmark}
               alt="ROLLUCK"
-              sizes="230px"
               priority
+              unoptimized
               className="h-auto w-[125px] lg:w-[calc(var(--u)*228)]"
             />
           </Link>

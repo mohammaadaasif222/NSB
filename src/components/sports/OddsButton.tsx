@@ -43,8 +43,8 @@ const OddsButton: FC<Props> = ({ fixture, outcome, variant }) => {
       aria-label={`${fixture.home.name} – ${fixture.away.name}: ${label} ${price}`}
       className={
         variant === 'card'
-          ? `flex h-[calc(var(--u)*32)] min-w-0 flex-1 items-center justify-center rounded-[calc(var(--u)*8)] border ${text(13)} font-medium leading-[calc(var(--u)*15)] tabular-nums transition-colors ${picked ? state : `${state} text-[#cccccc]`}`
-          : `flex h-[calc(var(--u)*35)] min-w-0 flex-1 items-center justify-between gap-[calc(var(--u)*6)] rounded-full border px-[calc(var(--u)*12)] transition-colors ${state}`
+          ? `flex h-[calc(var(--u)*32)] min-w-0 flex-1 items-center justify-center rounded-[calc(var(--u)*8)] border font-rubik ${text(13)} font-medium leading-[calc(var(--u)*15)] tabular-nums transition-colors ${picked ? state : `${state} text-[#cccccc]`}`
+          : `flex h-[calc(var(--u)*35)] min-w-0 flex-1 items-center justify-between gap-[calc(var(--u)*6)] rounded-full border px-[calc(var(--u)*12)] font-rubik transition-colors ${state}`
       }
     >
       {variant === 'card' ? (

@@ -69,7 +69,7 @@ export const PAYMENT_MARK = {
 /* ==================================================================== */
 
 /** The Rolluck wordmark, as the bar, the rail and the footer draw it. */
-export const ROLLUCK_LOGO = cdnImage('icon/rolluck_logo.png', 882, 176);
+export const ROLLUCK_LOGO = cdnImage('icon/rolluck-logo.svg', 228, 48);
 
 /** The promotions artwork behind the casino and sportsbook banner. */
 export const LOBBY_BANNER = cdnImage('icon/casino_banner.jpeg', 776, 336);

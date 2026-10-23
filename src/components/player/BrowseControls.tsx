@@ -68,6 +68,8 @@ export const SearchField: FC<{
 interface DropdownProps {
   icon: StaticImageData;
   label: string;
+  /** The label on a phone, where the design names the control, not its value. */
+  phoneLabel?: string;
   children: (close: () => void) => ReactNode;
 }
 
@@ -75,7 +77,7 @@ interface DropdownProps {
  * A toolbar dropdown: the design's pill — icon, label and, on desktop, a
  * chevron — with its menu anchored under it. Closes on click-away and Escape.
  */
-export const Dropdown: FC<DropdownProps> = ({ icon, label, children }) => {
+export const Dropdown: FC<DropdownProps> = ({ icon, label, phoneLabel, children }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -108,14 +110,21 @@ export const Dropdown: FC<DropdownProps> = ({ icon, label, children }) => {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`${GLASS} flex h-12 w-full items-center justify-center gap-1 rounded-full px-4 text-[14px] leading-5 text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:min-w-[calc(var(--u)*150)] lg:justify-start lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]`}
+        className={`${GLASS} flex h-12 w-full items-center justify-center gap-1 rounded-full px-3 text-[14px] min-[420px]:px-4 leading-5 text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:min-w-[calc(var(--u)*150)] lg:justify-start lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]`}
       >
         <img
           src={icon.src}
           alt=""
           className="h-4 w-4 flex-shrink-0 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
         />
-        <span className="truncate">{label}</span>
+        {phoneLabel ? (
+          <>
+            <span className="truncate lg:hidden">{phoneLabel}</span>
+            <span className="hidden truncate lg:inline">{label}</span>
+          </>
+        ) : (
+          <span className="truncate">{label}</span>
+        )}
         <img
           src={chevronIcon.src}
           alt=""
@@ -243,8 +252,10 @@ export const BrowseToolbar: FC<{
         label={t('search.title')}
       />
 
-      <div className="grid grid-cols-[1fr_1fr_1.53fr] gap-[7px] lg:flex lg:gap-[calc(var(--u)*10)]">
-        <Dropdown icon={sortIcon} label={sortLabel}>
+      {/* The design's 106 / 106 / 162 at 420; narrower, Sort and Filter
+          keep to their words and Choose provider takes the rest. */}
+      <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] gap-[7px] min-[420px]:grid-cols-[1fr_1fr_1.53fr] lg:flex lg:gap-[calc(var(--u)*10)]">
+        <Dropdown icon={sortIcon} label={sortLabel} phoneLabel={t('browse.sort')}>
           {(close) =>
             SORTS.map((s) => (
               <Option
@@ -261,7 +272,7 @@ export const BrowseToolbar: FC<{
           }
         </Dropdown>
 
-        <Dropdown icon={filterIcon} label={filterLabel}>
+        <Dropdown icon={filterIcon} label={filterLabel} phoneLabel={t('browse.filter')}>
           {(close) =>
             FILTERS.map((f) => (
               <Option
@@ -352,11 +363,11 @@ const CHIPS: Chip[] = [
 
 /** A chip: 34px with 12px type on a phone, the design's 48px pill on desktop. */
 const CHIP =
-  'inline-flex h-[34px] flex-shrink-0 items-center gap-[5px] rounded-full px-3 text-[12px] font-medium leading-5 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+  'inline-flex h-[34px] flex-shrink-0 items-center gap-[5px] rounded-full px-3 text-[12px] leading-5 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
 
-/** The active chip's gold glow — stronger on the phone's smaller chip, as drawn. */
+/** The active chip: Rubik, gold, and a glow — stronger on the phone's smaller chip, as drawn. */
 const CHIP_ON =
-  'text-[#ffe779] shadow-[0_0_12px_rgba(255,231,121,0.5)] lg:shadow-[0_0_calc(var(--u)*17.6)_rgba(255,231,121,0.2)]';
+  'font-rubik font-medium text-[#ffe779] shadow-[0_0_12px_rgba(255,231,121,0.5)] lg:shadow-[0_0_calc(var(--u)*17.6)_rgba(255,231,121,0.2)]';
 
 const CHIP_ICON = 'h-[18px] w-[18px] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
 

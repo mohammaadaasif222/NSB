@@ -61,7 +61,9 @@ const OnramperBuyCryptoTab: FC = () => {
         const resp = await getDisplayCurrencies();
         const list = (resp as any)?.data ?? (resp as any);
         if (Array.isArray(list)) setDisplayFiats(list);
-      } catch { /* fall back */ }
+      } catch {
+        /* fall back */
+      }
     })();
     void (async () => {
       try {
@@ -71,13 +73,13 @@ const OnramperBuyCryptoTab: FC = () => {
           setDbCryptos(
             (list as Currency[]).filter(
               (c) =>
-                c.category === 'CRYPTO' &&
-                c.is_deposit_enabled &&
-                (c.networks?.length ?? 0) > 0,
-            ),
+                c.category === 'CRYPTO' && c.is_deposit_enabled && (c.networks?.length ?? 0) > 0
+            )
           );
         }
-      } catch { /* fall back */ }
+      } catch {
+        /* fall back */
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -94,8 +96,7 @@ const OnramperBuyCryptoTab: FC = () => {
   const cryptos = useMemo(() => {
     if (dbCryptos.length > 0) {
       return dbCryptos.map((c) => {
-        const firstEnabledNet =
-          c.networks.find((n) => n.is_enabled) ?? c.networks[0];
+        const firstEnabledNet = c.networks.find((n) => n.is_enabled) ?? c.networks[0];
         return {
           code: c.code.toLowerCase(),
           name: c.name,
@@ -126,7 +127,7 @@ const OnramperBuyCryptoTab: FC = () => {
       try {
         const resolved = await hook.resolveDestinationAddress(
           destination.toUpperCase(),
-          derivedNetwork.toUpperCase(),
+          derivedNetwork.toUpperCase()
         );
         setWalletAddress(resolved.address);
       } catch {
@@ -193,7 +194,9 @@ const OnramperBuyCryptoTab: FC = () => {
           typeof window !== 'undefined' ? `${window.location.origin}/wallet` : undefined,
       });
       if (redirectUrl) window.open(redirectUrl, '_blank', 'noopener');
-    } catch { /* surfaced via hook.errorCheckout */ }
+    } catch {
+      /* surfaced via hook.errorCheckout */
+    }
   };
 
   const selectedQuote = hook.quotes.find((q) => q.ramp === selectedRamp);
@@ -213,9 +216,9 @@ const OnramperBuyCryptoTab: FC = () => {
 
       {/* ── You pay with ── */}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">You pay with</label>
-        <div className="flex items-center gap-2 rounded-xl bg-[#1a1d26] border border-[#2a2d36] px-4 py-3">
-          <span className="text-gray-500 text-lg">{fiatSymbol || '$'}</span>
+        <label className="block text-xs text-[#9da2b4] mb-1">You pay with</label>
+        <div className="flex items-center gap-2 rounded-[34px] border border-white/20 bg-white/5 px-4 py-3">
+          <span className="text-[#6a7287] text-lg">{fiatSymbol || '$'}</span>
           <input
             type="number"
             value={amount}
@@ -246,12 +249,12 @@ const OnramperBuyCryptoTab: FC = () => {
 
       {/* ── In Exchange For ── */}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">In Exchange For</label>
+        <label className="block text-xs text-[#9da2b4] mb-1">In Exchange For</label>
         <div className="relative">
           <select
             value={destination}
             onChange={(e) => setDestination(e.target.value.toLowerCase())}
-            className="w-full appearance-none rounded-xl bg-[#1a1d26] border border-[#2a2d36] px-4 py-3 text-white font-semibold outline-none cursor-pointer"
+            className="w-full appearance-none rounded-[34px] border border-white/20 bg-white/5 px-4 py-3 text-white font-semibold outline-none cursor-pointer"
           >
             {cryptos.map((c) => (
               <option key={c.code} value={c.code}>
@@ -265,21 +268,19 @@ const OnramperBuyCryptoTab: FC = () => {
 
       {/* ── Select Provider and Receive ── */}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">Select Provider and Receive</label>
-        <div
-          className="relative rounded-xl bg-[#1a1d26] border border-[#2a2d36] px-4 py-3"
-        >
+        <label className="block text-xs text-[#9da2b4] mb-1">Select Provider and Receive</label>
+        <div className="relative rounded-[34px] border border-white/20 bg-white/5 px-4 py-3">
           {hook.loadingQuotes ? (
             <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-sm">Fetching best price…</span>
-              <span className="text-gray-500 text-sm tabular-nums">
+              <span className="text-[#9da2b4] text-sm">Fetching best price…</span>
+              <span className="text-[#6a7287] text-sm tabular-nums">
                 0.00000000 {destination.toUpperCase()}
               </span>
             </div>
           ) : hook.quotes.length === 0 ? (
             <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-sm">No providers available</span>
-              <span className="text-gray-500 text-sm tabular-nums">
+              <span className="text-[#9da2b4] text-sm">No providers available</span>
+              <span className="text-[#6a7287] text-sm tabular-nums">
                 0.00000000 {destination.toUpperCase()}
               </span>
             </div>
@@ -313,28 +314,26 @@ const OnramperBuyCryptoTab: FC = () => {
 
         {/* Warning line */}
         {hook.quotes.length === 0 && !hook.loadingQuotes && (
-          <p className="text-red-400 text-xs mt-2 flex items-start gap-1">
+          <p className="text-[#e33827] text-xs mt-2 flex items-start gap-1">
             <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
-            Please change the currency or if you use VPN, please turn it off and the methods
-            will be available to you
+            Please change the currency or if you use VPN, please turn it off and the methods will be
+            available to you
           </p>
         )}
 
         {selectedQuoteHasError && (
-          <p className="text-amber-400 text-xs mt-2">
+          <p className="text-[#ffe779] text-xs mt-2">
             {selectedQuote?.errors?.[0]?.message ?? 'This provider is unavailable'}
           </p>
         )}
 
-        {hook.errorCheckout && (
-          <p className="text-red-400 text-xs mt-2">{hook.errorCheckout}</p>
-        )}
+        {hook.errorCheckout && <p className="text-[#e33827] text-xs mt-2">{hook.errorCheckout}</p>}
       </div>
 
       {/* ── Help link ── */}
       <button
         type="button"
-        className="text-xs text-gray-400 hover:text-white flex items-center gap-1"
+        className="text-xs text-[#9da2b4] hover:text-[#f0f1f5] flex items-center gap-1"
         onClick={() => window.open('https://docs.onramper.com/', '_blank', 'noopener')}
       >
         How to use Buy Crypto <ChevronDown className="w-3 h-3 -rotate-90" />
@@ -345,7 +344,7 @@ const OnramperBuyCryptoTab: FC = () => {
         type="button"
         onClick={() => void handleBuyNow()}
         disabled={!canBuy}
-        className="w-full rounded-xl bg-[#f0b90b] text-black font-bold py-4 text-base disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110"
+        className="w-full rounded-full bg-[#f9d028] py-4 text-base font-bold text-[#07080a] transition-colors hover:bg-[#ffe779] disabled:cursor-not-allowed disabled:opacity-40"
       >
         {hook.creatingCheckout ? 'Opening checkout…' : 'Buy Now'}
       </button>

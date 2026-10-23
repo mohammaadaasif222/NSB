@@ -325,6 +325,8 @@ interface CardArt {
    * crop and coloured glow included, exported at 3× and placed where the
    * design places that frame (the card clips what hangs over). Its start and
    * top edges fade out, so the glow has no hard edge where the frame ends.
+   * Hung off the card's end, not its start, so on a tablet's wider card the
+   * render stays at the end instead of drifting under the title.
    */
   mark: { src: StaticImageData; className: string };
 }
@@ -335,7 +337,7 @@ const CASINO_ART: CardArt = {
   mark: {
     src: casinoRoulette,
     className:
-      'left-[calc(var(--u)*88)] -top-[calc(var(--u)*12)] w-[calc(var(--u)*119)] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_10%),linear-gradient(to_bottom,transparent,#000_10%)]',
+      '-right-[calc(var(--u)*17)] -top-[calc(var(--u)*12)] w-[calc(var(--u)*119)] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_10%),linear-gradient(to_bottom,transparent,#000_10%)]',
   },
 };
 
@@ -345,7 +347,7 @@ const SPORTS_ART: CardArt = {
   mark: {
     src: sportsBall,
     className:
-      'left-[calc(var(--u)*117)] top-[calc(var(--u)*4)] w-[calc(var(--u)*88)] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_10%),linear-gradient(to_bottom,transparent,#000_10%)]',
+      '-right-[calc(var(--u)*15)] top-[calc(var(--u)*4)] w-[calc(var(--u)*88)] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_10%),linear-gradient(to_bottom,transparent,#000_10%)]',
   },
 };
 

@@ -171,7 +171,7 @@ const coreEn = {
   'registerModal.close': 'Close',
 
   'loginModal.title': 'Login',
-  'loginModal.suggestion': 'Give us suggestion for us',
+  'loginModal.suggestion': '1,625 online users',
   'loginModal.username': 'Username',
   'loginModal.withUsername': 'Login with Username',
   'loginModal.withMobile': 'Login with Mobile number',

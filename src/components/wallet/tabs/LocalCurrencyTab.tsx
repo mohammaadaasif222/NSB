@@ -55,7 +55,8 @@ const LocalCurrencyTab: FC = () => {
   // On a 428 it asks for the one-time code and resubmits.
   const { run } = useSeonGuard();
   const { me } = useMe();
-  const { offers, loadingOffers, fetchOffers, createOrder, creatingOrder } = useChangellyBuyCrypto();
+  const { offers, loadingOffers, fetchOffers, createOrder, creatingOrder } =
+    useChangellyBuyCrypto();
 
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState('');
@@ -66,7 +67,9 @@ const LocalCurrencyTab: FC = () => {
   const [loadingMethods, setLoadingMethods] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showAmountInput, setShowAmountInput] = useState(false);
-  const [depositMode, setDepositMode] = useState<'selection' | 'payer-form' | 'embedded' | 'iframe' | null>(null);
+  const [depositMode, setDepositMode] = useState<
+    'selection' | 'payer-form' | 'embedded' | 'iframe' | null
+  >(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [d24CheckoutUrl, setD24CheckoutUrl] = useState<string | null>(null);
@@ -183,7 +186,9 @@ const LocalCurrencyTab: FC = () => {
           return;
         }
 
-        const response = await api.get(`/wallet/deposit/d24/document-types?country=${countryCode}`) as any;
+        const response = (await api.get(
+          `/wallet/deposit/d24/document-types?country=${countryCode}`
+        )) as any;
         const docConfig = response?.data?.data;
 
         if (docConfig) {
@@ -234,13 +239,7 @@ const LocalCurrencyTab: FC = () => {
           const state = country === 'US' ? 'CA' : undefined;
 
           // Fetch Changelly offers for ETH with default amount
-          await fetchOffers(
-            FALLBACK_AMOUNT,
-            currency,
-            'ETH',
-            country,
-            state
-          );
+          await fetchOffers(FALLBACK_AMOUNT, currency, 'ETH', country, state);
         }
       } catch (error) {
         console.error('Failed to fetch payment methods:', error);
@@ -289,7 +288,7 @@ const LocalCurrencyTab: FC = () => {
   // Show amount input only for D24 payment methods
   const handleMethodSelect = (methodCode: string) => {
     const selectedMethodInfo = paymentMethods.find((m) => m.code === methodCode);
-    const isD24Method = selectedMethodInfo?.provider === 'D24' ;
+    const isD24Method = selectedMethodInfo?.provider === 'D24';
 
     if (!isD24Method) {
       // Handle non-D24 providers (Korapay, Gigadat, etc.)
@@ -344,13 +343,7 @@ const LocalCurrencyTab: FC = () => {
         const state = country === 'US' ? 'CA' : undefined;
 
         // Fetch new offers for the entered amount
-        await fetchOffers(
-          Number(newAmount),
-          currency,
-          'ETH',
-          country,
-          state
-        );
+        await fetchOffers(Number(newAmount), currency, 'ETH', country, state);
 
         // Update cached amount after successful fetch
         setOffersAmountCached(newAmount);
@@ -376,7 +369,13 @@ const LocalCurrencyTab: FC = () => {
       return;
     }
 
-    if (!selectedPaymentMethod || !currency || !toAddress || !selectedNetwork || offers.length === 0) {
+    if (
+      !selectedPaymentMethod ||
+      !currency ||
+      !toAddress ||
+      !selectedNetwork ||
+      offers.length === 0
+    ) {
       toast.error('Missing required information');
       return;
     }
@@ -457,11 +456,18 @@ const LocalCurrencyTab: FC = () => {
     const method = (selectedMethod || '').toUpperCase();
 
     // Check if method contains any of the embedded method keywords
-    const useEmbedded = EMBEDDED_METHODS.some(embeddedMethod =>
-      method.includes(embeddedMethod)
-    );
+    const useEmbedded = EMBEDDED_METHODS.some((embeddedMethod) => method.includes(embeddedMethod));
 
-    console.log('[D24] handleDeposit - selectedMethod:', selectedMethod, 'normalized:', method, 'useEmbedded:', useEmbedded, 'EMBEDDED_METHODS:', EMBEDDED_METHODS);
+    console.log(
+      '[D24] handleDeposit - selectedMethod:',
+      selectedMethod,
+      'normalized:',
+      method,
+      'useEmbedded:',
+      useEmbedded,
+      'EMBEDDED_METHODS:',
+      EMBEDDED_METHODS
+    );
 
     if (useEmbedded) {
       // For embedded deposits, show payer form first
@@ -506,13 +512,16 @@ const LocalCurrencyTab: FC = () => {
         toast.info('Opening payment page...');
 
         // Store deposit info for reference
-        sessionStorage.setItem('d24_current_deposit', JSON.stringify({
-          method: selectedMethod,
-          amount,
-          currency,
-          depositId: responseData?.deposit_id,
-          timestamp: new Date().toISOString(),
-        }));
+        sessionStorage.setItem(
+          'd24_current_deposit',
+          JSON.stringify({
+            method: selectedMethod,
+            amount,
+            currency,
+            depositId: responseData?.deposit_id,
+            timestamp: new Date().toISOString(),
+          })
+        );
 
         setCheckoutUrl(checkoutAddress);
         setShowAmountInput(false);
@@ -575,99 +584,145 @@ const LocalCurrencyTab: FC = () => {
   };
 
   // Render checkout in portal (separate from wallet modal) - Responsive for mobile, tablet, desktop
-  const checkoutPortal = checkoutUrl && createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center overflow-hidden p-2 sm:p-4">
-      {/* Modal container - Responsive width and height */}
-      <div className="relative w-full h-full sm:h-[85vh] md:h-[80vh] md:w-[80vw] lg:w-[64vw] bg-slate-900 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-full">
-        {/* Close button - Responsive size */}
-        <button
-          onClick={handleGoBack}
-          disabled={loading}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-slate-300 hover:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-slate-800/80 hover:bg-slate-700 p-1.5 sm:p-2 rounded-lg"
-        >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+  const checkoutPortal =
+    checkoutUrl &&
+    createPortal(
+      <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center overflow-hidden p-2 sm:p-4">
+        {/* Modal container - Responsive width and height */}
+        <div className="relative w-full h-full sm:h-[85vh] md:h-[80vh] md:w-[80vw] lg:w-[64vw] bg-[#0e1218] rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-full">
+          {/* Close button - Responsive size */}
+          <button
+            onClick={handleGoBack}
+            disabled={loading}
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-[#c8ccd8] hover:text-[#f0f1f5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-[#1b1f29]/80 hover:bg-[#252937] p-1.5 sm:p-2 rounded-full"
+          >
+            <svg
+              className="w-5 h-5 sm:w-6 sm:h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
 
-        {/* iframe - no scrollbar */}
-        <iframe
-          ref={iframeRef}
-          src={checkoutUrl}
-          className="w-full h-full border-0 overflow-hidden"
-          title="D24 Payment Checkout"
-          allow="payment"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        />
+          {/* iframe - no scrollbar */}
+          <iframe
+            ref={iframeRef}
+            src={checkoutUrl}
+            className="w-full h-full border-0 overflow-hidden"
+            title="D24 Payment Checkout"
+            allow="payment"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          />
 
-        {/* Loading overlay */}
-        {loading && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
-            <div className="text-center">
-              <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <p className="text-sm text-slate-300 mt-2">{t('acct.buy.processing')}</p>
+          {/* Loading overlay */}
+          {loading && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
+              <div className="text-center">
+                <svg
+                  className="w-8 h-8 animate-spin text-[#f9d028] mx-auto mb-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <p className="text-sm text-[#c8ccd8] mt-2">{t('acct.buy.processing')}</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body
-  );
+          )}
+        </div>
+      </div>,
+      document.body
+    );
 
   // Render Changelly iframe portal
-  const changellyPortal = iframeUrl && createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center overflow-hidden p-2 sm:p-4">
-      {/* Modal container - Responsive width and height */}
-      <div className="relative w-full h-full sm:h-[85vh] md:h-[80vh] md:w-[80vw] lg:w-[64vw] bg-slate-900 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-full">
-        {/* Close button - Responsive size */}
-        <button
-          onClick={handleGoBack}
-          disabled={creatingOrder}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-slate-300 hover:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-slate-800/80 hover:bg-slate-700 p-1.5 sm:p-2 rounded-lg"
-        >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+  const changellyPortal =
+    iframeUrl &&
+    createPortal(
+      <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center overflow-hidden p-2 sm:p-4">
+        {/* Modal container - Responsive width and height */}
+        <div className="relative w-full h-full sm:h-[85vh] md:h-[80vh] md:w-[80vw] lg:w-[64vw] bg-[#0e1218] rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-full">
+          {/* Close button - Responsive size */}
+          <button
+            onClick={handleGoBack}
+            disabled={creatingOrder}
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 text-[#c8ccd8] hover:text-[#f0f1f5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors bg-[#1b1f29]/80 hover:bg-[#252937] p-1.5 sm:p-2 rounded-full"
+          >
+            <svg
+              className="w-5 h-5 sm:w-6 sm:h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
 
-        {/* iframe - no scrollbar */}
-        <iframe
-          src={iframeUrl}
-          className="w-full h-full border-0 overflow-hidden"
-          title="Payment Checkout"
-          allow="payment"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        />
+          {/* iframe - no scrollbar */}
+          <iframe
+            src={iframeUrl}
+            className="w-full h-full border-0 overflow-hidden"
+            title="Payment Checkout"
+            allow="payment"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-popups-to-escape-sandbox allow-presentation"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          />
 
-        {/* Loading overlay */}
-        {creatingOrder && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
-            <div className="text-center">
-              <svg className="w-8 h-8 animate-spin text-emerald-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <p className="text-sm text-slate-300 mt-2">Processing...</p>
+          {/* Loading overlay */}
+          {creatingOrder && (
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
+              <div className="text-center">
+                <svg
+                  className="w-8 h-8 animate-spin text-[#f9d028] mx-auto mb-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <p className="text-sm text-[#c8ccd8] mt-2">Processing...</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body
-  );
+          )}
+        </div>
+      </div>,
+      document.body
+    );
 
   // Payer information form (for embedded D24 deposits)
   if (depositMode === 'payer-form') {
@@ -826,10 +881,7 @@ const LocalCurrencyTab: FC = () => {
           onHostedCheckout={(url) => setD24CheckoutUrl(url)}
         />
         {d24CheckoutUrl && (
-          <D24CheckoutModal
-            redirectUrl={d24CheckoutUrl}
-            onClose={() => setD24CheckoutUrl(null)}
-          />
+          <D24CheckoutModal redirectUrl={d24CheckoutUrl} onClose={() => setD24CheckoutUrl(null)} />
         )}
       </>
     );
@@ -845,7 +897,11 @@ const LocalCurrencyTab: FC = () => {
 
   const currencyOptions = (
     displayCurrencies.length > 0 ? displayCurrencies : [{ code: 'USD', name: 'US Dollar' }]
-  ).map((c: any) => ({ value: c.code as string, label: c.code as string, detail: c.name as string }));
+  ).map((c: any) => ({
+    value: c.code as string,
+    label: c.code as string,
+    detail: c.name as string,
+  }));
   const sign = displayCurrencies.find((c) => c.code === currency)?.symbol || '$';
   const noMethods = (
     <p className={`${WALLET_NOTE} py-8 text-center`}>
@@ -963,7 +1019,10 @@ const LocalCurrencyTab: FC = () => {
                   placeholder={t('acct.wallet.enterAmountPlain')}
                   className={`${WALLET_INPUT} tabular-nums`}
                 />
-                <span aria-hidden="true" className="shrink-0 text-[18px] font-bold leading-6 text-[#9da2b4]">
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-[18px] font-bold leading-6 text-[#9da2b4]"
+                >
                   {sign}
                 </span>
               </div>
@@ -971,30 +1030,27 @@ const LocalCurrencyTab: FC = () => {
           </div>
 
           {/* Changelly Fallback: Show only errors, not offer details */}
-          {useChangellyFallback &&
-            amount &&
-            Number(amount) > 0 &&
-            offers[0]?.errorType && (
-              <div className="mt-3 rounded-[20px] border border-[#ff6b5e]/25 bg-[#ff6b5e]/10 px-4 py-2.5 text-[13px] leading-5 text-[#ff6b5e]">
-                <p className="font-semibold">
-                  {offers[0].errorType === 'limits'
-                    ? t('acct.local.amountLimit')
-                    : offers[0].errorType === 'currency'
-                      ? t('acct.local.exchangeUnavailable')
-                      : t('acct.local.error')}
-                </p>
-                <p>{offers[0].errorMessage}</p>
-                {offers[0].errorType === 'limits' &&
-                  offers[0].errorDetails?.map((detail: any) => (
-                    <p key={detail.cause}>
-                      {detail.cause === 'min' &&
-                        t('acct.local.min', { amount: `${detail.value} ${currency}` })}
-                      {detail.cause === 'max' &&
-                        t('acct.local.max', { amount: `${detail.value} ${currency}` })}
-                    </p>
-                  ))}
-              </div>
-            )}
+          {useChangellyFallback && amount && Number(amount) > 0 && offers[0]?.errorType && (
+            <div className="mt-3 rounded-[20px] border border-[#e33827]/25 bg-[#e33827]/10 px-4 py-2.5 text-[13px] leading-5 text-[#e33827]">
+              <p className="font-semibold">
+                {offers[0].errorType === 'limits'
+                  ? t('acct.local.amountLimit')
+                  : offers[0].errorType === 'currency'
+                    ? t('acct.local.exchangeUnavailable')
+                    : t('acct.local.error')}
+              </p>
+              <p>{offers[0].errorMessage}</p>
+              {offers[0].errorType === 'limits' &&
+                offers[0].errorDetails?.map((detail: any) => (
+                  <p key={detail.cause}>
+                    {detail.cause === 'min' &&
+                      t('acct.local.min', { amount: `${detail.value} ${currency}` })}
+                    {detail.cause === 'max' &&
+                      t('acct.local.max', { amount: `${detail.value} ${currency}` })}
+                  </p>
+                ))}
+            </div>
+          )}
 
           {/* Continue/Deposit button - Label depends on payment flow */}
           {(() => {

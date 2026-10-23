@@ -109,7 +109,9 @@ const D24EmbeddedDeposit: FC<Props> = ({
         let errorMsg = 'Failed to load payment details';
 
         if (err?.response?.status === 400) {
-          errorMsg = err?.response?.data?.message || 'Invalid payment request. Please check your information.';
+          errorMsg =
+            err?.response?.data?.message ||
+            'Invalid payment request. Please check your information.';
         } else if (err?.response?.status === 401) {
           errorMsg = 'Authentication failed. Please log in again.';
         } else if (err?.response?.status === 503) {
@@ -144,11 +146,7 @@ const D24EmbeddedDeposit: FC<Props> = ({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <svg
-          className="w-8 h-8 animate-spin text-emerald-500 mb-4"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-8 h-8 animate-spin text-[#f9d028] mb-4" fill="none" viewBox="0 0 24 24">
           <circle
             className="opacity-25"
             cx="12"
@@ -163,19 +161,21 @@ const D24EmbeddedDeposit: FC<Props> = ({
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           />
         </svg>
-        <p className="text-slate-400 text-sm">Loading payment details...</p>
+        <p className="text-[#9da2b4] text-sm">Loading payment details...</p>
       </div>
     );
   }
 
   if (error || !details) {
     const errorMessages: Record<string, string> = {
-      'Field validation error': 'Some payment information is invalid. Please go back and check your details.',
-      'Could not retrieve payment details': 'Failed to fetch payment details from payment provider. Please try again.',
+      'Field validation error':
+        'Some payment information is invalid. Please go back and check your details.',
+      'Could not retrieve payment details':
+        'Failed to fetch payment details from payment provider. Please try again.',
       'Request method': 'Payment service error. Please contact support.',
       '400': 'Invalid payment request. Please verify your information.',
       '503': 'Payment service is temporarily unavailable. Please try again later.',
-      'network': 'Network connection error. Please check your internet and try again.',
+      network: 'Network connection error. Please check your internet and try again.',
     };
 
     let displayError = error || 'Failed to load payment details';
@@ -188,18 +188,10 @@ const D24EmbeddedDeposit: FC<Props> = ({
 
     return (
       <div className="space-y-4">
-        <div className="bg-red-900/30 border border-red-600 p-4 rounded-lg">
-          <p className="text-red-400 text-sm font-semibold mb-2">
-            ❌ Payment Details Error
-          </p>
-          <p className="text-red-300 text-sm">
-            {displayError}
-          </p>
-          {error && (
-            <p className="text-red-200 text-xs mt-2 opacity-70">
-              Details: {error}
-            </p>
-          )}
+        <div className="bg-[#e33827]/10 border border-[#e33827]/40 p-4 rounded-[20px]">
+          <p className="text-[#e33827] text-sm font-semibold mb-2">❌ Payment Details Error</p>
+          <p className="text-[#f0f1f5] text-sm">{displayError}</p>
+          {error && <p className="text-[#c8ccd8] text-xs mt-2 opacity-70">Details: {error}</p>}
         </div>
 
         {/* Retry or go back options */}
@@ -211,24 +203,22 @@ const D24EmbeddedDeposit: FC<Props> = ({
               // Re-fetch by remounting component via onBack
               setTimeout(() => onBack(), 100);
             }}
-            className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition font-medium"
+            className="flex h-12 w-full items-center justify-center rounded-full bg-[#f9d028] px-4 text-[16px] font-semibold text-[#07080a] transition-colors hover:bg-[#ffe779]"
           >
             🔄 Try Again
           </button>
           <button
             onClick={onBack}
-            className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition"
+            className="flex h-12 w-full items-center justify-center rounded-full border border-white/20 bg-white/5 px-4 text-[16px] font-medium text-[#f0f1f5] transition-colors hover:bg-white/10"
           >
             ← Go Back
           </button>
         </div>
 
         {/* Help text */}
-        <div className="bg-slate-800/50 border border-slate-700 p-3 rounded-lg">
-          <p className="text-slate-400 text-xs">
-            💡 If the problem persists:
-          </p>
-          <ul className="text-slate-400 text-xs mt-2 space-y-1 list-disc list-inside">
+        <div className="bg-white/5 border border-white/10 p-3 rounded-[20px]">
+          <p className="text-[#9da2b4] text-xs">💡 If the problem persists:</p>
+          <ul className="text-[#9da2b4] text-xs mt-2 space-y-1 list-disc list-inside">
             <li>Check your internet connection</li>
             <li>Verify all information is correct</li>
             <li>Try again in a few moments</li>
@@ -254,11 +244,7 @@ const D24EmbeddedDeposit: FC<Props> = ({
 
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <svg
-          className="w-8 h-8 animate-spin text-emerald-500 mb-4"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-8 h-8 animate-spin text-[#f9d028] mb-4" fill="none" viewBox="0 0 24 24">
           <circle
             className="opacity-25"
             cx="12"
@@ -273,7 +259,7 @@ const D24EmbeddedDeposit: FC<Props> = ({
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           />
         </svg>
-        <p className="text-slate-400 text-sm">Opening D24 Checkout...</p>
+        <p className="text-[#9da2b4] text-sm">Opening D24 Checkout...</p>
       </div>
     );
   }
@@ -282,17 +268,15 @@ const D24EmbeddedDeposit: FC<Props> = ({
   if (!pd || !pd.type) {
     return (
       <div className="space-y-4">
-        <div className="bg-yellow-900/30 border border-yellow-600 p-4 rounded-lg">
-          <p className="text-yellow-300 text-sm font-semibold mb-2">
-            ⚠️ Incomplete Payment Details
-          </p>
-          <p className="text-yellow-200 text-sm">
+        <div className="bg-[#f9d028]/10 border border-[#f9d028]/40 p-4 rounded-[20px]">
+          <p className="text-[#ffe779] text-sm font-semibold mb-2">⚠️ Incomplete Payment Details</p>
+          <p className="text-[#ffe779] text-sm">
             The payment details are incomplete. Please try again.
           </p>
         </div>
         <button
           onClick={onBack}
-          className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition"
+          className="flex h-12 w-full items-center justify-center rounded-full border border-white/20 bg-white/5 px-4 text-[16px] font-medium text-[#f0f1f5] transition-colors hover:bg-white/10"
         >
           ← Go Back
         </button>
@@ -305,47 +289,37 @@ const D24EmbeddedDeposit: FC<Props> = ({
     return (
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-900/40 to-slate-800 p-4 rounded-lg border border-emerald-600/30">
-          <p className="text-emerald-400 text-sm font-semibold mb-1">
-            💚 {paymentMethod} Payment
-          </p>
-          <p className="text-slate-300 text-2xl font-bold">
+        <div className="bg-gradient-to-r from-[#03b739]/15 to-white/5 p-4 rounded-[20px] border border-[#03b739]/30">
+          <p className="text-[#03b739] text-sm font-semibold mb-1">💚 {paymentMethod} Payment</p>
+          <p className="text-[#c8ccd8] text-2xl font-bold">
             {amount} {currency}
           </p>
-          <p className="text-slate-400 text-xs mt-1">
-            Processing time: {details.processing_time}
-          </p>
+          <p className="text-[#9da2b4] text-xs mt-1">Processing time: {details.processing_time}</p>
         </div>
 
         {/* QR Code */}
         {pd.qr_code && (
           <div className="flex flex-col items-center gap-4">
-            <div className="bg-white p-4 rounded-lg shadow-lg">
-              <img
-                src={pd.qr_code}
-                alt="Payment QR Code"
-                className="w-56 h-56"
-              />
+            <div className="bg-white p-4 rounded-[20px] shadow-lg">
+              <img src={pd.qr_code} alt="Payment QR Code" className="w-56 h-56" />
             </div>
-            <p className="text-slate-400 text-sm text-center">
+            <p className="text-[#9da2b4] text-sm text-center">
               Scan this QR code with your bank app to pay instantly
             </p>
           </div>
         )}
 
         {/* PIX Key (Copy & Paste) */}
-        {pd.pix_key && (
-          <PixKeyCopy pixKey={pd.pix_key} />
-        )}
+        {pd.pix_key && <PixKeyCopy pixKey={pd.pix_key} />}
 
         {/* Reference ID */}
         {details.reference_id && (
-          <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-            <p className="text-slate-400 text-xs font-semibold mb-2">
+          <div className="bg-white/5 p-4 rounded-[20px] border border-white/10">
+            <p className="text-[#9da2b4] text-xs font-semibold mb-2">
               📌 Reference ID (include in payment if needed)
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 bg-slate-900 px-3 py-2 rounded text-slate-100 text-sm font-mono break-all">
+              <code className="flex-1 bg-[#0e1218] px-3 py-2 rounded text-[#f0f1f5] text-sm font-mono break-all">
                 {details.reference_id}
               </code>
               <button
@@ -353,7 +327,7 @@ const D24EmbeddedDeposit: FC<Props> = ({
                   navigator.clipboard.writeText(details.reference_id || '');
                   toast.success('Reference ID copied!');
                 }}
-                className="flex-shrink-0 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded font-medium transition"
+                className="flex-shrink-0 rounded-full bg-[#f9d028] px-4 py-2 text-sm font-semibold text-[#07080a] transition-colors hover:bg-[#ffe779]"
                 title="Copy Reference ID"
               >
                 📋
@@ -364,19 +338,12 @@ const D24EmbeddedDeposit: FC<Props> = ({
 
         {/* Instructions */}
         {details.instructions && details.instructions.length > 0 && (
-          <div className="space-y-3 bg-slate-800/50 p-4 rounded-lg">
-            <p className="text-slate-300 font-semibold text-sm">
-              📋 How to Pay:
-            </p>
+          <div className="space-y-3 bg-white/5 p-4 rounded-[20px]">
+            <p className="text-[#c8ccd8] font-semibold text-sm">📋 How to Pay:</p>
             <ol className="space-y-2">
               {details.instructions.map((step, i) => (
-                <li
-                  key={i}
-                  className="text-slate-400 text-sm flex gap-3"
-                >
-                  <span className="text-emerald-400 font-semibold flex-shrink-0">
-                    {i + 1}.
-                  </span>
+                <li key={i} className="text-[#9da2b4] text-sm flex gap-3">
+                  <span className="text-[#03b739] font-semibold flex-shrink-0">{i + 1}.</span>
                   <span>{step}</span>
                 </li>
               ))}
@@ -386,17 +353,15 @@ const D24EmbeddedDeposit: FC<Props> = ({
 
         {/* Fee Notice */}
         {details.fee_percent && (
-          <div className="bg-yellow-900/30 border border-yellow-600 p-3 rounded-lg">
-            <p className="text-yellow-200 text-sm">
-              💳 Fee: {details.fee_percent}% of amount
-            </p>
+          <div className="bg-[#f9d028]/10 border border-[#f9d028]/40 p-3 rounded-[20px]">
+            <p className="text-[#ffe779] text-sm">💳 Fee: {details.fee_percent}% of amount</p>
           </div>
         )}
 
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition text-sm font-medium"
+          className="flex h-12 w-full items-center justify-center rounded-full border border-white/20 bg-white/5 px-4 text-[16px] font-medium text-[#f0f1f5] transition-colors hover:bg-white/10"
         >
           ← Back
         </button>
@@ -409,86 +374,40 @@ const D24EmbeddedDeposit: FC<Props> = ({
     return (
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-900/40 to-slate-800 p-4 rounded-lg border border-blue-600/30">
-          <p className="text-blue-400 text-sm font-semibold mb-1">
-            🏦 {paymentMethod} Transfer
-          </p>
-          <p className="text-slate-300 text-2xl font-bold">
+        <div className="bg-gradient-to-r from-[#067ff0]/15 to-white/5 p-4 rounded-[20px] border border-[#067ff0]/30">
+          <p className="text-[#067ff0] text-sm font-semibold mb-1">🏦 {paymentMethod} Transfer</p>
+          <p className="text-[#c8ccd8] text-2xl font-bold">
             {amount} {currency}
           </p>
-          <p className="text-slate-400 text-xs mt-1">
-            Processing time: {details.processing_time}
-          </p>
+          <p className="text-[#9da2b4] text-xs mt-1">Processing time: {details.processing_time}</p>
         </div>
 
         {/* Bank Details */}
-        <div className="space-y-3 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-          <p className="text-slate-300 font-semibold text-sm mb-4">
-            Bank Account Details
-          </p>
+        <div className="space-y-3 bg-white/5 p-4 rounded-[20px] border border-white/10">
+          <p className="text-[#c8ccd8] font-semibold text-sm mb-4">Bank Account Details</p>
 
-          {pd.bank_name && (
-            <DetailRow
-              label="Bank Name"
-              value={pd.bank_name}
-              copyable={true}
-            />
-          )}
+          {pd.bank_name && <DetailRow label="Bank Name" value={pd.bank_name} copyable={true} />}
 
           {pd.account_holder && (
-            <DetailRow
-              label="Account Holder"
-              value={pd.account_holder}
-              copyable={true}
-            />
+            <DetailRow label="Account Holder" value={pd.account_holder} copyable={true} />
           )}
 
-          {pd.iban && (
-            <DetailRow
-              label="IBAN"
-              value={pd.iban}
-              copyable={true}
-            />
-          )}
+          {pd.iban && <DetailRow label="IBAN" value={pd.iban} copyable={true} />}
 
           {pd.account_number && (
-            <DetailRow
-              label="Account Number"
-              value={pd.account_number}
-              copyable={true}
-            />
+            <DetailRow label="Account Number" value={pd.account_number} copyable={true} />
           )}
 
           {pd.routing_number && (
-            <DetailRow
-              label="Routing Number (ACH)"
-              value={pd.routing_number}
-              copyable={true}
-            />
+            <DetailRow label="Routing Number (ACH)" value={pd.routing_number} copyable={true} />
           )}
 
-          {pd.ifsc && (
-            <DetailRow
-              label="IFSC Code"
-              value={pd.ifsc}
-              copyable={true}
-            />
-          )}
+          {pd.ifsc && <DetailRow label="IFSC Code" value={pd.ifsc} copyable={true} />}
 
-          {pd.bank_code && (
-            <DetailRow
-              label="Bank Code"
-              value={pd.bank_code}
-              copyable={true}
-            />
-          )}
+          {pd.bank_code && <DetailRow label="Bank Code" value={pd.bank_code} copyable={true} />}
 
           {pd.branch_code && (
-            <DetailRow
-              label="Branch Code"
-              value={pd.branch_code}
-              copyable={true}
-            />
+            <DetailRow label="Branch Code" value={pd.branch_code} copyable={true} />
           )}
 
           {pd.reference_id && (
@@ -503,19 +422,12 @@ const D24EmbeddedDeposit: FC<Props> = ({
 
         {/* Instructions */}
         {details.instructions && details.instructions.length > 0 && (
-          <div className="space-y-3 bg-slate-800/50 p-4 rounded-lg">
-            <p className="text-slate-300 font-semibold text-sm">
-              📋 How to Pay:
-            </p>
+          <div className="space-y-3 bg-white/5 p-4 rounded-[20px]">
+            <p className="text-[#c8ccd8] font-semibold text-sm">📋 How to Pay:</p>
             <ol className="space-y-2">
               {details.instructions.map((step, i) => (
-                <li
-                  key={i}
-                  className="text-slate-400 text-sm flex gap-3"
-                >
-                  <span className="text-blue-400 font-semibold flex-shrink-0">
-                    {i + 1}.
-                  </span>
+                <li key={i} className="text-[#9da2b4] text-sm flex gap-3">
+                  <span className="text-[#067ff0] font-semibold flex-shrink-0">{i + 1}.</span>
                   <span>{step}</span>
                 </li>
               ))}
@@ -524,9 +436,9 @@ const D24EmbeddedDeposit: FC<Props> = ({
         )}
 
         {/* Important Notes */}
-        <div className="bg-blue-900/30 border border-blue-600 p-3 rounded-lg space-y-2">
-          <p className="text-blue-300 text-xs font-semibold">📌 Important:</p>
-          <ul className="space-y-1 text-blue-200 text-xs">
+        <div className="bg-[#067ff0]/10 border border-[#067ff0]/40 p-3 rounded-[20px] space-y-2">
+          <p className="text-[#067ff0] text-xs font-semibold">📌 Important:</p>
+          <ul className="space-y-1 text-[#c8ccd8] text-xs">
             <li>• Always include the reference ID in your payment</li>
             <li>• Your deposit will be credited once payment is confirmed</li>
             <li>• Processing time depends on your bank</li>
@@ -535,17 +447,15 @@ const D24EmbeddedDeposit: FC<Props> = ({
 
         {/* Fee Notice */}
         {details.fee_percent && (
-          <div className="bg-yellow-900/30 border border-yellow-600 p-3 rounded-lg">
-            <p className="text-yellow-200 text-sm">
-              💳 Fee: {details.fee_percent}% of amount
-            </p>
+          <div className="bg-[#f9d028]/10 border border-[#f9d028]/40 p-3 rounded-[20px]">
+            <p className="text-[#ffe779] text-sm">💳 Fee: {details.fee_percent}% of amount</p>
           </div>
         )}
 
         {/* Back Button */}
         <button
           onClick={onBack}
-          className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition text-sm font-medium"
+          className="flex h-12 w-full items-center justify-center rounded-full border border-white/20 bg-white/5 px-4 text-[16px] font-medium text-[#f0f1f5] transition-colors hover:bg-white/10"
         >
           ← Back
         </button>
@@ -556,14 +466,14 @@ const D24EmbeddedDeposit: FC<Props> = ({
   // Unknown / Unsupported Payment Method
   return (
     <div className="space-y-4">
-      <div className="bg-yellow-900/30 border border-yellow-600 p-4 rounded-lg">
-        <p className="text-yellow-300 text-sm">
+      <div className="bg-[#f9d028]/10 border border-[#f9d028]/40 p-4 rounded-[20px]">
+        <p className="text-[#ffe779] text-sm">
           ⚠️ Payment method '{paymentMethod}' is not yet supported for embedded checkout.
         </p>
       </div>
       <button
         onClick={onBack}
-        className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition text-sm font-medium"
+        className="flex h-12 w-full items-center justify-center rounded-full border border-white/20 bg-white/5 px-4 text-[16px] font-medium text-[#f0f1f5] transition-colors hover:bg-white/10"
       >
         ← Go Back
       </button>
@@ -585,23 +495,17 @@ const PixKeyCopy: FC<{ pixKey: string }> = ({ pixKey }) => {
 
   return (
     <div className="space-y-2">
-      <p className="text-slate-400 text-sm">Or copy this PIX key:</p>
+      <p className="text-[#9da2b4] text-sm">Or copy this PIX key:</p>
       <div
         onClick={handleCopy}
-        className="bg-slate-700 hover:bg-slate-600 p-4 rounded-lg cursor-pointer transition border border-slate-600 hover:border-slate-500"
+        className="bg-white/5 hover:bg-white/10 p-4 rounded-[20px] cursor-pointer transition border border-white/20 hover:border-white/30"
       >
-        <code className="text-emerald-400 break-all text-xs font-mono">
-          {pixKey}
-        </code>
+        <code className="text-[#03b739] break-all text-xs font-mono">{pixKey}</code>
       </div>
       {copied && (
-        <p className="text-emerald-400 text-sm font-medium text-center">
-          ✓ Copied to clipboard!
-        </p>
+        <p className="text-[#03b739] text-sm font-medium text-center">✓ Copied to clipboard!</p>
       )}
-      <p className="text-slate-500 text-xs">
-        Click to copy, then paste in your bank app
-      </p>
+      <p className="text-[#6a7287] text-xs">Click to copy, then paste in your bank app</p>
     </div>
   );
 };
@@ -616,12 +520,7 @@ interface DetailRowProps {
   important?: boolean;
 }
 
-const DetailRow: FC<DetailRowProps> = ({
-  label,
-  value,
-  copyable = false,
-  important = false,
-}) => {
+const DetailRow: FC<DetailRowProps> = ({ label, value, copyable = false, important = false }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -632,7 +531,7 @@ const DetailRow: FC<DetailRowProps> = ({
 
   return (
     <div className="space-y-1">
-      <label className="text-slate-400 text-xs uppercase tracking-wide font-semibold">
+      <label className="text-[#9da2b4] text-xs uppercase tracking-wide font-semibold">
         {label}
       </label>
       {copyable ? (
@@ -640,25 +539,25 @@ const DetailRow: FC<DetailRowProps> = ({
           onClick={handleCopy}
           className={`p-3 rounded cursor-pointer transition border ${
             important
-              ? 'bg-emerald-900/30 border-emerald-500/50 hover:bg-emerald-900/50'
-              : 'bg-slate-700 border-slate-600 hover:bg-slate-600 hover:border-slate-500'
+              ? 'bg-[#03b739]/10 border-[#03b739]/40 hover:bg-[#03b739]/15'
+              : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/30'
           }`}
         >
           <code
             className={`text-xs font-mono break-all ${
-              important ? 'text-emerald-400' : 'text-slate-200'
+              important ? 'text-[#03b739]' : 'text-[#f0f1f5]'
             }`}
           >
             {value}
           </code>
           {copied && (
-            <p className={`text-xs mt-1 ${important ? 'text-emerald-300' : 'text-slate-300'}`}>
+            <p className={`text-xs mt-1 ${important ? 'text-[#03b739]' : 'text-[#c8ccd8]'}`}>
               ✓ Copied
             </p>
           )}
         </div>
       ) : (
-        <p className="text-slate-200 text-sm">{value}</p>
+        <p className="text-[#f0f1f5] text-sm">{value}</p>
       )}
     </div>
   );

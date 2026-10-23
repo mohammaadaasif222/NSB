@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
  */
 const CHIP_GLASS = 'border border-white/20 backdrop-blur-md transition-colors';
 const CHIP_IDLE = `${CHIP_GLASS} bg-black/40 text-[#9da2b4] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04)] hover:bg-white/[0.08] hover:text-[#f0f1f5]`;
-const CHIP_PICKED = `${CHIP_GLASS} bg-[#ffe779]/[0.16] font-medium text-[#ffe779] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_17.6px_rgba(255,231,121,0.2)]`;
+const CHIP_PICKED = `${CHIP_GLASS} bg-[#ffe779]/[0.16] font-rubik font-medium text-[#ffe779] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_17.6px_rgba(255,231,121,0.2)]`;
 
 export interface WalletTabItem<K extends string> {
   id: K;

@@ -37,11 +37,16 @@ const D24CheckoutModal: FC<Props> = ({ redirectUrl, onClose }) => {
                 console.log('[D24CheckoutModal] Close button clicked');
                 onClose();
               }}
-              className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition cursor-pointer"
+              className="p-2 bg-[#1b1f29] hover:bg-[#252937] text-[#f0f1f5] rounded-full transition cursor-pointer"
               title="Close"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>

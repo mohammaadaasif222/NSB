@@ -28,28 +28,29 @@ export interface LeaderboardRow {
 }
 
 /* The design raises first place out of the row and gives it the larger
-   portrait and badge; second and third are identical to each other. */
+   portrait and badge; second and third are identical to each other. A phone
+   keeps the three in one row — 96 portraits, 28 badges, first raised 25. */
 const PLACES = {
   1: {
-    card: 'lg:order-2 lg:mb-[calc(var(--u)*41)]',
-    avatar: 'h-20 w-20 lg:h-[calc(var(--u)*96)] lg:w-[calc(var(--u)*96)]',
+    card: 'order-2 lg:mb-[calc(var(--u)*41)]',
+    avatar: 'h-24 w-24 lg:h-[calc(var(--u)*96)] lg:w-[calc(var(--u)*96)]',
     badge:
-      '-top-5 h-8 w-8 bg-[#f9d028] text-[14px] text-[#030407] drop-shadow-[0_4px_5px_rgba(248,166,49,0.4)] lg:-top-[calc(var(--u)*25)] lg:h-[calc(var(--u)*38)] lg:w-[calc(var(--u)*38)] lg:text-[max(12px,calc(var(--u)*16))]',
-    pts: 'mt-2 lg:mt-[calc(var(--u)*8)]',
+      '-top-[17px] h-7 w-7 bg-[#f9d028] text-[16px] text-[#030407] drop-shadow-[0_4px_5px_rgba(248,166,49,0.4)] lg:-top-[calc(var(--u)*25)] lg:h-[calc(var(--u)*38)] lg:w-[calc(var(--u)*38)] lg:text-[max(12px,calc(var(--u)*16))]',
+    pts: 'lg:mt-[calc(var(--u)*8)]',
   },
   2: {
-    card: 'lg:order-1',
-    avatar: 'h-[72px] w-[72px] lg:h-[calc(var(--u)*84)] lg:w-[calc(var(--u)*84)]',
+    card: 'order-1 mt-[25px] lg:mt-0',
+    avatar: 'h-24 w-24 lg:h-[calc(var(--u)*84)] lg:w-[calc(var(--u)*84)]',
     badge:
-      '-top-3.5 h-7 w-7 bg-[#f0f1f5] text-[13px] text-[#07080a] lg:-top-[calc(var(--u)*13)] lg:h-[calc(var(--u)*26)] lg:w-[calc(var(--u)*26)] lg:text-[max(11px,calc(var(--u)*14))]',
-    pts: 'mt-1 lg:mt-[calc(var(--u)*4)]',
+      '-top-[17px] h-7 w-7 bg-[#f0f1f5] text-[16px] text-[#030407] drop-shadow-[0_4px_5px_rgba(0,0,0,0.25)] lg:-top-[calc(var(--u)*13)] lg:h-[calc(var(--u)*26)] lg:w-[calc(var(--u)*26)] lg:text-[max(11px,calc(var(--u)*14))] lg:text-[#07080a] lg:drop-shadow-none',
+    pts: 'lg:mt-[calc(var(--u)*4)]',
   },
   3: {
-    card: 'lg:order-3',
-    avatar: 'h-[72px] w-[72px] lg:h-[calc(var(--u)*84)] lg:w-[calc(var(--u)*84)]',
+    card: 'order-3 mt-[25px] lg:mt-0',
+    avatar: 'h-24 w-24 lg:h-[calc(var(--u)*84)] lg:w-[calc(var(--u)*84)]',
     badge:
-      '-top-3.5 h-7 w-7 bg-[#f0f1f5] text-[13px] text-[#07080a] lg:-top-[calc(var(--u)*13)] lg:h-[calc(var(--u)*26)] lg:w-[calc(var(--u)*26)] lg:text-[max(11px,calc(var(--u)*14))]',
-    pts: 'mt-1 lg:mt-[calc(var(--u)*4)]',
+      '-top-[17px] h-7 w-7 bg-[#f0f1f5] text-[16px] text-[#030407] drop-shadow-[0_4px_5px_rgba(0,0,0,0.25)] lg:-top-[calc(var(--u)*13)] lg:h-[calc(var(--u)*26)] lg:w-[calc(var(--u)*26)] lg:text-[max(11px,calc(var(--u)*14))] lg:text-[#07080a] lg:drop-shadow-none',
+    pts: 'lg:mt-[calc(var(--u)*4)]',
   },
 } as const;
 
@@ -59,14 +60,14 @@ const Podium: FC<{ place: PodiumPlace }> = ({ place }) => {
 
   return (
     <div
-      className={`rl-glass-deep flex flex-col items-center rounded-[24px] px-4 pb-8 pt-9 lg:h-[calc(var(--u)*289)] lg:w-[calc(var(--u)*272)] lg:rounded-[calc(var(--u)*34)] lg:px-0 lg:pb-0 lg:pt-[calc(var(--u)*61)] ${s.card}`}
+      className={`flex w-24 flex-col items-center pt-[17px] lg:rl-glass-deep lg:h-[calc(var(--u)*289)] lg:w-[calc(var(--u)*272)] lg:rounded-[calc(var(--u)*34)] lg:px-0 lg:pb-0 lg:pt-[calc(var(--u)*61)] ${s.card}`}
     >
       <div className="relative">
         <Image
           src={place.avatar}
           alt=""
           className={`rounded-full object-cover ${s.avatar}`}
-          sizes="(min-width: 1024px) 6vw, 80px"
+          sizes="(min-width: 1024px) 6vw, 96px"
         />
         <span
           className={`absolute left-1/2 flex -translate-x-1/2 items-center justify-center rounded-full font-['Roboto',sans-serif] font-black ${s.badge}`}
@@ -75,14 +76,14 @@ const Podium: FC<{ place: PodiumPlace }> = ({ place }) => {
         </span>
       </div>
 
-      <p className="mt-2 text-[18px] leading-7 tracking-[-0.02em] text-[#f0f1f5] lg:mt-[calc(var(--u)*8)] lg:text-[max(14px,calc(var(--u)*20))] lg:leading-[calc(var(--u)*28)]">
+      <p className="mt-1 max-w-full truncate text-[12px] font-medium leading-5 text-[#f0f1f5] lg:mt-[calc(var(--u)*8)] lg:text-[max(14px,calc(var(--u)*20))] lg:font-normal lg:leading-[calc(var(--u)*28)] lg:tracking-[-0.02em]">
         {place.masked ? t('content.tournament.hidden') : place.name}
       </p>
-      <p className="mt-0.5 text-[13px] leading-5 text-[#6a7287] lg:mt-[calc(var(--u)*4)] lg:text-[max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
+      <p className="mt-px text-[12px] leading-5 text-[#6a7287] lg:mt-[calc(var(--u)*4)] lg:text-[max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
         {place.wagered}
       </p>
       <p
-        className={`text-[20px] font-semibold leading-8 tracking-[-0.02em] text-[#f0f1f5] lg:text-[max(16px,calc(var(--u)*24))] lg:leading-[calc(var(--u)*32)] ${s.pts}`}
+        className={`-mt-0.5 text-[18px] font-medium leading-7 text-[#f0f1f5] lg:text-[max(16px,calc(var(--u)*24))] lg:font-semibold lg:leading-[calc(var(--u)*32)] lg:tracking-[-0.02em] ${s.pts}`}
       >
         {t('tournament.pts', { value: place.points })}
       </p>
@@ -119,22 +120,59 @@ const TournamentLeaderboard: FC<Props> = ({ podium, rows }) => {
   const { t } = useTranslation();
 
   return (
-    <section className="rl-glass-deep rounded-[24px] px-4 py-8 lg:rounded-[calc(var(--u)*34)] lg:px-0 lg:pb-[calc(var(--u)*110)] lg:pt-[calc(var(--u)*46)]">
+    <section className="rl-glass-deep rounded-[34px] px-4 pb-[31px] pt-[26px] lg:rounded-[calc(var(--u)*34)] lg:px-0 lg:pb-[calc(var(--u)*110)] lg:pt-[calc(var(--u)*46)]">
       <h2 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.02em] text-[#f0f1f5] lg:text-[max(18px,calc(var(--u)*36))] lg:leading-[calc(var(--u)*44)]">
         {t('tournament.leaderboard')}
       </h2>
 
       {/* Ranked order in the markup, podium order on screen — a screen reader
           and a narrow viewport both want first place first. */}
-      <div className="mt-8 flex flex-col items-center gap-4 lg:mt-[calc(var(--u)*46)] lg:flex-row lg:items-end lg:justify-center lg:gap-[calc(var(--u)*22)]">
+      <div className="mt-3 flex items-start justify-between px-3 lg:mt-[calc(var(--u)*46)] lg:items-end lg:justify-center lg:gap-[calc(var(--u)*22)] lg:px-0">
         {podium.map((place) => (
           <Podium key={place.rank} place={place} />
         ))}
       </div>
 
-      {/* 1100 wide in the design and four columns deep, so it scrolls sideways
-          rather than reflowing on a phone. */}
-      <div className="mt-8 overflow-x-auto lg:mt-[calc(var(--u)*37)]">
+      {/* A phone lists the standings as cards: the rank in a disc, the
+          player over their wager, the prize at the end. The paid three keep
+          the tint. */}
+      <ol className="mt-5 flex flex-col gap-2 lg:hidden">
+        {rows.map((row) => (
+          <li
+            key={row.rank}
+            className={`flex h-16 items-center gap-2.5 rounded-xl border border-[#252937] px-3 ${
+              row.rank <= 3 ? 'bg-white/5' : ''
+            }`}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#333] text-[15.5px] leading-[22px] text-[#c4c4c4]">
+              {row.rank}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span
+                className={`block truncate text-[13px] font-bold leading-4 ${
+                  row.masked ? 'text-[#696969]' : 'text-white'
+                }`}
+              >
+                {row.masked ? t('content.tournament.hidden') : row.name}
+              </span>
+              <span className="mt-0.5 block truncate text-[11px] leading-[13px] text-[#b3b3b3]">
+                {t('tournament.wager')} {row.wager}
+              </span>
+            </span>
+            <span className="shrink-0 text-end">
+              <span className="block text-[13px] font-bold leading-4 text-white tabular-nums">
+                {row.prize}
+              </span>
+              <span className="mt-0.5 block text-[11px] leading-[13px] text-[#b3b3b3]">
+                {t('tournament.prize')}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {/* 1100 wide in the design and four columns deep — a desktop table. */}
+      <div className="mt-8 hidden overflow-x-auto lg:mt-[calc(var(--u)*37)] lg:block">
         <div className="mx-auto min-w-[640px] overflow-hidden rounded-[24px] lg:w-[calc(var(--u)*1100)] lg:min-w-0 lg:rounded-[calc(var(--u)*24)]">
           <div className="flex items-start justify-between border-b border-white/5 bg-white/10 px-5 py-4 text-[13px] font-medium uppercase leading-5 text-[#9da2b4] lg:px-[calc(var(--u)*32)] lg:py-[calc(var(--u)*20)] lg:text-[max(11px,calc(var(--u)*14))]">
             <div className={LEFT_GROUP}>
