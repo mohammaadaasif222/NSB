@@ -8,11 +8,12 @@ spec:
     - staging.xyzlife.top
   parentRefs:
     - name: rolluck-gateway
+      sectionName: https-frontend
   rules:
-    - backendRefs:
-        - name: frontend
-          port: 80
-      matches:
+    - matches:
         - path:
             type: PathPrefix
             value: /
+      backendRefs:
+        - name: frontend
+          port: 80
