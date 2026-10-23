@@ -111,6 +111,7 @@ const ProfilePage: FC = () => {
             me={me}
             onToggle2FA={() => setActiveModal('2fa')}
             onChangeAvatar={() => setActiveModal('avatar')}
+            onAddEmail={() => setActiveModal('email')}
           />
         );
       case 'statistic':
@@ -243,8 +244,14 @@ const ProfilePage: FC = () => {
         <ChangeEmailModal
           currentEmail={me.email}
           onClose={closeModal}
-          onSaved={(email) =>
-            updateMe(email === me.email ? { email } : { email, is_email_verified: false })
+          onSaved={(email, verified) =>
+            updateMe(
+              verified
+                ? { email, is_email_verified: true }
+                : email === me.email
+                  ? { email }
+                  : { email, is_email_verified: false }
+            )
           }
         />
       )}

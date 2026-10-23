@@ -60,6 +60,8 @@ const PERSONAS = [
   'NeonFalcon',
   'HazelHunt',
   'EmberJay',
+  'itsmebrain',
+  'Bravestone',
 ] as const;
 
 const OPENERS = [

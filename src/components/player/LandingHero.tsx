@@ -16,7 +16,6 @@ import telegramIcon from '@/assets/lobby/telegram.svg';
 import facebookIcon from '@/assets/lobby/facebook.svg';
 import whatsappIcon from '@/assets/lobby/whatsapp.svg';
 import chevronDown from '@/assets/lobby/chevron-down.svg';
-import starIcon from '@/assets/lobby/star.svg';
 import trustPrivacy from '@/assets/lobby/trust-privacy.svg';
 import trustFair from '@/assets/lobby/trust-fair.svg';
 import trustBolt from '@/assets/lobby/trust-bolt.svg';

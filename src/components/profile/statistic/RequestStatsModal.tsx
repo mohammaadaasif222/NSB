@@ -1,32 +1,34 @@
 import { useEffect, useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { CloseIcon } from '@/components/icons';
+import { fieldErrorMessage } from '@/lib/apiError';
+import { emailMyStatistics, type StatisticsReportFormat } from '@/services/statistics';
+import type { StatisticsRange } from '@/types';
+import { toast } from 'react-toastify';
 
 /** Same shape the rest of the app validates addresses with. */
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Props {
+  /** The range selected on the Statistic tab; the email carries the same figures. */
+  range: StatisticsRange;
   onClose: () => void;
 }
 
 /**
- * Ask for a statistics breakdown by email.
- *
- * The form is real — the address is validated here, client-side — but there is
- * NO ENDPOINT behind it. Rather than accept a click and drop the request, a
- * valid submission says so. To wire it up: replace the `setNotice` branch in
- * `handleSubmit` with the POST, and give the shell the loading/error handling
- * `ChangeEmailModal` already demonstrates.
+ * Ask for a statistics breakdown by email, as text, PDF or Excel.
  *
  * Styled standalone rather than through `ProfileModalShell`: that shell serves
  * six working modals in the old slate palette and has a Cancel/Save footer,
  * which this design replaces with a close button and one full-width action.
  */
-const RequestStatsModal: FC<Props> = ({ onClose }) => {
+const RequestStatsModal: FC<Props> = ({ range, onClose }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
+  const [format, setFormat] = useState<StatisticsReportFormat>('text');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [sending, setSending] = useState(false);
 
   // The old profile modals have no key handling; Escape is expected of a
   // dialog and costs one listener.
@@ -40,7 +42,8 @@ const RequestStatsModal: FC<Props> = ({ onClose }) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const handleSubmit = (): void => {
+  const handleSubmit = async (): Promise<void> => {
+    if (sending) return;
     const trimmed = email.trim().toLowerCase();
     if (!EMAIL.test(trimmed)) {
       setNotice('');
@@ -48,7 +51,24 @@ const RequestStatsModal: FC<Props> = ({ onClose }) => {
       return;
     }
     setError('');
-    setNotice(t('stats.requestUnavailable'));
+    setNotice('');
+    setSending(true);
+    try {
+      const res = await emailMyStatistics(trimmed, range, format);
+      if (res?.success) {
+        setNotice(t('stats.sent', { email: trimmed }));
+        toast.success(t('stats.sent', { email: trimmed }));
+      } else {
+        setError(res?.message || t('stats.sendFailed'));
+        toast.error(res?.message || t('stats.sendFailed'));
+      }
+    } catch (err) {
+      setError(fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed'));
+      toast.error(fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed'));
+    } finally {
+      setSending(false);
+      onClose()
+    }
   };
 
   return (
@@ -96,6 +116,29 @@ const RequestStatsModal: FC<Props> = ({ onClose }) => {
           className="rl-field mt-[calc(var(--u)*8)] w-full rounded-full px-[calc(var(--u)*20)] py-[calc(var(--u)*14)] text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold placeholder:font-normal"
         />
 
+        <label
+          className="mt-[calc(var(--u)*16)] block text-[length:max(min(11px,12px),calc(var(--u)*12))] text-white/50"
+          htmlFor="stats-format"
+        >
+          {t('stats.formatLabel')}
+        </label>
+        <select
+          id="stats-format"
+          value={format}
+          onChange={(e) => setFormat(e.target.value as StatisticsReportFormat)}
+          className="rl-field mt-[calc(var(--u)*8)] w-full cursor-pointer rounded-full px-[calc(var(--u)*20)] py-[calc(var(--u)*14)] text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold"
+        >
+          <option value="text" className="bg-[#16171c]">
+            {t('stats.formatText')}
+          </option>
+          <option value="pdf" className="bg-[#16171c]">
+            {t('stats.formatPdf')}
+          </option>
+          <option value="xlsx" className="bg-[#16171c]">
+            {t('stats.formatExcel')}
+          </option>
+        </select>
+
         {error && (
           <p className="mt-[calc(var(--u)*8)] px-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] text-[#ef4462]">
             {error}
@@ -109,10 +152,11 @@ const RequestStatsModal: FC<Props> = ({ onClose }) => {
 
         <button
           type="button"
-          onClick={handleSubmit}
-          className="rl-btn-gold mt-[calc(var(--u)*20)] w-full rounded-full py-[calc(var(--u)*14)] text-[length:max(min(11px,14px),calc(var(--u)*14))] font-bold"
+          onClick={() => void handleSubmit()}
+          disabled={sending}
+          className="rl-btn-gold mt-[calc(var(--u)*20)] w-full rounded-full py-[calc(var(--u)*14)] text-[length:max(min(11px,14px),calc(var(--u)*14))] font-bold disabled:opacity-60"
         >
-          {t('stats.submit')}
+          {sending ? t('stats.sending') : t('stats.submit')}
         </button>
       </div>
     </div>

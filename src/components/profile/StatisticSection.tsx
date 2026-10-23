@@ -134,7 +134,9 @@ const StatisticSection: FC = () => {
         <RequestStatsRow onOpen={() => setRequestOpen(true)} />
       </div>
 
-      {requestOpen && <RequestStatsModal onClose={() => setRequestOpen(false)} />}
+      {requestOpen && (
+        <RequestStatsModal range={apiRangeOf(range)} onClose={() => setRequestOpen(false)} />
+      )}
     </div>
   );
 };
