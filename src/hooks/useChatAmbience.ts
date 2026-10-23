@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AMBIENT_ROOMS, ambientMessages, onlineCount } from '@/services/chatAmbience';
+import {
+  AMBIENT_ROOMS,
+  VOICE_CLIPS,
+  ambientMessages,
+  onlineCount,
+  voiceClipUrl,
+} from '@/services/chatAmbience';
 import type { ChatMessage, ReactionKind, ReactionSummary } from '@/services/chat';
 
 const WINDOW_MS = 3 * 60_000;
@@ -32,6 +38,33 @@ export const useChatAmbience = (room: string, enabled: boolean): ChatAmbience =>
   const active = enabled && AMBIENT_ROOMS.includes(room);
   const [now, setNow] = useState(() => Date.now());
   const [overrides, setOverrides] = useState<Record<string, ReactionSummary>>({});
+  const [durations, setDurations] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!enabled || VOICE_CLIPS.length === 0) return undefined;
+
+    let cancelled = false;
+    const probes = VOICE_CLIPS.map((file) => {
+      const probe = new Audio();
+      probe.preload = 'metadata';
+      probe.onloadedmetadata = () => {
+        if (cancelled || !Number.isFinite(probe.duration) || probe.duration <= 0) return;
+        const ms = Math.round(probe.duration * 1000);
+        setDurations((current) => (current[file] === ms ? current : { ...current, [file]: ms }));
+      };
+      probe.src = voiceClipUrl(file);
+      return probe;
+    });
+
+    return () => {
+      cancelled = true;
+      for (const probe of probes) {
+        probe.onloadedmetadata = null;
+        probe.removeAttribute('src');
+        probe.load();
+      }
+    };
+  }, [enabled]);
 
   useEffect(() => {
     setOverrides({});
@@ -45,8 +78,8 @@ export const useChatAmbience = (room: string, enabled: boolean): ChatAmbience =>
   }, [room, enabled]);
 
   const generated = useMemo(
-    () => (active ? ambientMessages(room, now, WINDOW_MS).slice(-MAX_SHOWN) : []),
-    [active, room, now]
+    () => (active ? ambientMessages(room, now, WINDOW_MS, durations).slice(-MAX_SHOWN) : []),
+    [active, room, now, durations]
   );
 
   const lastId = generated[generated.length - 1]?.id ?? '';
