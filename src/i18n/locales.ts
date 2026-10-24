@@ -581,6 +581,7 @@ const coreEn = {
   'profile.emailUnverified': 'Unverified',
   'common.loading': 'Loading…',
   'common.soon': 'Soon',
+  'common.underDevelopment': 'This feature is under development.',
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.saving': 'Saving…',

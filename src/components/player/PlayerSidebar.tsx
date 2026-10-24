@@ -29,11 +29,10 @@ import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useAuth } from '@/context/AuthContext';
-import { useSupportChat } from '@/context/SupportChatContext';
+import { useOpenSupport } from '@/hooks/useOpenSupport';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
 import { RAIL_GROUPS, RAIL_OPEN_KEY, type RailGroup, type RailGroupId } from '@/constants/railMenu';
-import { CHAT_TOGGLE_EVENT } from '@/components/player/ChatDrawer';
 import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 import GameSearchModal from '@/components/player/GameSearchModal';
@@ -387,7 +386,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const telegramLink = socialLinks.find((link) => link.platform === 'telegram');
   const railSocials = socialLinks.filter((link) => link.platform !== 'telegram');
   const { token } = useAuth();
-  const { openIntercom, internalChatEnabled } = useSupportChat();
+  const openSupport = useOpenSupport();
   const { t } = useTranslation();
   const {
     rewards: rewardsOn,
@@ -457,12 +456,6 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
     } catch {
       // Not remembered this time; the toggle still applies.
     }
-  };
-
-  // The built-in chat when it is on, Intercom otherwise — as the tab bar does.
-  const openSupport = (): void => {
-    if (internalChatEnabled && token) window.dispatchEvent(new Event(CHAT_TOGGLE_EVENT));
-    else openIntercom();
   };
 
   const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;

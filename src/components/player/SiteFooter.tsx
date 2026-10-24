@@ -2,8 +2,11 @@ import { useState, type FC } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
+import { toast } from 'react-toastify';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
-import { LIVE_CASINO_HREF, categoryHref } from '@/constants/games';
+import { useOpenSupport } from '@/hooks/useOpenSupport';
+import { LIVE_CASINO_HREF, PROVIDERS_PATH, categoryHref } from '@/constants/games';
+import { COUNTER_STRIKE, sportHref } from '@/constants/sportsbook';
 import LanguagePicker from '@/components/LanguagePicker';
 import type { TranslationKey } from '@/i18n/locales';
 import { useSocialLinks } from '@/hooks/useSocialLinks';
@@ -49,6 +52,7 @@ interface FooterLink {
   label: string;
   /** Absent for destinations that do not exist yet — rendered inert. */
   href?: string;
+  onSelect?: () => void;
 }
 
 const LINK =
@@ -61,7 +65,15 @@ const LINK =
  */
 const Item: FC<{ item: FooterLink; soon: string }> = ({ item, soon }) => (
   <li>
-    {!item.href ? (
+    {item.onSelect ? (
+      <button
+        type="button"
+        onClick={item.onSelect}
+        className={`${LINK} text-start hover:text-white`}
+      >
+        {item.label}
+      </button>
+    ) : !item.href ? (
       <span className={`${LINK} cursor-default hover:text-[#c8ccd8]`} title={soon}>
         {item.label}
       </span>
@@ -159,6 +171,7 @@ const SiteFooter: FC = () => {
     terms_page: termsOn,
     responsible_gambling: responsibleOn,
   } = usePlatformFeatures();
+  const openSupport = useOpenSupport();
   const soon = t('common.soon');
 
   const toTop = (): void =>
@@ -172,17 +185,17 @@ const SiteFooter: FC = () => {
     { label: t('nav.originals'), href: categoryHref('originals') },
     { label: t('dash.slots'), href: categoryHref('slots') },
     { label: t('dash.liveCasino'), href: LIVE_CASINO_HREF },
-    { label: t('dash.tableGames') },
-    { label: t('lobby.footer.providers') },
+    { label: t('dash.tableGames'), href: categoryHref('table') },
+    { label: t('lobby.footer.providers'), href: PROVIDERS_PATH },
   ];
 
   const sports: FooterLink[] = [
     { label: t('nav.home'), href: '/sports' },
     { label: t('lobby.footer.live'), href: '/sports#live-games' },
-    { label: t('lobby.sport.soccer') },
-    { label: t('lobby.sport.tennis') },
-    { label: t('lobby.sport.basketball') },
-    { label: t('lobby.sport.counterStrike') },
+    { label: t('lobby.sport.soccer'), href: sportHref('football') },
+    { label: t('lobby.sport.tennis'), href: sportHref('tennis') },
+    { label: t('lobby.sport.basketball'), href: sportHref('basketball') },
+    { label: t('lobby.sport.counterStrike'), href: sportHref(COUNTER_STRIKE) },
   ];
 
   /* Promotions and Bonuses are in the rail too; Blogs is reachable from
@@ -196,7 +209,10 @@ const SiteFooter: FC = () => {
     ...(promotionsOn ? [{ label: t('menu.promotions'), href: '/promotions' }] : []),
     { label: t('nav.bonuses'), href: '/bonuses' },
     { label: t('lobby.footer.referral'), href: '/referral' },
-    { label: t('lobby.footer.swapCrypto') },
+    {
+      label: t('lobby.footer.swapCrypto'),
+      onSelect: () => toast.info(t('common.underDevelopment')),
+    },
   ];
 
   const help: FooterLink[] = [
@@ -214,7 +230,7 @@ const SiteFooter: FC = () => {
     ...(termsOn
       ? [{ label: t('lobby.footer.sportsTerms'), href: '/terms-of-service#sports-betting' }]
       : []),
-    { label: t('menu.liveSupport') },
+    { label: t('menu.liveSupport'), onSelect: openSupport },
     ...(responsibleOn
       ? [{ label: t('menu.responsibleGambling'), href: '/responsible-gambling' }]
       : []),

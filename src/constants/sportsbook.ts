@@ -46,5 +46,20 @@ export const SPORT_CHIPS: { key: FixtureSport | 'all'; label?: TranslationKey }[
 export const isSportKey = (value: unknown): value is SportKey =>
   SPORTS.some((sport) => sport.key === value);
 
+export const COUNTER_STRIKE = 'counter-strike';
+
+export type SportPageKey = SportKey | typeof COUNTER_STRIKE;
+
+export const isSportPageKey = (value: unknown): value is SportPageKey =>
+  value === COUNTER_STRIKE || isSportKey(value);
+
+export const fixtureSportOf = (key: SportPageKey): FixtureSport =>
+  key === COUNTER_STRIKE ? 'esports' : key;
+
+export const sportPageLabel = (key: SportPageKey): TranslationKey | undefined =>
+  key === COUNTER_STRIKE
+    ? 'lobby.sport.counterStrike'
+    : SPORTS.find((sport) => sport.key === key)?.label;
+
 /** Path of a sport's page. */
-export const sportHref = (key: SportKey): string => `/sports/${key}`;
+export const sportHref = (key: SportPageKey): string => `/sports/${key}`;
