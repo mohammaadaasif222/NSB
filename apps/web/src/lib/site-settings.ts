@@ -1,9 +1,9 @@
-import type { SiteSettings } from "@nsb/shared";
+import { DEFAULT_HOME_CARDS, type SiteSettings } from "@nsb/shared";
 import { api } from "@/lib/api";
 
 /** Public site settings. A failure only hides optional extras (the WhatsApp button, the project page ad), never the page. */
 export function getSiteSettings(): Promise<SiteSettings> {
-  return api.get<SiteSettings>("/site-settings").catch(() => ({ whatsapp: null, listingSidebar: { enabled: true, budget: true, type: true }, projectSideAd: null }));
+  return api.get<SiteSettings>("/site-settings").catch(() => ({ whatsapp: null, listingSidebar: { enabled: true, budget: true, type: true }, projectSideAd: null, homeCards: DEFAULT_HOME_CARDS }));
 }
 
 /** wa.me chat link to the NSB number, with the admin's message; {listing} becomes the vendor's name. */

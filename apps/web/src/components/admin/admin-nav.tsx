@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Heart, Home, LayoutDashboard, Lock, type LucideIcon, Settings, Store, Users } from "lucide-react";
+import { Building2, Heart, Home, LayoutDashboard, Lock, type LucideIcon, Settings, Users } from "lucide-react";
+import { useCan } from "./admin-role";
 import { useUnreadEnquiries } from "./unread-enquiries";
 
 interface NavLink {
@@ -24,24 +25,26 @@ const GROUPS: { title: string; links: NavLink[] }[] = [
       { href: "/admin/real-estate", label: "Real Estate", Icon: Building2 },
     ],
   },
-  { title: "Inbox", links: [{ href: "/admin/enquiries", label: "Enquiries", Icon: Users }] },
+  { title: "Inbox", links: [{ href: "/admin/enquiries", label: "Leads", Icon: Users }] },
   { title: "System", links: [{ href: "/admin/settings", label: "Settings", Icon: Settings }] },
 ];
 
 const SOON: { label: string; Icon: LucideIcon; tag: string }[] = [
-  { label: "Brand Stores", Icon: Store, tag: "Soon" },
+  { label: "Brand Stores", Icon: Lock, tag: "6 mo" },
   { label: "Schools", Icon: Lock, tag: "Soon" },
 ];
 
 export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const unread = useUnreadEnquiries();
+  // Settings is for Super Admins; other roles open their account from the menu.
+  const canManage = useCan("manage");
   const under = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const isActive = ({ href, also = [] }: NavLink) => (href === "/admin" ? pathname === "/admin" : [href, ...also].some(under));
 
   return (
     <nav aria-label="Admin" className="a-nv">
-      {GROUPS.map((group) => (
+      {GROUPS.filter((group) => canManage || group.title !== "System").map((group) => (
         <div key={group.title}>
           <h6>{group.title}</h6>
           {group.links.map((link) => (

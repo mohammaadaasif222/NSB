@@ -1,3 +1,7 @@
+import type { HOME_CARD_ICONS } from "@nsb/shared";
+
+type HomeCardIcon = (typeof HOME_CARD_ICONS)[number];
+
 /** Static content of the home page, copied from "NSB Live Demo.html". */
 
 const IMG = "/images/nsb-home";
@@ -55,12 +59,23 @@ export const HERO_FALLBACK = [
 ];
 
 /** The four photo tiles beside the hero. */
-export const TILES = [
-  { cls: "g1 ti-venue", icon: ICON.building, title: "Wedding venues", link: "/wedding/wedding-venues" },
-  { cls: "g5 ti-makeup", icon: ICON.sparkle, title: "Makeup & beauty", link: "/wedding/makeup-beauty" },
-  { cls: "g2 ti-photo", icon: ICON.camera, title: "Photography & films", link: "/wedding/photography-films" },
-  { cls: "g3 ti-catering", icon: ICON.fork, title: "Catering", link: "/wedding" },
-];
+/** Drawings for the home cards' icons (HOME_CARD_ICONS); the cards themselves are set in Admin › Home page. */
+export const HOME_CARD_ICON_PATHS: Record<HomeCardIcon, string> = {
+  venue: ICON.building,
+  makeup: ICON.sparkle,
+  camera: ICON.camera,
+  catering: ICON.fork,
+  wedding: ICON.heart,
+  interior: "M5 11V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v3M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3zM6 18v2M18 18v2",
+  "brand-store": "M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2",
+  school: "M2 9l10-5 10 5-10 5zM6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5",
+  "real-estate": "M6.5 3h11A1.5 1.5 0 0 1 19 4.5v16.5H5V4.5A1.5 1.5 0 0 1 6.5 3zM9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-3h4v3",
+  loan: "M6 4h12M6 9h12M9 4c6 0 6 8 0 8l7 8",
+  premium: "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+  "new-launch": "M3 9h18v12H3zM12 9v12M3 13h18M12 9c-3 0-4-4-1.5-4 2 0 1.5 4 1.5 4zm0 0c3 0 4-4 1.5-4-2 0-1.5 4-1.5 4z",
+  services: "M14 6a4 4 0 0 0-5 5L3 17l4 4 6-6a4 4 0 0 0 5-5l-3 3-3-1-1-3z",
+  hotel: "M3 18V8M3 14h18v4M21 14v-3a3 3 0 0 0-3-3h-7v6M7 11h.01",
+};
 
 export const TRUST = [
   { icon: ICON.tag, title: "Top Deals", text: "Up to 60% off on services" },

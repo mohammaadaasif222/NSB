@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import type { Env } from '../../config/env.js';
 import { AdminGuard } from './admin.guard.js';
-import { AuthController } from './auth.controller.js';
+import { AdminUsersController, AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 
 /** Global so every feature module can use AdminGuard without re-importing. */
@@ -18,7 +18,7 @@ import { AuthService } from './auth.service.js';
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AdminUsersController],
   providers: [AuthService, AdminGuard],
   exports: [AuthService, AdminGuard],
 })

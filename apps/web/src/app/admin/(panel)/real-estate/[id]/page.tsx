@@ -4,6 +4,7 @@ import type { AdminProject, AdminSettings } from "@nsb/shared";
 import { adminApi, ApiError, isUuid } from "@/lib/api";
 import { ProjectForm } from "../project-form";
 import { DeleteProjectButton } from "../projects-table";
+import { editorsOnly } from "@/components/admin/editors-only";
 
 export const metadata: Metadata = { title: "Edit real estate listing" };
 
@@ -18,6 +19,8 @@ async function getProject(id: string) {
 }
 
 export default async function EditProjectPage({ params }: PageProps<"/admin/real-estate/[id]">) {
+  const notice = await editorsOnly("Real estate listings");
+  if (notice) return notice;
   const { id } = await params;
   const [project, settings] = await Promise.all([getProject(id), adminApi.get<AdminSettings>("/admin/settings")]);
   return (
@@ -25,6 +28,7 @@ export default async function EditProjectPage({ params }: PageProps<"/admin/real
       key={project.updatedAt}
       project={project}
       maxUploadBytes={settings.maxUploadBytes}
+      planPrice={settings.pricing.realEstate}
       actions={<DeleteProjectButton id={project.id} name={project.name} redirectTo="/admin/real-estate" label="Delete" />}
     />
   );

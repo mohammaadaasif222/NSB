@@ -4,7 +4,9 @@ import {
   type Enquiry,
   type EnquiryInput,
   type EnquiryQuery,
+  type EnquiryUpdate,
   formatPrice,
+  type LeadSectionCounts,
   GENERAL_PROPERTY_LEAD,
   listingPlace,
   type Paginated,
@@ -15,7 +17,7 @@ import {
   type UnreadCount,
 } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
-import { categories, enquiries } from '../../db/schema.js';
+import { categories, enquiries, projects } from '../../db/schema.js';
 import { istDayStart } from '../../common/dates.js';
 import { likeTerm } from '../../common/like.js';
 import { pageWindow } from '../../common/pagination.js';
@@ -28,11 +30,15 @@ type Row = typeof enquiries.$inferSelect;
 /** Most rows one CSV export returns; narrow the filters for more. */
 export const EXPORT_LIMIT = 10_000;
 
-const toEnquiry = (r: Row): Enquiry => ({
+const toEnquiry = (r: Row, projectType: Enquiry['projectType'] = null): Enquiry => ({
   ...r,
+  projectType,
   createdAt: r.createdAt.toISOString(),
   readAt: r.readAt?.toISOString() ?? null,
 });
+
+/** Leads with their project's type (real estate), for the Leads table. */
+const withProject = { enquiry: enquiries, projectType: projects.type };
 
 const yesNo = (v: boolean) => (v ? 'Yes' : 'No');
 
@@ -155,24 +161,38 @@ export class EnquiriesService {
       .catch((err: unknown) => this.logger.error(`Alert failed for enquiry ${notice.enquiry.id}`, err));
   }
 
-  async list(query: EnquiryQuery): Promise<Paginated<Enquiry>> {
+  /** `contacts: false` (View only): the search does not match numbers or email addresses, which that role cannot see. */
+  async list(query: EnquiryQuery, { contacts = true } = {}): Promise<Paginated<Enquiry>> {
     const { page, pageSize, limit, offset } = pageWindow(query.page, query.pageSize);
-    const where = this.where(query);
+    const where = this.where(query, contacts);
     const [rows, [{ total }]] = await Promise.all([
-      this.db.select().from(enquiries).where(where).orderBy(desc(enquiries.createdAt)).limit(limit).offset(offset),
+      this.db
+        .select(withProject)
+        .from(enquiries)
+        .leftJoin(projects, eq(enquiries.projectId, projects.id))
+        .where(where)
+        .orderBy(desc(enquiries.createdAt))
+        .limit(limit)
+        .offset(offset),
       this.db.select({ total: count() }).from(enquiries).where(where),
     ]);
-    return { items: rows.map(toEnquiry), total, page, pageSize };
+    return { items: rows.map((r) => toEnquiry(r.enquiry, r.projectType)), total, page, pageSize };
   }
 
   /** Every lead matching the dashboard filters (newest first, capped at EXPORT_LIMIT), for the CSV export. */
   async exportRows(query: EnquiryQuery): Promise<Enquiry[]> {
-    const rows = await this.db.select().from(enquiries).where(this.where(query)).orderBy(desc(enquiries.createdAt)).limit(EXPORT_LIMIT);
-    return rows.map(toEnquiry);
+    const rows = await this.db
+      .select(withProject)
+      .from(enquiries)
+      .leftJoin(projects, eq(enquiries.projectId, projects.id))
+      .where(this.where(query))
+      .orderBy(desc(enquiries.createdAt))
+      .limit(EXPORT_LIMIT);
+    return rows.map((r) => toEnquiry(r.enquiry, r.projectType));
   }
 
   /** The dashboard filters, shared by the list and the export. */
-  private where(query: EnquiryQuery): SQL | undefined {
+  private where(query: EnquiryQuery, contacts = true): SQL | undefined {
     const filters: SQL[] = [];
     if (query.categoryId) {
       // The category itself, or any of its sub-categories.
@@ -181,12 +201,20 @@ export class EnquiriesService {
     }
     if (query.listingId) filters.push(eq(enquiries.listingId, query.listingId));
     if (query.projectId) filters.push(eq(enquiries.projectId, query.projectId));
+    // Real estate leads carry the button they came from; vendor enquiries do not.
+    if (query.section) filters.push(query.section === 'real-estate' ? isNotNull(enquiries.source) : isNull(enquiries.source));
+    if (query.leadStatus) filters.push(eq(enquiries.leadStatus, query.leadStatus));
+    if (query.source) filters.push(eq(enquiries.source, query.source));
+    if (query.projectType) {
+      filters.push(inArray(enquiries.projectId, this.db.select({ id: projects.id }).from(projects).where(eq(projects.type, query.projectType))));
+    }
     if (query.status) filters.push(query.status === 'unread' ? isNull(enquiries.readAt) : isNotNull(enquiries.readAt));
     if (query.from) filters.push(gte(enquiries.createdAt, istDayStart(query.from)));
     if (query.to) filters.push(lt(enquiries.createdAt, sql`${istDayStart(query.to)} + interval '1 day'`));
     if (query.q) {
       const term = likeTerm(query.q);
-      filters.push(or(ilike(enquiries.name, term), ilike(enquiries.mobile, term), ilike(enquiries.email, term), ilike(enquiries.listingName, term))!);
+      const contactMatch = contacts ? [ilike(enquiries.mobile, term), ilike(enquiries.email, term)] : [];
+      filters.push(or(ilike(enquiries.name, term), ...contactMatch, ilike(enquiries.listingName, term))!);
     }
     return filters.length ? and(...filters) : undefined;
   }
@@ -196,15 +224,37 @@ export class EnquiriesService {
     return { unread };
   }
 
-  /** Marks one enquiry read (keeping the first time it was read) or unread again. */
-  async setRead(id: string, read: boolean): Promise<Enquiry> {
+  /** New and unread leads per section, for the Leads tabs. */
+  async sectionCounts(): Promise<LeadSectionCounts> {
+    const n = (filter: SQL) => sql<number>`count(*) filter (where ${filter})`.mapWith(Number);
+    const realEstate = isNotNull(enquiries.source);
+    const wedding = isNull(enquiries.source);
+    const isNew = eq(enquiries.leadStatus, 'new');
+    const unread = isNull(enquiries.readAt);
+    const [row] = await this.db
+      .select({
+        reNew: n(and(realEstate, isNew)!),
+        reUnread: n(and(realEstate, unread)!),
+        wNew: n(and(wedding, isNew)!),
+        wUnread: n(and(wedding, unread)!),
+      })
+      .from(enquiries);
+    return { realEstate: { new: row.reNew, unread: row.reUnread }, wedding: { new: row.wNew, unread: row.wUnread } };
+  }
+
+  /** Marks one enquiry read (keeping the first time it was read) or unread again, and/or sets its follow-up stage. */
+  async update(id: string, { read, leadStatus }: EnquiryUpdate): Promise<Enquiry> {
     const [row] = await this.db
       .update(enquiries)
-      .set({ readAt: read ? sql`coalesce(${enquiries.readAt}, now())` : null })
+      .set({
+        ...(read !== undefined && { readAt: read ? sql`coalesce(${enquiries.readAt}, now())` : null }),
+        ...(leadStatus && { leadStatus }),
+      })
       .where(eq(enquiries.id, id))
       .returning();
     if (!row) throw new NotFoundException('Enquiry not found');
-    return toEnquiry(row);
+    const [project] = row.projectId ? await this.db.select({ type: projects.type }).from(projects).where(eq(projects.id, row.projectId)) : [];
+    return toEnquiry(row, project?.type ?? null);
   }
 
   async markAllRead(): Promise<UnreadCount> {

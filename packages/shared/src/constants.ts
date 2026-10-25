@@ -46,6 +46,46 @@ export const MAX_SERVICE_GROUPS = 8;
 export const ENQUIRY_STATUSES = ['unread', 'read'] as const;
 export type EnquiryStatus = (typeof ENQUIRY_STATUSES)[number];
 
+/** Follow-up stage of a lead, set by the team in Admin › Leads. New leads start at "new". */
+export const LEAD_STATUSES = ['new', 'contacted', 'won', 'lost'] as const;
+export type LeadStatus = (typeof LEAD_STATUSES)[number];
+
+// ---------- Admin users and roles ----------
+
+/** Super Admin also manages users, roles, pricing and site settings; View only cannot see lead numbers. */
+export const ADMIN_ROLES = ['super', 'admin', 'analyst', 'view'] as const;
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = { super: 'Super Admin', admin: 'Admin', analyst: 'Analyst', view: 'View only' };
+
+/** What a role may do. The API enforces these; the admin panel hides what a role cannot use. */
+export const ADMIN_PERMISSIONS = {
+  /** Dashboard, listings and leads (read). */
+  view: ['super', 'admin', 'analyst', 'view'],
+  /** Lead phone numbers and email addresses, and the CSV export. */
+  leadContacts: ['super', 'admin', 'analyst'],
+  /** Create, edit, publish and delete listings; the home page and sponsor slots; lead follow-up. */
+  edit: ['super', 'admin'],
+  /** Users, roles, pricing and site settings. */
+  manage: ['super'],
+} as const satisfies Record<string, readonly AdminRole[]>;
+export type AdminPermission = keyof typeof ADMIN_PERMISSIONS;
+
+export const canDo = (role: AdminRole, permission: AdminPermission) => (ADMIN_PERMISSIONS[permission] as readonly AdminRole[]).includes(role);
+
+/** The permission table shown in Settings › Users and roles. */
+export const ROLE_TABLE: [label: string, permission: AdminPermission][] = [
+  ['View dashboard and reports', 'view'],
+  ['View listings and leads', 'view'],
+  ['See and export lead numbers', 'leadContacts'],
+  ['Create and edit listings', 'edit'],
+  ['Publish and delete listings', 'edit'],
+  ['Manage the homepage and sponsor slots', 'edit'],
+  ['Manage users, roles and pricing', 'manage'],
+];
+
+/** Advertising price of a wedding slot (6-month season) when Settings › Slot pricing has none for it. */
+export const DEFAULT_SLOT_PRICE = 10_000;
+
 export const IMAGE_STORAGE_PROVIDERS = ['cloudinary', 'firebase', 'local'] as const;
 export type ImageStorageProvider = (typeof IMAGE_STORAGE_PROVIDERS)[number];
 
@@ -114,6 +154,13 @@ export const IMAGE_SLOTS = {
     min: { width: 400, height: 300 },
     anyOrientation: true,
     folder: 'floor-plans',
+  },
+  /** One of the four cards beside the home hero: about 300×180 on screen. */
+  'home-card': {
+    label: 'Home page card',
+    recommended: { width: 700, height: 460, ratio: '3:2' },
+    min: { width: 350, height: 230 },
+    folder: 'home',
   },
   /** Sponsored card in the real estate project page sidebar: about 290×96. */
   ad: {

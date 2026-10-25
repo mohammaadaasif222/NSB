@@ -5,6 +5,8 @@ import {
   ADMIN_PROJECT_SORTS,
   type AdminProjectRow,
   type AdminSettings,
+  type AdminUser,
+  canDo,
   LISTING_AREAS,
   LISTING_STATUSES,
   type Paginated,
@@ -37,7 +39,10 @@ function daysLeft(termStart: string, months: number) {
 /** Real estate projects and the project page sidebar ad, laid out as in the NSB Live Demo admin. */
 export default async function RealEstatePage({ searchParams }: PageProps<"/admin/real-estate">) {
   const query = await searchParams;
-  const tab = one(query.tab) === "sponsors" ? "sponsors" : "all";
+  const admin = await adminApi.get<AdminUser>("/auth/me");
+  const canEdit = canDo(admin.role, "edit");
+  // Sponsors & ads is editing work.
+  const tab = one(query.tab) === "sponsors" && canEdit ? "sponsors" : "all";
   const values: ProjectFilterValues = {
     q: one(query.q).slice(0, 100),
     type: pick(PROJECT_TYPES, one(query.type)),
@@ -77,9 +82,11 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/admin
           <h2>Real Estate</h2>
           <p>Each project has one listing and one advertiser (a builder or a broker). A broker can list many projects.</p>
         </div>
-        <Link href="/admin/real-estate/new" className="a-btn">
-          <Plus size={16} aria-hidden /> Add listing
-        </Link>
+        {canEdit && (
+          <Link href="/admin/real-estate/new" className="a-btn">
+            <Plus size={16} aria-hidden /> Add listing
+          </Link>
+        )}
       </div>
 
       <div className="a-kp">
@@ -93,9 +100,11 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/admin
         <Link href="/admin/real-estate" aria-current={tab === "all" ? "page" : undefined}>
           All listings
         </Link>
-        <Link href="/admin/real-estate?tab=sponsors" aria-current={tab === "sponsors" ? "page" : undefined}>
-          Sponsors &amp; ads
-        </Link>
+        {canEdit && (
+          <Link href="/admin/real-estate?tab=sponsors" aria-current={tab === "sponsors" ? "page" : undefined}>
+            Sponsors &amp; ads
+          </Link>
+        )}
       </nav>
 
       {settings && <SideAdForm ad={settings.projectSideAd} maxUploadBytes={settings.maxUploadBytes} />}

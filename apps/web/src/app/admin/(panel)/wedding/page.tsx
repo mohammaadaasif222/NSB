@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
-import { type AdminCategory, LISTING_STATUSES, type ListingStatus, type ListingSummary, type Paginated } from "@nsb/shared";
+import { Plus } from "lucide-react";
+import {
+  type AdminCategory,
+  type AdminSettings,
+  type AdminUser,
+  canDo,
+  LISTING_AREAS,
+  LISTING_STATUSES,
+  type ListingStatus,
+  type ListingSummary,
+  type Paginated,
+} from "@nsb/shared";
 import { adminApi, isUuid } from "@/lib/api";
-import { WeddingSlots } from "./slots";
 import { WeddingListingsTable } from "./listings-table";
+import { ManageSubcategories } from "./manage-subcategories";
+import { WeddingFilters, type WeddingFilterValues } from "./wedding-filters";
 
 export const metadata: Metadata = { title: "Wedding" };
 
@@ -18,8 +29,13 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
   const q = one(query.q).slice(0, 100);
   const status = (LISTING_STATUSES as readonly string[]).includes(one(query.status)) ? (one(query.status) as ListingStatus) : "";
   const page = Math.max(1, Number.parseInt(one(query.page), 10) || 1);
+  const area = (LISTING_AREAS as readonly string[]).includes(one(query.area)) ? one(query.area) : "";
+  const sort = (["az", "lead"] as const).find((s) => s === one(query.sort)) ?? "new";
 
-  const categories = await adminApi.get<AdminCategory[]>("/admin/categories");
+  const [categories, admin] = await Promise.all([adminApi.get<AdminCategory[]>("/admin/categories"), adminApi.get<AdminUser>("/auth/me")]);
+  const canEdit = canDo(admin.role, "edit");
+  // Slot prices for "Manage sub-categories"; settings are for editors.
+  const pricing = canEdit ? (await adminApi.get<AdminSettings>("/admin/settings")).pricing : null;
   const wedding = categories.find((c) => !c.parentId && c.slug === "wedding");
   const subs = wedding ? categories.filter((c) => c.parentId === wedding.id) : [];
   const sub = isUuid(one(query.sub)) ? subs.find((c) => c.id === one(query.sub)) : undefined;
@@ -35,12 +51,14 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
   }
 
   const params = (extra: Record<string, string>) => new URLSearchParams({ categoryId: scopeId, ...extra });
-  const listParams = params({ page: String(page), pageSize: String(PAGE_SIZE) });
+  const listParams = params({ page: String(page), pageSize: String(PAGE_SIZE), sort });
   if (q) listParams.set("q", q);
+  if (area) listParams.set("area", area);
   if (status) listParams.set("status", status);
   const countOf = (s?: ListingStatus) => {
     const p = params({ pageSize: "1" });
     if (q) p.set("q", q);
+    if (area) p.set("area", area);
     if (s) p.set("status", s);
     return adminApi.get<Paginated<ListingSummary>>(`/admin/listings?${p}`).then((r) => r.total);
   };
@@ -54,12 +72,14 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
   const counts: Record<ListingStatus | "", number> = { "": all, live, draft, hidden };
 
   /** This page's URL with some filters changed; changing a filter goes back to page 1. */
-  const href = (change: { sub?: string; q?: string; status?: string; page?: number }) => {
+  const href = (change: { sub?: string; q?: string; status?: string; area?: string; page?: number }) => {
     const sp = new URLSearchParams();
-    const next = { sub: sub?.id ?? "", q, status, ...change };
+    const next = { sub: sub?.id ?? "", q, status, area, ...change };
     if (next.sub) sp.set("sub", next.sub);
     if (next.q) sp.set("q", next.q);
+    if (next.area) sp.set("area", next.area);
     if (next.status) sp.set("status", next.status);
+    if (sort !== "new") sp.set("sort", sort);
     if (change.page && change.page > 1) sp.set("page", String(change.page));
     return `/admin/wedding${sp.size ? `?${sp}` : ""}`;
   };
@@ -74,21 +94,21 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
       <div className="a-hd">
         <div>
           <h2>Wedding</h2>
-          <p>Sub-categories and their vendor listings.</p>
+          <p>All wedding vendors. Pick a sub-category to filter.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/admin/home#categories" className="a-btn g">
-            Manage sub-categories
-          </Link>
-          <Link href="/admin/listings/new" className="a-btn">
-            <Plus size={16} aria-hidden /> Add listing
-          </Link>
-        </div>
+        {canEdit && wedding && pricing && (
+          <div className="flex flex-wrap gap-2">
+            <ManageSubcategories weddingId={wedding.id} subs={subs} pricing={pricing} />
+            <Link href="/admin/listings/new" className="a-btn">
+              <Plus size={16} aria-hidden /> Add listing
+            </Link>
+          </div>
+        )}
       </div>
 
       <nav className="a-tl mb-4" aria-label="Sub-categories">
         <Link href={href({ sub: "" })} className="a-chp" aria-current={!sub ? "true" : undefined}>
-          All wedding<span>{weddingTotal}</span>
+          All vendors<span>{weddingTotal}</span>
         </Link>
         {subs.map((c) => (
           <Link key={c.id} href={href({ sub: c.id })} className="a-chp" aria-current={sub?.id === c.id ? "true" : undefined}>
@@ -98,33 +118,25 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
         ))}
       </nav>
 
-      {/* {wedding && <WeddingSlots weddingId={wedding.id} subs={subs} selected={sub} />} */}
-
-      <div className="a-tl">
-        <form action="/admin/wedding" className="a-gs" role="search">
-          {sub && <input type="hidden" name="sub" value={sub.id} />}
-          {status && <input type="hidden" name="status" value={status} />}
-          <Search size={16} aria-hidden />
-          <input name="q" defaultValue={q} placeholder="Search name, area or locality" aria-label="Search listings" maxLength={100} />
-        </form>
+      <WeddingFilters values={{ sub: sub?.id ?? "", q, area, status, sort } satisfies WeddingFilterValues}>
         {(["", ...LISTING_STATUSES] as const).map((s) => (
           <Link key={s || "all"} href={href({ status: s })} className="a-chp" aria-current={status === s ? "true" : undefined}>
             {s ? STATUS_LABEL[s] : "All"}
             <span>{counts[s]}</span>
           </Link>
         ))}
-        {(q || status) && (
-          <Link href={href({ status: "", q: "" })} className="a-btn g s ml-auto">
+        {(q || status || area) && (
+          <Link href={href({ status: "", q: "", area: "" })} className="a-btn g s">
             Clear filters
           </Link>
         )}
-      </div>
+      </WeddingFilters>
 
       <WeddingListingsTable
-        key={JSON.stringify({ sub: sub?.id, q, status, page })}
+        key={JSON.stringify({ sub: sub?.id, q, status, area, sort, page })}
         listings={listings.items}
         weddingId={wedding?.id}
-        empty={q || status ? "No listings match these filters." : "No listings here yet."}
+        empty={q || status || area ? "No listings match these filters." : "No listings here yet."}
       />
 
       <nav className="a-pg" aria-label="Pagination">

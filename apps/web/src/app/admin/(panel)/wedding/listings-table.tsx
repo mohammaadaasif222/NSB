@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ExternalLink, Pencil } from "lucide-react";
 import type { ListingStatus, ListingSummary } from "@nsb/shared";
+import { useCan } from "@/components/admin/admin-role";
 import { ConfirmDialog } from "@/components/admin/dialog";
 import { ListingThumb } from "@/components/admin/listing-thumb";
 import { useToast } from "@/components/admin/toast";
@@ -27,6 +28,7 @@ export function WeddingListingsTable({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const canEdit = useCan("edit");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [pending, setPending] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -76,7 +78,7 @@ export function WeddingListingsTable({
 
   return (
     <>
-      {selected.size > 0 && (
+      {canEdit && selected.size > 0 && (
         <div className="a-bulk">
           <span className="a-bulk-count">{selected.size} selected</span>
           <div className="a-bulk-actions">
@@ -100,6 +102,7 @@ export function WeddingListingsTable({
                 <input
                   type="checkbox"
                   className="a-listing-select"
+                  hidden={!canEdit}
                   checked={allSelected}
                   disabled={pending}
                   onChange={(event) => selectAll(event.currentTarget.checked)}
@@ -112,6 +115,7 @@ export function WeddingListingsTable({
               <th scope="col">Added</th>
               <th scope="col">Status</th>
               <th scope="col">Featured</th>
+              <th scope="col">Leads</th>
               <th scope="col">
                 <span className="sr-only">Actions</span>
               </th>
@@ -125,6 +129,7 @@ export function WeddingListingsTable({
                     <input
                       type="checkbox"
                       className="a-listing-select"
+                  hidden={!canEdit}
                       checked={selected.has(listing.id)}
                       disabled={pending}
                       onChange={(event) => selectOne(listing.id, event.currentTarget.checked)}
@@ -150,6 +155,19 @@ export function WeddingListingsTable({
                   </td>
                   <td>{listing.isFeatured ? <span className="a-pl new">Featured</span> : <span className="text-zinc-500">—</span>}</td>
                   <td>
+                    {listing.leadCount ? (
+                      <Link
+                        href={`/admin/enquiries?section=wedding&listing=${listing.id}`}
+                        className="font-semibold hover:text-(--admin-accent)"
+                        title="Open these leads"
+                      >
+                        {listing.leadCount}
+                      </Link>
+                    ) : (
+                      <span className="text-zinc-500">0</span>
+                    )}
+                  </td>
+                  <td>
                     <div className="a-ac">
                       {listing.status === "live" && listing.category.id !== weddingId && (
                         <a
@@ -162,18 +180,22 @@ export function WeddingListingsTable({
                           <ExternalLink size={15} aria-hidden />
                         </a>
                       )}
-                      <Link href={`/admin/listings/${listing.id}`} title="Edit" aria-label={`Edit ${listing.name}`}>
-                        <Pencil size={15} aria-hidden />
-                      </Link>
-                      <ListingStatusButton id={listing.id} name={listing.name} status={listing.status} />
-                      <DeleteListingButton id={listing.id} name={listing.name} />
+                      {canEdit && (
+                        <>
+                        <Link href={`/admin/listings/${listing.id}`} title="Edit" aria-label={`Edit ${listing.name}`}>
+                          <Pencil size={15} aria-hidden />
+                        </Link>
+                        <ListingStatusButton id={listing.id} name={listing.name} status={listing.status} />
+                        <DeleteListingButton id={listing.id} name={listing.name} />
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={8} className="py-10 text-center text-zinc-500">
+                <td colSpan={9} className="py-10 text-center text-zinc-500">
                   {empty}
                 </td>
               </tr>

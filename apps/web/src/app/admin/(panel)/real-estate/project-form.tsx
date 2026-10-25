@@ -18,7 +18,6 @@ import {
   POSSESSION_STATUSES,
   PROJECT_AMENITIES,
   PROJECT_LIMITS,
-  PROJECT_PLAN_PRICE,
   PROJECT_TERM_MONTHS,
   PROJECT_TYPE_LABELS,
   PROJECT_TYPES,
@@ -167,7 +166,18 @@ const completeness = (d: Draft): [string, boolean][] => [
 ];
 
 /** Create (no `project`) or edit a real estate listing. These fields are the sections of the project page. */
-export function ProjectForm({ project, maxUploadBytes, actions }: { project?: AdminProject; maxUploadBytes: number; actions?: ReactNode }) {
+export function ProjectForm({
+  project,
+  maxUploadBytes,
+  planPrice,
+  actions,
+}: {
+  project?: AdminProject;
+  maxUploadBytes: number;
+  /** The real estate plan price from Settings › Slot pricing. */
+  planPrice: number;
+  actions?: ReactNode;
+}) {
   const router = useRouter();
   const toast = useToast();
   const { run, pending } = useAdminAction();
@@ -623,7 +633,7 @@ export function ProjectForm({ project, maxUploadBytes, actions }: { project?: Ad
               </Field>
             </div>
             <p className="a-info text-sm">
-              Plan: ₹{PROJECT_PLAN_PRICE.toLocaleString("en-IN")} for 1 year. 1 project, 1 broker. Leads go only to this {isBroker ? "broker" : "builder"}.
+              Plan: ₹{planPrice.toLocaleString("en-IN")} for 1 year. 1 project, 1 broker. Leads go only to this {isBroker ? "broker" : "builder"}.
             </p>
             <Button type="submit" className="self-start" pending={pending}>
               {pending ? "Saving…" : "Save listing"}

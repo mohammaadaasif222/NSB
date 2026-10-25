@@ -66,6 +66,7 @@ modules/
 **Conventions**
 
 - Public routes live under `/api/<resource>`. Admin routes live under `/api/admin/<resource>` and use `@UseGuards(AdminGuard)`. Each module has a public controller and an admin controller over one service.
+- **Roles** (`admin_users.role`: super | admin | analyst | view; `ADMIN_PERMISSIONS` in `@nsb/shared`). AdminGuard reloads the admin on every request, so a role change or removal applies at once. By default reads need `view` and writes need `edit` (Super Admin, Admin); `@Allow(permission)` overrides it. `manage` (Super Admin): users, pricing, site settings, storage and email tests. `leadContacts` (not View only): lead numbers and the CSV export; View only gets masked numbers. Every role may mark leads read and edit its own profile and password; changing a lead's status needs `edit`. Admins may PATCH settings only for `projectSideAd`. Nobody changes their own role or removes themselves, and one Super Admin always remains. The admin panel hides what a role can't use (`useCan`, `editorsOnly`).
 - Validate every body and query with `new ZodPipe(schemaFromShared)`. Return types come from `@nsb/shared`.
 - Public responses never include a vendor's email or phone (`ListingDetail`). Admin responses do (`AdminListing`).
 - One deliberate exception, from the demo's View Number flow: `POST /api/enquiries/project` saves the lead first and then returns the project advertiser's phone (and brochure link). `ProjectDetail` itself never carries them.
@@ -111,17 +112,21 @@ modules/
 | GET | `/api/admin/enquiries/export` with the same filters (CSV download; Name, Mobile and Email in separate columns) | admin |
 | GET | `/api/admin/enquiries/unread-count` (polled by the admin bell) | admin |
 | PATCH | `/api/admin/enquiries/:id` `{ read }` · POST `/api/admin/enquiries/read-all` | admin |
-| POST | `/api/admin/notifications/test-email` `{ to? }` | admin |
+| POST | `/api/admin/notifications/test-email` `{ to? }` | super |
+| PATCH | `/api/auth/profile` `{ name, email }` (own account) | any role |
+| GET, POST | `/api/admin/users` `{ name, email, role, password }` · PATCH `/api/admin/users/:id` `{ role }` · DELETE `/api/admin/users/:id` | super |
+| GET | `/api/admin/enquiries?section=real-estate\|wedding&leadStatus=&source=&projectType=` · `/api/admin/enquiries/sections` (new and unread per section) · PATCH `/:id` `{ read?, leadStatus? }` | admin |
 | GET | `/api/projects?area=&locality=&q=&bhk=2\|3\|4&possession=&sort=rel\|lo\|hi&page=&pageSize=` · `/api/projects/localities?area=` · `/api/projects/:slug` (with up to 3 similar) | – |
 | POST | `/api/enquiries/project` `{ projectId?, name, mobile, isDealer, buyWithin?, homeLoan, siteVisit, agreed, source }` → `{ id, advertiserName, phone, brochureUrl }` | – |
 | GET, POST | `/api/admin/projects?q=&type=&area=&status=live\|draft\|hidden\|expired&sort=new\|exp\|lead\|az` | admin |
 | GET | `/api/admin/projects/stats` · `/api/admin/projects/duplicate?name=&area=&exclude=` → `{ duplicate }` | admin |
 | GET, PATCH, DELETE | `/api/admin/projects/:id` | admin |
+| GET | `/api/admin/dashboard?days=7\|30\|90` (lead series per day, or per week for 90; top sources, leads by category, live listings by area, real estate terms ending) | admin |
 
 ## Data model
 
 ```
-admin_users   id, email (unique), name, password_hash (bcrypt), created_at
+admin_users   id, email (unique), name, password_hash (bcrypt), role (super|admin|analyst|view), created_at
 categories    id, parent_id → categories (restrict, 2 levels), name, slug (unique), description,
               image_url (URL or /images/... path), is_active, sort_order, timestamps
 listings      id, category_id → categories (restrict), name, slug (unique), area, locality, address,
@@ -139,7 +144,7 @@ settings      key (pk), value jsonb, updated_at
 enquiries     id, listing_id → listings (set null), project_id → projects (set null), listing_name,
               category_id → categories (set null), category_name, name, mobile, message, preferred_date
               (null on real estate leads), budget, event_type (optional), source (real estate button), created_at,
-              read_at (null = unread)
+              read_at (null = unread), lead_status (new|contacted|won|lost)
 projects      id, type (apartments|villas|plots), area (LISTING_AREAS), locality, name, slug (unique, from
               name + area), builder, rera_id, possession_status/date, launch_date, is_premium, units,
               land_area, towers, about, highlights[], configurations jsonb [{title, price, superArea,
@@ -187,7 +192,11 @@ Next 16 rules apply: `params`, `searchParams` and `cookies()` are async, `fetch`
 
 **WhatsApp button:** set in Admin › Settings (stored as the `contact.whatsapp` setting) and read by the site from the public `GET /api/site-settings`. It shows on vendor pages and in the phone tab bar only while switched on; `{listing}` in the message becomes the vendor's name.
 
-**Home page:** hero slides show the banner image only (no text or button), with rounded corners, at 200px tall on phones up to 370px on wide desktops (the side tiles match). The whole slide links to the banner's link, and a banner without an image shows its name on a teal backdrop. The slide dots fill over the 6-second autoplay interval, which pauses on hover or focus and is off with reduced motion; phones can swipe between slides. Only the hero slider (admin banners) and the category grid are dynamic. The other sections (side tiles, markets, highlights, top picks, brand stores, promo strip, deals) and the header's search, location, cart and login are static design content. Design source: `index.html` at the repo root; images live in `apps/web/public/images`.
+**Admin panel:** laid out as in `nsb-live-demo.html`: Dashboard, Home page, Wedding (with "Manage sub-categories": rename, hide, add, slot price), Real Estate, Leads (Real Estate / Wedding tabs, status follow-up, masked phone with Reveal), Settings (slot pricing in `site.pricing`, admin account, password, users and roles, then storage, email and WhatsApp). The top bar searches wedding vendors or projects (`/admin/search`), and the bell lists new leads and real estate terms ending within 30 days. The demo's "Preview as role" switcher is not built: roles are real accounts.
+
+**Footer:** one `SiteFooter` (`components/site/site-footer.tsx` + `site-footer.css`, from the demo) on the home page and every other page.
+
+**Home page:** hero slides show the banner image only (no text or button), with rounded corners, at 200px tall on phones up to 370px on wide desktops (the side tiles match). The whole slide links to the banner's link, and a banner without an image shows its name on a teal backdrop. The slide dots fill over the 6-second autoplay interval, which pauses on hover or focus and is off with reduced motion; phones can swipe between slides. The hero slider (admin banners), the four cards beside it and the category grid are dynamic. The four cards (setting `home.cards`, Admin › Home page, editable by Admins) each have a title, link, colour and icon or their own image, up to 3 tags (e.g. "New", "Top") and a position; `DEFAULT_HOME_CARDS` until saved. The other sections (markets, highlights, top picks, brand stores, promo strip, deals) and the header's search, location, cart and login are static design content. Design source: `index.html` at the repo root; images live in `apps/web/public/images`.
 
 ## Environments
 

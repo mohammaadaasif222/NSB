@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ExternalLink, Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
 import { type AdminProjectRow, type ListingStatus, PROJECT_TYPE_LABELS } from "@nsb/shared";
+import { useCan } from "@/components/admin/admin-role";
 import { ConfirmDialog } from "@/components/admin/dialog";
 import { ListingThumb } from "@/components/admin/listing-thumb";
 import { useToast } from "@/components/admin/toast";
@@ -19,6 +20,7 @@ type Row = AdminProjectRow & { daysLeft: number };
 export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: string }) {
   const router = useRouter();
   const toast = useToast();
+  const canEdit = useCan("edit");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [pending, setPending] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -62,7 +64,7 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
 
   return (
     <>
-      {selected.size > 0 && (
+      {canEdit && selected.size > 0 && (
         <div className="a-bulk">
           <span className="a-bulk-count">{selected.size} selected</span>
           <div className="a-bulk-actions">
@@ -86,6 +88,7 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
                 <input
                   type="checkbox"
                   className="a-listing-select"
+                  hidden={!canEdit}
                   checked={allSelected}
                   disabled={pending}
                   onChange={(e) => setSelected(e.currentTarget.checked ? new Set(projects.map((p) => p.id)) : new Set())}
@@ -111,6 +114,7 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
                     <input
                       type="checkbox"
                       className="a-listing-select"
+                  hidden={!canEdit}
                       checked={selected.has(p.id)}
                       disabled={pending}
                       onChange={(e) => selectOne(p.id, e.currentTarget.checked)}
@@ -143,7 +147,7 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
                   </td>
                   <td>
                     {p.leadCount > 0 ? (
-                      <Link href={`/admin/enquiries?project=${p.id}`} className="font-semibold hover:text-(--admin-accent)" title="Open these leads">
+                      <Link href={`/admin/enquiries?section=real-estate&project=${p.id}`} className="font-semibold hover:text-(--admin-accent)" title="Open these leads">
                         {p.leadCount}
                       </Link>
                     ) : (
@@ -157,11 +161,15 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
                           <ExternalLink size={15} aria-hidden />
                         </a>
                       )}
-                      <Link href={`/admin/real-estate/${p.id}`} title="Edit" aria-label={`Edit ${p.name}`}>
-                        <Pencil size={15} aria-hidden />
-                      </Link>
-                      <StatusButton id={p.id} name={p.name} status={p.status} />
-                      <DeleteProjectButton id={p.id} name={p.name} />
+                      {canEdit && (
+                        <>
+                        <Link href={`/admin/real-estate/${p.id}`} title="Edit" aria-label={`Edit ${p.name}`}>
+                          <Pencil size={15} aria-hidden />
+                        </Link>
+                        <StatusButton id={p.id} name={p.name} status={p.status} />
+                        <DeleteProjectButton id={p.id} name={p.name} />
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

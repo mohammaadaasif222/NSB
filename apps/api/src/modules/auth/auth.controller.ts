@@ -1,19 +1,26 @@
-import { Body, Controller, Get, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { CookieOptions, Response } from 'express';
 import {
   type AdminUser,
+  type AdminUserInput,
+  adminUserInputSchema,
+  type AdminUserRow,
+  type AdminUserUpdate,
+  adminUserUpdateSchema,
   type ChangePasswordInput,
   changePasswordSchema,
   type LoginInput,
   loginSchema,
+  type ProfileInput,
+  profileSchema,
   SESSION_COOKIE,
 } from '@nsb/shared';
 import type { Env } from '../../config/env.js';
 import { ZodPipe } from '../../common/zod.pipe.js';
-import { AdminGuard, CurrentAdmin } from './admin.guard.js';
-import { AuthService, type SessionPayload } from './auth.service.js';
+import { AdminGuard, Allow, CurrentAdmin } from './admin.guard.js';
+import { AuthService, type CurrentAdminInfo } from './auth.service.js';
 
 @Controller('auth')
 export class AuthController {
@@ -55,17 +62,59 @@ export class AuthController {
   @Post('password')
   @HttpCode(204)
   @UseGuards(AdminGuard, ThrottlerGuard)
+  @Allow('view')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   changePassword(
-    @CurrentAdmin() session: SessionPayload,
+    @CurrentAdmin() admin: CurrentAdminInfo,
     @Body(new ZodPipe(changePasswordSchema)) body: ChangePasswordInput,
   ): Promise<void> {
-    return this.auth.changePassword(session.sub, body);
+    return this.auth.changePassword(admin.sub, body);
+  }
+
+  /** The signed-in admin's own name and email (any role). */
+  @Patch('profile')
+  @UseGuards(AdminGuard)
+  @Allow('view')
+  updateProfile(@CurrentAdmin() admin: CurrentAdminInfo, @Body(new ZodPipe(profileSchema)) body: ProfileInput): Promise<AdminUser> {
+    return this.auth.updateProfile(admin.sub, body);
   }
 
   @Get('me')
   @UseGuards(AdminGuard)
-  me(@CurrentAdmin() session: SessionPayload): Promise<AdminUser> {
-    return this.auth.findAdmin(session.sub);
+  me(@CurrentAdmin() admin: CurrentAdminInfo): AdminUser {
+    return { id: admin.id, email: admin.email, name: admin.name, role: admin.role };
+  }
+}
+
+/** Settings › Users and roles: Super Admins only. */
+@Controller('admin/users')
+@UseGuards(AdminGuard)
+@Allow('manage')
+export class AdminUsersController {
+  constructor(private readonly auth: AuthService) {}
+
+  @Get()
+  list(): Promise<AdminUserRow[]> {
+    return this.auth.listUsers();
+  }
+
+  @Post()
+  create(@Body(new ZodPipe(adminUserInputSchema)) body: AdminUserInput): Promise<AdminUserRow> {
+    return this.auth.createUser(body);
+  }
+
+  @Patch(':id')
+  update(
+    @CurrentAdmin() admin: CurrentAdminInfo,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(adminUserUpdateSchema)) body: AdminUserUpdate,
+  ): Promise<AdminUserRow> {
+    return this.auth.updateUser(admin.id, id, body);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  remove(@CurrentAdmin() admin: CurrentAdminInfo, @Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    return this.auth.removeUser(admin.id, id);
   }
 }

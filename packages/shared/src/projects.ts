@@ -389,6 +389,8 @@ export interface ProjectStats {
   advertisers: number;
   /** Leads on every project. */
   leads: number;
+  /** Live projects whose term ends within 30 days (the admin bell). */
+  expiringSoon: number;
 }
 
 /** A project already listed under this name and area. */

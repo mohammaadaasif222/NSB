@@ -4,11 +4,17 @@ import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   type AdminSettings,
+  DEFAULT_HOME_CARDS,
   type EmailSettings,
+  type HomeCard,
+  homeCardsSchema,
   IMAGE_STORAGE_PROVIDERS,
   type ImageStorageProvider,
   type ListingSidebarSettings,
   listingSidebarSchema,
+  type Pricing,
+  pricingSchema,
+  PROJECT_PLAN_PRICE,
   type ProjectSideAd,
   projectSideAdSchema,
   type SettingsUpdate,
@@ -52,13 +58,21 @@ const KEYS = {
   whatsapp: 'contact.whatsapp',
   listingSidebar: 'site.listingSidebar',
   projectSideAd: 'realEstate.projectSideAd',
+  pricing: 'site.pricing',
+  homeCards: 'home.cards',
 } as const;
+
+/** Its cards' imageUrl values are uploads, so the media cleanup checks this key too. */
+export const HOME_CARDS_KEY = KEYS.homeCards;
 
 /** Its imageUrl is an upload, so the media cleanup checks this key before deleting a file. */
 export const PROJECT_SIDE_AD_KEY = KEYS.projectSideAd;
 
 /** Until an admin changes it, the listing page shows both side cards. */
 const DEFAULT_LISTING_SIDEBAR: ListingSidebarSettings = { enabled: true, budget: true, type: true };
+
+/** Until Settings › Slot pricing is saved: the real estate plan price; sub-categories use DEFAULT_SLOT_PRICE. */
+const DEFAULT_PRICING: Pricing = { categories: {}, realEstate: PROJECT_PLAN_PRICE };
 
 export const PROVIDER_LABELS: Record<ImageStorageProvider, string> = {
   cloudinary: 'Cloudinary',
@@ -101,6 +115,8 @@ interface Saved {
   whatsapp: WhatsappSettings | null;
   listingSidebar: ListingSidebarSettings | null;
   projectSideAd: ProjectSideAd | null;
+  pricing: Pricing | null;
+  homeCards: HomeCard[] | null;
 }
 
 interface Resolved<T> {
@@ -170,16 +186,24 @@ export class SettingsService {
       whatsapp: saved.whatsapp,
       listingSidebar: saved.listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
       projectSideAd: saved.projectSideAd,
+      pricing: saved.pricing ?? DEFAULT_PRICING,
+      homeCards: saved.homeCards ?? DEFAULT_HOME_CARDS,
     };
+  }
+
+  /** Slot and plan prices, for the dashboard and the listing forms. */
+  async pricing(): Promise<Pricing> {
+    return (await this.load()).pricing ?? DEFAULT_PRICING;
   }
 
   /** What the public website needs: the WhatsApp button and the project page ad only while switched on. */
   async siteSettings(): Promise<SiteSettings> {
-    const { whatsapp, listingSidebar, projectSideAd } = await this.load();
+    const { whatsapp, listingSidebar, projectSideAd, homeCards } = await this.load();
     return {
       whatsapp: whatsapp?.enabled ? { number: whatsapp.number, message: whatsapp.message } : null,
       listingSidebar: listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
       projectSideAd: projectSideAd?.enabled ? projectSideAd : null,
+      homeCards: homeCards ?? DEFAULT_HOME_CARDS,
     };
   }
 
@@ -225,6 +249,8 @@ export class SettingsService {
       if (input.whatsapp !== undefined) next.whatsapp = input.whatsapp;
       if (input.listingSidebar) next.listingSidebar = input.listingSidebar;
       if (input.projectSideAd !== undefined) next.projectSideAd = input.projectSideAd;
+      if (input.pricing) next.pricing = input.pricing;
+      if (input.homeCards) next.homeCards = input.homeCards;
       if (input.imageStorage) next.imageStorage = input.imageStorage;
 
       const active = this.active(next);
@@ -243,6 +269,8 @@ export class SettingsService {
       await this.write(tx, KEYS.whatsapp, next.whatsapp, input.whatsapp !== undefined);
       await this.write(tx, KEYS.listingSidebar, next.listingSidebar, !!input.listingSidebar);
       await this.write(tx, KEYS.projectSideAd, next.projectSideAd, input.projectSideAd !== undefined);
+      await this.write(tx, KEYS.pricing, next.pricing, !!input.pricing);
+      await this.write(tx, KEYS.homeCards, next.homeCards, !!input.homeCards);
     });
     return this.get();
   }
@@ -352,6 +380,8 @@ export class SettingsService {
       whatsapp: parse(savedWhatsappSchema, value(KEYS.whatsapp)),
       listingSidebar: parse(listingSidebarSchema, value(KEYS.listingSidebar)),
       projectSideAd: parse(projectSideAdSchema, value(KEYS.projectSideAd)),
+      pricing: parse(pricingSchema, value(KEYS.pricing)),
+      homeCards: parse(homeCardsSchema, value(KEYS.homeCards)),
     };
   }
 

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
-import type { AdminUser, UnreadCount } from "@nsb/shared";
+import type { AdminUser, ProjectStats, UnreadCount } from "@nsb/shared";
+import { AdminProvider } from "@/components/admin/admin-role";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { ToastProvider } from "@/components/admin/toast";
 import { UnreadEnquiriesProvider } from "@/components/admin/unread-enquiries";
@@ -18,24 +19,30 @@ export const metadata: Metadata = {
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   let admin: AdminUser;
   let unread: UnreadCount;
+  let projects: ProjectStats;
   try {
-    [admin, unread] = await Promise.all([
+    [admin, unread, projects] = await Promise.all([
       adminApi.get<AdminUser>("/auth/me"),
       adminApi.get<UnreadCount>("/admin/enquiries/unread-count"),
+      adminApi.get<ProjectStats>("/admin/projects/stats"),
     ]);
   } catch (err) {
-    // Expired or invalid session: clear the cookie, then go to sign in.
+    // Expired or invalid session (or a removed account): clear the cookie, then go to sign in.
     if (err instanceof ApiError && err.status === 401) redirect("/admin/logout");
     throw err;
   }
 
   return (
     <ToastProvider>
-      <UnreadEnquiriesProvider initial={unread.unread}>
-        <div className={jakarta.variable}>
-          <AdminShell adminName={admin.name}>{children}</AdminShell>
-        </div>
-      </UnreadEnquiriesProvider>
+      <AdminProvider admin={admin}>
+        <UnreadEnquiriesProvider initial={unread.unread}>
+          <div className={jakarta.variable}>
+            <AdminShell admin={admin} expiringSoon={projects.expiringSoon}>
+              {children}
+            </AdminShell>
+          </div>
+        </UnreadEnquiriesProvider>
+      </AdminProvider>
     </ToastProvider>
   );
 }

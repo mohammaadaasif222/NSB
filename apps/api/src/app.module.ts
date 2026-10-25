@@ -6,6 +6,7 @@ import { DbModule } from './db/db.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BannersModule } from './modules/banners/banners.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
+import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { EnquiriesModule } from './modules/enquiries/enquiries.module.js';
 import { HealthController } from './modules/health/health.controller.js';
 import { ListingsModule } from './modules/listings/listings.module.js';
@@ -27,6 +28,7 @@ import { SettingsModule } from './modules/settings/settings.module.js';
     EnquiriesModule,
     SettingsModule,
     MediaModule,
+    DashboardModule,
   ],
   controllers: [HealthController],
 })

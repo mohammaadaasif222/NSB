@@ -19,6 +19,7 @@ import {
 import { DB, type Database } from '../../db/db.module.js';
 import { categories, enquiries, projects } from '../../db/schema.js';
 import { rethrowDbError } from '../../common/db-errors.js';
+import { istToday } from '../../common/dates.js';
 import { likeTerm } from '../../common/like.js';
 import { pageWindow } from '../../common/pagination.js';
 import { MediaService } from '../media/media.service.js';
@@ -199,7 +200,7 @@ export class ProjectsService {
     const filters: SQL[] = [];
     if (query.type) filters.push(eq(projects.type, query.type));
     if (query.area) filters.push(eq(projects.area, query.area));
-    if (query.status === 'expired') filters.push(sql`${termEnd} < current_date`);
+    if (query.status === 'expired') filters.push(sql`${termEnd} < ${istToday}`);
     else if (query.status) filters.push(eq(projects.status, query.status));
     if (query.q) filters.push(this.search(query.q));
     const where = filters.length ? and(...filters) : undefined;
@@ -240,6 +241,7 @@ export class ProjectsService {
           draft: sql<number>`count(*) filter (where ${projects.status} = 'draft')`.mapWith(Number),
           hidden: sql<number>`count(*) filter (where ${projects.status} = 'hidden')`.mapWith(Number),
           advertisers: sql<number>`count(distinct lower(btrim(${projects.advertiserName})))`.mapWith(Number),
+          expiringSoon: sql<number>`count(*) filter (where ${projects.status} = 'live' and ${termEnd} between ${istToday} and ${istToday} + 30)`.mapWith(Number),
         })
         .from(projects),
       this.db.select({ leads: count() }).from(enquiries).where(sql`${enquiries.projectId} is not null`),

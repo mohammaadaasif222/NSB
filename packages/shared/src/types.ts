@@ -1,6 +1,7 @@
-import type { ImageStorageProvider, ListingStatus, ReviewSource, SmtpSecurity } from './constants.js';
+import type { AdminRole, ImageStorageProvider, LeadStatus, ListingStatus, ReviewSource, SmtpSecurity } from './constants.js';
 import type { ListingDetails } from './listing-forms.js';
-import type { ListingSidebarSettings, ListingVideo, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
+import type { ProjectType } from './projects.js';
+import type { HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
 
 /** API response shapes shared by the API (producer) and web (consumer). Dates are ISO strings. */
 
@@ -26,6 +27,12 @@ export interface AdminUser {
   id: string;
   email: string;
   name: string;
+  role: AdminRole;
+}
+
+/** A row in Settings › Users and roles. */
+export interface AdminUserRow extends AdminUser {
+  createdAt: string;
 }
 
 export interface Category {
@@ -78,6 +85,8 @@ export interface ListingSummary {
   status: ListingStatus;
   /** Real rating only: the Google rating the admin entered, else the average of its reviews; null when neither. */
   rating: ListingRating | null;
+  /** Leads received; admin lists only. */
+  leadCount?: number;
 }
 
 export interface ListingRating {
@@ -168,15 +177,25 @@ export interface Enquiry {
   listingName: string;
   /** Real estate leads: the button used, e.g. View Number or Site visit. */
   source: string | null;
+  /** Real estate leads: the project's type, while the project exists. */
+  projectType: ProjectType | null;
   categoryId: string | null;
   categoryName: string;
   createdAt: string;
   /** When an admin first opened it; null while unread. */
   readAt: string | null;
+  /** Follow-up stage set in Admin › Leads. */
+  leadStatus: LeadStatus;
 }
 
 export interface UnreadCount {
   unread: number;
+}
+
+/** Per Leads tab: leads still at "new", and leads nobody has opened. */
+export interface LeadSectionCounts {
+  realEstate: { new: number; unread: number };
+  wedding: { new: number; unread: number };
 }
 
 /** Result of POST /api/admin/uploads; save `url` on the record that uses the image. */
@@ -209,6 +228,10 @@ export interface AdminSettings {
   listingSidebar: ListingSidebarSettings;
   /** Null until an admin saves the project page sidebar ad. */
   projectSideAd: ProjectSideAd | null;
+  /** Slot and plan prices; sub-categories without a saved price use DEFAULT_SLOT_PRICE. */
+  pricing: Pricing;
+  /** The four home page cards (DEFAULT_HOME_CARDS until saved). */
+  homeCards: HomeCard[];
 }
 
 export interface WhatsappSettings {
@@ -226,6 +249,8 @@ export interface SiteSettings {
   listingSidebar: ListingSidebarSettings;
   /** Present only while the ad is switched on. */
   projectSideAd: ProjectSideAd | null;
+  /** The four cards beside the home hero, in order. */
+  homeCards: HomeCard[];
 }
 
 /** SMTP settings without the password. */
@@ -255,4 +280,34 @@ export interface ApiErrorBody {
   statusCode: number;
   message: string;
   issues?: { path: string; message: string }[];
+}
+
+/** Admin dashboard (GET /api/admin/dashboard?days=7|30|90). Real estate leads are the ones with a source. */
+export interface DashboardStats {
+  days: number;
+  /** The real estate plan price from Settings › Slot pricing. */
+  realEstatePlanPrice: number;
+  listings: { total: number; live: number; draft: number; hidden: number; featured: number };
+  projects: { total: number; live: number; draft: number; hidden: number; activeTerms: number };
+  leads: {
+    /** In the chosen range. */
+    inRange: number;
+    realEstate: number;
+    wedding: number;
+    /** All time. */
+    total: number;
+    unread: number;
+    /** Received today (India time). */
+    today: number;
+  };
+  /** Oldest first: one bar per day (7, 30 days) or per week (90 days); `end` is the bar's last day. */
+  series: { end: string; realEstate: number; wedding: number }[];
+  /** Listings and projects with the most leads in the range. */
+  topSources: { name: string; kind: 'listing' | 'project'; id: string | null; count: number }[];
+  /** Leads in the range per category (sub-category for vendors, Real Estate for projects). */
+  byCategory: { name: string; count: number }[];
+  /** Live vendor listings and projects per area. */
+  byArea: { area: string; listings: number; projects: number }[];
+  /** Live projects whose term ends within 30 days or has ended, soonest first. */
+  expiring: { id: string; name: string; advertiserName: string; termEnd: string; daysLeft: number }[];
 }

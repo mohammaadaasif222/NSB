@@ -25,7 +25,7 @@ import {
   type QuickInfoItem,
 } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
-import { categories, listingImages, listingReviews, listings } from '../../db/schema.js';
+import { categories, enquiries, listingImages, listingReviews, listings } from '../../db/schema.js';
 import { rethrowDbError } from '../../common/db-errors.js';
 import { istDayStart } from '../../common/dates.js';
 import { likeTerm } from '../../common/like.js';
@@ -152,14 +152,33 @@ export class ListingsService {
   }
 
   /** Admin list: every listing, optionally in one category (a top-level one includes its sub-categories). */
-  listAdmin(query: AdminListingQuery): Promise<Paginated<ListingSummary>> {
+  async listAdmin(query: AdminListingQuery): Promise<Paginated<ListingSummary>> {
     const { categoryId, from, to, status } = query;
     const filters: SQL[] = [];
     if (status) filters.push(eq(listings.status, status));
     if (categoryId) filters.push(or(eq(listings.categoryId, categoryId), eq(categories.parentId, categoryId))!);
     if (from) filters.push(gte(listings.createdAt, istDayStart(from)));
     if (to) filters.push(lt(listings.createdAt, sql`${istDayStart(to)} + interval '1 day'`));
-    return this.page(query, filters);
+    const order =
+      query.sort === 'az'
+        ? [asc(listings.name)]
+        : query.sort === 'lead'
+          ? [desc(sql`(select count(*) from ${enquiries} where ${enquiries}.listing_id = ${listings}.id)`), desc(listings.createdAt)]
+          : [desc(listings.createdAt)];
+    const page = await this.page(query, filters, order);
+    const leads = await this.leadCounts(page.items.map((l) => l.id));
+    return { ...page, items: page.items.map((l) => ({ ...l, leadCount: leads.get(l.id) ?? 0 })) };
+  }
+
+  /** Leads per listing, for a page of admin rows. */
+  private async leadCounts(listingIds: string[]): Promise<Map<string, number>> {
+    if (!listingIds.length) return new Map();
+    const rows = await this.db
+      .select({ listingId: enquiries.listingId, count: count() })
+      .from(enquiries)
+      .where(inArray(enquiries.listingId, listingIds))
+      .groupBy(enquiries.listingId);
+    return new Map(rows.map((r) => [r.listingId!, r.count]));
   }
 
   async getBySlug(slug: string): Promise<ListingDetail> {
@@ -275,7 +294,7 @@ export class ListingsService {
     return Object.fromEntries(rows.map((r) => [r.slug, r.count]));
   }
 
-  private async page(query: ListingQuery, extra: SQL[]): Promise<Paginated<ListingSummary>> {
+  private async page(query: ListingQuery, extra: SQL[], order: SQL[] = [desc(listings.isFeatured), desc(listings.createdAt)]): Promise<Paginated<ListingSummary>> {
     const { page, pageSize, limit, offset } = pageWindow(query.page, query.pageSize);
     const filters = [...extra, ...locationFilters(query)];
     if (query.category) filters.push(eq(categories.slug, query.category));
@@ -296,7 +315,7 @@ export class ListingsService {
         .innerJoin(categories, eq(listings.categoryId, categories.id))
         .leftJoin(parentCategory, eq(categories.parentId, parentCategory.id))
         .where(where)
-        .orderBy(desc(listings.isFeatured), desc(listings.createdAt))
+        .orderBy(...order)
         .limit(limit)
         .offset(offset),
       this.db

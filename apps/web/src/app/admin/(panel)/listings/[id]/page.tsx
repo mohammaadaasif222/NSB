@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/admin/ui";
 import { adminApi, ApiError, isUuid } from "@/lib/api";
 import { DeleteListingButton } from "../delete-listing-button";
 import { ListingForm } from "../listing-form";
+import { editorsOnly } from "@/components/admin/editors-only";
 
 export const metadata: Metadata = { title: "Edit listing" };
 
@@ -19,6 +20,8 @@ async function getListing(id: string) {
 }
 
 export default async function EditListingPage({ params }: PageProps<"/admin/listings/[id]">) {
+  const notice = await editorsOnly("Listings");
+  if (notice) return notice;
   const { id } = await params;
   const [listing, categories, settings] = await Promise.all([
     getListing(id),

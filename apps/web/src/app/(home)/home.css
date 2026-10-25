@@ -101,24 +101,24 @@
 .nsb-home .how i{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-style:normal;font-weight:800;display:grid;place-items:center;flex:none}.nsb-home .how b{display:block;font-size:14px}.nsb-home .how span{color:var(--mute);font-size:13px}
 @media(max-width:700px){.nsb-home .how{grid-template-columns:1fr}}
 .nsb-home .pk .vf{left:auto;right:12px}
-/* footer */
+/* FAQs */
 .nsb-home .faqs{padding:44px 0 52px}.nsb-home .fqg{display:grid;grid-template-columns:.8fr 1.2fr;gap:20px;align-items:stretch}.nsb-home .fqh{position:relative;overflow:hidden;border-radius:16px;padding:34px;color:#fff;background:linear-gradient(135deg,var(--blue),#0C0470);display:flex;flex-direction:column;justify-content:center;align-items:flex-start}.nsb-home .fqh::after{content:"";position:absolute;right:-70px;bottom:-70px;width:240px;height:240px;border-radius:50%;border:40px solid rgba(255,255,255,.1)}.nsb-home .fqh small{font-weight:700;font-size:12px;background:rgba(255,255,255,.18);padding:5px 12px;border-radius:999px;margin-bottom:14px}.nsb-home .fqh h2{font-size:clamp(26px,3vw,34px);max-width:12ch}.nsb-home .fqh p{opacity:.88;margin:12px 0 22px;max-width:30ch;color:#fff}.nsb-home .fqh .btn{background:#fff;color:var(--blue-d);position:relative;z-index:1}
 .nsb-home .fql{display:grid;gap:10px}.nsb-home .fql details{border-radius:14px;background:var(--soft);padding:0 20px;transition:background .2s}.nsb-home .fql details[open]{background:var(--blue-s);box-shadow:inset 3px 0 0 var(--blue)}
 .nsb-home .fql summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px 0;font-weight:700;font-size:16px}.nsb-home .fql summary::-webkit-details-marker{display:none}
 .nsb-home .fql summary::after{content:"+";flex:none;width:28px;height:28px;border-radius:50%;background:var(--bg);color:var(--blue);display:grid;place-items:center;font-size:20px;line-height:1;transition:all .2s}.nsb-home .fql details[open] summary::after{background:var(--blue);color:#fff;transform:rotate(45deg)}.nsb-home .fql details p{margin:0 0 16px;color:var(--mute);font-size:15px;max-width:62ch}
-.nsb-home footer{background:var(--soft);border-top:1px solid var(--line);color:var(--ink);padding:36px 0 0}.nsb-home .fg{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:32px}
-.nsb-home .flg{height:50px;width:auto;display:block;margin-bottom:10px}.nsb-home footer p{color:var(--mute);font-size:14px;line-height:1.6;max-width:42ch}
-.nsb-home .fph{display:inline-flex;align-items:center;gap:8px;margin-top:12px;font-size:15px;font-weight:700;color:var(--ink)}.nsb-home .fph svg{color:var(--blue)}.nsb-home .fph:hover{color:var(--blue)}
-.nsb-home .tb{display:flex;align-items:center;gap:10px;margin-top:14px}.nsb-home .tb>span{color:var(--blue)}.nsb-home .tb b{font-size:13px;display:block}.nsb-home .sr{display:flex;gap:2px;margin-top:2px}
-.nsb-home footer h4{position:relative;display:flex;align-items:center;gap:8px;margin:0 0 14px;padding-bottom:10px;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue)}.nsb-home footer h4::after{content:"";position:absolute;left:0;bottom:0;width:30px;height:2px;border-radius:2px;background:var(--blue)}
-.nsb-home .fl2{margin:0;padding:0}.nsb-home .fl2 li{list-style:none;margin-bottom:9px;font-size:14px;color:var(--mute)}.nsb-home .fl2 a{display:flex;align-items:center;gap:6px}.nsb-home .fl2 a:hover{color:var(--blue)}.nsb-home .fl2 svg{color:var(--blue);flex:none}.nsb-home .fl2 .mu{padding-left:20px;font-size:13px;opacity:.8}
-.nsb-home .fbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:12px;padding:14px 0 18px}
-.nsb-home .so{display:flex;gap:10px}.nsb-home .so a{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink);transition:all .2s}.nsb-home .so a:hover{background:var(--blue);border-color:var(--blue);color:#fff}
-.nsb-home .cp{font-size:13px;color:var(--mute)}.nsb-home .cp a:hover{color:var(--blue)}
+
+
+
+
+
+
+
+
+
 @media(max-width:960px){.nsb-home .fqg{grid-template-columns:1fr;gap:22px}}.nsb-home .bn{display:none}.nsb-home .smb{display:none}
-@media(max-width:960px){.nsb-home .hgrid{grid-template-columns:1fr;height:auto}.nsb-home .hs{height:260px}.nsb-home .hq{grid-template-rows:none;grid-auto-rows:120px}.nsb-home .cats{grid-template-columns:repeat(4,1fr)}.nsb-home .pks,.nsb-home .dls,.nsb-home .prods,.nsb-home .hls,.nsb-home .brs{grid-template-columns:repeat(2,1fr)}.nsb-home .jb{grid-template-columns:1fr;padding:36px}.nsb-home .fg{grid-template-columns:1fr 1fr}.nsb-home .bar{flex-wrap:wrap;padding-block:10px}.nsb-home .sb{order:5;flex-basis:100%;max-width:none;margin:0}.nsb-home .loc{margin-left:auto}.nsb-home .slide{padding:32px}.nsb-home .dots{left:32px}}
+@media(max-width:960px){.nsb-home .hgrid{grid-template-columns:1fr;height:auto}.nsb-home .hs{height:260px}.nsb-home .hq{grid-template-rows:none;grid-auto-rows:120px}.nsb-home .cats{grid-template-columns:repeat(4,1fr)}.nsb-home .pks,.nsb-home .dls,.nsb-home .prods,.nsb-home .hls,.nsb-home .brs{grid-template-columns:repeat(2,1fr)}.nsb-home .jb{grid-template-columns:1fr;padding:36px}.nsb-home .bar{flex-wrap:wrap;padding-block:10px}.nsb-home .sb{order:5;flex-basis:100%;max-width:none;margin:0}.nsb-home .loc{margin-left:auto}.nsb-home .slide{padding:32px}.nsb-home .dots{left:32px}}
 @media(max-width:600px){.nsb-home section{padding:28px 0}.nsb-home .hq{grid-template-columns:1fr 1fr}.nsb-home .cats{grid-template-columns:repeat(3,1fr);gap:10px}.nsb-home .ci{width:50px;height:50px}.nsb-home .logo img{height:42px}.nsb-home .pks,.nsb-home .dls,.nsb-home .prods,.nsb-home .hls,.nsb-home .brs{gap:10px}.nsb-home .pimg{height:120px}.nsb-home .jb{padding:26px}.nsb-home .jr{gap:10px}.nsb-home .jt{padding:16px}.nsb-home .ctl .sd{display:none}.nsb-home .nv{display:none}}
-.nsb-home .ti-venue{background-image:url(/images/nsb-home/tile-venue.jpg)}.nsb-home .ti-makeup{background-image:url(/images/nsb-home/tile-makeup.jpg)}.nsb-home .ti-photo{background-image:url(/images/nsb-home/tile-photo.jpg)}.nsb-home .ti-catering{background-image:url(/images/nsb-home/tile-catering.jpg)}.nsb-home .s4{background:linear-gradient(90deg,rgba(11,10,51,.88),rgba(11,10,51,.42) 62%,rgba(11,10,51,.08)),url(/images/nsb-home/hero-real-estate.jpg) center 35%/cover}.nsb-home .s4::after{display:none}.nsb-home .q.hasimg{background-size:cover;background-position:center;background-repeat:no-repeat}.nsb-home .q.hasimg svg,.nsb-home .q.hasimg .qb{display:none}
+.nsb-home .s4{background:linear-gradient(90deg,rgba(11,10,51,.88),rgba(11,10,51,.42) 62%,rgba(11,10,51,.08)),url(/images/nsb-home/hero-real-estate.jpg) center 35%/cover}.nsb-home .s4::after{display:none}.nsb-home .q.hasimg{background-size:cover;background-position:center;background-repeat:no-repeat}.nsb-home .q.hasimg svg,.nsb-home .q.hasimg .qb{display:none}
 /* Undo Tailwind preflight where the demo relied on browser defaults. */
 .nsb-home section{scroll-margin-top:90px}.nsb-home h1,.nsb-home h2,.nsb-home h3,.nsb-home h4{font-weight:700}
 /* Banner images: phones show the mobile image when the admin set one (see Admin › Banners). */
@@ -177,6 +177,12 @@
 .nsb-home .more[data-expanded="true"] .smb svg{transform:rotate(180deg)}
 .nsb-home .jb{border-radius:22px;gap:22px}.nsb-home .btn.gold{margin-top:16px}
 .nsb-home .faqs{padding:28px 0 32px}.nsb-home .fqh{padding:24px}.nsb-home .fql details{padding:0 16px}.nsb-home .fql summary{font-size:15px;padding:14px 0}
-.nsb-home footer{padding-top:28px}.nsb-home .fg{gap:24px 16px}.nsb-home .fg>:first-child{grid-column:1/-1}
-.nsb-home .fbar{flex-direction:column;text-align:center}
+
+
 }
+
+/* Tags on the four hero cards (Admin › Home page), e.g. a red "New" or a gold "Top". */
+.nsb-home .qt{position:absolute;top:8px;left:8px;right:8px;z-index:2;display:flex;flex-wrap:wrap;gap:4px;pointer-events:none}
+.nsb-home .qt em{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1;padding:4px 8px;border-radius:999px;color:#fff;background:var(--red);box-shadow:0 4px 10px -4px rgba(0,0,0,.45)}
+.nsb-home .qt .blue{background:var(--blue)}.nsb-home .qt .gold{background:var(--gold);color:#1A1440}.nsb-home .qt .green{background:#15803D}.nsb-home .qt .dark{background:var(--navy)}
+@media(max-width:600px){.nsb-home .qt{top:5px;left:5px;gap:3px}.nsb-home .qt em{font-size:8.5px;padding:3px 6px}}

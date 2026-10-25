@@ -1,0 +1,185 @@
+/* The site footer from "NSB Live Demo.html", shared by the home page and every other page. */
+.nsb-footer {
+  --ft-bg: #fff;
+  --ft-soft: #f5f6fa;
+  --ft-ink: #0f172a;
+  --ft-mute: #64748b;
+  --ft-line: #e5e7eb;
+  --ft-blue: #1700d6;
+  background: var(--ft-soft);
+  border-top: 1px solid var(--ft-line);
+  color: var(--ft-ink);
+  padding: 36px 0 0;
+  font-family: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  line-height: 1.5;
+}
+.nsb-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+.nsb-footer .w {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.nsb-footer .fg {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 32px;
+}
+.nsb-footer .flg {
+  height: 50px;
+  width: auto;
+  display: block;
+  margin-bottom: 10px;
+}
+.nsb-footer p {
+  margin: 0;
+  color: var(--ft-mute);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 42ch;
+}
+.nsb-footer .fph {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ft-ink);
+}
+.nsb-footer .fph svg {
+  color: var(--ft-blue);
+}
+.nsb-footer .fph:hover {
+  color: var(--ft-blue);
+}
+.nsb-footer .tb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+.nsb-footer .tb > span {
+  color: var(--ft-blue);
+}
+.nsb-footer .tb b {
+  font-size: 13px;
+  display: block;
+}
+.nsb-footer .sr {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+}
+.nsb-footer h4 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ft-blue);
+}
+.nsb-footer h4::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 30px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ft-blue);
+}
+.nsb-footer .fl2 {
+  margin: 0;
+  padding: 0;
+}
+.nsb-footer .fl2 li {
+  list-style: none;
+  margin-bottom: 9px;
+  font-size: 14px;
+  color: var(--ft-mute);
+}
+.nsb-footer .fl2 a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nsb-footer .fl2 a:hover {
+  color: var(--ft-blue);
+}
+.nsb-footer .fl2 svg {
+  color: var(--ft-blue);
+  flex: none;
+}
+.nsb-footer .fl2 .mu {
+  padding-left: 20px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+.nsb-footer .fbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--ft-line);
+  margin-top: 12px;
+  padding: 14px 0 18px;
+}
+.nsb-footer .so {
+  display: flex;
+  gap: 10px;
+}
+.nsb-footer .so a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ft-bg);
+  border: 1px solid var(--ft-line);
+  display: grid;
+  place-items: center;
+  color: var(--ft-ink);
+  transition: all 0.2s;
+}
+.nsb-footer .so a:hover {
+  background: var(--ft-blue);
+  border-color: var(--ft-blue);
+  color: #fff;
+}
+.nsb-footer .cp {
+  font-size: 13px;
+  color: var(--ft-mute);
+}
+.nsb-footer .cp a:hover {
+  color: var(--ft-blue);
+}
+@media (max-width: 960px) {
+  .nsb-footer .fg {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .nsb-footer {
+    padding-top: 28px;
+  }
+  .nsb-footer .w {
+    padding: 0 16px;
+  }
+  .nsb-footer .fg {
+    gap: 24px 16px;
+  }
+  .nsb-footer .fg > :first-child {
+    grid-column: 1/-1;
+  }
+  .nsb-footer .fbar {
+    flex-direction: column;
+    text-align: center;
+  }
+}

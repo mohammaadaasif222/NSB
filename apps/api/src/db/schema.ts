@@ -14,9 +14,11 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import type {
+  AdminRole,
   Advertiser,
   AdvertiserType,
   ImageStorageProvider,
+  LeadStatus,
   ListingDetails,
   ListingStatus,
   ListingVideo,
@@ -46,6 +48,8 @@ export const adminUsers = pgTable('admin_users', {
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   passwordHash: text('password_hash').notNull(),
+  /** What this admin may do (ADMIN_PERMISSIONS). Admins from before roles are Super Admins. */
+  role: text('role').$type<AdminRole>().notNull().default('super'),
   createdAt: createdAt(),
 });
 
@@ -305,6 +309,8 @@ export const enquiries = pgTable(
     createdAt: createdAt(),
     /** First opened by an admin; null while unread (drives the unread badge). */
     readAt: timestamp('read_at', { withTimezone: true }),
+    /** Follow-up stage: new, contacted, won or lost. */
+    leadStatus: text('lead_status').$type<LeadStatus>().notNull().default('new'),
   },
   (t) => [
     index('enquiries_created_idx').on(t.createdAt),

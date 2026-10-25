@@ -14,10 +14,12 @@ const lead: Enquiry = {
   projectId: null,
   listingName: 'Royal Banquet',
   source: null,
+  projectType: null,
   categoryId: null,
   categoryName: 'Wedding Venues',
   createdAt: '2026-10-09T10:00:00.000Z',
   readAt: null,
+  leadStatus: 'new',
 };
 
 describe('enquiriesCsv', () => {

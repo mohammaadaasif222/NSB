@@ -4,19 +4,15 @@ import type { AdminCategory, AdminSettings, Banner } from "@nsb/shared";
 import { adminApi } from "@/lib/api";
 import { BannerManager } from "../banners/banner-manager";
 import { CategoryManager } from "../categories/category-manager";
+import { HomeCardsManager } from "./home-cards-manager";
+import { editorsOnly } from "@/components/admin/editors-only";
 
 export const metadata: Metadata = { title: "Home page" };
 
-/** The demo's four cards beside the hero. Shown read-only until the cards can be edited. */
-const FOUR_CARDS = [
-  { title: "Wedding venues", link: "/wedding/wedding-venues" },
-  { title: "Makeup & beauty", link: "/wedding/makeup-beauty" },
-  { title: "Photography & films", link: "/wedding/photography-films" },
-  { title: "Catering", link: "/wedding/catering-halwai" },
-];
-
 /** The home page's editable blocks in one place, laid out as in the NSB Live Demo admin. */
 export default async function HomePageManager() {
+  const notice = await editorsOnly("The home page");
+  if (notice) return notice;
   const [banners, categories, settings] = await Promise.all([
     adminApi.get<Banner[]>("/admin/banners"),
     adminApi.get<AdminCategory[]>("/admin/categories"),
@@ -50,25 +46,13 @@ export default async function HomePageManager() {
           <span>
             2. Four cards <span className="a-tag">on the right</span>
           </span>
-          <span className="a-soon">Static for now</span>
         </h3>
-        <p className="a-hsub">Upload an image and set where it goes. Best image size: 700 × 460. Editing these cards is coming soon.</p>
-        {FOUR_CARDS.map((card, i) => (
-          <div key={card.title} className="a-hrow">
-            <div className="a-hth">{card.title}</div>
-            <div className="a-hmid">
-              <b>Card {i + 1}</b>
-              <small>Default: {card.title}</small>
-              <button type="button" className="a-btn g s" disabled>
-                Upload image
-              </button>
-            </div>
-            <div className="a-hlk">
-              <label htmlFor={`card-link-${i}`}>Where should it go? (link)</label>
-              <input id={`card-link-${i}`} value={card.link} readOnly />
-            </div>
-          </div>
-        ))}
+        <p className="a-hsub">
+          Use these four cards to promote anything: a new launch, interior design, a brand store or any premium service. Set a title, pick a colour and
+          icon (or use your own image), add tags such as New or Top, and set where it goes. Move them with the arrows. Best image size: 700 × 460.
+        </p>
+        {/* key: start from the saved cards again after each save. */}
+        <HomeCardsManager key={JSON.stringify(settings.homeCards)} cards={settings.homeCards} maxUploadBytes={settings.maxUploadBytes} />
       </section>
 
       <section id="categories" className="a-card scroll-mt-24" aria-labelledby="categories-h">

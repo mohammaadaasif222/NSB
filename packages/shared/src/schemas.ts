@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import {
+  ADMIN_ROLES,
   ENQUIRY_STATUSES,
+  LEAD_STATUSES,
   IMAGE_SLOT_KEYS,
   IMAGE_STORAGE_PROVIDERS,
   LISTING_STATUSES,
@@ -78,6 +80,26 @@ export const changePasswordSchema = z
   .refine((v) => v.confirmPassword === v.newPassword, { path: ['confirmPassword'], message: 'Passwords do not match' })
   .refine((v) => v.newPassword !== v.currentPassword, { path: ['newPassword'], message: 'Choose a different password from your current one' });
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+/** The signed-in admin's own name and email (Settings › Admin account). */
+export const profileSchema = z.object({
+  name: trimmed(80),
+  email: z.email('Enter a valid email address').trim().toLowerCase(),
+});
+export type ProfileInput = z.infer<typeof profileSchema>;
+
+/** A Super Admin adds a teammate with a first password, which they can change in Settings. */
+export const adminUserInputSchema = profileSchema.extend({
+  role: z.enum(ADMIN_ROLES),
+  password: z
+    .string()
+    .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
+    .max(200, 'Use at most 200 characters'),
+});
+export type AdminUserInput = z.infer<typeof adminUserInputSchema>;
+
+export const adminUserUpdateSchema = z.object({ role: z.enum(ADMIN_ROLES) });
+export type AdminUserUpdate = z.infer<typeof adminUserUpdateSchema>;
 
 // ---------- Categories ----------
 
@@ -240,6 +262,8 @@ export const adminListingQuerySchema = listingQuerySchema.extend({
   from: blankAsUndefined(z.iso.date()),
   to: blankAsUndefined(z.iso.date()),
   status: blankAsUndefined(z.enum(LISTING_STATUSES)),
+  /** Newest first (default), name A–Z, or most leads. */
+  sort: blankAsUndefined(z.enum(['new', 'az', 'lead'])),
 });
 export type AdminListingQuery = z.infer<typeof adminListingQuerySchema>;
 
@@ -418,6 +442,72 @@ export const projectSideAdSchema = z.object({
 });
 export type ProjectSideAd = z.infer<typeof projectSideAdSchema>;
 
+// ---------- Home page: the four cards beside the hero ----------
+
+/** Card colours from the demo (used when the card has no image of its own). */
+export const HOME_CARD_COLORS = ['g1', 'g2', 'g3', 'g4', 'g5', 'g6'] as const;
+export const HOME_CARD_COLOR_LABELS: Record<(typeof HOME_CARD_COLORS)[number], string> = {
+  g1: 'Indigo',
+  g2: 'Navy',
+  g3: 'Lavender',
+  g4: 'Slate',
+  g5: 'Soft red',
+  g6: 'Brand red',
+};
+/** Icons a card can show; the site draws them. */
+export const HOME_CARD_ICONS = [
+  'venue', 'makeup', 'camera', 'catering', 'wedding', 'interior', 'brand-store', 'school', 'real-estate', 'loan', 'premium', 'new-launch', 'services', 'hotel',
+] as const;
+export const HOME_CARD_ICON_LABELS: Record<(typeof HOME_CARD_ICONS)[number], string> = {
+  venue: 'Venue', makeup: 'Makeup', camera: 'Camera', catering: 'Catering', wedding: 'Wedding', interior: 'Interior', 'brand-store': 'Brand store',
+  school: 'School', 'real-estate': 'Real estate', loan: 'Loan', premium: 'Premium star', 'new-launch': 'New launch', services: 'Services', hotel: 'Hotel',
+};
+/** Tag colours, e.g. a red "New" or a gold "Top". */
+export const HOME_CARD_TAG_TONES = ['red', 'blue', 'gold', 'green', 'dark'] as const;
+export const HOME_CARD_TAG_SUGGESTIONS = ['New', 'Top', 'Trending', 'Offer', 'Hot', 'Featured'] as const;
+export const HOME_CARD_COUNT = 4;
+export const HOME_CARD_MAX_TAGS = 3;
+
+export const homeCardTagSchema = z.object({
+  label: trimmed(16),
+  tone: z.enum(HOME_CARD_TAG_TONES),
+});
+export type HomeCardTag = z.infer<typeof homeCardTagSchema>;
+
+export const homeCardSchema = z.object({
+  title: trimmed(28),
+  link: siteOrWebLink,
+  color: z.enum(HOME_CARD_COLORS),
+  icon: z.enum(HOME_CARD_ICONS),
+  /** Own image; without one the card shows its colour and icon. */
+  imageUrl: imageUrlSchema.nullable(),
+  /** With an image: also draw the icon on it (the title always shows). */
+  showIcon: z.boolean(),
+  /** Shown on the card, e.g. "New" or "Top". */
+  tags: z.array(homeCardTagSchema).max(HOME_CARD_MAX_TAGS, `Up to ${HOME_CARD_MAX_TAGS} tags per card`),
+});
+export type HomeCard = z.infer<typeof homeCardSchema>;
+
+/** In display order: first is top left, then top right, bottom left, bottom right. */
+export const homeCardsSchema = z.array(homeCardSchema).length(HOME_CARD_COUNT, `Keep exactly ${HOME_CARD_COUNT} cards`);
+
+/** The cards the home page shows until an admin saves their own (the design's four). */
+export const DEFAULT_HOME_CARDS: HomeCard[] = [
+  { title: 'Wedding venues', link: '/wedding/wedding-venues', color: 'g1', icon: 'venue', imageUrl: '/images/nsb-home/tile-venue.jpg', showIcon: true, tags: [] },
+  { title: 'Makeup & beauty', link: '/wedding/makeup-beauty', color: 'g5', icon: 'makeup', imageUrl: '/images/nsb-home/tile-makeup.jpg', showIcon: true, tags: [] },
+  { title: 'Photography & films', link: '/wedding/photography-films', color: 'g2', icon: 'camera', imageUrl: '/images/nsb-home/tile-photo.jpg', showIcon: true, tags: [] },
+  { title: 'Catering', link: '/wedding', color: 'g3', icon: 'catering', imageUrl: '/images/nsb-home/tile-catering.jpg', showIcon: true, tags: [] },
+];
+
+const price = z.coerce.number().int('Use whole rupees').min(0).max(100_000_000);
+
+/** Advertising prices: per wedding sub-category (6-month slot, by slug) and the real estate year. */
+export const pricingSchema = z.object({
+  categories: z.record(slugSchema, price),
+  realEstate: price,
+});
+export type Pricing = z.infer<typeof pricingSchema>;
+
 export const settingsUpdateSchema = z.object({
   /** Where new uploads go. Existing images keep working from wherever they were stored. */
   imageStorage: z.enum(IMAGE_STORAGE_PROVIDERS).optional(),
@@ -432,6 +522,10 @@ export const settingsUpdateSchema = z.object({
   listingSidebar: listingSidebarSchema.optional(),
   /** Real estate project page sidebar ad; null removes it. */
   projectSideAd: projectSideAdSchema.nullable().optional(),
+  /** Slot and plan prices (Settings › Slot pricing). */
+  pricing: pricingSchema.optional(),
+  /** The four cards beside the home hero (Admin › Home page). */
+  homeCards: homeCardsSchema.optional(),
 });
 export type SettingsUpdate = z.infer<typeof settingsUpdateSchema>;
 /** What the browser sends (the Firebase key file as text). */
@@ -464,6 +558,13 @@ export const enquiryQuerySchema = paginationSchema.extend({
   listingId: blankAsUndefined(z.uuid()),
   /** Leads for one real estate project. */
   projectId: blankAsUndefined(z.uuid()),
+  /** Real estate leads (they carry a source) or wedding enquiries. */
+  section: blankAsUndefined(z.enum(['real-estate', 'wedding'])),
+  leadStatus: blankAsUndefined(z.enum(LEAD_STATUSES)),
+  /** The real estate button the lead came from, e.g. View Number. */
+  source: blankAsUndefined(z.string().trim().min(1).max(40)),
+  /** Real estate leads for projects of one type. */
+  projectType: blankAsUndefined(z.enum(['apartments', 'villas', 'plots'])),
   status: blankAsUndefined(z.enum(ENQUIRY_STATUSES)),
   /** Received on or after / on or before these dates (India time). */
   from: blankAsUndefined(z.iso.date()),
@@ -473,7 +574,20 @@ export const enquiryQuerySchema = paginationSchema.extend({
 });
 export type EnquiryQuery = z.infer<typeof enquiryQuerySchema>;
 
-export const enquiryUpdateSchema = z.object({
-  read: z.boolean(),
-});
+/** Mark read or unread, and/or move the lead to another follow-up stage. */
+export const enquiryUpdateSchema = z
+  .object({
+    read: z.boolean().optional(),
+    leadStatus: z.enum(LEAD_STATUSES).optional(),
+  })
+  .refine((v) => v.read !== undefined || v.leadStatus !== undefined, { message: 'Nothing to update' });
 export type EnquiryUpdate = z.infer<typeof enquiryUpdateSchema>;
+
+// ---------- Dashboard ----------
+
+/** The dashboard's lead range: 7 or 30 days by day, 90 days by week (as in the demo). */
+export const DASHBOARD_RANGES = [7, 30, 90] as const;
+export const dashboardQuerySchema = z.object({
+  days: z.coerce.number().pipe(z.union([z.literal(7), z.literal(30), z.literal(90)])).default(7),
+});
+export type DashboardQuery = z.infer<typeof dashboardQuerySchema>;

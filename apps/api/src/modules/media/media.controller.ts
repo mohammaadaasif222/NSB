@@ -11,7 +11,7 @@ import {
   uploadQuerySchema,
 } from '@nsb/shared';
 import { ZodPipe } from '../../common/zod.pipe.js';
-import { AdminGuard } from '../auth/admin.guard.js';
+import { AdminGuard, Allow } from '../auth/admin.guard.js';
 import { MediaService, type UploadedFile as File } from './media.service.js';
 
 @Controller('admin/uploads')
@@ -42,6 +42,7 @@ export class AdminUploadsController {
   /** Checks a storage provider's credentials by uploading and deleting a tiny image. */
   @Post('test')
   @HttpCode(200)
+  @Allow('manage')
   test(@Body(new ZodPipe(storageTestSchema)) body: StorageTestInput): Promise<StorageTestResult> {
     return this.media.testStorage(body.provider);
   }
