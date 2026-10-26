@@ -35,11 +35,13 @@ export const INDEXED_STATIC_PATHS = [
   '/',
   '/casino',
   '/providers',
+  '/live-casino',
   '/promotions',
   '/bonuses',
   '/rewards',
   '/terms-of-service',
   '/responsible-gambling',
+  '/rolluck-oath',
 ] as const;
 
 export const NOINDEX_ROUTES: ReadonlySet<string> = new Set([
@@ -58,7 +60,6 @@ export const NOINDEX_ROUTES: ReadonlySet<string> = new Set([
   '/profile',
   '/recents',
   '/responsible-play',
-  '/rolluck-oath',
   '/sports',
   '/sports/[sport]',
   '/tournaments',

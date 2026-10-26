@@ -28,6 +28,7 @@ interface SupportChatContextType {
   /** Show the platform's own chat panel in the top bar. */
   internalChatEnabled: boolean;
   chatAmbienceEnabled: boolean;
+  chatRegionalRoomsEnabled: boolean;
   /** True once the settings call has answered, either way. Exposed for callers
    *  that want to wait for the real answer rather than act on the default. */
   ready: boolean;
@@ -149,6 +150,7 @@ export const SupportChatProvider: FC<{ children: ReactNode }> = ({ children }) =
       intercomEnabled,
       internalChatEnabled: settings?.internal_chat_enabled ?? INTERNAL_CHAT_DEFAULT,
       chatAmbienceEnabled: settings?.chat_ambience_enabled ?? false,
+      chatRegionalRoomsEnabled: settings?.chat_regional_rooms_enabled ?? false,
       ready,
       openIntercom,
     }),
@@ -156,6 +158,7 @@ export const SupportChatProvider: FC<{ children: ReactNode }> = ({ children }) =
       intercomEnabled,
       settings?.internal_chat_enabled,
       settings?.chat_ambience_enabled,
+      settings?.chat_regional_rooms_enabled,
       ready,
       openIntercom,
     ]

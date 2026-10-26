@@ -82,9 +82,9 @@ const SportsToolbar: FC<Props> = ({ query, onChange, leagues }) => {
       />
 
       <div
-        className={`grid gap-[7px] lg:flex lg:gap-[calc(var(--u)*13)] ${leagues ? 'grid-cols-[1fr_1fr_1.53fr]' : 'grid-cols-[auto_auto] justify-start'}`}
+        className={`grid gap-[7px] lg:flex lg:gap-[calc(var(--u)*13)] ${leagues ? 'grid-cols-[auto_auto_minmax(0,1fr)] min-[420px]:grid-cols-[1fr_1fr_1.53fr]' : 'grid-cols-[auto_auto] justify-start'}`}
       >
-        <Dropdown icon={sortIcon} label={label(SORTS, query.sort)}>
+        <Dropdown icon={sortIcon} label={label(SORTS, query.sort)} phoneLabel={t('browse.sort')}>
           {(close) =>
             SORTS.map((s) => (
               <Option
@@ -101,7 +101,11 @@ const SportsToolbar: FC<Props> = ({ query, onChange, leagues }) => {
           }
         </Dropdown>
 
-        <Dropdown icon={filterIcon} label={label(FILTERS, query.filter)}>
+        <Dropdown
+          icon={filterIcon}
+          label={label(FILTERS, query.filter)}
+          phoneLabel={t('browse.filter')}
+        >
           {(close) =>
             FILTERS.map((f) => (
               <Option

@@ -1,5 +1,4 @@
-import type { GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
-import { SHELF_KEYS } from '@/constants/games';
+import type { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import {
   fetchHomeShelves,
   fetchLobbyProviders,
@@ -10,7 +9,7 @@ import { fetchFaqsServer } from '@/services/faqs.server';
 import type { FaqItem } from '@/services/faqs';
 import type { GameShelf, GameShelfKey, LobbyProvider } from '@/types';
 
-/** What every lobby-style page (home, casino) is rendered from. */
+/** What every lobby-style page (home, casino, live casino) is rendered from. */
 export interface LobbyProps {
   shelves: GameShelf[];
   /** The Providers row, curated in the admin console. Empty hides the row. */
@@ -21,9 +20,10 @@ export interface LobbyProps {
 }
 
 /**
- * getServerSideProps for the lobby pages.
+ * getServerSideProps for a lobby page that draws `keys`.
  *
- * Kept out of the page files so `/` and `/casino` share one implementation.
+ * Kept out of the page files so `/`, `/casino` and `/live-casino` share one
+ * implementation; each fetches only its own shelves.
  * Each page assigns it to its own `getServerSideProps` export; Next strips that
  * export from the client bundle, which leaves this import unused there and so
  * keeps the server-only fetching out of the browser.
@@ -36,28 +36,28 @@ export interface LobbyProps {
  * client-side, leaving this render identical for every visitor and therefore
  * safe to serve to signed-out ones.
  */
-export const getLobbyProps = async (
-  context: GetServerSidePropsContext
-): Promise<GetServerSidePropsResult<LobbyProps>> => {
-  const pages = Object.fromEntries(
-    SHELF_KEYS.map((key) => [key, parsePageParam(context.query[key])])
-  ) as Record<GameShelfKey, number>;
+export const lobbyProps =
+  (keys: readonly GameShelfKey[]): GetServerSideProps<LobbyProps> =>
+  async (context: GetServerSidePropsContext): Promise<GetServerSidePropsResult<LobbyProps>> => {
+    const pages = Object.fromEntries(
+      keys.map((key) => [key, parsePageParam(context.query[key])])
+    ) as Record<GameShelfKey, number>;
 
-  // In parallel: three independent public reads, and the page waits on all of them.
-  const [{ shelves, failed }, providers, faqs, registeredToday] = await Promise.all([
-    fetchHomeShelves(pages),
-    fetchLobbyProviders(),
-    fetchFaqsServer(),
-    fetchRegisteredTodayCount(),
-  ]);
+    // In parallel: four independent public reads, and the page waits on all of them.
+    const [{ shelves, failed }, providers, faqs, registeredToday] = await Promise.all([
+      fetchHomeShelves(keys, pages),
+      fetchLobbyProviders(),
+      fetchFaqsServer(),
+      fetchRegisteredTodayCount(),
+    ]);
 
-  return {
-    props: {
-      shelves,
-      providers,
-      catalogueFailed: failed,
-      faqs,
-      registeredToday,
-    },
+    return {
+      props: {
+        shelves,
+        providers,
+        catalogueFailed: failed,
+        faqs,
+        registeredToday,
+      },
+    };
   };
-};

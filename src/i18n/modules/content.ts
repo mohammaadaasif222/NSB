@@ -110,4 +110,26 @@ export const en = {
   'content.role.marketing': 'Marketing',
   'content.role.partner': 'Partner',
   'content.role.riskManagementTrainee': 'Risk Management Trainee',
+  'oath.eyebrow': 'Our oath. Our commitment.',
+  'oath.title': 'The Rolluck Oath',
+  'oath.subtitle':
+    'And we believe gaming should be more than just a game. It should be exciting, fair, transparent, and built on trust.',
+  'oath.fair.title': 'We promise to play fair.',
+  'oath.fair.body':
+    'Every game, every result, and every experience will be handled with fairness and integrity. No hidden tricks. No false promises. Just a gaming experience you can trust.',
+  'oath.players.title': 'We promise to put our players first.',
+  'oath.players.body':
+    'We will listen to our community, respect every player, and continuously improve the experience we create for you.',
+  'oath.transparent.title': 'We promise to be transparent.',
+  'oath.transparent.body':
+    'What you see is what you get. We believe in clear rules, honest information, and an experience where you always know what you are playing.',
+  'oath.protect.title': 'We promise to protect what matters.',
+  'oath.protect.body':
+    'Your privacy, security, and trust are never something we take lightly. We will work to keep your experience safe and secure.',
+  'oath.excitement.title': 'We promise to keep the excitement alive.',
+  'oath.excitement.body':
+    'From every spin to every game, we want Rolluck to feel exciting, fresh, and memorable.',
+  'oath.enough.title': 'And we promise to know when enough is enough.',
+  'oath.enough.body':
+    'Gaming should always be enjoyed responsibly. We believe in giving players the tools and freedom to stay in control of their experience.',
 } as const;

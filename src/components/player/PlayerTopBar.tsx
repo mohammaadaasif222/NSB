@@ -26,13 +26,15 @@ import NotificationPanel from '@/components/player/NotificationPanel';
 import { useNotifications } from '@/hooks/useNotifications';
 import ChatPanel from '@/components/player/ChatPanel';
 import ChatDrawer, { CHAT_TOGGLE_EVENT } from '@/components/player/ChatDrawer';
-import { DEFAULT_CHAT_ROOM, isChatRoom, type ChatRoom } from '@/services/chat';
+import { CHAT_ROOMS, DEFAULT_CHAT_ROOM, isChatRoom, type ChatRoom } from '@/services/chat';
 import RewardPanel from '@/components/player/RewardPanel';
 import GameSearchModal from '@/components/player/GameSearchModal';
 import { fullNameOf } from '@/types/profile';
 
 /** Which header tray is showing, if any. */
 type HeaderPanel = 'notifications' | 'chat' | 'rewards' | null;
+
+const ONLY_DEFAULT_ROOM: readonly ChatRoom[] = [DEFAULT_CHAT_ROOM];
 
 interface Props {
   /** Icon-rail state, mirrored here so the toggle button can show it. */
@@ -105,7 +107,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const { rewards: rewardsOn } = usePlatformFeatures();
   const { me } = useMe();
   const { t, locale } = useTranslation();
-  const { internalChatEnabled } = useSupportChat();
+  const { internalChatEnabled, chatRegionalRoomsEnabled } = useSupportChat();
   const { openLogin, openRegister } = useAuthModal();
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -192,8 +194,8 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             <Image
               src={wordmark}
               alt="ROLLUCK"
-              sizes="230px"
               priority
+              unoptimized
               className="h-auto w-[125px] lg:w-[calc(var(--u)*228)]"
             />
           </Link>
@@ -441,7 +443,12 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
           condition — `panel` can only become 'chat' from the button above,
           which already is. */}
       <ChatDrawer open={panel === 'chat'} onClose={closePanel} label={t('nav.liveChat')}>
-        <ChatPanel onClose={closePanel} room={chatRoom} onRoomChange={setChatRoom} />
+        <ChatPanel
+          onClose={closePanel}
+          room={chatRegionalRoomsEnabled ? chatRoom : DEFAULT_CHAT_ROOM}
+          rooms={chatRegionalRoomsEnabled ? CHAT_ROOMS : ONLY_DEFAULT_ROOM}
+          onRoomChange={setChatRoom}
+        />
       </ChatDrawer>
     </>
   );

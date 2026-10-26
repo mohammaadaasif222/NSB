@@ -2,10 +2,11 @@ import { useEffect, useRef, useState, type FC } from 'react';
 import CountryFlag from '@/components/flags/CountryFlag';
 import { LOCALE_META } from '@/i18n/locales';
 import { ChevronDownIcon } from '@/components/icons';
-import { CHAT_ROOMS, type ChatRoom } from '@/services/chat';
+import type { ChatRoom } from '@/services/chat';
 
 interface Props {
   room: ChatRoom;
+  rooms: readonly ChatRoom[];
   onChange: (room: ChatRoom) => void;
   label: string;
 }
@@ -13,7 +14,7 @@ interface Props {
 const metaFor = (room: ChatRoom) =>
   LOCALE_META.find((entry) => entry.code === room) ?? LOCALE_META[0];
 
-const ChatRoomPicker: FC<Props> = ({ room, onChange, label }) => {
+const ChatRoomPicker: FC<Props> = ({ room, rooms, onChange, label }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -39,6 +40,15 @@ const ChatRoomPicker: FC<Props> = ({ room, onChange, label }) => {
 
   const active = metaFor(room);
 
+  if (rooms.length < 2) {
+    return (
+      <span className="inline-flex items-center gap-2 px-1 py-1.5 text-[13px] font-semibold text-slate-100">
+        <CountryFlag country={active.country} size={18} />
+        <span className="max-w-[7rem] truncate">{active.label}</span>
+      </span>
+    );
+  }
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -60,7 +70,7 @@ const ChatRoomPicker: FC<Props> = ({ room, onChange, label }) => {
           aria-label={label}
           className="thin-scrollbar absolute start-0 top-full z-20 mt-1.5 max-h-[18rem] w-[13rem] overflow-y-auto rounded-2xl border border-slate-700 bg-[#12151c] p-1.5 shadow-2xl"
         >
-          {CHAT_ROOMS.map((code) => {
+          {rooms.map((code) => {
             const meta = metaFor(code);
             const selected = code === room;
 

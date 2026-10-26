@@ -10,8 +10,9 @@ import SiteFooter from '@/components/player/SiteFooter';
 import { CATEGORY_ICONS } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
 import {
+  CASINO_LISTING_KEYS,
   CATEGORY_PAGE_SIZE,
-  GAME_SHELVES,
+  LIVE_SHELF_KEYS,
   categoryForKey,
   categoryHref,
   shelfFor,
@@ -43,6 +44,8 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
   const { t } = useTranslation();
   const def = shelfFor(categoryKey);
   const title = t(def.titleKey);
+  // A live row's page tabs between the live rows; every other between the casino's.
+  const tabs = LIVE_SHELF_KEYS.includes(def.key) ? LIVE_SHELF_KEYS : CASINO_LISTING_KEYS;
 
   const from =
     pagination.total === 0 || games.length === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
@@ -70,7 +73,7 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
           className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
           aria-label={t('dash.categories')}
         >
-          {GAME_SHELVES.map((c) => {
+          {tabs.map(shelfFor).map((c) => {
             const Icon = CATEGORY_ICONS[c.key];
             const active = c.key === def.key;
             return (
@@ -134,7 +137,12 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
   );
 };
 
-export const getServerSideProps: GetServerSideProps<Props> = async ({ params, query, req, res }) => {
+export const getServerSideProps: GetServerSideProps<Props> = async ({
+  params,
+  query,
+  req,
+  res,
+}) => {
   const def = categoryForKey(params?.category);
   if (!def) {
     return { notFound: true };

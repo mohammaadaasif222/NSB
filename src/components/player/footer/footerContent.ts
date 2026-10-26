@@ -1,5 +1,5 @@
 import type { FC, ReactElement } from 'react';
-import { categoryHref } from '@/constants/games';
+import { LIVE_CASINO_HREF, categoryHref } from '@/constants/games';
 import type { TranslationKey } from '@/i18n/locales';
 import {
   WhatsappMark,
@@ -66,7 +66,7 @@ export const CASINO_LINKS: FooterLink[] = [
   { label: 'browse.filterAll', href: '/casino' },
   { label: 'nav.originals', href: categoryHref('originals') },
   { label: 'dash.slots', href: categoryHref('slots') },
-  { label: 'dash.liveCasino' },
+  { label: 'dash.liveCasino', href: LIVE_CASINO_HREF },
   { label: 'dash.tableGames' },
   { label: 'lobby.footer.providers' },
 ];

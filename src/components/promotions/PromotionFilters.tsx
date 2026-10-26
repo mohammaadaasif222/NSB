@@ -66,7 +66,7 @@ const PromotionFilters: FC<Props> = ({
             aria-pressed={category === c.key}
             className={`flex h-11 items-center px-5 text-[15px] lg:h-[calc(var(--u)*48)] lg:px-[calc(var(--u)*24)] lg:text-[length:max(12px,calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)] ${
               category === c.key
-                ? 'rl-chip-active font-medium text-[#ffe779]'
+                ? 'rl-chip-active font-rubik font-medium text-[#ffe779]'
                 : 'rl-chip text-[#9da2b4] hover:text-[#f0f1f5]'
             }`}
           >

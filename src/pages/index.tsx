@@ -6,7 +6,8 @@ import type { JsonLd } from '@/components/seo/Seo';
 import { useTranslation } from '@/context/I18nContext';
 import { SUPPORT_EMAIL } from '@/constants/auth';
 import { SITE_LOGO, SITE_NAME, SITE_URL, absoluteUrl } from '@/constants/site';
-import { getLobbyProps, type LobbyProps } from '@/services/lobby.server';
+import { lobbyProps, type LobbyProps } from '@/services/lobby.server';
+import { HOME_SHELF_KEYS } from '@/constants/games';
 
 const HOME_JSON_LD: JsonLd[] = [
   {
@@ -57,6 +58,6 @@ const Home: FC<LobbyProps> = (props) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<LobbyProps> = getLobbyProps;
+export const getServerSideProps: GetServerSideProps<LobbyProps> = lobbyProps(HOME_SHELF_KEYS);
 
 export default Home;

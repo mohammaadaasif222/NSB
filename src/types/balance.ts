@@ -87,6 +87,7 @@ export interface WalletSummary {
   kyc_mandatory_for_withdrawal?: boolean;
   /** Configurable 1–4. Absent on older responses; callers fall back to 2. */
   kyc_withdrawal_min_level?: number;
+  has_deposited?: boolean;
 }
 
 /* ── Currency catalogue (deposit / withdraw pickers) ─────────────── */

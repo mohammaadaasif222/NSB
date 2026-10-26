@@ -50,26 +50,27 @@ type Tone = 'wait' | 'warn' | 'stop';
 /**
  * Semantic, not decorative — the account area draws verification the same way.
  * Gold means waiting on us, blue means waiting on someone else, red means
- * something is wrong and the player has to act.
+ * something is wrong and the player has to act. In the design's own colour
+ * styles: Primary 1 #f9d028 / 2 #ffe779, State Blue #067ff0, State Red #e33827.
  */
 const TONES: Record<Tone, { wrap: string; icon: string; badge: string; button: string }> = {
   wait: {
-    wrap: 'border-sky-500/30 bg-sky-500/5',
-    icon: 'bg-sky-500/15 text-sky-400',
-    badge: 'bg-sky-500/15 text-sky-300',
-    button: 'border-sky-500/40 bg-sky-500/15 text-sky-100 hover:bg-sky-500/25',
+    wrap: 'border-[#067ff0]/30 bg-[#067ff0]/5',
+    icon: 'bg-[#067ff0]/15 text-[#067ff0]',
+    badge: 'bg-[#067ff0]/15 text-[#067ff0]',
+    button: 'border-[#067ff0]/40 bg-[#067ff0]/15 text-[#f0f1f5] hover:bg-[#067ff0]/25',
   },
   warn: {
-    wrap: 'border-amber-500/30 bg-amber-500/5',
-    icon: 'bg-amber-500/15 text-amber-400',
-    badge: 'bg-amber-500/15 text-amber-300',
-    button: 'border-amber-500/40 bg-amber-500/15 text-amber-100 hover:bg-amber-500/25',
+    wrap: 'border-[#f9d028]/30 bg-[#f9d028]/5',
+    icon: 'bg-[#f9d028]/15 text-[#ffe779]',
+    badge: 'bg-[#f9d028]/15 text-[#ffe779]',
+    button: 'border-[#f9d028]/40 bg-[#f9d028]/15 text-[#ffe779] hover:bg-[#f9d028]/25',
   },
   stop: {
-    wrap: 'border-red-500/30 bg-red-500/5',
-    icon: 'bg-red-500/15 text-red-400',
-    badge: 'bg-red-500/15 text-red-300',
-    button: 'border-red-500/40 bg-red-500/15 text-red-100 hover:bg-red-500/25',
+    wrap: 'border-[#e33827]/30 bg-[#e33827]/5',
+    icon: 'bg-[#e33827]/15 text-[#e33827]',
+    badge: 'bg-[#e33827]/15 text-[#e33827]',
+    button: 'border-[#e33827]/40 bg-[#e33827]/15 text-[#f0f1f5] hover:bg-[#e33827]/25',
   },
 };
 
@@ -232,38 +233,38 @@ const KycGateNotice: FC<Props> = ({ profile, action, onLeave, apiMessage, errorC
   };
 
   return (
-    <div className={`rounded-xl border p-4 ${tone.wrap}`}>
+    <div className={`rounded-[24px] border p-4 sm:p-5 ${tone.wrap}`}>
       <div className="flex items-start gap-3">
-        <div className={`mt-0.5 shrink-0 rounded-lg p-1.5 ${tone.icon}`}>
-          <copy.Icon size={16} />
+        <div className={`mt-0.5 shrink-0 rounded-full p-2 ${tone.icon}`}>
+          <copy.Icon size={18} />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-xs font-semibold text-white">{copy.title}</p>
+            <p className="text-[16px] font-semibold leading-6 text-[#f0f1f5]">{copy.title}</p>
             <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${tone.badge}`}
+              className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase leading-5 tracking-wider ${tone.badge}`}
             >
               {copy.badge}
             </span>
           </div>
 
-          <p className="mt-1.5 text-[11px] leading-relaxed text-slate-300">{copy.body}</p>
+          <p className="mt-1 text-[14px] leading-5 text-[#9da2b4]">{copy.body}</p>
         </div>
       </div>
 
       <button
         type="button"
         onClick={goToVerification}
-        className={`mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-colors ${tone.button}`}
+        className={`mt-4 flex h-12 w-full items-center justify-center gap-1.5 rounded-full border text-[16px] font-semibold transition-colors ${tone.button}`}
       >
         {copy.cta}
-        <ArrowUpRightIcon size={13} />
+        <ArrowUpRightIcon size={16} />
       </button>
 
       {/* The button leaves the wallet, and a player who has just typed an
           address deserves to know that before they press it. */}
-      <p className="mt-2 text-center text-[10px] text-slate-500">
+      <p className="mt-2 text-center text-[12px] leading-5 text-[#6a7287]">
         {t('acct.kycGate.opensVerification')}
       </p>
     </div>

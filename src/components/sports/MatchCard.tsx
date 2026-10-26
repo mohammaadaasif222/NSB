@@ -32,7 +32,7 @@ const TeamLine: FC<{ team: Team; score: number | undefined }> = ({ team, score }
       {team.name}
     </span>
     <span
-      className={`${text(14)} font-semibold leading-[calc(var(--u)*17)] tabular-nums text-[#9da2b4]`}
+      className={`${text(14)} font-rubik font-semibold leading-[calc(var(--u)*17)] tabular-nums text-[#9da2b4]`}
     >
       {score ?? '-'}
     </span>

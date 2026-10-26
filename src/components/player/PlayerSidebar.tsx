@@ -12,30 +12,32 @@ import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
 import recentIcon from '@/assets/lobby/rail/nav-recent.svg';
 import favouritesIcon from '@/assets/lobby/rail/nav-favourites.svg';
 import originalsIcon from '@/assets/lobby/rail/nav-originals.svg';
-import betsIcon from '@/assets/lobby/rail/nav-bets.svg';
+import casinoIcon from '@/assets/lobby/rail/tab-casino.svg';
+import sportsIcon from '@/assets/lobby/rail/tab-sports.svg';
+import liveIcon from '@/assets/lobby/player/chip-live.svg';
+import supportIcon from '@/assets/lobby/rail/tab-chat.svg';
+import chevronGlyph from '@/assets/lobby/rail/bar-chevron.svg';
 // import themeIcon from '@/assets/lobby/rail/nav-theme.svg';
 import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
 import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
 import promotionIcon from '@/assets/lobby/rail/nav-promotion.svg';
 import bonusesIcon from '@/assets/lobby/rail/nav-bonuses.svg';
 import suggestionIcon from '@/assets/lobby/rail/rail-suggestion.svg';
-import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
-import instagram from '@/assets/lobby/footer/social-instagram.svg';
-import facebook from '@/assets/lobby/footer/social-facebook.svg';
-import xSocial from '@/assets/lobby/footer/social-x.svg';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useAuth } from '@/context/AuthContext';
+import { useOpenSupport } from '@/hooks/useOpenSupport';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
-import { categoryHref } from '@/constants/games';
+import { RAIL_GROUPS, RAIL_OPEN_KEY, type RailGroup, type RailGroupId } from '@/constants/railMenu';
 import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 import GameSearchModal from '@/components/player/GameSearchModal';
 import LanguagePicker from '@/components/LanguagePicker';
+import { useSocialLinks } from '@/hooks/useSocialLinks';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -222,6 +224,100 @@ const RailLink: FC<RailLinkProps> = ({
   );
 };
 
+/* A group's rows hang under its icon column, smaller and without the phone's pill. */
+const SUB_ROW =
+  'flex h-10 w-full items-center gap-2 rounded-full ps-[58px] pe-6 text-[15px] leading-6 transition-colors lg:h-[calc(var(--u)*36)] lg:gap-[calc(var(--u)*8)] lg:rounded-[calc(var(--u)*34)] lg:ps-[calc(var(--u)*50)] lg:pe-[calc(var(--u)*15)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]';
+
+/**
+ * An expandable rail group (Originals, Casino, Live Casino, Sportsbook): the
+ * row toggles its list, and a destination that is not built yet shows "Soon".
+ * The collapsed rail has no room for the list, so there the icon links to the
+ * group's own page instead.
+ */
+const RailGroupRow: FC<{
+  group: RailGroup;
+  icon: ReactNode;
+  open: boolean;
+  onToggle: () => void;
+  currentPath: string;
+  onNavigate: () => void;
+  collapsed: boolean;
+}> = ({ group, icon, open, onToggle, currentPath, onNavigate, collapsed }) => {
+  const { t } = useTranslation();
+  const label = t(group.labelKey);
+  // Lit by its rows only: the section switch above already marks /casino and /sports.
+  const active = group.items.some((item) => item.href === currentPath);
+
+  return (
+    <div className="flex flex-shrink-0 flex-col gap-1 lg:gap-[calc(var(--u)*2)]">
+      {collapsed && (
+        <Link
+          href={group.href}
+          onClick={onNavigate}
+          title={label}
+          aria-current={active ? 'page' : undefined}
+          className={`${ROW} ${active ? ROW_ACTIVE : ROW_IDLE} max-lg:hidden lg:justify-center lg:px-[calc(var(--u)*8)]`}
+        >
+          {icon}
+        </Link>
+      )}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className={`${ROW} ${active && !open ? ROW_ACTIVE : ROW_IDLE} ${collapsed ? 'lg:hidden' : ''}`}
+      >
+        {icon}
+        <span className="min-w-0 flex-1 truncate text-start">{label}</span>
+        <Glyph
+          src={chevronGlyph.src}
+          size={16}
+          className={`opacity-60 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open && (
+        <ul
+          className={`flex flex-col gap-1 lg:gap-[calc(var(--u)*2)] ${collapsed ? 'lg:hidden' : ''}`}
+        >
+          {group.items.map((item) => {
+            const text = t(item.labelKey);
+            const current = item.href === currentPath;
+            return (
+              <li key={item.labelKey}>
+                {item.href ? (
+                  <Link
+                    href={item.href}
+                    onClick={onNavigate}
+                    aria-current={current ? 'page' : undefined}
+                    className={`${SUB_ROW} ${
+                      current
+                        ? 'bg-white/10 text-white'
+                        : 'text-[#9da2b4] hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <span className="truncate">{text}</span>
+                  </Link>
+                ) : (
+                  <span
+                    aria-disabled="true"
+                    title={`${text} — ${t('common.soon')}`}
+                    className={`${SUB_ROW} cursor-default text-[#9da2b4]/50`}
+                  >
+                    <span className="truncate">{text}</span>
+                    <span className="ms-auto flex-shrink-0 rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-wide lg:px-[calc(var(--u)*8)] lg:text-[length:max(9px,calc(var(--u)*10))]">
+                      {t('common.soon')}
+                    </span>
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 /** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
 const RAIL_BUTTON =
   'flex h-[calc(var(--u)*44)] w-full min-w-0 items-center justify-center gap-[calc(var(--u)*6)] rl-drop rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white lg:border-0';
@@ -267,13 +363,6 @@ const RailButton: FC<{
   );
 };
 
-const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
-  { icon: whatsapp, label: 'WhatsApp', href: 'https://wa.me/' },
-  { icon: instagram, label: 'Instagram', href: 'https://instagram.com/' },
-  { icon: facebook, label: 'Facebook', href: 'https://facebook.com/' },
-  { icon: xSocial, label: 'X', href: 'https://x.com/' },
-];
-
 /* ==================================================================== */
 /* The rail                                                              */
 /* ==================================================================== */
@@ -283,20 +372,27 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
  * down the left from the top of the page — the bar sits beside it, not above.
  *
  * Casino and Sports sit up top as the two site sections, then the
- * welcome-package teaser, then the player's own shortcuts in a list that
- * scrolls on its own, and the socials and contact pills pinned at the foot.
- * Rolluck Originals is the only entry with a built feature behind it — the
- * originals shelf's own category page. Every other destination routes to a
- * placeholder page that says so.
+ * welcome-package teaser, then the menu in a list that scrolls on its own
+ * (the Casino Manager sheet's "Final" order, with the expandable groups from
+ * constants/railMenu), and the socials and contact pills pinned at the foot.
+ * Language stays in the top bar, and beside search on a phone. Sports pages swap the casino's rows for the Sportsbook group.
  *
  * Sized in `--u` (see PlayerLayout), so it shrinks with the page on a
  * narrower desktop; on a phone it is the slide-in drawer at its design size.
  */
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
-  const { pathname, push } = useRouter();
+  const { pathname, asPath, push } = useRouter();
+  const socialLinks = useSocialLinks();
+  const telegramLink = socialLinks.find((link) => link.platform === 'telegram');
+  const railSocials = socialLinks.filter((link) => link.platform !== 'telegram');
   const { token } = useAuth();
+  const openSupport = useOpenSupport();
   const { t } = useTranslation();
-  const { rewards: rewardsOn, promotions: promotionsOn, referrals: referralsOn } = usePlatformFeatures();
+  const {
+    rewards: rewardsOn,
+    promotions: promotionsOn,
+    referrals: referralsOn,
+  } = usePlatformFeatures();
   const { openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
@@ -324,10 +420,64 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
     };
   }, [open, onClose]);
 
-  const casinoActive = pathname === '/casino' || pathname.startsWith('/game');
+  const casinoActive =
+    pathname === '/casino' || pathname === '/live-casino' || pathname.startsWith('/game');
   const sportsActive = pathname.startsWith('/sports');
+  const currentPath = asPath.split(/[?#]/)[0];
+
+  // A group the player has not opened or closed starts open when it holds the
+  // current page. The sportsbook opens on every visit to the sports pages and
+  // is not remembered, so the player always lands on the sports list.
+  const [openGroups, setOpenGroups] = useState<Partial<Record<RailGroupId, boolean>>>({});
+  useEffect(() => {
+    try {
+      setOpenGroups(JSON.parse(localStorage.getItem(RAIL_OPEN_KEY) ?? '{}'));
+    } catch {
+      // A blocked or garbled store just means every group starts at its default.
+    }
+  }, []);
+  const [sportsOpen, setSportsOpen] = useState(true);
+  useEffect(() => {
+    if (sportsActive) setSportsOpen(true);
+  }, [sportsActive]);
+  const groupOpen = (id: RailGroupId): boolean =>
+    id === 'sports'
+      ? sportsOpen
+      : (openGroups[id] ?? RAIL_GROUPS[id].items.some((item) => item.href === currentPath));
+  const toggleGroup = (id: RailGroupId): void => {
+    if (id === 'sports') {
+      setSportsOpen((open) => !open);
+      return;
+    }
+    const next = { ...openGroups, [id]: !groupOpen(id) };
+    setOpenGroups(next);
+    try {
+      localStorage.setItem(RAIL_OPEN_KEY, JSON.stringify(next));
+    } catch {
+      // Not remembered this time; the toggle still applies.
+    }
+  };
 
   const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
+
+  const groupIcons: Record<RailGroupId, StaticImageData> = {
+    originals: originalsIcon,
+    casino: casinoIcon,
+    live: liveIcon,
+    sports: sportsIcon,
+  };
+  const groupRow = (id: RailGroupId): ReactNode => (
+    <RailGroupRow
+      key={id}
+      group={RAIL_GROUPS[id]}
+      icon={icon(groupIcons[id])}
+      open={groupOpen(id)}
+      onToggle={() => toggleGroup(id)}
+      currentPath={currentPath}
+      onNavigate={onClose}
+      collapsed={collapsed}
+    />
+  );
 
   return (
     <>
@@ -462,6 +612,10 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
           {/* --- Shortcuts ------------------------------------------------- */}
           <nav className="thin-scrollbar -mx-1 mt-[18px] flex flex-shrink-0 flex-col gap-2.5 px-1 lg:mt-[calc(var(--u)*12)] lg:min-h-0 lg:flex-1 lg:flex-shrink lg:gap-[calc(var(--u)*4)] lg:overflow-y-auto">
+            {/* Each section keeps its own menu: sports pages list the
+                sportsbook, every other page the casino's rows. The rows
+                after the casino's are shared. */}
+            {sportsActive && groupRow('sports')}
             <RailLink
               href="/rolluck-oath"
               active={pathname === '/rolluck-oath'}
@@ -471,42 +625,31 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             >
               {t('nav.rolluckOath')}
             </RailLink>
-            <RailLink
-              href="/recents"
-              active={pathname === '/recents'}
-              icon={icon(recentIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.recents')}
-            </RailLink>
-            <RailLink
-              href="/favourites"
-              active={pathname === '/favourites'}
-              icon={icon(favouritesIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.favourites')}
-            </RailLink>
-            <RailLink
-              href={categoryHref('originals')}
-              active={pathname === '/games/[category]'}
-              icon={icon(originalsIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.originals')}
-            </RailLink>
-            <RailLink
-              href="/my-bets"
-              active={pathname === '/my-bets'}
-              icon={icon(betsIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.myBets')}
-            </RailLink>
+            {!sportsActive && (
+              <>
+                <RailLink
+                  href="/recents"
+                  active={pathname === '/recents'}
+                  icon={icon(recentIcon)}
+                  onClick={onClose}
+                  collapsed={collapsed}
+                >
+                  {t('nav.recents')}
+                </RailLink>
+                <RailLink
+                  href="/favourites"
+                  active={pathname === '/favourites'}
+                  icon={icon(favouritesIcon)}
+                  onClick={onClose}
+                  collapsed={collapsed}
+                >
+                  {t('nav.favourites')}
+                </RailLink>
+                {groupRow('originals')}
+                {groupRow('casino')}
+                {groupRow('live')}
+              </>
+            )}
             {/* <RailLink
             onSelect={() => setThemeOpen(true)}
             active={false}
@@ -525,15 +668,17 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             >
               {t('nav.vipClub')}
             </RailLink>
-            <RailLink
-              href="/tournaments"
-              active={pathname === '/tournaments'}
-              icon={icon(tournamentsIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.tournaments')}
-            </RailLink>
+            {!sportsActive && (
+              <RailLink
+                href="/tournaments"
+                active={pathname === '/tournaments'}
+                icon={icon(tournamentsIcon)}
+                onClick={onClose}
+                collapsed={collapsed}
+              >
+                {t('nav.tournaments')}
+              </RailLink>
+            )}
             {promotionsOn && (
               <RailLink
                 href="/promotions"
@@ -592,37 +737,54 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
                 {t('aff.title')}
               </RailLink>
             )}
+            <RailLink
+              onSelect={openSupport}
+              active={false}
+              icon={icon(supportIcon)}
+              onClick={onClose}
+              collapsed={collapsed}
+            >
+              {t('lobby.rail.liveSupport')}
+            </RailLink>
           </nav>
 
           {/* --- Socials and contact pills --------------------------------- */}
           <div className="mt-[67px] flex-shrink-0 border-t border-white/[0.08] pt-4 lg:mt-0 lg:border-0 lg:pt-[calc(var(--u)*13)]">
+            {railSocials.length > 0 && (
+              <div
+                className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
+                  collapsed ? 'lg:flex-col' : ''
+                }`}
+              >
+                {railSocials.map(({ icon: mark, label, href }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                    title={label}
+                    className="flex h-7 w-7 items-center justify-center p-0.5 transition-transform hover:-translate-y-0.5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)] lg:p-0"
+                  >
+                    <img src={mark.src} alt="" className="h-full w-full" />
+                  </a>
+                ))}
+              </div>
+            )}
+
             <div
-              className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
-                collapsed ? 'lg:flex-col' : ''
+              className={`mt-5 grid gap-2 lg:mt-[calc(var(--u)*11)] lg:block lg:space-y-[calc(var(--u)*7)] ${
+                telegramLink ? 'grid-cols-2' : 'grid-cols-1'
               }`}
             >
-              {SOCIALS.map(({ icon: mark, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={label}
-                  title={label}
-                  className="flex h-7 w-7 items-center justify-center p-0.5 transition-transform hover:-translate-y-0.5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)] lg:p-0"
-                >
-                  <img src={mark.src} alt="" className="h-full w-full" />
-                </a>
-              ))}
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-2 lg:mt-[calc(var(--u)*11)] lg:block lg:space-y-[calc(var(--u)*7)]">
-              <RailButton
-                icon={ICON.telegram}
-                label={t('lobby.rail.joinTelegram')}
-                href="https://t.me/"
-                collapsed={collapsed}
-              />
+              {telegramLink && (
+                <RailButton
+                  icon={ICON.telegram}
+                  label={t('lobby.rail.joinTelegram')}
+                  href={telegramLink.href}
+                  collapsed={collapsed}
+                />
+              )}
               <RailButton
                 icon={suggestionIcon}
                 label={t('lobby.rail.suggestionBox')}

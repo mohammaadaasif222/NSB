@@ -19,8 +19,8 @@ interface Props {
   tone?: 'clear' | 'grey';
   /** Whether the page behind is dimmed (the default) or left clear. */
   backdrop?: 'dim' | 'none';
-  /** Below `sm`, a sheet rising from the screen's foot (see Modal). */
-  phoneSheet?: boolean;
+  /** Below `sm`, a sheet rising from the screen's foot; `fit` sizes it to its content (see Modal). */
+  phoneSheet?: boolean | 'fit';
   /** Extra classes for the title (see ModalHeader). */
   titleClassName?: string;
   /** Classes for the card: width, padding, height. */

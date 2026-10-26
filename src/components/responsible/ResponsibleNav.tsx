@@ -128,8 +128,8 @@ const ResponsibleNav: FC<Props> = ({ active, onSelect, visible }) => {
                   aria-current={selected ? 'page' : undefined}
                   className={`${PILL} ${
                     selected
-                      ? `rl-rail-row-active rl-rail-glow font-medium font-['Rubik','Onest',sans-serif] ${INK_SELECTED}`
-                      : `rl-rail-row hover:rl-rail-row-active font-normal ${INK_RESTING} hover:font-medium hover:text-[#ffe779]`
+                      ? `rl-rail-row-active rl-rail-glow font-rubik font-medium ${INK_SELECTED}`
+                      : `rl-rail-row hover:rl-rail-row-active font-normal ${INK_RESTING} hover:font-rubik hover:font-medium hover:text-[#ffe779]`
                   }`}
                 >
                   <NavGlyph src={icon.src} w={w} h={h} />

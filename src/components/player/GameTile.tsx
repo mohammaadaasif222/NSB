@@ -10,6 +10,7 @@ import { trackGameOpen } from '@/utils/events';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
 import { useFavourites } from '@/context/FavouritesContext';
 import personIcon from '@/assets/lobby/person.svg';
+import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
 
 interface Props {
   game: Game;
@@ -147,9 +148,15 @@ const InfoFace: FC<{ game: Game; id: string; surface?: string }> = ({ game, id, 
   if (game.volatility) {
     rows.push({ label: t('game.volatility'), value: t(VOLATILITY_KEY[game.volatility]) });
   }
-  if (game.genre) rows.push({ label: t('game.genre'), value: game.genre });
+  const maxWin = maxWinLabel(game);
+  if (maxWin) rows.push({ label: t('game.maxWin'), value: maxWin });
   const limits = betLimits(game);
   if (limits) rows.push({ label: t('game.betLimits'), value: limits });
+  // The genre only while there is room; the features below say more.
+  const features = featureKeys(game);
+  if (game.genre && rows.length < 5 && features.length === 0) {
+    rows.push({ label: t('game.genre'), value: game.genre });
+  }
 
   return (
     <div
@@ -173,6 +180,18 @@ const InfoFace: FC<{ game: Game; id: string; surface?: string }> = ({ game, id, 
           </div>
         ))}
       </dl>
+      {features.length > 0 && (
+        <ul aria-label={t('game.features')} className="mt-[3.54cqw] flex flex-wrap gap-[2.02cqw]">
+          {features.map((key) => (
+            <li
+              key={key}
+              className="rounded-full border border-[#f9d028]/40 px-[3.03cqw] py-[0.76cqw] text-[max(8px,4.8cqw)] font-medium leading-[1.3] text-[#f9d028]"
+            >
+              {t(key)}
+            </li>
+          ))}
+        </ul>
+      )}
       {/* Leaves the bottom-end corner to the close control. */}
       <Link
         href={gameHref(game.slug)}

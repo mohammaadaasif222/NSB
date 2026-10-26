@@ -9,9 +9,10 @@ import CrashPreview from '@/components/player/CrashPreview';
 import ProviderRow from '@/components/player/ProviderRow';
 import SportsRow, { SportsShelf } from '@/components/player/SportsRow';
 import FavouritesShelf from '@/components/player/FavouritesShelf';
-import TournamentsShelf from '@/components/player/TournamentsShelf';
+import RecentShelf from '@/components/player/RecentShelf';
+import ComingSoonShelf from '@/components/player/ComingSoonShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
-import { CASINO_SHELF_KEYS, PLAYER_SHELF_KEYS } from '@/constants/games';
+import { CASINO_SHELF_KEYS, LIVE_SHELF_KEYS, PLAYER_SHELF_KEYS } from '@/constants/games';
 import StreamersRow from '@/components/player/StreamersRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import FaqAccordion from '@/components/player/FaqAccordion';
@@ -19,6 +20,7 @@ import SiteFooter from '@/components/player/SiteFooter';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import type { LobbyProps } from '@/services/lobby.server';
+import type { TranslationKey } from '@/i18n/locales';
 import Seo, { type JsonLd, type SeoProps } from '@/components/seo/Seo';
 import type { FaqItem } from '@/services/faqs';
 
@@ -33,8 +35,9 @@ interface Props extends LobbyProps {
    * `home` — the landing page signed out, the player's dashboard signed in.
    * `casino` — the catalogue: banner, browser and every casino shelf, with
    * the providers and tournaments among them; the sportsbook is left to /sports.
+   * `live` — the Live Casino lobby: banner, its own chips and the live rows.
    */
-  variant: 'home' | 'casino';
+  variant: 'home' | 'casino' | 'live';
 }
 
 /**
@@ -72,13 +75,23 @@ const PLAYER_INSERTS: readonly ShelfInsert[] = [
 ];
 
 /**
- * The casino page's rows among its shelves: the player's favourites after
- * Rolluck Originals, providers after Live Casino, tournaments after Recommended.
+ * The casino page's rows among its shelves, as the sheet orders them: the
+ * player's favourites after Originals, their last played and Drops & Wins
+ * after Recommended, Providers after Instant Wins, Hot after Trending.
  */
-const CASINO_INSERTS = (providerRow: ReactNode): readonly ShelfInsert[] => [
+const CASINO_INSERTS = (
+  providerRow: ReactNode,
+  t: (key: TranslationKey) => string
+): readonly ShelfInsert[] => [
   { id: 'favourites', after: 'originals', node: <FavouritesShelf /> },
-  { id: 'providers', after: 'live', node: providerRow },
-  { id: 'tournaments', after: 'featured', node: <TournamentsShelf /> },
+  { id: 'recents', after: 'featured', node: <RecentShelf /> },
+  {
+    id: 'drops-wins',
+    after: 'featured',
+    node: <ComingSoonShelf title={t('lobby.rail.dropsWins')} />,
+  },
+  { id: 'providers', after: 'instant-wins', node: providerRow },
+  { id: 'hot', after: 'trending', node: <ComingSoonShelf title={t('lobby.casino.hot')} /> },
 ];
 
 /**
@@ -118,7 +131,9 @@ const Lobby: FC<Props> = ({
     ...(shelves.find((s) => s.key === 'new')?.games ?? []),
     ...shelves.filter((s) => s.key !== 'new').flatMap((s) => s.games),
   ];
-  const casino = variant === 'casino';
+  const live = variant === 'live';
+  // The live lobby is laid out as the casino page is, with its own rows.
+  const casino = variant === 'casino' || live;
   const jsonLd =
     !casino && faqs.length > 0 ? [...[seo.jsonLd ?? []].flat(), faqJsonLd(faqs)] : seo.jsonLd;
   const controls = player || casino;
@@ -137,21 +152,27 @@ const Lobby: FC<Props> = ({
       basePath={basePath}
       controls={controls}
       providers={providers.map((p) => p.name).sort((a, b) => a.localeCompare(b))}
-      {...(casino
+      {...(live
         ? {
-            // The casino design's shelves, with the providers and tournaments
-            // among them; Featured is its "Recommended".
-            shelfKeys: CASINO_SHELF_KEYS,
-            titles: { originals: 'nav.originals', featured: 'dash.recommended' },
+            shelfKeys: LIVE_SHELF_KEYS,
             chipsOnPhone: true,
-            inserts: CASINO_INSERTS(providerRow),
+            live: true,
           }
-        : player && {
-            // The signed-in design's shelves, with the sports row among them.
-            shelfKeys: PLAYER_SHELF_KEYS,
-            titles: { originals: 'nav.originals' },
-            inserts: PLAYER_INSERTS,
-          })}
+        : casino
+          ? {
+              // The sheet's casino rows, with the player's own, Providers and
+              // the not-yet-available ones among them.
+              shelfKeys: CASINO_SHELF_KEYS,
+              titles: { originals: 'nav.originals', featured: 'lobby.casino.recommended' },
+              chipsOnPhone: true,
+              inserts: CASINO_INSERTS(providerRow, t),
+            }
+          : player && {
+              // The signed-in design's shelves, with the sports row among them.
+              shelfKeys: PLAYER_SHELF_KEYS,
+              titles: { originals: 'nav.originals' },
+              inserts: PLAYER_INSERTS,
+            })}
     />
   );
 

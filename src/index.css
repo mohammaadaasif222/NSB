@@ -83,6 +83,17 @@
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
+/* Roboto sets nothing but the tournament podium's rank discs (1, 2, 3), so
+   only its digits ship, at the Black and ExtraBold the design draws them. */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 800 900;
+  src: url('/fonts/roboto-digits-v51.woff2') format('woff2');
+  unicode-range: U+30-39;
+}
+
 /* One design pixel. The lobby sets it from its own width — 1px at the
    design's 1548px content column, proportionally less on a narrower desktop,
    1px on a phone — and its sections size themselves in multiples of it, so a
@@ -126,8 +137,11 @@
   --container-panel: 61.25rem;
   --container-acct: 90rem;
 
-  /* The legal documents are the one place the design leaves Onest — their body
-     copy is set in Rubik, Regular and Bold. Registered so `font-rubik` carries
+  /* The design's second face. The legal documents set their body copy in it;
+     the picked tab of each tab row (wallet, promotions, blogs, the casino and
+     sportsbook chips, the responsible-gambling nav — the resting ones stay
+     Onest), the footer's language button and the sportsbook's prices are
+     Rubik Medium. Registered so `font-rubik` carries
      the same fallback chain as the page font rather than dropping to Arial
      while the webfont is in flight. */
   --font-rubik: 'Rubik', 'Onest', 'Poppins', ui-sans-serif, system-ui, sans-serif;

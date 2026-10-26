@@ -13,12 +13,17 @@ import SportsToolbar, {
   type FixtureQuery,
 } from '@/components/sports/SportsToolbar';
 import { useTranslation } from '@/context/I18nContext';
-import { SPORTS, isSportKey, type SportKey } from '@/constants/sportsbook';
+import {
+  fixtureSportOf,
+  isSportPageKey,
+  sportPageLabel,
+  type SportPageKey,
+} from '@/constants/sportsbook';
 import { ALL_FIXTURES, SPORT_SECTIONS } from '@/services/sportsbook.sample';
 import Seo from '@/components/seo/Seo';
 
 interface Props {
-  sport: SportKey;
+  sport: SportPageKey;
 }
 
 /**
@@ -30,12 +35,12 @@ interface Props {
 const SportPage: FC<Props> = ({ sport }) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState<FixtureQuery>(FIXTURE_QUERY_DEFAULTS);
-  const labelKey = SPORTS.find((s) => s.key === sport)?.label;
+  const labelKey = sportPageLabel(sport);
   const label = labelKey ? t(labelKey) : '';
 
   const view = useMemo(() => {
     const ofSport = <T extends { sport: string }>(list: T[]): T[] =>
-      list.filter((f) => f.sport === sport);
+      list.filter((f) => f.sport === fixtureSportOf(sport));
     const football = sport === 'football';
     const others = ofSport(ALL_FIXTURES);
     return {
@@ -111,6 +116,6 @@ const SportPage: FC<Props> = ({ sport }) => {
 
 /** Unknown sports are a 404, not an empty page. */
 export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) =>
-  isSportKey(params?.sport) ? { props: { sport: params.sport } } : { notFound: true };
+  isSportPageKey(params?.sport) ? { props: { sport: params.sport } } : { notFound: true };
 
 export default SportPage;

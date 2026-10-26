@@ -2,17 +2,16 @@ import { useState, type FC } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
+import { toast } from 'react-toastify';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
-import { categoryHref } from '@/constants/games';
+import { useOpenSupport } from '@/hooks/useOpenSupport';
+import { LIVE_CASINO_HREF, PROVIDERS_PATH, categoryHref } from '@/constants/games';
+import { COUNTER_STRIKE, sportHref } from '@/constants/sportsbook';
 import LanguagePicker from '@/components/LanguagePicker';
 import type { TranslationKey } from '@/i18n/locales';
+import { useSocialLinks } from '@/hooks/useSocialLinks';
 
 import { PAYMENT_MARK, ROLLUCK_LOGO } from '@/constants/cdn';
-import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
-import instagram from '@/assets/lobby/footer/social-instagram.svg';
-import facebook from '@/assets/lobby/footer/social-facebook.svg';
-import xSocial from '@/assets/lobby/footer/social-x.svg';
-import telegram from '@/assets/lobby/footer/social-telegram.svg';
 import questions from '@/assets/lobby/footer/contact-questions.svg';
 import bug from '@/assets/lobby/footer/contact-bug.svg';
 import partner from '@/assets/lobby/footer/contact-partner.svg';
@@ -23,14 +22,6 @@ import payVisa from '@/assets/lobby/footer/pay-visa.webp';
 import payApple from '@/assets/lobby/footer/pay-applepay.svg';
 import payGoogle from '@/assets/lobby/footer/pay-googlepay.svg';
 import chevronDown from '@/assets/lobby/faq-chevron-down.svg';
-
-const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
-  { icon: whatsapp, label: 'WhatsApp', href: 'https://wa.me/' },
-  { icon: instagram, label: 'Instagram', href: 'https://instagram.com/' },
-  { icon: facebook, label: 'Facebook', href: 'https://facebook.com/' },
-  { icon: xSocial, label: 'X', href: 'https://x.com/' },
-  { icon: telegram, label: 'Telegram', href: 'https://t.me/' },
-];
 
 const CONTACTS: { icon: StaticImageData; label: TranslationKey; email: string }[] = [
   { icon: questions, label: 'lobby.footer.contactQuestions', email: 'support@xyzlife.top' },
@@ -61,6 +52,7 @@ interface FooterLink {
   label: string;
   /** Absent for destinations that do not exist yet — rendered inert. */
   href?: string;
+  onSelect?: () => void;
 }
 
 const LINK =
@@ -73,7 +65,15 @@ const LINK =
  */
 const Item: FC<{ item: FooterLink; soon: string }> = ({ item, soon }) => (
   <li>
-    {!item.href ? (
+    {item.onSelect ? (
+      <button
+        type="button"
+        onClick={item.onSelect}
+        className={`${LINK} text-start hover:text-white`}
+      >
+        {item.label}
+      </button>
+    ) : !item.href ? (
       <span className={`${LINK} cursor-default hover:text-[#c8ccd8]`} title={soon}>
         {item.label}
       </span>
@@ -164,12 +164,14 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  */
 const SiteFooter: FC = () => {
   const { t } = useTranslation();
+  const socialLinks = useSocialLinks();
   const {
     rewards: rewardsOn,
     promotions: promotionsOn,
     terms_page: termsOn,
     responsible_gambling: responsibleOn,
   } = usePlatformFeatures();
+  const openSupport = useOpenSupport();
   const soon = t('common.soon');
 
   const toTop = (): void =>
@@ -182,18 +184,18 @@ const SiteFooter: FC = () => {
     { label: t('browse.filterAll'), href: '/casino' },
     { label: t('nav.originals'), href: categoryHref('originals') },
     { label: t('dash.slots'), href: categoryHref('slots') },
-    { label: t('dash.liveCasino') },
-    { label: t('dash.tableGames') },
-    { label: t('lobby.footer.providers') },
+    { label: t('dash.liveCasino'), href: LIVE_CASINO_HREF },
+    { label: t('dash.tableGames'), href: categoryHref('table') },
+    { label: t('lobby.footer.providers'), href: PROVIDERS_PATH },
   ];
 
   const sports: FooterLink[] = [
     { label: t('nav.home'), href: '/sports' },
     { label: t('lobby.footer.live'), href: '/sports#live-games' },
-    { label: t('lobby.sport.soccer') },
-    { label: t('lobby.sport.tennis') },
-    { label: t('lobby.sport.basketball') },
-    { label: t('lobby.sport.counterStrike') },
+    { label: t('lobby.sport.soccer'), href: sportHref('football') },
+    { label: t('lobby.sport.tennis'), href: sportHref('tennis') },
+    { label: t('lobby.sport.basketball'), href: sportHref('basketball') },
+    { label: t('lobby.sport.counterStrike'), href: sportHref(COUNTER_STRIKE) },
   ];
 
   /* Promotions and Bonuses are in the rail too; Blogs is reachable from
@@ -207,7 +209,10 @@ const SiteFooter: FC = () => {
     ...(promotionsOn ? [{ label: t('menu.promotions'), href: '/promotions' }] : []),
     { label: t('nav.bonuses'), href: '/bonuses' },
     { label: t('lobby.footer.referral'), href: '/referral' },
-    { label: t('lobby.footer.swapCrypto') },
+    {
+      label: t('lobby.footer.swapCrypto'),
+      onSelect: () => toast.info(t('common.underDevelopment')),
+    },
   ];
 
   const help: FooterLink[] = [
@@ -225,7 +230,7 @@ const SiteFooter: FC = () => {
     ...(termsOn
       ? [{ label: t('lobby.footer.sportsTerms'), href: '/terms-of-service#sports-betting' }]
       : []),
-    { label: t('menu.liveSupport') },
+    { label: t('menu.liveSupport'), onSelect: openSupport },
     ...(responsibleOn
       ? [{ label: t('menu.responsibleGambling'), href: '/responsible-gambling' }]
       : []),
@@ -299,7 +304,7 @@ const SiteFooter: FC = () => {
         </Link>
 
         <div className="order-3 flex items-center gap-[calc(var(--u)*12)] lg:order-2">
-          {SOCIALS.map(({ icon, label, href }) => (
+          {socialLinks.map(({ icon, label, href }) => (
             <a
               key={label}
               href={href}

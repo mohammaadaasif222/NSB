@@ -26,6 +26,7 @@ import { fetchWinnerGames } from '@/services/myGames.server';
 import type { DiceConfig, Game } from '@/types';
 import Seo, { type JsonLd } from '@/components/seo/Seo';
 import { gameDescription } from '@/components/seo/gameMeta';
+import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
 
 interface Props {
   game: Game | null;
@@ -248,7 +249,36 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
                 />
                 <Stat label={t('game.minBet')} value={money(game.min_bet, game.bet_currency)} />
                 <Stat label={t('game.maxBet')} value={money(game.max_bet, game.bet_currency)} />
+                {game.volatility && (
+                  <Stat label={t('game.volatility')} value={t(`game.vol.${game.volatility}`)} />
+                )}
+                {maxWinLabel(game) && <Stat label={t('game.maxWin')} value={maxWinLabel(game)!} />}
+                {game.release_date && (
+                  <Stat
+                    label={t('game.released')}
+                    value={new Date(`${game.release_date}T00:00:00Z`).toLocaleDateString(
+                      undefined,
+                      {
+                        year: 'numeric',
+                        month: 'short',
+                        timeZone: 'UTC',
+                      }
+                    )}
+                  />
+                )}
               </dl>
+              {featureKeys(game).length > 0 && (
+                <ul aria-label={t('game.features')} className="mt-3 flex max-w-md flex-wrap gap-2">
+                  {featureKeys(game).map((key) => (
+                    <li
+                      key={key}
+                      className="rounded-full border border-[#f9d028]/40 px-3 py-1 text-xs font-medium text-[#f9d028]"
+                    >
+                      {t(key)}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 {/*

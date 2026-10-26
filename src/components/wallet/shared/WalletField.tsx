@@ -22,7 +22,7 @@ export const WALLET_GHOST_BUTTON =
   'flex h-14 w-full items-center justify-center rounded-[43px] border border-white/20 bg-white/5 text-[18px] font-medium leading-7 text-[#f0f1f5] transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50';
 
 /** A form error under its field. */
-export const WALLET_ERROR = 'text-[13px] leading-5 text-[#ff6b5e]';
+export const WALLET_ERROR = 'text-[13px] leading-5 text-[#e33827]';
 
 /** A bare input that fills the pill — the pill draws the field. */
 export const WALLET_INPUT = `h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-[#f0f1f5] ${WALLET_VALUE}`;
