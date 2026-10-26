@@ -26,7 +26,7 @@ const RangeFilter: FC<Props> = ({ active, onSelect, rangeLabel }) => {
   return (
     /* Full width on its own line, so `ms-auto` still carries the pill to the
        panel's edge once the title has moved above it. */
-    <div className="flex w-full flex-wrap items-center gap-[calc(var(--u)*8)] lg:w-auto lg:flex-1 lg:gap-[calc(var(--u)*11)]">
+    <div className="scrollbar-none flex w-full items-center gap-2.5 overflow-x-auto lg:w-auto lg:flex-1 lg:flex-wrap lg:gap-[calc(var(--u)*11)] lg:overflow-visible">
       {STAT_RANGES.map(({ key, labelKey }) => {
         const selected = key === active;
         return (
@@ -51,14 +51,14 @@ const RangeFilter: FC<Props> = ({ active, onSelect, rangeLabel }) => {
       {/* Tighter on its closing edge than its opening one — the clear button
           is a disc that carries its own margin, the calendar is not. */}
       <span
-        className={`${PILL} rl-chip ms-auto gap-[calc(var(--u)*10)] ps-[calc(var(--u)*15)] pe-[calc(var(--u)*5)]`}
+        className={`${PILL} max-lg:rl-glass-btn lg:rl-chip ms-auto gap-1.5 ps-3 pe-1 max-lg:absolute max-lg:-top-14 max-lg:end-0 lg:gap-[calc(var(--u)*10)] lg:ps-[calc(var(--u)*15)] lg:pe-[calc(var(--u)*5)]`}
         aria-label={t('stats.range')}
       >
         <span className="flex h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] shrink-0 items-center justify-center text-[#f0f1f5]">
           <RangeCalendarIcon />
         </span>
 
-        <span className="tabular-nums text-[#9da2b4]">{rangeLabel || '—'}</span>
+        <span className="text-[#9da2b4] lg:tabular-nums">{rangeLabel || '—'}</span>
 
         <span
           title={t('common.soon')}

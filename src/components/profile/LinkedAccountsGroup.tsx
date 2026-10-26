@@ -15,7 +15,7 @@ const LinkedAccountsGroup: FC = () => {
   const { accounts, loading, error, busy, refresh, toggle } = useLinkedAccounts();
 
   return (
-    <FieldGroup label={t('profile.linkedAccounts')}>
+    <FieldGroup label={t('profile.linkedAccounts')} cardClassName="max-lg:rounded-[34px]">
       {LINKED_PROVIDERS.map(({ key, label, mark }) => {
         if (!isLinkable(key)) {
           return (

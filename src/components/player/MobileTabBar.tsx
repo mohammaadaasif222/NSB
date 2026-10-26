@@ -20,11 +20,11 @@ import headsetIcon from '@/assets/lobby/tabbar/headset.svg';
 import roulette from '@/assets/lobby/tabbar/roulette.webp';
 import ball from '@/assets/lobby/tabbar/ball.webp';
 
-const GLASS = 'rl-drop-pane bg-black/45 backdrop-blur-xl';
+const GLASS = 'rl-menu-rim bg-black/45 backdrop-blur-xl';
 const ITEM =
-  'flex h-10 min-w-0 flex-1 items-center justify-center rounded-[44px] text-[#f0f1f5] transition-colors';
-const ITEM_ON = 'bg-[#252937]';
-const ITEM_IDLE = 'hover:bg-white/5';
+  'flex h-10 min-w-0 flex-1 items-center justify-center rounded-[44px] transition-colors';
+const ITEM_ON = 'bg-[#252937] text-[#f9d028]';
+const ITEM_IDLE = 'text-[#f0f1f5] hover:bg-white/5';
 const DISC = `${GLASS} flex h-[50px] w-[50px] items-center justify-center rounded-full text-[#f0f1f5]`;
 
 const SECTION = {
@@ -288,7 +288,7 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
           onClick={openSupport}
           aria-label={t('nav.liveChat')}
           title={t('nav.liveChat')}
-          className={`${DISC} fixed bottom-[87px] end-4 z-30 !h-[60px] !w-[60px] lg:hidden [body:has([data-chat-drawer=open])_&]:hidden`}
+          className={`${DISC} fixed bottom-[87px] end-4 z-30 !h-[60px] !w-[60px] lg:hidden [body:has([data-chat-drawer=open])_&]:hidden [body:has([data-profile-sheet])_&]:hidden`}
         >
           <Glyph src={headsetIcon.src} className="h-[30px] w-[30px]" />
         </button>

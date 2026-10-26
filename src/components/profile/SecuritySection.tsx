@@ -28,9 +28,9 @@ const SecuritySection: FC<Props> = ({ email, twoFactorEnabled, onChangePassword,
 
   return (
     <div>
-      <h2 className={SECTION_HEADING}>{t('profile.security')}</h2>
+      <h2 className={`${SECTION_HEADING} max-lg:hidden`}>{t('profile.security')}</h2>
 
-      <div className="mt-[calc(var(--u)*32)] space-y-[calc(var(--u)*30)]">
+      <div className="space-y-5 lg:mt-[calc(var(--u)*32)] lg:space-y-[calc(var(--u)*30)]">
         {/* The whole row is the control — the design gives it neither a button
             nor a chevron, so the hover is all that says it is one. */}
         <FieldGroup label={t('profile.password')}>
@@ -55,14 +55,14 @@ const SecuritySection: FC<Props> = ({ email, twoFactorEnabled, onChangePassword,
             <SettingRow
               icon={<TwoFactorIcon />}
               title={t('profile.enable2fa')}
-              action={<ToggleSwitch enabled={twoFactorEnabled} onToggle={onToggle2FA} />}
+              action={<ToggleSwitch enabled={twoFactorEnabled} onToggle={onToggle2FA} narrow />}
             />
           </FieldGroup>
         )}
 
-        <FieldGroup label={t('sec.connectedWallet')}>
+        <FieldGroup label={t('sec.connectedWallet')} cardClassName="max-lg:rounded-[34px]">
           {WALLET_PROVIDERS.map(({ key, label, mark }) => (
-            <SettingRow key={key} icon={mark} title={label} action={<SoonToggle label={label} />} />
+            <SettingRow key={key} icon={mark} title={label} action={<SoonToggle narrow label={label} />} />
           ))}
         </FieldGroup>
       </div>

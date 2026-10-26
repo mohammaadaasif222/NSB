@@ -15,7 +15,7 @@ const LanguageGroup: FC = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="space-y-[calc(var(--u)*6)]">
+    <section className="space-y-1 lg:space-y-[calc(var(--u)*6)]">
       <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
         {t('profile.language')}
       </h3>

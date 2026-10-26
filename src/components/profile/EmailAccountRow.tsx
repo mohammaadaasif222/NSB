@@ -25,7 +25,7 @@ const EmailAccountRow: FC<Props> = ({ email, verified, onAddEmail }) => {
   const host = mailHostOf(email);
 
   return (
-    <FieldGroup label={t('profile.emailAccount')}>
+    <FieldGroup label={t('profile.emailAccount')} cardClassName="max-lg:py-[3px]">
       <SettingRow
         icon={host.mark}
         title={host.label}

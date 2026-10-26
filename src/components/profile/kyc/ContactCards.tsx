@@ -17,7 +17,7 @@ import type { ApiUser } from '@/types/profile';
 /** The green tick the design gives a confirmed contact. */
 const VerifiedTick: FC<{ label: string }> = ({ label }) => (
   <span
-    className="flex h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] shrink-0 items-center justify-center rounded-full bg-[#35d07f] text-[#07080a]"
+    className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#35d07f] text-[#07080a] lg:h-[calc(var(--u)*20)] lg:w-[calc(var(--u)*20)]"
     aria-label={label}
     title={label}
   >
@@ -36,10 +36,10 @@ const Card: FC<{
   action?: ReactNode;
 }> = ({ label, mark, title, value, action }) => (
   <section className="space-y-[calc(var(--u)*6)]">
-    <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
+    <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#f0f1f5] lg:text-[#9da2b4]">
       {label}
     </h3>
-    <div className="rl-field-card flex items-center gap-[calc(var(--u)*12)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*18)] py-[calc(var(--u)*13)]">
+    <div className="rl-field-card flex items-center gap-[calc(var(--u)*12)] rounded-[44px] px-[calc(var(--u)*18)] py-[18px] max-lg:![box-shadow:none] max-lg:before:hidden lg:rounded-[calc(var(--u)*34)] lg:py-[calc(var(--u)*13)]">
       {mark}
       <div className="min-w-0 flex-1">
         <p className="truncate text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
@@ -64,7 +64,7 @@ const ContactCards: FC<Props> = ({ me, onChangeEmail }) => {
   const host = mailHostOf(me.email);
 
   return (
-    <div className="grid gap-[calc(var(--u)*22)] sm:grid-cols-2">
+    <div className="grid gap-5 sm:grid-cols-2 lg:gap-[calc(var(--u)*22)]">
       <Card
         label={t('profile.emailAccount')}
         mark={host.mark}

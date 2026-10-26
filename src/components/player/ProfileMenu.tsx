@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import type { StaticImageData } from 'next/image';
 import Glyph from '@/components/player/Glyph';
-import { POPUP_SURFACE } from '@/components/player/popupSurface';
 import LogoutConfirmModal from '@/components/modals/LogoutConfirmModal';
 import { useAuth } from '@/context/AuthContext';
 import { useSupportChat } from '@/context/SupportChatContext';
@@ -109,15 +108,25 @@ const LEAVES: Leaf[] = [
 /* Rows                                                                  */
 /* ==================================================================== */
 
-/** Every row is this 48px pill: icon and label on the notification cards' 10% glass. */
 const ROW =
-  'flex h-12 w-full items-center gap-2.5 overflow-hidden rounded-full bg-white/10 ps-6 pe-3 text-start text-[16px] leading-6 transition-colors lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:pe-[calc(var(--u)*12)] lg:ps-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
-const ROW_IDLE = 'text-[#9da2b4] hover:bg-white/15 hover:text-[#f0f1f5]';
+  'flex h-12 w-full items-center gap-2.5 overflow-hidden rounded-full ps-6 pe-3 text-start text-[16px] leading-6 transition-colors lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:pe-[calc(var(--u)*12)] lg:ps-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+const SURFACE = {
+  face: 'bg-white/[0.06]',
+  nested:
+    'rl-menu-rim relative bg-[linear-gradient(180deg,rgba(0,0,0,0.06),rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.035))] shadow-[inset_-6px_0_8px_-5px_rgba(255,255,255,0.05)]',
+  open: 'bg-[linear-gradient(180deg,rgba(255,231,121,0.18),rgba(255,231,121,0.217)_45%,rgba(255,231,121,0.196))] font-medium text-[#ffe779] shadow-[0_0_10px_rgba(255,214,90,0.16)] rl-menu-rim relative',
+} as const;
+const ROW_IDLE = 'text-[#9da2b4] hover:bg-white/10 hover:text-[#f0f1f5]';
 const ICON = 'h-6 w-6 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
 const LIST = 'flex flex-col gap-1.5 lg:gap-[calc(var(--u)*6)]';
 
-const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void }> = ({ leaf, onAction }) => {
+const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void; nested?: boolean }> = ({
+  leaf,
+  onAction,
+  nested,
+}) => {
   const { t } = useTranslation();
+  const surface = SURFACE[nested ? 'nested' : 'face'];
   const label = t(leaf.labelKey);
   // No ellipsis: the design's longest labels fill the row to within a few
   // pixels, so the label may run into the row's end padding instead.
@@ -133,7 +142,7 @@ const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void }> = ({ leaf, onA
       <span
         aria-disabled="true"
         title={`${label} — ${t('common.soon')}`}
-        className={`${ROW} cursor-default text-[#9da2b4]/50`}
+        className={`${ROW} ${surface} cursor-default text-[#9da2b4]/50`}
       >
         {face}
       </span>
@@ -145,7 +154,7 @@ const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void }> = ({ leaf, onA
         href={leaf.href}
         role="menuitem"
         onClick={() => onAction(leaf)}
-        className={`${ROW} ${ROW_IDLE}`}
+        className={`${ROW} ${surface} ${ROW_IDLE}`}
       >
         {face}
       </Link>
@@ -156,7 +165,7 @@ const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void }> = ({ leaf, onA
       type="button"
       role="menuitem"
       onClick={() => onAction(leaf)}
-      className={`${ROW} ${ROW_IDLE}`}
+      className={`${ROW} ${surface} ${ROW_IDLE}`}
     >
       {face}
     </button>
@@ -177,7 +186,7 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={listId}
-        className={`${ROW} ${open ? 'text-[#f0f1f5]' : ROW_IDLE}`}
+        className={`${ROW} ${open ? SURFACE.open : `${SURFACE.face} ${ROW_IDLE}`}`}
       >
         <Glyph src={group.icon.src} className={ICON} />
         <span className="truncate">{t(group.labelKey)}</span>
@@ -193,7 +202,7 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
             .filter((leaf) => helpOn || leaf.href !== profile('help'))
             .map((leaf) => (
               <li key={leaf.labelKey}>
-                <LeafRow leaf={leaf} onAction={onAction} />
+                <LeafRow leaf={leaf} onAction={onAction} nested />
               </li>
             ))}
         </ul>
@@ -207,12 +216,11 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
 /* ==================================================================== */
 
 /**
- * The popup: the notification centre's clear glass (see popupSurface), 14px
- * in, with a blur of its own — the page behind is left as it is, not dimmed.
- * It is rendered outside the bar (see `portal`), because the bar's own blur
- * would stop a blur nested in it from reaching the page.
+ * Rendered outside the bar (see `portal`), because the bar's own blur would
+ * stop a blur nested in it from reaching the page.
  */
-const PANEL = `z-40 overflow-y-auto rounded-[34px] p-3.5 thin-scrollbar backdrop-blur-[28px] lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*14)] ${POPUP_SURFACE.frost}`;
+const PANEL =
+  'rl-menu-panel z-40 overflow-y-auto rounded-[34px] p-[13px] thin-scrollbar lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*14-1px)]';
 
 const PLACEMENT = {
   /**
@@ -221,7 +229,8 @@ const PLACEMENT = {
    */
   below: 'fixed w-[256px] max-h-[calc(100dvh-120px)] lg:w-[calc(var(--u)*256)]',
   /** Over the phone's tab bar, full width. */
-  'above-tabbar': 'fixed inset-x-4 bottom-[92px] max-h-[calc(100dvh-180px)]',
+  'above-tabbar':
+    'fixed inset-x-0 bottom-0 !z-[29] max-h-[calc(100dvh-80px)] !rounded-b-none !px-4 !pt-3.5 !pb-[90px]',
 };
 
 interface Props {
@@ -300,15 +309,12 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
     if (leaf.action === 'support') openIntercom();
   };
 
-  // Out of the bar it opens from: the phone's into <body> (the tab bar's
-  // blur would make it the containing block and pin the panel to it), the
-  // desktop's into the page's stage, so it keeps the stage's unit (`--u`)
-  // and its own blur can reach the page.
+  // Out of the bar it opens from (the tab bar's blur would make it the
+  // containing block and pin the panel to it), into the page's stage, so it
+  // keeps the stage's unit (`--u`), its own blur can reach the page, and the
+  // phone's tab bar still stacks above the sheet.
   const portal = (node: ReactNode): ReactNode =>
-    createPortal(
-      node,
-      (phone ? null : document.querySelector('[data-player-stage]')) ?? document.body
-    );
+    createPortal(node, document.querySelector('[data-player-stage]') ?? document.body);
 
   /** Land on the public lobby, as logging out anywhere does. */
   const confirmLogout = (): void => {
@@ -327,6 +333,7 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
             ref={panelRef}
             id={menuId}
             aria-label={t('menu.label')}
+            data-profile-sheet={phone || undefined}
             className={`${PANEL} ${PLACEMENT[placement]}`}
             style={!phone && spot ? { top: spot.top, right: spot.right } : undefined}
           >
@@ -352,7 +359,7 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
                     setOpen(false);
                     setLogoutOpen(true);
                   }}
-                  className={`${ROW} text-[#f0f1f5] hover:bg-white/15`}
+                  className={`${ROW} ${SURFACE.face} text-[#f0f1f5] hover:bg-white/10`}
                 >
                   <img src={logoutIcon.src} alt="" className={ICON} />
                   <span className="truncate">{t('account.logout')}</span>

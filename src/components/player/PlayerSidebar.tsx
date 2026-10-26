@@ -325,7 +325,7 @@ const RailGroupRow: FC<{
 
 /** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
 const RAIL_BUTTON =
-  'flex h-[calc(var(--u)*44)] w-full min-w-0 items-center justify-center gap-[calc(var(--u)*6)] rl-drop rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white lg:border-0';
+  'flex h-[calc(var(--u)*44)] w-full min-w-0 items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
 
 /** A contact pill at the rail's foot: a link out, or a button for a dialog. */
 const RailButton: FC<{
@@ -502,7 +502,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           one — near opaque, so the page under it does not show through. From
           lg it is the sticky rail. */}
       <aside
-        className={`rl-glass-deep fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden rounded-t-[34px] transition-[transform,width] max-lg:![background:rgba(17,18,22,0.97)] duration-300 lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
+        className={`rl-glass-deep fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden rounded-t-[34px] transition-[transform,width] max-lg:![background:rgba(17,18,22,0.97)] duration-300 lg:![background:linear-gradient(rgba(255,255,255,0.06),rgba(255,255,255,0.06)),rgba(0,0,0,0.6)] lg:![backdrop-filter:blur(6px)] lg:![-webkit-backdrop-filter:blur(6px)] lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
           open ? 'translate-y-0' : 'max-lg:invisible max-lg:translate-y-full'
         }`}
         style={{ '--menu-top': `${menuTop}px` } as CSSProperties}
@@ -589,7 +589,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               else openRegister();
             }}
             title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
-            className={`mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rl-drop-pane rounded-[24px] max-lg:![box-shadow:none] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
+            className={`mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rounded-[24px] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
               collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
             }`}
           >
@@ -626,7 +626,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           </button>
 
           {/* --- Shortcuts ------------------------------------------------- */}
-          <nav className="thin-scrollbar -mx-1 mt-[18px] flex flex-shrink-0 flex-col gap-2.5 px-1 lg:mt-[calc(var(--u)*12)] lg:min-h-0 lg:flex-1 lg:flex-shrink lg:gap-[calc(var(--u)*4)] lg:overflow-y-auto">
+          <nav className="scrollbar-none -mx-1 mt-[18px] flex flex-shrink-0 flex-col gap-2.5 px-1 lg:mt-[calc(var(--u)*12)] lg:min-h-0 lg:flex-1 lg:flex-shrink lg:gap-[calc(var(--u)*4)] lg:overflow-y-auto">
             {/* Each section keeps its own menu: sports pages list the
                 sportsbook, every other page the casino's rows. The rows
                 after the casino's are shared. */}

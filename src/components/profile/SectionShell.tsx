@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { TOGGLE_SIZE } from '@/components/profile/ToggleSwitch';
 
 /**
  * The shared furniture of an account section: a labelled group, the rows
@@ -45,7 +46,11 @@ export const SECTION_HEADING =
   'text-[30px] leading-[1.2] font-semibold tracking-[-0.88px] text-[#f0f1f5] lg:text-[length:max(min(11px,44px),calc(var(--u)*44))] lg:leading-[1.18]';
 
 /** A titled group of rows, as in "Email Account" / "2FA" / "Linked Accounts". */
-export const FieldGroup: FC<{ label: string; children: ReactNode }> = ({ label, children }) => (
+export const FieldGroup: FC<{ label: string; children: ReactNode; cardClassName?: string }> = ({
+  label,
+  children,
+  cardClassName = '',
+}) => (
   <section className="space-y-[calc(var(--u)*6)]">
     <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
       {label}
@@ -57,7 +62,9 @@ export const FieldGroup: FC<{ label: string; children: ReactNode }> = ({ label, 
         on each row: consecutive rows then sit 18px apart and the first and
         last still clear the card edge by 18, while a child that brings its own
         padding — a bare button, say — is not boxed in twice. */}
-    <div className="rl-field-card overflow-hidden rounded-[calc(var(--u)*44)] py-[calc(var(--u)*9)]">
+    <div
+      className={`rl-field-card overflow-hidden rounded-[calc(var(--u)*44)] py-[calc(var(--u)*9)] max-lg:![box-shadow:none] max-lg:before:hidden ${cardClassName}`}
+    >
       {children}
     </div>
   </section>
@@ -89,13 +96,15 @@ interface RowProps {
 
 /** One row inside a FieldGroup. */
 export const SettingRow: FC<RowProps> = ({ icon, title, detail, layout = 'stacked', action }) => (
-  <div className="flex items-center gap-[calc(var(--u)*12)] px-[calc(var(--u)*18)] py-[calc(var(--u)*9)]">
+  <div
+    className={`flex items-center px-[calc(var(--u)*18)] py-[calc(var(--u)*9)] lg:gap-[calc(var(--u)*12)] ${layout === 'inline' ? 'gap-3' : 'gap-[18px]'}`}
+  >
     {icon && <span className="flex shrink-0 items-center justify-center">{icon}</span>}
 
     <div
       className={
         layout === 'inline'
-          ? 'flex min-w-0 flex-1 flex-wrap items-baseline gap-x-[calc(var(--u)*12)] gap-y-0.5'
+          ? 'flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 lg:gap-x-[calc(var(--u)*12)]'
           : 'min-w-0 flex-1'
       }
     >
@@ -104,7 +113,7 @@ export const SettingRow: FC<RowProps> = ({ icon, title, detail, layout = 'stacke
       </p>
       {detail !== undefined && (
         <p
-          className={`max-w-full truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4] ${layout === 'inline' ? '' : 'mt-0.5'}`}
+          className={`max-w-full truncate text-[#9da2b4] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))] lg:leading-[1.43] ${layout === 'inline' ? 'text-[12px] leading-5' : 'mt-0.5 text-[14px] leading-[1.43]'}`}
         >
           {detail}
         </p>
@@ -136,8 +145,9 @@ export const RowButton: FC<{ onClick: () => void; children: ReactNode }> = ({
 );
 
 /** Inert switch for a setting whose backend does not exist yet. */
-export const SoonToggle: FC<{ label: string }> = ({ label }) => {
+export const SoonToggle: FC<{ label: string; narrow?: boolean }> = ({ label, narrow = false }) => {
   const { t } = useTranslation();
+  const size = TOGGLE_SIZE[narrow ? 'narrow' : 'wide'];
 
   return (
     <span
@@ -146,9 +156,9 @@ export const SoonToggle: FC<{ label: string }> = ({ label }) => {
       aria-disabled="true"
       aria-label={`${label} — ${t('common.soon')}`}
       title={t('common.soon')}
-      className="relative block h-[calc(var(--u)*30)] w-[calc(var(--u)*70)] shrink-0 cursor-default rounded-full bg-white/20"
+      className={`relative block ${size.track} shrink-0 cursor-default rounded-full bg-white/20`}
     >
-      <span className="absolute top-[calc(var(--u)*2)] left-[calc(var(--u)*2)] h-[calc(var(--u)*26)] w-[calc(var(--u)*41)] rounded-full bg-[#f0f1f5]" />
+      <span className={`absolute ${size.knob} ${size.off} rounded-full bg-[#f0f1f5]`} />
     </span>
   );
 };

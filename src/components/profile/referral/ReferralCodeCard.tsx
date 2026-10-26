@@ -1,4 +1,5 @@
 import { useEffect, useState, type FC } from 'react';
+import Link from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import { shareTargets } from '@/components/profile/referral/shareTargets';
@@ -49,49 +50,105 @@ const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
     });
   };
 
+  const shares = shareTargets(link, t('ref.shareMessage')).map(({ Mark, name, href }) => ({
+    Mark,
+    name,
+    href: code ? href : undefined,
+    onClick: () => {
+      if (!code) return;
+      if (name === 'Instagram') void navigator.clipboard?.writeText(link);
+      analytics.referral.shared(name.toLowerCase());
+    },
+  }));
+
   return (
-    <div className="rl-panel flex flex-col items-center px-[calc(var(--u)*24)] pt-[calc(var(--u)*27)] pb-[calc(var(--u)*20)] text-center">
-      <p className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
-        {t('ref.referralCode')}
-      </p>
+    <>
+      <div className="rl-panel px-[22px] py-[22px] lg:hidden">
+        <p className="text-[18px] leading-6 font-medium text-[#f0f1f5]">{t('aff.getCode')}</p>
+        <p className="mt-1.5 text-[12px] leading-5 text-[#9da2b4]">{t('aff.shareBlurb')}</p>
 
-      <p className={`${SECTION_HEADING} mt-[calc(var(--u)*15)]`}>{code ?? '—'}</p>
+        <button
+          type="button"
+          onClick={copy}
+          disabled={!code}
+          aria-label={t('ref.copyLink')}
+          className="mt-[22px] flex h-14 w-full items-center gap-3 rounded-[34px] border border-white/20 bg-white/5 ps-[22px] pe-[18px] text-start disabled:opacity-50"
+        >
+          <span className="min-w-0 flex-1 truncate text-[14px] leading-5 text-[#9da2b4]">
+            {copied ? t('ref.copied') : link || '—'}
+          </span>
+          <span className="shrink-0 text-[#f0f1f5]">
+            <CopyIcon />
+          </span>
+        </button>
 
-      <button
-        type="button"
-        onClick={copy}
-        disabled={!code}
-        className="rl-field-card mt-[calc(var(--u)*11)] flex h-[calc(var(--u)*56)] w-full max-w-[calc(var(--u)*434)] items-center justify-center gap-[calc(var(--u)*5)] rounded-[calc(var(--u)*34)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] hover:bg-white/8 disabled:opacity-50"
-      >
-        {copied ? t('ref.copied') : t('ref.copyLink')}
-        <CopyIcon />
-      </button>
+        <Link
+          href="/referral"
+          className="mt-3 flex h-12 items-center justify-center rounded-[34px] bg-[#f9d028] text-[18px] leading-7 font-medium text-[#07080a]"
+        >
+          {t('aff.change')}
+        </Link>
 
-      <p className="mt-[calc(var(--u)*22)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
-        {t('ref.orShare')}
-      </p>
-
-      <div className="mt-[calc(var(--u)*12)] flex items-center gap-[calc(var(--u)*12)]">
-        {shareTargets(link, t('ref.shareMessage')).map(({ Mark, name, href }) => (
-          <a
-            key={name}
-            href={code ? href : undefined}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={t('ref.shareOn', { name })}
-            aria-disabled={!code}
-            onClick={() => {
-              if (!code) return;
-              if (name === 'Instagram') void navigator.clipboard?.writeText(link);
-              analytics.referral.shared(name.toLowerCase());
-            }}
-            className="rl-chip flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center aria-disabled:opacity-50"
-          >
-            <Mark />
-          </a>
-        ))}
+        <div className="mt-5 flex items-center gap-2">
+          <div className="flex">
+            {shares.map(({ Mark, name, href, onClick }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={t('ref.shareOn', { name })}
+                aria-disabled={!code}
+                onClick={onClick}
+                className="rl-glass-btn flex h-12 w-12 items-center justify-center rounded-full not-first:-ms-[18px] aria-disabled:opacity-50"
+              >
+                <Mark />
+              </a>
+            ))}
+          </div>
+          <p className="text-[12px] leading-5 text-[#9da2b4]">{t('ref.orShare')}</p>
+        </div>
       </div>
-    </div>
+
+      <div className="rl-panel flex flex-col items-center px-[calc(var(--u)*24)] pt-[calc(var(--u)*27)] pb-[calc(var(--u)*20)] text-center max-lg:hidden">
+        <p className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
+          {t('ref.referralCode')}
+        </p>
+
+        <p className={`${SECTION_HEADING} mt-[calc(var(--u)*15)]`}>{code ?? '—'}</p>
+
+        <button
+          type="button"
+          onClick={copy}
+          disabled={!code}
+          className="rl-field-card mt-[calc(var(--u)*11)] flex h-[calc(var(--u)*56)] w-full max-w-[calc(var(--u)*434)] items-center justify-center gap-[calc(var(--u)*5)] rounded-[calc(var(--u)*34)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] hover:bg-white/8 disabled:opacity-50"
+        >
+          {copied ? t('ref.copied') : t('ref.copyLink')}
+          <CopyIcon />
+        </button>
+
+        <p className="mt-[calc(var(--u)*22)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
+          {t('ref.orShare')}
+        </p>
+
+        <div className="mt-[calc(var(--u)*12)] flex items-center gap-[calc(var(--u)*12)]">
+          {shares.map(({ Mark, name, href, onClick }) => (
+            <a
+              key={name}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={t('ref.shareOn', { name })}
+              aria-disabled={!code}
+              onClick={onClick}
+              className="rl-chip flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center aria-disabled:opacity-50"
+            >
+              <Mark />
+            </a>
+          ))}
+        </div>
+      </div>
+    </>
   );
 };
 

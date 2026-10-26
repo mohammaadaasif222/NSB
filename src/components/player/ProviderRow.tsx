@@ -91,7 +91,7 @@ export const ProviderCard: FC<{ provider: LobbyProvider }> = ({ provider }) => {
       <Link
         href={providerHref(provider.slug)}
         title={`${provider.name} · ${provider.game_count}`}
-        className="rl-liquid-glow flex h-full w-full items-center justify-center rounded-[calc(var(--u)*24)] px-[calc(var(--u)*10)] text-center transition-colors hover:bg-white/[0.11] focus:outline-none focus-visible:bg-white/[0.11] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*20)]"
+        className="rl-liquid-glow flex h-full w-full items-center justify-center rounded-[calc(var(--u)*24)] px-[calc(var(--u)*10)] text-center transition-colors hover:bg-white/[0.11] focus:outline-none focus-visible:bg-white/[0.11] lg:justify-start lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*22)] lg:text-start"
       >
         {showLogo ? (
           <img

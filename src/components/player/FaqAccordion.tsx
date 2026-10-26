@@ -71,7 +71,7 @@ const FaqAccordion: FC<{ items: FaqItem[] }> = ({ items }) => {
 
       {/* --- Desktop: two panes ----------------------------------------- */}
       <div className="hidden min-h-[calc(var(--u)*521)] lg:grid lg:grid-cols-[44.4fr_55.6fr]">
-        <ul className="rl-liquid space-y-[calc(var(--u)*10)] rounded-l-[calc(var(--u)*34)] p-[calc(var(--u)*20)]">
+        <ul className="rl-faq-list space-y-[calc(var(--u)*10)] rounded-l-[calc(var(--u)*34)] p-[calc(var(--u)*20)]">
           {items.map((item, i) => (
             <li key={item.id}>
               <button
@@ -96,7 +96,7 @@ const FaqAccordion: FC<{ items: FaqItem[] }> = ({ items }) => {
           ))}
         </ul>
 
-        <div className="rl-glass-deep rounded-r-[calc(var(--u)*34)] px-[calc(var(--u)*36)] py-[calc(var(--u)*24)]">
+        <div className="rl-faq-answer rounded-r-[calc(var(--u)*34)] px-[calc(var(--u)*36)] py-[calc(var(--u)*24)]">
           {items.map((item, i) => (
             <p
               key={item.id}

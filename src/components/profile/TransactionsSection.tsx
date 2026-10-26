@@ -142,9 +142,9 @@ const TransactionsSection: FC = () => {
 
   return (
     <div>
-      <h2 className={SECTION_HEADING}>{t('profile.transactions')}</h2>
+      <h2 className={`${SECTION_HEADING} max-lg:hidden`}>{t('profile.transactions')}</h2>
 
-      <div className="mt-[calc(var(--u)*18)]">
+      <div className="lg:mt-[calc(var(--u)*18)]">
         <TransactionFilters
           query={inputQuery}
           onQuery={setInputQuery}
@@ -155,11 +155,11 @@ const TransactionsSection: FC = () => {
 
       {/* Held at the table's height while a page is in flight, so the pager
           below does not jump up and back down on every keystroke. */}
-      <div className={`mt-[calc(var(--u)*14)] transition-opacity ${loading ? 'opacity-60' : ''}`}>
+      <div className={`mt-5 transition-opacity lg:mt-[calc(var(--u)*14)] ${loading ? 'opacity-60' : ''}`}>
         <TransactionTable rows={rows} onRowClick={handleRowClick} />
       </div>
 
-      <div className="mt-[calc(var(--u)*33)]">
+      <div className="mt-[34px] lg:mt-[calc(var(--u)*33)]">
         <TablePager page={Math.min(page, totalPages)} totalPages={totalPages} onPage={setPage} />
       </div>
 

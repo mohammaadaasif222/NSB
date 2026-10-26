@@ -37,18 +37,18 @@ const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar, onAddEmail
           the avatar then starts level with it rather than below it. On a phone
           there is no corner to spare, so it stays in flow. */}
       {joined && (
-        <p className="text-end text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] text-[#9da2b4] sm:absolute sm:end-0 sm:top-0">
+        <p className="text-end text-[12px] leading-5 text-[#9da2b4] sm:absolute sm:end-0 sm:top-0 lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[1.5]">
           {t('profile.joinedAt', { date: joined })}
         </p>
       )}
 
       {/* The avatar starts 10 below the "Joined at" line in the design. */}
-      <div className="sm:pt-[calc(var(--u)*10)]">
+      <div className="mt-5 sm:mt-0 sm:pt-[calc(var(--u)*10)]">
         <ProfileIdentity me={me} onChangeAvatar={onChangeAvatar} />
       </div>
 
       {/* 32 from the ID line to the first group label, 30 between groups. */}
-      <div className="mt-[calc(var(--u)*32)] space-y-[calc(var(--u)*30)]">
+      <div className="mt-[26px] space-y-[18px] lg:mt-[calc(var(--u)*32)] lg:space-y-[calc(var(--u)*30)]">
         {me.mobile && (
           <FieldGroup label={t('verify.phoneNumber')}>
             <SettingRow

@@ -98,7 +98,7 @@ const TileShell: FC<{ label: string; href: string; children: ReactNode }> = ({
   <Link
     href={href}
     title={label}
-    className="rl-liquid-glow group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
+    className="rl-sport-card group relative block h-[calc(var(--u)*150)] overflow-hidden rounded-[calc(var(--u)*34)] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*192)]"
   >
     {children}
     <span className="absolute inset-x-1 bottom-[calc(var(--u)*22)] text-center text-[length:max(min(11px,16px),calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white lg:bottom-[calc(var(--u)*28)] lg:text-[length:max(min(11px,20px),calc(var(--u)*20))] lg:font-semibold lg:leading-[calc(var(--u)*28)]">
@@ -184,10 +184,10 @@ const MATCHES: Match[] = ['m1', 'm2', 'm3', 'm4'].map((id) => ({
 /** One outcome chip — the label on the left, the price on the right. */
 const Odd: FC<{ label: string; price: string }> = ({ label, price }) => (
   <span className="flex h-[calc(var(--u)*40)] min-w-0 flex-1 items-center justify-between gap-[calc(var(--u)*4)] rounded-lg bg-[#292d2e] px-[calc(var(--u)*8)] transition-colors group-hover:bg-[#30353a]">
-    <span className="truncate text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#6a7287]">
+    <span className="truncate text-[length:max(min(11px,12px),calc(var(--u)*12))] lowercase leading-[calc(var(--u)*20)] text-[#6a7287]">
       {label}
     </span>
-    <span className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] tabular-nums text-[#f0f1f5]">
+    <span className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#f0f1f5]">
       {price}
     </span>
   </span>
@@ -210,11 +210,11 @@ const MatchCard: FC<{ match: Match }> = ({ match }) => {
   return (
     <Link
       href="/sports"
-      className="rl-liquid-glow group flex flex-col rounded-[calc(var(--u)*34)] px-px pb-[calc(var(--u)*18)] pt-[calc(var(--u)*18)] transition-colors hover:bg-white/[0.11] lg:px-[calc(var(--u)*19)]"
+      className="rl-sport-card group flex flex-col rounded-[calc(var(--u)*34)] px-px pb-[calc(var(--u)*18)] pt-[calc(var(--u)*18)] transition-colors hover:bg-white/[0.11] lg:px-[calc(var(--u)*19)]"
     >
       <span className="flex h-[calc(var(--u)*36)] items-start justify-center gap-[calc(var(--u)*8)] pb-[calc(var(--u)*12)]">
         <img src={leagueIcon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
-        <span className="flex items-center truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold leading-[calc(var(--u)*21)] text-[#b3bec1]">
+        <span className="flex translate-y-[calc(var(--u)*1.5)] items-center truncate text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold leading-[calc(var(--u)*21)] text-[#b3bec1]">
           {country}
           <span
             className="mx-1.5 h-[calc(var(--u)*4)] w-[calc(var(--u)*4)] flex-shrink-0 rounded-full bg-white"
@@ -230,7 +230,7 @@ const MatchCard: FC<{ match: Match }> = ({ match }) => {
           <span className="whitespace-nowrap text-[length:max(min(11px,24px),calc(var(--u)*24))] font-bold leading-[calc(var(--u)*32)] text-white">
             {match.kickoff.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })}
           </span>
-          <span className="pt-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] tabular-nums text-[#b3bec1]">
+          <span className="pt-[calc(var(--u)*4)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#b3bec1]">
             {match.kickoff.toLocaleDateString(locale, {
               year: 'numeric',
               month: '2-digit',

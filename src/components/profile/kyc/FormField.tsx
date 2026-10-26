@@ -14,7 +14,7 @@ import type { FC, ReactNode } from 'react';
  * `--u` with them — see the note at the head of `SectionShell`.
  */
 export const FIELD_INPUT =
-  'rl-field w-full rounded-full px-[calc(var(--u)*20)] py-[calc(var(--u)*16)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] disabled:cursor-not-allowed disabled:opacity-55';
+  'rl-field h-12 w-full rounded-full py-0 ps-[26px] pe-5 text-[14px] leading-5 max-lg:!border-white/20 max-lg:!bg-white/5 disabled:cursor-not-allowed disabled:opacity-55 lg:h-auto lg:px-[calc(var(--u)*20)] lg:py-[calc(var(--u)*16)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[1.5]';
 
 /** Options inside a native select, which paints them on its own surface. */
 export const FIELD_OPTION = 'bg-[#14161b] text-white';
@@ -32,7 +32,7 @@ interface Props {
 /** A labelled control. */
 const FormField: FC<Props> = ({ label, htmlFor, hint, required, children }) => (
   <div>
-    <div className="mb-[calc(var(--u)*6)] flex items-baseline justify-between gap-[calc(var(--u)*8)] px-[calc(var(--u)*4)]">
+    <div className="mb-[calc(var(--u)*6)] flex items-baseline justify-between gap-[calc(var(--u)*8)] lg:px-[calc(var(--u)*4)]">
       <label
         htmlFor={htmlFor}
         className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]"

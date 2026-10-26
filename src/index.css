@@ -1405,6 +1405,83 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+@utility rl-menu-panel {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(12, 13, 14, 0.94), rgba(12, 13, 14, 0.94)) padding-box,
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 60px) border-box,
+    linear-gradient(rgba(12, 13, 14, 0.94), rgba(12, 13, 14, 0.94)) border-box;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(28px);
+}
+
+@utility rl-menu-rim {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 32px),
+      radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0) 32px),
+      linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.24));
+    -webkit-mask:
+      radial-gradient(circle at 100% 0, transparent 6px, #000 26px),
+      radial-gradient(circle at 0 100%, transparent 6px, #000 26px),
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: source-in, source-in, xor;
+    mask:
+      radial-gradient(circle at 100% 0, transparent 6px, #000 26px),
+      radial-gradient(circle at 0 100%, transparent 6px, #000 26px),
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: intersect, intersect, exclude;
+    pointer-events: none;
+  }
+}
+
+@utility rl-sport-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    inset calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 16) calc(var(--u) * -6) rgba(0, 0, 0, 0.15),
+    inset calc(var(--u) * -10) calc(var(--u) * -10) calc(var(--u) * 18) calc(var(--u) * -6) rgba(255, 255, 255, 0.03),
+    0 8px 40px rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      rgba(255, 255, 255, 0.2) 0deg 25deg,
+      rgba(255, 255, 255, 0) 45deg,
+      rgba(255, 255, 255, 0.15) 65deg 115deg,
+      rgba(255, 255, 255, 0.32) 135deg,
+      rgba(255, 255, 255, 0.15) 155deg 205deg,
+      rgba(255, 255, 255, 0) 225deg,
+      rgba(255, 255, 255, 0.2) 245deg 295deg,
+      rgba(255, 255, 255, 0.65) 315deg,
+      rgba(255, 255, 255, 0.2) 335deg 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+}
+
 /* Every card in the app wears the provider tiles' polish: the thin silver
    rim on its top-start and bottom-end curves (`--rl-tile-rim`), a subtle
    bevel, and the inside lit white instead of the panes' dark inner shadow.
@@ -1498,6 +1575,102 @@ html:not([data-theme='dark']) .border-blue-600 {
     0 8px 40px rgba(0, 0, 0, 0.12);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   backdrop-filter: blur(20px) saturate(140%);
+}
+
+/* The desktop FAQ's two panes, drawn as one object. Between them, one even
+   seam runs the full height — the list's (`::after`) — so the answer pane
+   draws no rim on that side.
+
+   Their own classes rather than `rl-liquid` / `rl-glass-deep`, so tuning
+   these never touches the dozens of other panes on those two. The rims are
+   1px gradient borders on a `::before`, masked to the edge, as the tiles'.
+
+   The list, measured off the design: a rim brightest round the top-start
+   curve, bright along the top and the bottom, fainter down the start, and
+   dark round the bottom-start curve; the face lightening towards the seam,
+   with a little shade in from the top and the start. */
+@utility rl-faq-list {
+  position: relative;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.095));
+  box-shadow:
+    inset 0 0 calc(var(--u) * 1.2) calc(var(--u) * 0.4) rgba(255, 255, 255, 0.16),
+    inset calc(var(--u) * 6) calc(var(--u) * 6) calc(var(--u) * 8) calc(var(--u) * -2) rgba(0, 0, 0, 0.18),
+    0 8px 40px rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 0.5px 0 0.5px 0.5px;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.22);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+
+  /* The seam, top to bottom at one strength. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 0.5px;
+    background: rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+  }
+}
+
+/* Measured off the design: a rim brightest along the bottom and the top
+   (top-end curve included), faint down the end, and dark round the
+   bottom-end curve; inside, light just under the top edge and on the end,
+   shadow in from the seam and up from the bottom, and the face itself a
+   touch lighter towards the bottom. */
+@utility rl-faq-answer {
+  position: relative;
+  background: linear-gradient(180deg, rgba(14, 14, 15, 0.88), rgba(20, 20, 21, 0.88));
+  box-shadow:
+    inset 0 calc(var(--u) * 14) calc(var(--u) * 14) calc(var(--u) * -10) rgba(255, 255, 255, 0.03),
+    inset calc(var(--u) * -10) 0 calc(var(--u) * 10) calc(var(--u) * -6) rgba(255, 255, 255, 0.025),
+    inset calc(var(--u) * 12) 0 calc(var(--u) * 12) calc(var(--u) * -6) rgba(0, 0, 0, 0.3),
+    inset 0 calc(var(--u) * -10) calc(var(--u) * 12) calc(var(--u) * -4) rgba(0, 0, 0, 0.55),
+    0 8px 40px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 0.5px 0.5px 0.5px 0;
+    border-radius: inherit;
+    /* Top band, then the bottom band stopping short of the end curve, over
+       the faint even rim the end keeps. */
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0) calc(var(--u) * 60)),
+      linear-gradient(
+          270deg,
+          rgba(255, 255, 255, 0) calc(var(--u) * 40),
+          rgba(255, 255, 255, 0.32) calc(var(--u) * 90)
+        )
+        bottom / 100% calc(var(--u) * 40) no-repeat,
+      rgba(255, 255, 255, 0.085);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
 }
 
 /* The design's glass control in the header bar — the round icon buttons, the
@@ -2106,7 +2279,7 @@ html:not([data-theme='dark']) .border-blue-600 {
     color 0.18s ease;
 
   &:hover:not(:disabled):not([aria-disabled='true']) {
-    background: rgba(255, 255, 255, 0.26);
+    background: rgba(255, 255, 255, 0.22);
   }
 
   &:disabled,
