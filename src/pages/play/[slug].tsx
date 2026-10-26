@@ -16,6 +16,7 @@ import PlayerLayout from '@/layout/PlayerLayout';
 import { CloseIcon } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { useWallet } from '@/context/WalletContext';
 import { gameHref, playHref } from '@/constants/games';
 import { fetchGameBySlug } from '@/services/games.server';
 import { markUnavailable } from '@/utils/unavailable.server';
@@ -76,6 +77,14 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
   // two sessions) and lets a slow response for an abandoned request be ignored.
   const requested = useRef<string | null>(null);
 
+  // The player's display currency drives the game-session currency on the
+  // server; a session is bound to the currency it was launched in. If the
+  // player switches currency mid-session we must relaunch — otherwise the
+  // iframe keeps showing the old currency's balance, bets and free bets.
+  const { summary } = useWallet();
+  const activeCurrency = summary?.preferences?.active_currency ?? null;
+  const prevCurrencyRef = useRef<string | null>(null);
+
   const failure = useCallback(
     (error: ApiError): LaunchState => {
       switch (error.status) {
@@ -134,6 +143,24 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
   }, [game, mode, attempt, token, hydrated, router, locale, failure]);
 
   const launch = state.status === 'ready' ? state.launch : null;
+
+  // Switching display currency mid-game: relaunch so the new session is in
+  // the new currency. Skipped in DEMO mode (no real wallet or session bound
+  // to a currency) and skipped the first time active_currency becomes known
+  // (initial hydration, not a change the player made).
+  useEffect(() => {
+    if (mode !== 'REAL' || !activeCurrency) {
+      prevCurrencyRef.current = activeCurrency;
+      return;
+    }
+    const previous = prevCurrencyRef.current;
+    prevCurrencyRef.current = activeCurrency;
+    if (previous === null || previous === activeCurrency) {
+      return;
+    }
+    toast.info(t('game.currencyChangedReloading'));
+    setAttempt((n) => n + 1);
+  }, [activeCurrency, mode, t]);
 
   // Events the game posts to this page through Alea Play's unified JS events.
   // Only messages from our own iframe are trusted.
