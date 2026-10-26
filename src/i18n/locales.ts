@@ -510,6 +510,7 @@ const coreEn = {
   'game.stats.round': 'Round {n}',
   'game.stats.start': 'Start',
   'game.insufficientFunds': 'Not enough balance for this bet.',
+  'game.currencyChangedReloading': 'Display currency changed — reloading the game to apply it.',
   'game.playsIn': 'Plays in {currency}',
   'game.currencyUnsupported':
     "{display} isn't available for this game, so it plays in {currency}. Your balance is converted at a fixed rate for this session.",
@@ -581,6 +582,7 @@ const coreEn = {
   'profile.emailUnverified': 'Unverified',
   'common.loading': 'Loading…',
   'common.soon': 'Soon',
+  'common.underDevelopment': 'This feature is under development.',
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.saving': 'Saving…',
@@ -657,6 +659,11 @@ const coreEn = {
   'dash.wageredShort': '{amount} Wagered',
   'dash.remainingToUnlock': '{amount} remaining to unlock your bonus',
   'dash.remainingToUnlockShort': 'remaining to unlock your bonus',
+  'dash.journeyTitle': 'Your gaming journey starts here',
+  'dash.journeyBody':
+    'Make your first deposit to unlock exclusive welcome rewards and start playing.',
+  'dash.depositNow': 'Deposit Now',
+  'dash.exploreGames': 'Explore Games',
   'dash.unlockBonus': 'Unlock your welcome bonus',
 
   // Header game search

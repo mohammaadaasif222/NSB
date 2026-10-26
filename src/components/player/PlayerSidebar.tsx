@@ -17,32 +17,27 @@ import sportsIcon from '@/assets/lobby/rail/tab-sports.svg';
 import liveIcon from '@/assets/lobby/player/chip-live.svg';
 import supportIcon from '@/assets/lobby/rail/tab-chat.svg';
 import chevronGlyph from '@/assets/lobby/rail/bar-chevron.svg';
-import betsIcon from '@/assets/lobby/rail/nav-bets.svg';
 // import themeIcon from '@/assets/lobby/rail/nav-theme.svg';
 import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
 import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
 import promotionIcon from '@/assets/lobby/rail/nav-promotion.svg';
 import bonusesIcon from '@/assets/lobby/rail/nav-bonuses.svg';
 import suggestionIcon from '@/assets/lobby/rail/rail-suggestion.svg';
-import whatsapp from '@/assets/lobby/footer/social-whatsapp.svg';
-import instagram from '@/assets/lobby/footer/social-instagram.svg';
-import facebook from '@/assets/lobby/footer/social-facebook.svg';
-import xSocial from '@/assets/lobby/footer/social-x.svg';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useAuth } from '@/context/AuthContext';
-import { useSupportChat } from '@/context/SupportChatContext';
+import { useOpenSupport } from '@/hooks/useOpenSupport';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
 import { RAIL_GROUPS, RAIL_OPEN_KEY, type RailGroup, type RailGroupId } from '@/constants/railMenu';
-import { CHAT_TOGGLE_EVENT } from '@/components/player/ChatDrawer';
 import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 import GameSearchModal from '@/components/player/GameSearchModal';
 import LanguagePicker from '@/components/LanguagePicker';
+import { useSocialLinks } from '@/hooks/useSocialLinks';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -368,13 +363,6 @@ const RailButton: FC<{
   );
 };
 
-const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
-  { icon: whatsapp, label: 'WhatsApp', href: 'https://wa.me/' },
-  { icon: instagram, label: 'Instagram', href: 'https://instagram.com/' },
-  { icon: facebook, label: 'Facebook', href: 'https://facebook.com/' },
-  { icon: xSocial, label: 'X', href: 'https://x.com/' },
-];
-
 /* ==================================================================== */
 /* The rail                                                              */
 /* ==================================================================== */
@@ -394,8 +382,11 @@ const SOCIALS: { icon: StaticImageData; label: string; href: string }[] = [
  */
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { pathname, asPath, push } = useRouter();
+  const socialLinks = useSocialLinks();
+  const telegramLink = socialLinks.find((link) => link.platform === 'telegram');
+  const railSocials = socialLinks.filter((link) => link.platform !== 'telegram');
   const { token } = useAuth();
-  const { openIntercom, internalChatEnabled } = useSupportChat();
+  const openSupport = useOpenSupport();
   const { t } = useTranslation();
   const {
     rewards: rewardsOn,
@@ -465,12 +456,6 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
     } catch {
       // Not remembered this time; the toggle still applies.
     }
-  };
-
-  // The built-in chat when it is on, Intercom otherwise — as the tab bar does.
-  const openSupport = (): void => {
-    if (internalChatEnabled && token) window.dispatchEvent(new Event(CHAT_TOGGLE_EVENT));
-    else openIntercom();
   };
 
   const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
@@ -665,15 +650,6 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
                 {groupRow('live')}
               </>
             )}
-            <RailLink
-              href="/my-bets"
-              active={pathname === '/my-bets'}
-              icon={icon(betsIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.myBets')}
-            </RailLink>
             {/* <RailLink
             onSelect={() => setThemeOpen(true)}
             active={false}
@@ -774,33 +750,41 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
           {/* --- Socials and contact pills --------------------------------- */}
           <div className="mt-[67px] flex-shrink-0 border-t border-white/[0.08] pt-4 lg:mt-0 lg:border-0 lg:pt-[calc(var(--u)*13)]">
+            {railSocials.length > 0 && (
+              <div
+                className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
+                  collapsed ? 'lg:flex-col' : ''
+                }`}
+              >
+                {railSocials.map(({ icon: mark, label, href }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                    title={label}
+                    className="flex h-7 w-7 items-center justify-center p-0.5 transition-transform hover:-translate-y-0.5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)] lg:p-0"
+                  >
+                    <img src={mark.src} alt="" className="h-full w-full" />
+                  </a>
+                ))}
+              </div>
+            )}
+
             <div
-              className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
-                collapsed ? 'lg:flex-col' : ''
+              className={`mt-5 grid gap-2 lg:mt-[calc(var(--u)*11)] lg:block lg:space-y-[calc(var(--u)*7)] ${
+                telegramLink ? 'grid-cols-2' : 'grid-cols-1'
               }`}
             >
-              {SOCIALS.map(({ icon: mark, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={label}
-                  title={label}
-                  className="flex h-7 w-7 items-center justify-center p-0.5 transition-transform hover:-translate-y-0.5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)] lg:p-0"
-                >
-                  <img src={mark.src} alt="" className="h-full w-full" />
-                </a>
-              ))}
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-2 lg:mt-[calc(var(--u)*11)] lg:block lg:space-y-[calc(var(--u)*7)]">
-              <RailButton
-                icon={ICON.telegram}
-                label={t('lobby.rail.joinTelegram')}
-                href="https://t.me/"
-                collapsed={collapsed}
-              />
+              {telegramLink && (
+                <RailButton
+                  icon={ICON.telegram}
+                  label={t('lobby.rail.joinTelegram')}
+                  href={telegramLink.href}
+                  collapsed={collapsed}
+                />
+              )}
               <RailButton
                 icon={suggestionIcon}
                 label={t('lobby.rail.suggestionBox')}
