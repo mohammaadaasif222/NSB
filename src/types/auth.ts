@@ -67,6 +67,7 @@ export interface RegisterRequest {
   country_code?: string;
   promo_code?: string;
   referral_code?: string;
+  affiliate_tag?: string;
   captcha_token?: string;
 }
 
