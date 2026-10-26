@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     default: "Wedding Vendors in Noida | Noida Super Bazaar",
   },
   description:
-    "Find trusted wedding vendors in Noida, Greater Noida and Noida Extension. Explore venues, photographers, caterers and more, then connect with the right team for your celebration.",
+    "Find trusted wedding vendors in Noida, Greater Noida and Greater Noida West. Explore venues, photographers, caterers and more, then connect with the right team for your celebration.",
   // Opened from the home screen, iOS shows the site full-screen with a white status bar.
   appleWebApp: { capable: true, title: "NSB", statusBarStyle: "default" },
   formatDetection: { telephone: false },

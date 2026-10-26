@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Category, HomeCard, ListingCounts, LocationOption } from "@nsb/shared";
+import type { Category, HomeCard, ListingCounts } from "@nsb/shared";
 import { LocationPicker } from "@/components/site/location-picker";
 import { locationPlace, type SiteLocation } from "@/lib/location";
 import { HomeLink, Icon } from "./bits";
@@ -31,7 +31,7 @@ const PHONE_CATEGORIES = 6;
 const lookOf = (c: Category) => CATEGORY_LOOK[c.slug] ?? DEFAULT_LOOK;
 
 /** Header from the demo. The location picker filters every page; search, cart and login are not wired up (not Phase-1). */
-export function HomeHeader({ location, locationOptions }: { location: SiteLocation | null; locationOptions: LocationOption[] }) {
+export function HomeHeader({ location }: { location: SiteLocation | null }) {
   return (
     <header className="hd">
       <div className="w bar">
@@ -42,7 +42,7 @@ export function HomeHeader({ location, locationOptions }: { location: SiteLocati
           <Icon d={ICON.search} size={18} />
           <input type="search" placeholder="Search wedding venues, salons, AC repair…" aria-label="Search" />
         </label>
-        <LocationPicker variant="home" current={location} options={locationOptions} />
+        <LocationPicker variant="home" current={location} />
         <a className="ct" href="#" aria-label="Cart">
           <Icon d={ICON.bag} />
           <i>0</i>

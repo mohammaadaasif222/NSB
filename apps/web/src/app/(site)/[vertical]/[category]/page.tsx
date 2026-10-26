@@ -32,10 +32,10 @@ async function load(params: Props["params"]) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!CATEGORY_PAGES_ENABLED) return COMING_SOON_METADATA;
-  const { category } = await load(params);
+  const [{ category }, location] = await Promise.all([load(params), getSiteLocation()]);
   return {
-    title: `${category.name} in Noida`,
-    description: category.description ?? `Compare ${category.name.toLowerCase()} in Noida, Greater Noida and Noida Extension.`,
+    title: `${category.name} in ${locationPlace(location)}`,
+    description: category.description ?? `Compare ${category.name.toLowerCase()} in Noida, Greater Noida and Greater Noida West.`,
   };
 }
 

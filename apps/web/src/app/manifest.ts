@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Noida Super Bazaar",
     short_name: "NSB",
-    description: "Find trusted wedding vendors in Noida, Greater Noida and Noida Extension.",
+    description: "Find trusted wedding vendors in Noida, Greater Noida and Greater Noida West.",
     start_url: "/",
     scope: "/",
     display: "standalone",

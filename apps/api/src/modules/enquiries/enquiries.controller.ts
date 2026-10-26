@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res, StreamableFile, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import {
   canDo,
@@ -19,7 +19,7 @@ import {
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { AdminGuard, Allow, CurrentAdmin } from '../auth/admin.guard.js';
 import type { CurrentAdminInfo } from '../auth/auth.service.js';
-import { enquiriesCsv } from './enquiry-csv.js';
+import { enquiriesWorkbook } from './enquiry-sheet.js';
 import { EnquiriesService } from './enquiries.service.js';
 
 @Controller('enquiries')
@@ -66,15 +66,17 @@ export class AdminEnquiriesController {
     return { ...page, items: page.items.map((e) => forRole(admin, e)) };
   }
 
-  /** The leads matching the dashboard filters as a CSV download (opens in Excel or Google Sheets). */
+  /** The leads matching the dashboard filters as an Excel download (also opens in Google Sheets). */
   @Get('export')
   @Allow('leadContacts')
-  async export(@Query(new ZodPipe(enquiryQuerySchema)) query: EnquiryQuery, @Res({ passthrough: true }) res: Response): Promise<string> {
+  async export(@Query(new ZodPipe(enquiryQuerySchema)) query: EnquiryQuery, @Res({ passthrough: true }) res: Response): Promise<StreamableFile> {
     const day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="nsb-enquiries-${day}.csv"`);
+    const file = await enquiriesWorkbook(await this.enquiries.exportRows(query), query.section);
     res.setHeader('Cache-Control', 'no-store');
-    return enquiriesCsv(await this.enquiries.exportRows(query));
+    return new StreamableFile(file, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      disposition: `attachment; filename="nsb-${query.section ?? 'all'}-leads-${day}.xlsx"`,
+    });
   }
 
   /** For the admin panel's notification badge; polled while the panel is open. */

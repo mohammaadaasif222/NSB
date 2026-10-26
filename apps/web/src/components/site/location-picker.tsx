@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactNode, useEffect, useId, useOptimistic, useRef, useState, useTransition } from "react";
-import { Check, ChevronDown, MapPin, Search } from "lucide-react";
-import type { LocationOption } from "@nsb/shared";
+import { Check, ChevronDown, MapPin } from "lucide-react";
+import { LISTING_AREAS } from "@nsb/shared";
 import { setSiteLocation } from "@/app/actions/location";
 import { locationLabel, sameLocation, type SiteLocation } from "@/lib/location";
 
@@ -23,28 +23,15 @@ export function useSiteLocation(current: SiteLocation | null) {
   return { location, choose, pending };
 }
 
-/** Shows a long locality list with a search box above it. */
-const SEARCH_FROM = 8;
-
 /**
- * Location picker for the site headers: an area, then a locality such as Sector 18. `variant`
- * only changes the trigger, so it matches each header's design; the panel is the same everywhere.
+ * Location menu for the site headers, as in the NSB Live Demo: Noida, Greater Noida or Greater
+ * Noida West, plus All locations. `variant` only changes the trigger, so it matches each header's design.
  */
-export function LocationPicker({
-  current,
-  options,
-  variant,
-}: {
-  current: SiteLocation | null;
-  options: LocationOption[];
-  variant: "home" | "site";
-}) {
+export function LocationPicker({ current, variant }: { current: SiteLocation | null; variant: "home" | "site" }) {
   const { location, choose, pending } = useSiteLocation(current);
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState(location?.area ?? options[0]?.area ?? "");
-  const [filter, setFilter] = useState("");
   const box = useRef<HTMLDivElement>(null);
-  const panelId = useId();
+  const menuId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -58,27 +45,24 @@ export function LocationPicker({
     };
   }, [open]);
 
-  const pick = (next: SiteLocation | null) => {
-    setOpen(false);
-    setFilter("");
-    choose(next);
-  };
-
-  const area = options.find((o) => o.area === tab) ?? options[0];
-  const term = filter.trim().toLowerCase();
-  const localities = area ? area.localities.filter((l) => !term || l.name.toLowerCase().includes(term)) : [];
   const label = locationLabel(location);
-  const isOn = (a: string, l: string | null) => location?.area === a && (location.locality ?? null) === l;
-
   const trigger =
     variant === "home" ? (
-      <button type="button" className="lb" aria-expanded={open} aria-controls={panelId} aria-busy={pending || undefined} onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="lb" aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} aria-busy={pending || undefined} onClick={() => setOpen((o) => !o)}>
         <MapPin size={16} aria-hidden />
         <span>{label}</span>
         <ChevronDown size={14} aria-hidden />
       </button>
     ) : (
-      <button type="button" className="flex items-center gap-1" aria-expanded={open} aria-controls={panelId} aria-busy={pending || undefined} onClick={() => setOpen((o) => !o)}>
+      <button
+        type="button"
+        className="flex items-center gap-1"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={menuId}
+        aria-busy={pending || undefined}
+        onClick={() => setOpen((o) => !o)}
+      >
         <span className="flex rounded-full bg-brand-soft p-1.5">
           <MapPin className="size-4 text-brand" aria-hidden />
         </span>
@@ -93,85 +77,34 @@ export function LocationPicker({
       {trigger}
       {open && (
         <div
-          id={panelId}
-          role="dialog"
+          id={menuId}
+          role="menu"
           aria-label="Choose your location"
-          className="absolute top-[calc(100%+10px)] right-0 z-[60] flex w-[min(340px,calc(100vw-32px))] flex-col gap-3 rounded-2xl border border-[#e5e7eb] bg-white p-3 text-left text-sm text-ink shadow-[0_24px_44px_-22px_rgba(15,23,42,.35)]"
+          className="absolute top-[calc(100%+10px)] right-0 z-[60] min-w-[190px] rounded-[14px] border border-[#e5e7eb] bg-white p-1.5 text-left shadow-[0_24px_44px_-22px_rgba(15,23,42,.35)]"
         >
-          <p className="px-1 text-xs font-bold tracking-wide text-muted uppercase">Choose your location</p>
-          <div className="flex gap-1 rounded-xl bg-surface p-1" role="tablist" aria-label="Area">
-            {options.map((o) => (
+          {/* null is "All locations": listings from every area, mixed. */}
+          {[null, ...LISTING_AREAS].map((area) => {
+            const on = (location?.area ?? null) === area;
+            return (
               <button
-                key={o.area}
+                key={area ?? "all"}
                 type="button"
-                role="tab"
-                aria-selected={o.area === area?.area}
+                role="menuitemradio"
+                aria-checked={on}
                 onClick={() => {
-                  setTab(o.area);
-                  setFilter("");
+                  setOpen(false);
+                  choose(area ? { area } : null);
                 }}
-                className="flex-1 rounded-lg px-2 py-1.5 text-[13px] font-semibold text-ink-soft aria-selected:bg-white aria-selected:text-brand aria-selected:shadow-sm"
+                className="flex w-full items-center gap-2 rounded-[9px] px-3 py-2.5 text-left text-sm font-medium text-ink hover:bg-brand-soft hover:text-brand aria-checked:bg-brand-soft aria-checked:text-brand"
               >
-                {o.area}
+                <span className="flex-1">{area ?? locationLabel(null)}</span>
+                {on && <Check className="size-4 shrink-0" aria-hidden />}
               </button>
-            ))}
-          </div>
-
-          {area && (
-            <div role="tabpanel" className="flex flex-col gap-2">
-              {area.localities.length >= SEARCH_FROM && (
-                <label className="relative">
-                  <span className="sr-only">Search localities in {area.area}</span>
-                  <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden />
-                  <input
-                    type="search"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    placeholder={`Search sectors in ${area.area}`}
-                    className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white pr-2 pl-9 text-base outline-none focus:border-brand sm:text-sm"
-                  />
-                </label>
-              )}
-              <ul className="flex max-h-64 flex-col overflow-y-auto">
-                <Option on={isOn(area.area, null)} count={area.count} onClick={() => pick({ area: area.area, locality: null })}>
-                  All of {area.area}
-                </Option>
-                {localities.map((l) => (
-                  <Option key={l.name} on={isOn(area.area, l.name)} count={l.count} onClick={() => pick({ area: area.area, locality: l.name })}>
-                    {l.name}
-                  </Option>
-                ))}
-              </ul>
-              {area.localities.length === 0 && <p className="px-1 text-xs text-muted">No sectors listed in {area.area} yet.</p>}
-              {term && localities.length === 0 && <p className="px-1 text-xs text-muted">No sector matches “{filter}”.</p>}
-            </div>
-          )}
-
-          {location && (
-            <button type="button" onClick={() => pick(null)} className="self-start px-1 text-[13px] font-semibold text-brand hover:underline">
-              Show all locations
-            </button>
-          )}
+            );
+          })}
         </div>
       )}
     </div>
-  );
-}
-
-function Option({ on, count, onClick, children }: { on: boolean; count: number; onClick: () => void; children: ReactNode }) {
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-pressed={on}
-        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-surface aria-pressed:bg-brand-soft aria-pressed:font-semibold aria-pressed:text-brand"
-      >
-        <span className="min-w-0 flex-1 truncate">{children}</span>
-        <span className="text-xs text-muted tabular-nums">{count}</span>
-        {on && <Check className="size-4 shrink-0" aria-hidden />}
-      </button>
-    </li>
   );
 }
 

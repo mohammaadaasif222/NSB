@@ -53,7 +53,7 @@ try {
         imageUrl: `/images/categories/${slug}.png`,
         description:
           slug === 'wedding'
-            ? 'Trusted wedding vendors in Noida, Greater Noida and Noida Extension.'
+            ? 'Trusted wedding vendors in Noida, Greater Noida and Greater Noida West.'
             : null,
       })),
     )

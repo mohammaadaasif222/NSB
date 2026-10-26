@@ -92,6 +92,13 @@
       "when": 1792771072656,
       "tag": "0012_secret_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792992758374,
+      "tag": "0013_rename_noida_extension",
+      "breakpoints": true
     }
   ]
 }

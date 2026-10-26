@@ -192,13 +192,3 @@ export const FAQS = [
   },
   { q: "How do I reach the NSB team?", a: "Use the Contact us link in the footer, or message us on WhatsApp from the bottom bar on your phone." },
 ];
-
-export const QUICK_LINKS = ["About us", "How it works", "Partner with us", "Become NSB Verified", "Contact us"];
-
-export const SOCIALS = [
-  { label: "Facebook", href: "https://www.facebook.com/noidasuperbazaar", icon: ICON.facebook },
-  { label: "Instagram", href: "https://www.instagram.com/noidasuperbazaar", icon: ICON.instagram },
-  { label: "LinkedIn", href: "https://www.linkedin.com/company/noidasuperbazaar", icon: ICON.linkedin },
-  { label: "X", href: "https://x.com/noidasuperbazaar", icon: ICON.x },
-  { label: "YouTube", href: "https://www.youtube.com/@noidasuperbazaar", icon: ICON.youtube },
-];

@@ -136,7 +136,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/admin"
       <div className="a-hd">
         <div>
           <h2>Welcome back</h2>
-          <p>A quick look at Noida, Greater Noida and Noida Extension.</p>
+          <p>A quick look at Noida, Greater Noida and Greater Noida West.</p>
         </div>
       </div>
 

@@ -166,7 +166,7 @@ const listingFields = z.object({
   categoryId: z.uuid(),
   name: trimmed(120),
   slug: slugSchema,
-  area: trimmed(120),
+  area: z.enum(LISTING_AREAS, { error: `Choose ${LISTING_AREAS.join(', ')}` }),
   /** Sector or neighbourhood, e.g. Sector 18; shown before the area. */
   locality: optionalText(120),
   address: optionalText(300),
@@ -499,6 +499,95 @@ export const DEFAULT_HOME_CARDS: HomeCard[] = [
   { title: 'Catering', link: '/wedding', color: 'g3', icon: 'catering', imageUrl: '/images/nsb-home/tile-catering.jpg', showIcon: true, tags: [] },
 ];
 
+// ---------- Footer (every page) ----------
+
+/** Social networks the footer has icons for, in the order it shows them. */
+export const FOOTER_SOCIALS = ['facebook', 'instagram', 'linkedin', 'x', 'youtube'] as const;
+export type FooterSocial = (typeof FOOTER_SOCIALS)[number];
+export const FOOTER_SOCIAL_LABELS: Record<FooterSocial, string> = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', x: 'X', youtube: 'YouTube' };
+export const FOOTER_MAX_LINKS = 10;
+
+/** A footer link: a site path, a full https:// address, mailto: or tel:; blank shows the text without a link. */
+const footerHref = z
+  .string()
+  .trim()
+  .max(300)
+  .refine(
+    (v) => v === '' || /^\/(?!\/)\S*$/.test(v) || /^https?:\/\/\S+$/.test(v) || /^(mailto|tel):\S+$/.test(v),
+    'Use a site path such as /about, a full https:// link, mailto: or tel:',
+  );
+
+export const footerLinkSchema = z.object({
+  label: trimmed(40),
+  link: footerHref,
+  /** Off: kept in the admin but not shown on the site. */
+  visible: z.boolean().default(true),
+});
+export type FooterLink = z.infer<typeof footerLinkSchema>;
+
+const footerLinks = z.array(footerLinkSchema).max(FOOTER_MAX_LINKS, `Up to ${FOOTER_MAX_LINKS} links`);
+/** One network's page. Footers saved before the show/hide switch stored just the URL. */
+const footerSocialSchema = z.preprocess(
+  (v) => (typeof v === 'string' ? { url: v, visible: true } : v),
+  z.object({
+    url: z
+      .string()
+      .trim()
+      .max(300)
+      .refine((v) => v === '' || /^https?:\/\/\S+$/.test(v), 'Paste the full https:// link to the page'),
+    visible: z.boolean().default(true),
+  }),
+);
+
+/** The site footer (Admin › Home page › Footer). Categories are listed by the site itself. */
+export const footerSettingsSchema = z.object({
+  /** Own logo; null shows the NSB logo. */
+  logoUrl: imageUrlSchema.nullable(),
+  /** Show/hide switches; footers saved before them show everything. */
+  showLogo: z.boolean().default(true),
+  about: z.string().trim().max(300),
+  showAbout: z.boolean().default(true),
+  /** Shown with a call link; blank hides it. */
+  phone: z
+    .string()
+    .trim()
+    .max(20)
+    .refine((v) => v === '' || /^\+?[\d\s-]{8,}$/.test(v), 'Enter a phone number, e.g. +91 98115 90088'),
+  showPhone: z.boolean().default(true),
+  /** The "Trusted by local businesses" badge with stars. */
+  showBadge: z.boolean().default(true),
+  quickLinks: footerLinks,
+  /** The small links after the copyright line, e.g. Terms and Privacy. */
+  bottomLinks: footerLinks,
+  /** Page per network; blank or switched off hides its icon. */
+  socials: z.object(Object.fromEntries(FOOTER_SOCIALS.map((s) => [s, footerSocialSchema])) as Record<FooterSocial, typeof footerSocialSchema>),
+});
+export type FooterSettings = z.infer<typeof footerSettingsSchema>;
+export type FooterSocialPage = FooterSettings['socials'][FooterSocial];
+
+/** The footer until an admin saves their own (the design's). */
+export const DEFAULT_FOOTER: FooterSettings = {
+  logoUrl: null,
+  showLogo: true,
+  showAbout: true,
+  showPhone: true,
+  showBadge: true,
+  about: 'Your trusted hyperlocal discovery platform for Noida. Connecting you with verified local businesses and services.',
+  phone: '+91 98115 90088',
+  quickLinks: ['About us', 'How it works', 'Partner with us', 'Become NSB Verified', 'Contact us'].map((label) => ({ label, link: '', visible: true })),
+  bottomLinks: [
+    { label: 'Terms', link: '', visible: true },
+    { label: 'Privacy', link: '', visible: true },
+  ],
+  socials: {
+    facebook: { url: 'https://www.facebook.com/noidasuperbazaar', visible: true },
+    instagram: { url: 'https://www.instagram.com/noidasuperbazaar', visible: true },
+    linkedin: { url: 'https://www.linkedin.com/company/noidasuperbazaar', visible: true },
+    x: { url: 'https://x.com/noidasuperbazaar', visible: true },
+    youtube: { url: 'https://www.youtube.com/@noidasuperbazaar', visible: true },
+  },
+};
+
 const price = z.coerce.number().int('Use whole rupees').min(0).max(100_000_000);
 
 /** Advertising prices: per wedding sub-category (6-month slot, by slug) and the real estate year. */
@@ -526,6 +615,8 @@ export const settingsUpdateSchema = z.object({
   pricing: pricingSchema.optional(),
   /** The four cards beside the home hero (Admin › Home page). */
   homeCards: homeCardsSchema.optional(),
+  /** The site footer (Admin › Home page). */
+  footer: footerSettingsSchema.optional(),
 });
 export type SettingsUpdate = z.infer<typeof settingsUpdateSchema>;
 /** What the browser sends (the Firebase key file as text). */

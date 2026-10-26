@@ -116,7 +116,8 @@ describe('NSB API (e2e)', () => {
         categoryId: category.id,
         name: 'E2E Test Vendor',
         slug,
-        area: 'Sector 18, Noida',
+        area: 'Noida',
+        locality: 'Sector 18',
         shortDescription: 'Test vendor',
         services: ['Service A'],
         quickInfo: [{ label: 'Starting price', value: '₹50,000' }],
@@ -285,8 +286,14 @@ describe('NSB API (e2e)', () => {
     await http()
       .post('/api/admin/listings')
       .set('Cookie', cookie)
-      .send({ categoryId: category.id, name: 'Dup', slug, area: 'X', shortDescription: 'X', email: 'a@b.co' })
+      .send({ categoryId: category.id, name: 'Dup', slug, area: 'Noida', shortDescription: 'X', email: 'a@b.co' })
       .expect(409);
+    // Listings can only be in Noida, Greater Noida or Greater Noida West.
+    await http()
+      .post('/api/admin/listings')
+      .set('Cookie', cookie)
+      .send({ categoryId: category.id, name: 'Elsewhere', slug: `${slug}-elsewhere`, area: 'Ghaziabad', shortDescription: 'X', email: 'a@b.co' })
+      .expect(400);
     const res = await http().post('/api/admin/listings').set('Cookie', cookie).send({ slug: 'Bad Slug' }).expect(400);
     expect(res.body.issues.length).toBeGreaterThan(0);
   });

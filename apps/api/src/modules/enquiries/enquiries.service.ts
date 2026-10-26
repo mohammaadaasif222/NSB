@@ -24,10 +24,11 @@ import { pageWindow } from '../../common/pagination.js';
 import { ListingsService } from '../listings/listings.service.js';
 import { type EnquiryNotice, NotificationsService } from '../notifications/notifications.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
+import { projectLeadMessage } from './project-lead-message.js';
 
 type Row = typeof enquiries.$inferSelect;
 
-/** Most rows one CSV export returns; narrow the filters for more. */
+/** Most rows one export returns; narrow the filters for more. */
 export const EXPORT_LIMIT = 10_000;
 
 const toEnquiry = (r: Row, projectType: Enquiry['projectType'] = null): Enquiry => ({
@@ -39,18 +40,6 @@ const toEnquiry = (r: Row, projectType: Enquiry['projectType'] = null): Enquiry 
 
 /** Leads with their project's type (real estate), for the Leads table. */
 const withProject = { enquiry: enquiries, projectType: projects.type };
-
-const yesNo = (v: boolean) => (v ? 'Yes' : 'No');
-
-/** The View Number form's answers, as the lead's message (shown in the admin, the CSV and the alert email). */
-const projectLeadMessage = (input: ProjectEnquiryInput) =>
-  [
-    `${input.source} request`,
-    `Property dealer: ${yesNo(input.isDealer)}`,
-    `Planning to buy in: ${input.buyWithin ?? 'Not given'}`,
-    `Interested in a home loan: ${yesNo(input.homeLoan)}`,
-    `Interested in site visits: ${yesNo(input.siteVisit)}`,
-  ].join('\n');
 
 @Injectable()
 export class EnquiriesService {

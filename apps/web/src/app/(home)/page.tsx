@@ -18,7 +18,7 @@ import {
   TopPicks,
 } from "@/components/site/nsb-home/sections";
 import { api } from "@/lib/api";
-import { getListingCounts, getLocationOptions, getSiteLocation } from "@/lib/location-server";
+import { getListingCounts, getSiteLocation } from "@/lib/location-server";
 import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
 import "./home.css";
 
@@ -50,18 +50,17 @@ function heroSlides(banners: Banner[]): HeroSlide[] {
 /** The home page from "NSB Live Demo.html", with its own header; the footer is the site-wide one. */
 export default async function HomePage() {
   const location = await getSiteLocation();
-  const [banners, categories, { whatsapp, homeCards }, locationOptions, counts] = await Promise.all([
+  const [banners, categories, { whatsapp, homeCards, footer }, counts] = await Promise.all([
     api.get<Banner[]>("/banners"),
     // Active top-level categories, in the order set in Admin › Home page.
     api.get<Category[]>("/categories"),
     getSiteSettings(),
-    getLocationOptions(),
     getListingCounts(location),
   ]);
 
   return (
     <div className={`nsb-home ${jakarta.variable}`}>
-      <HomeHeader location={location} locationOptions={locationOptions} />
+      <HomeHeader location={location} />
       <main>
         <HeroBanners slides={heroSlides(banners)} cards={homeCards} />
         <Categories categories={categories} counts={counts} location={location} />
@@ -73,7 +72,7 @@ export default async function HomePage() {
         <BestDeals />
       </main>
       <Faqs />
-      <SiteFooter categories={categories} />
+      <SiteFooter categories={categories} footer={footer} />
       <BottomNav whatsappHref={whatsapp ? whatsappHref(whatsapp) : null} />
       <CookieBar />
     </div>

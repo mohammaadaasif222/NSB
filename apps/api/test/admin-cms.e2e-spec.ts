@@ -300,7 +300,8 @@ describe('Admin CMS (e2e)', () => {
             categoryId: sub.id,
             name: `E2E ${run} Vendor`,
             slug: `e2e-${run}-vendor`,
-            area: 'Sector 18',
+            area: 'Noida',
+            locality: 'Sector 18',
             shortDescription: 'Test',
             about: 'Keep this text',
             email: 'vendor@example.com',
@@ -346,7 +347,7 @@ describe('Admin CMS (e2e)', () => {
       await http().get('/api/listings?area=Delhi').expect(400);
 
       const locations = (await http().get('/api/locations').expect(200)).body as LocationOption[];
-      expect(locations.map((l) => l.area)).toEqual(['Noida', 'Greater Noida', 'Noida Extension']);
+      expect(locations.map((l) => l.area)).toEqual(['Noida', 'Greater Noida', 'Greater Noida West']);
       expect(locations[0].localities.some((l) => l.name.toLowerCase() === 'sector 18' && l.count >= 1)).toBe(true);
 
       const bySub = (await http().get(`/api/locations/counts?parent=${parent.slug}&area=Noida&locality=Sector%2018`).expect(200)).body;

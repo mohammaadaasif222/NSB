@@ -4,8 +4,11 @@ import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import {
   type AdminSettings,
+  DEFAULT_FOOTER,
   DEFAULT_HOME_CARDS,
   type EmailSettings,
+  type FooterSettings,
+  footerSettingsSchema,
   type HomeCard,
   homeCardsSchema,
   IMAGE_STORAGE_PROVIDERS,
@@ -60,10 +63,14 @@ const KEYS = {
   projectSideAd: 'realEstate.projectSideAd',
   pricing: 'site.pricing',
   homeCards: 'home.cards',
+  footer: 'home.footer',
 } as const;
 
 /** Its cards' imageUrl values are uploads, so the media cleanup checks this key too. */
 export const HOME_CARDS_KEY = KEYS.homeCards;
+
+/** Its logoUrl is an upload, so the media cleanup checks this key too. */
+export const FOOTER_KEY = KEYS.footer;
 
 /** Its imageUrl is an upload, so the media cleanup checks this key before deleting a file. */
 export const PROJECT_SIDE_AD_KEY = KEYS.projectSideAd;
@@ -117,6 +124,7 @@ interface Saved {
   projectSideAd: ProjectSideAd | null;
   pricing: Pricing | null;
   homeCards: HomeCard[] | null;
+  footer: FooterSettings | null;
 }
 
 interface Resolved<T> {
@@ -188,6 +196,7 @@ export class SettingsService {
       projectSideAd: saved.projectSideAd,
       pricing: saved.pricing ?? DEFAULT_PRICING,
       homeCards: saved.homeCards ?? DEFAULT_HOME_CARDS,
+      footer: saved.footer ?? DEFAULT_FOOTER,
     };
   }
 
@@ -198,12 +207,13 @@ export class SettingsService {
 
   /** What the public website needs: the WhatsApp button and the project page ad only while switched on. */
   async siteSettings(): Promise<SiteSettings> {
-    const { whatsapp, listingSidebar, projectSideAd, homeCards } = await this.load();
+    const { whatsapp, listingSidebar, projectSideAd, homeCards, footer } = await this.load();
     return {
       whatsapp: whatsapp?.enabled ? { number: whatsapp.number, message: whatsapp.message } : null,
       listingSidebar: listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
       projectSideAd: projectSideAd?.enabled ? projectSideAd : null,
       homeCards: homeCards ?? DEFAULT_HOME_CARDS,
+      footer: footer ?? DEFAULT_FOOTER,
     };
   }
 
@@ -251,6 +261,7 @@ export class SettingsService {
       if (input.projectSideAd !== undefined) next.projectSideAd = input.projectSideAd;
       if (input.pricing) next.pricing = input.pricing;
       if (input.homeCards) next.homeCards = input.homeCards;
+      if (input.footer) next.footer = input.footer;
       if (input.imageStorage) next.imageStorage = input.imageStorage;
 
       const active = this.active(next);
@@ -271,6 +282,7 @@ export class SettingsService {
       await this.write(tx, KEYS.projectSideAd, next.projectSideAd, input.projectSideAd !== undefined);
       await this.write(tx, KEYS.pricing, next.pricing, !!input.pricing);
       await this.write(tx, KEYS.homeCards, next.homeCards, !!input.homeCards);
+      await this.write(tx, KEYS.footer, next.footer, !!input.footer);
     });
     return this.get();
   }
@@ -382,6 +394,7 @@ export class SettingsService {
       projectSideAd: parse(projectSideAdSchema, value(KEYS.projectSideAd)),
       pricing: parse(pricingSchema, value(KEYS.pricing)),
       homeCards: parse(homeCardsSchema, value(KEYS.homeCards)),
+      footer: parse(footerSettingsSchema, value(KEYS.footer)),
     };
   }
 

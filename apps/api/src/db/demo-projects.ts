@@ -45,8 +45,8 @@ const ROWS: Row[] = [
   ['Maple Square', 'Kapoor Group', 'Noida', 'Sector 75', 1.05, 'apartments', false, 'Under Construction', 'Nov 2028'],
   ['Urban Nest', 'Mehra Infra', 'Greater Noida', 'Pi Sector', 0.52, 'apartments', false, 'Ready to Move', 'Immediate'],
   ['Ivory Residences', 'Kapoor Group', 'Greater Noida', 'Omicron', 1.1, 'plots', false, 'Ready to Move', 'Immediate'],
-  ['Royal Orchid', 'Gupta Builders', 'Noida Extension', 'Sector 4', 0.64, 'apartments', false, 'Under Construction', 'Mar 2028'],
-  ['Lakeview Towers', 'Aarav Realty', 'Noida Extension', 'Techzone 4', 0.78, 'apartments', true, 'Under Construction', 'Sep 2028'],
+  ['Royal Orchid', 'Gupta Builders', 'Greater Noida West', 'Sector 4', 0.64, 'apartments', false, 'Under Construction', 'Mar 2028'],
+  ['Lakeview Towers', 'Aarav Realty', 'Greater Noida West', 'Techzone 4', 0.78, 'apartments', true, 'Under Construction', 'Sep 2028'],
 ];
 
 const plan = { plan2dUrl: null, plan3dUrl: null };

@@ -4,6 +4,7 @@ import type { AdminCategory, AdminSettings, Banner } from "@nsb/shared";
 import { adminApi } from "@/lib/api";
 import { BannerManager } from "../banners/banner-manager";
 import { CategoryManager } from "../categories/category-manager";
+import { FooterManager } from "./footer-manager";
 import { HomeCardsManager } from "./home-cards-manager";
 import { editorsOnly } from "@/components/admin/editors-only";
 
@@ -24,7 +25,7 @@ export default async function HomePageManager() {
       <div className="a-hd">
         <div>
           <h2>Home page</h2>
-          <p>Three things you can change. Changes show on the homepage as soon as they are saved.</p>
+          <p>Four things you can change. Changes show on the site as soon as they are saved.</p>
         </div>
         <Link href="/" target="_blank" rel="noreferrer" className="a-btn g">
           View homepage
@@ -55,11 +56,21 @@ export default async function HomePageManager() {
         <HomeCardsManager key={JSON.stringify(settings.homeCards)} cards={settings.homeCards} maxUploadBytes={settings.maxUploadBytes} />
       </section>
 
-      <section id="categories" className="a-card scroll-mt-24" aria-labelledby="categories-h">
+      <section id="categories" className="a-card mb-4 scroll-mt-24" aria-labelledby="categories-h">
         <h3 id="categories-h">3. Browse by category</h3>
         <p className="a-hsub">Use the arrows to change the order. Switch a category off to hide it. Sub-categories hold the listings.</p>
         <CategoryManager categories={categories} maxUploadBytes={settings.maxUploadBytes} />
       </section>
+
+      {/* <section id="footer" className="a-card scroll-mt-24" aria-labelledby="footer-h">
+        <h3 id="footer-h">
+          <span>
+            4. Footer <span className="a-tag">bottom of every page</span>
+          </span>
+        </h3>
+        <p className="a-hsub">The logo, short text, phone number, links and social media pages at the bottom of the site.</p>
+        <FooterManager key={JSON.stringify(settings.footer)} footer={settings.footer} maxUploadBytes={settings.maxUploadBytes} />
+      </section> */}
     </>
   );
 }

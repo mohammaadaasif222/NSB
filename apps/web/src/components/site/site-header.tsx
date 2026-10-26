@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Search, ShoppingBag } from "lucide-react";
-import type { LocationOption } from "@nsb/shared";
 import type { SiteLocation } from "@/lib/location";
 import { LocationPicker } from "./location-picker";
 
@@ -9,7 +8,7 @@ import { LocationPicker } from "./location-picker";
  * Header from the home design. The location picker filters every page; search, cart and login
  * are shown as designed but not wired up: search and customer accounts are not part of Phase-1.
  */
-export function SiteHeader({ location, locationOptions }: { location: SiteLocation | null; locationOptions: LocationOption[] }) {
+export function SiteHeader({ location }: { location: SiteLocation | null }) {
   return (
     <header className="sticky top-0 z-50 border-b border-[#f3f4f6] bg-white/95 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-md lg:static lg:bg-white lg:py-3 lg:shadow-none lg:backdrop-blur-none">
       <div className="container-page flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5 sm:gap-x-6">
@@ -37,7 +36,7 @@ export function SiteHeader({ location, locationOptions }: { location: SiteLocati
         </form>
 
         <div className="flex shrink-0 items-center gap-3 sm:gap-6">
-          <LocationPicker variant="site" current={location} options={locationOptions} />
+          <LocationPicker variant="site" current={location} />
           <a href="#" className="relative block" aria-label="Cart">
             <span className="flex rounded-full bg-[#f3f4f6] p-2">
               <ShoppingBag className="size-5 text-[#4b5563] sm:size-6" aria-hidden />

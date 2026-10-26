@@ -68,6 +68,12 @@ interface Demo {
   photos: string[];
 }
 
+/** "Sector 18, Noida" → locality Sector 18 in the area Noida (one of LISTING_AREAS). */
+const place = (text: string) => {
+  const [locality, area] = text.includes(', ') ? text.split(', ') : [null, text];
+  return { area: area!, locality };
+};
+
 const qi = (...pairs: [string, string][]): QuickInfoItem[] => pairs.map(([label, value]) => ({ label, value }));
 
 const VENUE_SERVICES = [
@@ -111,11 +117,11 @@ const venue = (
 const DEMO: Record<string, Demo[]> = {
   'wedding-venues': [
     venue(0, 'The Grand Imperial Banquet', 'the-grand-imperial-banquet-sector-18', 'Sector 18, Noida', 'Banquet Hall', '₹1,200', '₹1,450', '100–600 guests', '12 rooms', '150 cars', 'A landmark banquet in the heart of Sector 18, known for its crystal chandeliers, double-height ceilings and a 40-foot stage that suits grand pheras and receptions alike.', true),
-    venue(1, 'Royal Orchid Lawns', 'royal-orchid-lawns-sector-135', 'Sector 135, Noida Expressway', 'Lawn & Banquet', '₹1,500', '₹1,800', '200–1,500 guests', '6 rooms', '300 cars', 'Two landscaped lawns and an indoor banquet on the Noida Expressway, ideal for evening receptions under the stars with a covered fallback for winter weddings.'),
+    venue(1, 'Royal Orchid Lawns', 'royal-orchid-lawns-sector-135', 'Sector 135, Noida', 'Lawn & Banquet', '₹1,500', '₹1,800', '200–1,500 guests', '6 rooms', '300 cars', 'Two landscaped lawns and an indoor banquet on the Noida Expressway, ideal for evening receptions under the stars with a covered fallback for winter weddings.'),
     venue(2, 'Shubh Vivah Mahal', 'shubh-vivah-mahal-sector-63', 'Sector 63, Noida', 'Banquet Hall', '₹900', '₹1,100', '100–500 guests', '4 rooms', '80 cars', 'A family-run marriage hall with traditional decor, a separate mehendi area and easy access from NH-24, popular for value-for-money weddings.'),
     venue(3, 'Crystal Palace Banquet', 'crystal-palace-banquet-gaur-city', 'Gaur City, Greater Noida West', 'Banquet Hall', '₹1,100', '₹1,350', '150–800 guests', '10 rooms', '120 cars', 'A modern pillarless hall in Gaur City with LED walls, a mirrored entrance and an in-house decor team for themed weddings.', true),
     venue(4, 'Sapphire Courtyard', 'sapphire-courtyard-sector-104', 'Sector 104, Noida', 'Boutique Venue', '₹1,800', '₹2,100', '50–300 guests', '8 rooms', '60 cars', 'An intimate courtyard venue for smaller weddings and cocktail evenings, with a heritage-style facade and fairy-lit open-air seating.'),
-    venue(5, 'Aangan Farmhouse', 'aangan-farmhouse-noida-extension', 'Noida Extension', 'Farmhouse', '₹1,300', '₹1,600', '200–1,000 guests', '5 rooms', '200 cars', 'A green farmhouse with a sprawling lawn, poolside area and cottages for the wedding party, perfect for day weddings and haldi ceremonies.'),
+    venue(5, 'Aangan Farmhouse', 'aangan-farmhouse-noida-extension', 'Greater Noida West', 'Farmhouse', '₹1,300', '₹1,600', '200–1,000 guests', '5 rooms', '200 cars', 'A green farmhouse with a sprawling lawn, poolside area and cottages for the wedding party, perfect for day weddings and haldi ceremonies.'),
     venue(6, 'Ivory Pearl Convention Centre', 'ivory-pearl-convention-centre-knowledge-park', 'Knowledge Park, Greater Noida', 'Convention Centre', '₹1,000', '₹1,250', '300–2,000 guests', '20 rooms', '400 cars', 'One of the largest convention spaces in Greater Noida, with three halls that can run sangeet, wedding and reception side by side.'),
     venue(7, 'The Golden Mandap', 'the-golden-mandap-sector-50', 'Sector 50, Noida', 'Banquet Hall', '₹1,400', '₹1,700', '100–400 guests', '6 rooms', '90 cars', 'A warm, gold-toned banquet with a permanent mandap setup and a terrace for pre-wedding functions, a short drive from Sector 50 metro.'),
   ],
@@ -137,7 +143,7 @@ const DEMO: Record<string, Demo[]> = {
   'cards-invitations': [
     { name: 'Paper Petals Invitations', slug: 'paper-petals-invitations-sector-18', area: 'Sector 18, Noida', shortDescription: 'Designer wedding cards and invitation boxes.', about: 'Paper Petals designs premium wedding cards, laser-cut invitations and invitation boxes with sweets or dry fruits.\n\nDesigns are customised with the couple’s monogram.', services: ['Designer wedding cards', 'Laser-cut invitations', 'Invitation boxes', 'Monogram design', 'Envelope printing'], quickInfo: qi(['Printed cards', '₹80 per card'], ['Invitation boxes', '₹450 per box'], ['Minimum order', '100 cards'], ['Delivery', '7–10 days']), photos: pick(INVITATION_PHOTOS, 0, 3) },
     { name: 'Shagun Cards', slug: 'shagun-cards-sector-2', area: 'Sector 2, Noida', isFeatured: true, shortDescription: 'Traditional wedding cards and shagun envelopes.', about: 'A long-standing card shop with hundreds of ready designs in Hindi and English, plus shagun envelopes and ritual stationery.\n\nQuick turnaround for last-minute orders.', services: ['Traditional wedding cards', 'Hindi and English printing', 'Shagun envelopes', 'Express printing'], quickInfo: qi(['Printed cards', '₹35 per card'], ['Minimum order', '50 cards'], ['Delivery', '3–5 days'], ['Languages', 'Hindi, English']), photos: pick(INVITATION_PHOTOS, 3, 3) },
-    { name: 'Royal Scrolls Studio', slug: 'royal-scrolls-studio-noida-extension', area: 'Noida Extension', shortDescription: 'E-invites, video invitations and scroll cards.', about: 'Royal Scrolls makes animated e-invites, video invitations and handmade scroll cards for couples who want something different.\n\nE-invites are delivered as WhatsApp-ready videos and PDFs.', services: ['Video invitations', 'E-invites', 'Scroll cards', 'Save the dates', 'Caricature invites'], quickInfo: qi(['E-invites', '₹3,000 onwards'], ['Scroll cards', '₹150 per card'], ['Delivery', '2–7 days'], ['Formats', 'Video, PDF, print']), photos: pick(INVITATION_PHOTOS, 1, 4) },
+    { name: 'Royal Scrolls Studio', slug: 'royal-scrolls-studio-noida-extension', area: 'Greater Noida West', shortDescription: 'E-invites, video invitations and scroll cards.', about: 'Royal Scrolls makes animated e-invites, video invitations and handmade scroll cards for couples who want something different.\n\nE-invites are delivered as WhatsApp-ready videos and PDFs.', services: ['Video invitations', 'E-invites', 'Scroll cards', 'Save the dates', 'Caricature invites'], quickInfo: qi(['E-invites', '₹3,000 onwards'], ['Scroll cards', '₹150 per card'], ['Delivery', '2–7 days'], ['Formats', 'Video, PDF, print']), photos: pick(INVITATION_PHOTOS, 1, 4) },
   ],
 };
 
@@ -238,6 +244,7 @@ try {
           .insert(listings)
           .values({
             ...demo,
+            ...place(demo.area),
             categoryId,
             coverImageUrl: cover,
             videos,

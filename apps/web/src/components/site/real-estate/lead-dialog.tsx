@@ -21,6 +21,7 @@ const TITLES: Record<ProjectLeadSource, string> = {
   Callback: "Request a callback",
   "Price sheet": "Request price sheet",
   Brochure: "Download brochure",
+  Enquiry: "Enquire about this project",
 };
 
 /** Wraps a real estate page so any LeadButton on it opens the one View Number dialog. */
@@ -47,20 +48,10 @@ const MOBILE = /^[6-9]\d{9}$/;
 /** "9810012345" → "98100 12345". */
 const spaced = (phone: string) => `${phone.slice(0, 5)} ${phone.slice(5)}`;
 
-/**
- * The demo's View Number form: dealer, name, phone, buying timeline, loan and site visit interest,
- * consent. Saved as a lead in Admin › Enquiries; the visitor then sees the advertiser's number.
- */
 function LeadDialog({ target, onClose }: { target: LeadTarget; onClose: () => void }) {
   const id = useId();
-  const nameInput = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState("");
-  const [invalid, setInvalid] = useState<"name" | "mobile" | null>(null);
-  const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<ProjectEnquiryResult | null>(null);
 
   useEffect(() => {
-    nameInput.current?.focus();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -70,6 +61,60 @@ function LeadDialog({ target, onClose }: { target: LeadTarget; onClose: () => vo
       window.removeEventListener("keydown", onKey);
     };
   }, [onClose]);
+
+  return (
+    <div className="re-mo" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="re-md" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
+        <button type="button" className="re-x" onClick={onClose} aria-label="Close">
+          ×
+        </button>
+        <LeadForm target={target} titleId={`${id}-title`} onDone={onClose} autoFocus />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The enquiry form on the project page: the View Number form with a message box, always open.
+ * After sending, "Done" clears it for another enquiry.
+ */
+export function ProjectEnquiry(target: Omit<LeadTarget, "source"> & { projectId: string }) {
+  const [round, setRound] = useState(0);
+  return (
+    <div className="re-eq">
+      <LeadForm key={round} target={{ ...target, source: "Enquiry" }} withMessage onDone={() => setRound((n) => n + 1)} />
+    </div>
+  );
+}
+
+/**
+ * The demo's View Number form: dealer, name, phone, buying timeline, loan and site visit interest,
+ * consent, and on the project page a message. Saved as a lead in Admin › Leads › Real Estate; the
+ * visitor then sees the advertiser's number. Without `titleId` it shows no heading (the page has one).
+ */
+function LeadForm({
+  target,
+  titleId,
+  withMessage = false,
+  autoFocus = false,
+  onDone,
+}: {
+  target: LeadTarget;
+  titleId?: string;
+  withMessage?: boolean;
+  autoFocus?: boolean;
+  onDone: () => void;
+}) {
+  const id = useId();
+  const nameInput = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState("");
+  const [invalid, setInvalid] = useState<"name" | "mobile" | null>(null);
+  const [pending, setPending] = useState(false);
+  const [result, setResult] = useState<ProjectEnquiryResult | null>(null);
+
+  useEffect(() => {
+    if (autoFocus) nameInput.current?.focus();
+  }, [autoFocus]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -101,6 +146,7 @@ function LeadDialog({ target, onClose }: { target: LeadTarget; onClose: () => vo
           buyWithin: form.get("buyWithin") || undefined,
           homeLoan: form.has("homeLoan"),
           siteVisit: form.has("siteVisit"),
+          message: withMessage ? String(form.get("message") ?? "").trim() || undefined : undefined,
           agreed: true,
         }),
       });
@@ -111,7 +157,11 @@ function LeadDialog({ target, onClose }: { target: LeadTarget; onClose: () => vo
       const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
       setError(
         body?.issues?.[0]?.message ??
-          (res.status === 404 ? "This project is no longer listed." : res.status === 429 ? "Too many requests. Please try again shortly." : "Something went wrong. Please try again."),
+          (res.status === 404
+            ? "This project is no longer listed."
+            : res.status === 429
+              ? "Too many requests. Please try again shortly."
+              : "Something went wrong. Please try again."),
       );
     } catch {
       setError("Could not send your details. Check your connection and try again.");
@@ -121,102 +171,117 @@ function LeadDialog({ target, onClose }: { target: LeadTarget; onClose: () => vo
   }
 
   const who = target.advertiserType === "broker" ? "Broker" : target.projectId ? "Builder" : "NSB team";
-  return (
-    <div className="re-mo" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="re-md" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
-        <button type="button" className="re-x" onClick={onClose} aria-label="Close">
-          ×
-        </button>
-        {result ? (
-          <div className="re-nm" role="status">
-            <h3 id={`${id}-title`}>{who} contact</h3>
-            {result.phone ? (
-              <>
-                <b>
-                  <a href={`tel:+91${result.phone}`}>+91 {spaced(result.phone)}</a>
-                </b>
-                <p>Your enquiry has been shared with {result.advertiserName ?? target.advertiser}.</p>
-              </>
-            ) : (
-              <p style={{ marginTop: 10 }}>Thank you. The NSB team will call you back shortly.</p>
-            )}
-            {result.brochureUrl && target.source === "Brochure" && (
-              <a className="re-btn" href={result.brochureUrl} target="_blank" rel="noopener noreferrer">
-                Download brochure
-              </a>
-            )}
-            <button type="button" className="re-btn o" onClick={onClose} style={{ marginLeft: 8 }}>
-              Done
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} noValidate>
-            <h3 id={`${id}-title`}>{TITLES[target.source]}</h3>
-            <p className="ps">Share your details to {target.projectId ? `view ${target.advertiser}’s number` : "get a call from the NSB team"}</p>
-            <fieldset className="re-fl">
-              <legend className="t">Are you a property dealer?</legend>
-              <div className="re-op">
-                <label>
-                  <input type="radio" name="dealer" value="yes" /> Yes
-                </label>
-                <label>
-                  <input type="radio" name="dealer" value="no" defaultChecked /> No
-                </label>
-              </div>
-            </fieldset>
-            <div className="re-fl">
-              <label className="t" htmlFor={`${id}-name`}>
-                Name
-              </label>
-              <input ref={nameInput} id={`${id}-name`} name="name" className="re-in" placeholder="Your name" maxLength={80} autoComplete="name" aria-invalid={invalid === "name" || undefined} />
-            </div>
-            <div className="re-fl">
-              <label className="t" htmlFor={`${id}-mobile`}>
-                Phone
-              </label>
-              <div className="re-ph">
-                <span>+91</span>
-                <input
-                  id={`${id}-mobile`}
-                  name="mobile"
-                  className="re-in"
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={10}
-                  autoComplete="tel-national"
-                  placeholder="10-digit mobile number"
-                  aria-invalid={invalid === "mobile" || undefined}
-                />
-              </div>
-            </div>
-            <fieldset className="re-fl">
-              <legend className="t">Planning to buy in?</legend>
-              <div className="re-op">
-                {BUY_WITHIN.map((w) => (
-                  <label key={w}>
-                    <input type="radio" name="buyWithin" value={w} /> {w}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <label className="re-ck">
-              <input type="checkbox" name="homeLoan" /> I’m interested in a home loan
-            </label>
-            <label className="re-ck">
-              <input type="checkbox" name="siteVisit" defaultChecked={target.source !== "Price sheet"} /> I’m interested in site visits
-            </label>
-            <label className="re-ck">
-              <input type="checkbox" name="agreed" /> I agree to the <b>Terms</b> and <b>Privacy Policy</b>
-            </label>
-            <p className="re-er" role="alert">
-              {error}
-            </p>
-            <button type="submit" className="re-btn" style={{ width: "100%", padding: 12 }} disabled={pending}>
-              {pending ? "Sending…" : target.source === "View Number" ? "View Number" : "Submit"}
-            </button>
-          </form>
-        )}
-      </div>
+  return result ? (
+    <div className="re-nm" role="status">
+      <h3 id={titleId}>{who} contact</h3>
+      {result.phone ? (
+        <>
+          <b>
+            <a href={`tel:+91${result.phone}`}>+91 {spaced(result.phone)}</a>
+          </b>
+          <p>Your enquiry has been shared with {result.advertiserName ?? target.advertiser}.</p>
+        </>
+      ) : (
+        <p style={{ marginTop: 10 }}>Thank you. The NSB team will call you back shortly.</p>
+      )}
+      {result.brochureUrl && target.source === "Brochure" && (
+        <a className="re-btn" href={result.brochureUrl} target="_blank" rel="noopener noreferrer">
+          Download brochure
+        </a>
+      )}
+      <button type="button" className="re-btn o" onClick={onDone} style={{ marginLeft: 8 }}>
+        Done
+      </button>
     </div>
+  ) : (
+    <form onSubmit={onSubmit} noValidate>
+      {titleId && <h3 id={titleId}>{TITLES[target.source]}</h3>}
+      <p className="ps">Share your details to {target.projectId ? `view ${target.advertiser}’s number` : "get a call from the NSB team"}</p>
+      <fieldset className="re-fl">
+        <legend className="t">Are you a property dealer?</legend>
+        <div className="re-op">
+          <label>
+            <input type="radio" name="dealer" value="yes" /> Yes
+          </label>
+          <label>
+            <input type="radio" name="dealer" value="no" defaultChecked /> No
+          </label>
+        </div>
+      </fieldset>
+      <div className="re-fl">
+        <label className="t" htmlFor={`${id}-name`}>
+          Name
+        </label>
+        <input
+          ref={nameInput}
+          id={`${id}-name`}
+          name="name"
+          className="re-in"
+          placeholder="Your name"
+          maxLength={80}
+          autoComplete="name"
+          aria-invalid={invalid === "name" || undefined}
+        />
+      </div>
+      <div className="re-fl">
+        <label className="t" htmlFor={`${id}-mobile`}>
+          Phone
+        </label>
+        <div className="re-ph">
+          <span>+91</span>
+          <input
+            id={`${id}-mobile`}
+            name="mobile"
+            className="re-in"
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            autoComplete="tel-national"
+            placeholder="10-digit mobile number"
+            aria-invalid={invalid === "mobile" || undefined}
+          />
+        </div>
+      </div>
+      <fieldset className="re-fl">
+        <legend className="t">Planning to buy in?</legend>
+        <div className="re-op">
+          {BUY_WITHIN.map((w) => (
+            <label key={w}>
+              <input type="radio" name="buyWithin" value={w} /> {w}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      {withMessage && (
+        <div className="re-fl">
+          <label className="t" htmlFor={`${id}-message`}>
+            Message <span className="font-normal">(optional)</span>
+          </label>
+          <textarea
+            id={`${id}-message`}
+            name="message"
+            className="re-in"
+            rows={3}
+            maxLength={1000}
+            placeholder="e.g. I'd like the price of a 3 BHK on a higher floor"
+          />
+        </div>
+      )}
+      <label className="re-ck">
+        <input type="checkbox" name="homeLoan" /> I’m interested in a home loan
+      </label>
+      <label className="re-ck">
+        <input type="checkbox" name="siteVisit" defaultChecked={target.source !== "Price sheet"} /> I’m interested in site visits
+      </label>
+      <label className="re-ck">
+        <input type="checkbox" name="agreed" /> I agree to the <b>Terms</b> and <b>Privacy Policy</b>
+      </label>
+      <p className="re-er" role="alert">
+        {error}
+      </p>
+      <button type="submit" className="re-btn" style={{ width: "100%", padding: 12 }} disabled={pending}>
+        {pending ? "Sending…" : target.source === "View Number" ? "View Number" : "Submit"}
+      </button>
+    </form>
   );
 }

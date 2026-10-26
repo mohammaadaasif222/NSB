@@ -45,8 +45,8 @@ export const PROJECT_PLAN_PRICE = 25_000;
 /** "Planning to buy in?" on the View Number form. */
 export const BUY_WITHIN = ['3 months', '6 months', '6+ months'] as const;
 
-/** The button a project lead came from. */
-export const PROJECT_LEAD_SOURCES = ['View Number', 'Site visit', 'Callback', 'Price sheet', 'Brochure'] as const;
+/** The button a project lead came from; "Enquiry" is the form on the project page. */
+export const PROJECT_LEAD_SOURCES = ['View Number', 'Site visit', 'Callback', 'Price sheet', 'Brochure', 'Enquiry'] as const;
 export type ProjectLeadSource = (typeof PROJECT_LEAD_SOURCES)[number];
 
 /** Lead name for "Get a callback" from the NSB team, which is about no project in particular. */
@@ -296,7 +296,7 @@ export const projectDuplicateQuerySchema = z.object({
 });
 export type ProjectDuplicateQuery = z.infer<typeof projectDuplicateQuerySchema>;
 
-/** The View Number form (also Site visit, Callback, Price sheet and Brochure). */
+/** The View Number form (also Site visit, Callback, Price sheet, Brochure and the project page's enquiry form). */
 export const projectEnquiryInputSchema = z.object({
   /** Omit for "Get a callback" from the NSB team. */
   projectId: z.uuid().optional(),
@@ -306,6 +306,8 @@ export const projectEnquiryInputSchema = z.object({
   buyWithin: blankAsUndefined(z.enum(BUY_WITHIN)),
   homeLoan: z.boolean().default(false),
   siteVisit: z.boolean().default(false),
+  /** The enquiry form's optional question for the advertiser. */
+  message: blankAsUndefined(z.string().trim().max(1000, 'Keep your message under 1000 characters')),
   agreed: z.literal(true, { error: 'Please accept the Terms and Privacy Policy.' }),
   source: z.enum(PROJECT_LEAD_SOURCES).default('View Number'),
 });

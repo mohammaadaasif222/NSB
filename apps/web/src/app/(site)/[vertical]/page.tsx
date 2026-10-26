@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/[vertical]">): Pr
   return {
     title: `${category.name} in Noida`,
     description:
-      category.description ?? `Find trusted ${category.name.toLowerCase()} businesses in Noida, Greater Noida and Noida Extension.`,
+      category.description ?? `Find trusted ${category.name.toLowerCase()} businesses in Noida, Greater Noida and Greater Noida West.`,
   };
 }
 
@@ -45,7 +45,7 @@ export default async function CategoryLandingPage({ params }: PageProps<"/[verti
           <div>
             <h1 className="text-3xl leading-tight font-bold sm:text-4xl lg:text-[44px]">{name} in Noida</h1>
             <p className="mt-2 max-w-2xl text-base leading-7 opacity-90 sm:text-lg">
-              {category.description ?? "Trusted local businesses in Noida, Greater Noida and Noida Extension."}
+              {category.description ?? "Trusted local businesses in Noida, Greater Noida and Greater Noida West."}
             </p>
           </div>
         </div>

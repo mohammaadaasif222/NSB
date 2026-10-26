@@ -7,7 +7,7 @@ export function ComingSoon() {
         <div className="mx-auto flex max-w-lg flex-col items-center gap-4 rounded-2xl bg-white p-8 text-center shadow-[0px_4px_8px_0px_rgba(0,0,0,0.06)]">
           <h1 className="text-2xl font-bold text-ink">Coming soon</h1>
           <p className="text-muted">
-            We are onboarding trusted businesses in Noida, Greater Noida and Noida Extension. This page will be live soon.
+            We are onboarding trusted businesses in Noida, Greater Noida and Greater Noida West. This page will be live soon.
           </p>
           <Link
             href="/"

@@ -211,6 +211,11 @@ describe('Real estate projects (e2e)', () => {
   it('takes a general callback and checks the form', async () => {
     const res = (await lead({ source: 'Callback' }).expect(201)).body as ProjectEnquiryResult;
     expect(res).toMatchObject({ phone: null, advertiserName: null });
+    // The enquiry form on the project page adds the visitor's message to the lead.
+    const asked = (await lead({ projectId: project.id, source: 'Enquiry', message: 'Is a 3 BHK on a high floor left?' }).expect(201)).body as ProjectEnquiryResult;
+    const { rows } = await pool.query('select source, message from enquiries where id = $1', [asked.id]);
+    expect(rows[0].source).toBe('Enquiry');
+    expect(rows[0].message).toContain('Message: Is a 3 BHK on a high floor left?');
     const bad = await lead({ projectId: project.id, agreed: false, mobile: '12345' }).expect(400);
     expect(bad.body.issues.map((i: { path: string }) => i.path)).toEqual(expect.arrayContaining(['agreed', 'mobile']));
     await admin.patch(`/api/admin/projects/${project.id}`).send({ status: 'draft' }).expect(200);

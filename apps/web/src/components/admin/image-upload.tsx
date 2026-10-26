@@ -132,9 +132,9 @@ export function ImageUpload({
         <CropDialog
           file={toCrop}
           onCancel={() => setToCrop(null)}
-          onDone={(file) => {
+          onDone={async (file) => {
+            await send(file);
             setToCrop(null);
-            void send(file);
           }}
         />
       )}
@@ -146,7 +146,7 @@ export function ImageUpload({
         style={isIcon ? undefined : { aspectRatio: `${width} / ${height}` }}
       >
         {value ? (
-          <Image src={value} alt="" fill unoptimized sizes="448px" className={isIcon ? "object-contain p-3" : "object-cover"} />
+          <Image src={value} alt="" fill unoptimized sizes="448px" className={isIcon || slot === "footer-logo" ? "object-contain p-3" : "object-cover"} />
         ) : (
           <button
             type="button"
@@ -204,6 +204,7 @@ export function ImageListUpload({
   onUploaded,
   maxBytes,
   max,
+  crop = false,
 }: {
   label: string;
   slot: ImageSlotKey;
@@ -212,13 +213,22 @@ export function ImageListUpload({
   onUploaded: (url: string) => void;
   maxBytes: number;
   max: number;
+  /** Crop each selected photo before upload. */
+  crop?: boolean;
 }) {
   const inputId = useId();
   const { upload, pending, error } = useUploader(slot, maxBytes, onUploaded);
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
   // Uploads finish one by one; each is appended and shown as soon as it is stored.
   const addFiles = async (files: File[]) => {
+    const available = Math.max(0, max - value.length - (crop ? cropQueue.length : 0));
+    const selected = files.slice(0, available);
+    if (crop) {
+      setCropQueue((queue) => [...queue, ...selected]);
+      return;
+    }
     let next = value;
-    for (const file of files.slice(0, max - value.length)) {
+    for (const file of selected) {
       const url = await upload(file);
       if (url) {
         next = [...next, url];
@@ -235,6 +245,18 @@ export function ImageListUpload({
 
   return (
     <div className="flex flex-col gap-2 text-sm font-medium text-zinc-700">
+      {crop && (
+        <CropDialog
+          file={cropQueue[0] ?? null}
+          allowOriginal={false}
+          onCancel={() => setCropQueue([])}
+          onDone={async (file) => {
+            const url = await upload(file);
+            if (url) onChange([...value, url]);
+            setCropQueue((queue) => queue.slice(1));
+          }}
+        />
+      )}
       <span>
         {label} <span className="font-normal text-zinc-500">({value.length}/{max})</span>
       </span>

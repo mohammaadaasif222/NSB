@@ -1,6 +1,6 @@
 # NSB architecture
 
-Noida Super Bazaar (NSB), Phase-1 Wedding MVP. It is a mobile-first wedding vendor marketplace for Noida, Greater Noida and Noida Extension, built to generate leads.
+Noida Super Bazaar (NSB), Phase-1 Wedding MVP. It is a mobile-first wedding vendor marketplace for Noida, Greater Noida and Greater Noida West (the only three areas listings can be in), built to generate leads.
 
 This file is the architecture brief. Give it, together with the root `AGENTS.md`, to any developer or AI agent before they work on the codebase.
 
@@ -77,7 +77,7 @@ modules/
 - Ratings are never invented: a card shows the Google rating the admin typed in (`google_rating`, `google_review_count`, `google_maps_url`; not synced from Google), else the average of the listing's `listing_reviews` (added by hand in admin: author, 1–5 stars, text, date, source google|customer, verified). Admin routes: `GET/POST /api/admin/listings/:id/reviews`, `PATCH/DELETE /api/admin/reviews/:id`.
 - `service_groups` jsonb holds headed service sections, shown after the plain `services` on the listing page; cards' chips use both.
 - Admin › Settings › Listing page sidebar (`site.listingSidebar`: enabled, budget, type) controls the category page's side cards; the site reads it from `GET /api/site-settings`.
-- The cover photo upload opens a cropper (react-easy-crop: 16:9, 4:3, square, 3:4, or "Use whole photo") and uploads the cropped JPEG.
+- The cover photo upload opens a cropper (16:9, 4:3, square, 3:4, free crop, or "Use whole photo") and uploads the cropped JPEG. Real estate project gallery photos are cropped before upload, with a live preview.
 - Admin listings support `q`, `categoryId` and `from`/`to` (date added, India time). Listing photos accept any orientation (min 480×320 either way round, `imageTooSmall` in `@nsb/shared`). Numbers in listing details are not comma-grouped below 10,000, and a calendar year typed into "Years in business" shows as "Since 2005".
 - The NSB alert email carries the listing context (category path, area, quick info, services, the vendor's private phone and email) plus Call, WhatsApp, View listing and admin links. The vendor email carries only the lead and Call/WhatsApp links.
 - Login is rate-limited to 5 per minute per IP (`@nestjs/throttler`, with Caddy trusted as the proxy).

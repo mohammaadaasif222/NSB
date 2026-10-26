@@ -162,6 +162,14 @@ export const IMAGE_SLOTS = {
     min: { width: 350, height: 230 },
     folder: 'home',
   },
+  /** Logo in the site footer, shown about 180 px wide. */
+  'footer-logo': {
+    label: 'Footer logo',
+    recommended: { width: 560, height: 280, ratio: '2:1, transparent PNG or WebP' },
+    min: { width: 180, height: 60 },
+    anyOrientation: true,
+    folder: 'site',
+  },
   /** Sponsored card in the real estate project page sidebar: about 290×96. */
   ad: {
     label: 'Sidebar ad image',

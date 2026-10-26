@@ -1,3 +1,4 @@
+import ExcelJS from 'exceljs';
 import { Test } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import pg from 'pg';
@@ -72,7 +73,8 @@ describe('Enquiries and email alerts (e2e)', () => {
         categoryId: wedding.children[0].id,
         name: `E2E ${run} Hall`,
         slug: `e2e-${run}-hall`,
-        area: 'Sector 50',
+        area: 'Noida',
+        locality: 'Sector 50',
         shortDescription: 'Test',
         email: 'vendor@nsb.test',
       })
@@ -130,7 +132,7 @@ describe('Enquiries and email alerts (e2e)', () => {
     const [saved] = (await pool.query('select event_type from enquiries where id = $1', [res.body.id])).rows;
     expect(saved.event_type).toBe('Reception');
     expect(team.data).toContain(`Subject: New enquiry: E2E ${run} Hall - ${wedding.children[0].name} (Asha ${run})`);
-    expect(team.data).toContain('Area: Sector 50');
+    expect(team.data).toContain('Area: Sector 50, Noida');
     expect(team.data).toContain('Email: vendor@nsb.test');
     expect(team.data).toContain('From: NSB Alerts <alerts@nsb.test>');
     expect(team.data).toContain('&lt;b&gt;300&lt;/b&gt;');
@@ -206,14 +208,24 @@ describe('Enquiries and email alerts (e2e)', () => {
     await admin.patch(`/api/admin/listings/${listingId}`).send({ notifyVendor: true }).expect(200);
   });
 
-  it('exports the filtered leads as CSV with Name, Mobile and Email in separate columns', async () => {
-    const res = await admin.get(`/api/admin/enquiries/export?q=${run}`).expect(200);
-    expect(res.headers['content-type']).toMatch(/^text\/csv/);
-    expect(res.headers['content-disposition']).toMatch(/attachment; filename="nsb-enquiries-\d{4}-\d{2}-\d{2}\.csv"/);
-    const lines = (res.text as string).replace(/^﻿/, '').trim().split('\r\n');
-    expect(lines[0]).toBe('"Received","Name","Mobile","Email","Event","Preferred date","Budget","Message","Lead type","Listing","Category","Status"');
-    expect(lines.slice(1)).toHaveLength(3); // Asha, Ravi and Meera from this run
-    expect(lines.find((l) => l.includes(`Meera ${run}`))).toContain(`"Meera ${run}","9988776655","meera@example.com"`);
+  it('exports the filtered leads as an Excel sheet with Name, Mobile and Email in separate columns', async () => {
+    const res = await admin
+      .get(`/api/admin/enquiries/export?section=wedding&q=${run}`)
+      .buffer(true)
+      .parse((r, done) => {
+        const chunks: Buffer[] = [];
+        r.on('data', (c: Buffer) => chunks.push(c));
+        r.on('end', () => done(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
+    expect(res.headers['content-type']).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    expect(res.headers['content-disposition']).toMatch(/attachment; filename="nsb-wedding-leads-\d{4}-\d{2}-\d{2}\.xlsx"/);
+    const book = new ExcelJS.Workbook();
+    await book.xlsx.load(res.body as ExcelJS.Buffer);
+    const sheet = book.worksheets[0];
+    expect(sheet.rowCount).toBe(4); // the header, then Asha, Ravi and Meera from this run
+    const meera = sheet.getRows(2, 3)!.find((r) => r.getCell(2).value === `Meera ${run}`)!;
+    expect([meera.getCell(3).value, meera.getCell(4).value]).toEqual(['+91 99887 76655', 'meera@example.com']);
     await http().get('/api/admin/enquiries/export').expect(401);
   });
 });

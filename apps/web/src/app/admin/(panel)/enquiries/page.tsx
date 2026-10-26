@@ -98,7 +98,7 @@ export default async function LeadsPage({ searchParams }: PageProps<"/admin/enqu
           <Can permission="leadContacts">
             {/* The browser downloads the file; the session cookie goes with the same-origin request. */}
             <a href={`/api/admin/enquiries/export?${exportQuery}`} download className="a-btn g">
-              <Download size={16} aria-hidden /> Export CSV
+              <Download size={16} aria-hidden /> Export to Excel
             </a>
           </Can>
           <MarkAllReadButton />

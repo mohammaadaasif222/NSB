@@ -866,6 +866,24 @@
   margin-top: 14px;
 }
 
+/* Enquiry form on the project page: the View Number form, inline. */
+.re-eq {
+  max-width: 520px;
+}
+.re-eq .ps {
+  color: var(--re-mute);
+  font-size: 13px;
+  margin: -6px 0 14px;
+}
+.re-eq h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+}
+.re-eq textarea.re-in {
+  resize: vertical;
+}
+
 /* ---------- project page ---------- */
 .re-crumb.d {
   padding: 16px 0 10px;

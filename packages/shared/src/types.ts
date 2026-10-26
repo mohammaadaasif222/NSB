@@ -1,7 +1,7 @@
 import type { AdminRole, ImageStorageProvider, LeadStatus, ListingStatus, ReviewSource, SmtpSecurity } from './constants.js';
 import type { ListingDetails } from './listing-forms.js';
 import type { ProjectType } from './projects.js';
-import type { HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
+import type { FooterSettings, HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
 
 /** API response shapes shared by the API (producer) and web (consumer). Dates are ISO strings. */
 
@@ -232,6 +232,8 @@ export interface AdminSettings {
   pricing: Pricing;
   /** The four home page cards (DEFAULT_HOME_CARDS until saved). */
   homeCards: HomeCard[];
+  /** The site footer (DEFAULT_FOOTER until saved). */
+  footer: FooterSettings;
 }
 
 export interface WhatsappSettings {
@@ -251,6 +253,7 @@ export interface SiteSettings {
   projectSideAd: ProjectSideAd | null;
   /** The four cards beside the home hero, in order. */
   homeCards: HomeCard[];
+  footer: FooterSettings;
 }
 
 /** SMTP settings without the password. */

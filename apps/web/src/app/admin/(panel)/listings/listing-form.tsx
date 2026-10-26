@@ -120,10 +120,13 @@ export function ListingForm({
   const [useForm, setUseForm] = useState(!isOldListing);
   const structured = !!form && useForm;
 
+  // An older listing may have a free-text area ("Sector 18, Noida"); it stays on the site, but
+  // saving the listing needs one of the areas NSB covers.
+  const oldArea = listing && !(LISTING_AREAS as readonly string[]).includes(listing.area) ? listing.area : null;
   const [values, setValues] = useState({
     name: listing?.name ?? "",
     slug: listing?.slug ?? "",
-    area: listing?.area ?? "",
+    area: oldArea ? "" : (listing?.area ?? ""),
     locality: listing?.locality ?? "",
     address: listing?.address ?? "",
     shortDescription: listing?.shortDescription ?? "",
@@ -172,6 +175,7 @@ export function ListingForm({
     const problems: Record<string, string> = {};
     if (!categoryId) problems.categoryId = "Choose a category";
     else if (structured && subs.length > 0 && !subId) problems.subId = "Choose a sub-category";
+    if (!values.area) problems.area = "Choose the area";
     const phone = normalisePhone(values.phone);
     if (structured && !/^[6-9]\d{9}$/.test(phone)) problems.phone = "Enter the 10-digit mobile number";
     if (Object.keys(problems).length) {
@@ -183,6 +187,8 @@ export function ListingForm({
     setErrors({});
     const body: ListingUpdate = {
       ...values,
+      // The select offers only LISTING_AREAS, and a blank one is caught above.
+      area: values.area as (typeof LISTING_AREAS)[number],
       categoryId,
       phone: structured ? phone : values.phone,
       locality: optional(values.locality, listing?.locality),
@@ -220,9 +226,6 @@ export function ListingForm({
   const stepsWithErrors = [...new Set(Object.keys(errors).map(stepOfError))].sort();
   const nestedErrors = Object.entries(errors).filter(([path]) => /^(services|serviceGroups|quickInfo|gallery|videos)\./.test(path));
   const unfiled = topId && !subId && subs.length > 0;
-  const areas: string[] = [...LISTING_AREAS];
-  // An older listing's free-text area stays selectable, so saving does not change it.
-  if (values.area && !areas.includes(values.area)) areas.push(values.area);
 
   const preview: ListingSummary = {
     id: listing?.id ?? "preview",
@@ -330,10 +333,10 @@ export function ListingForm({
                   }}
                 />
               </Field>
-              <Field label="Area *" error={errors.area}>
+              <Field label="Area *" error={errors.area} hint={oldArea && !values.area ? `Was “${oldArea}”. Choose one of the areas NSB covers.` : undefined}>
                 <Select value={values.area} invalid={!!errors.area} onChange={(e) => set("area", e.target.value)}>
                   <option value="">Choose…</option>
-                  {areas.map((a) => (
+                  {LISTING_AREAS.map((a) => (
                     <option key={a}>{a}</option>
                   ))}
                 </Select>

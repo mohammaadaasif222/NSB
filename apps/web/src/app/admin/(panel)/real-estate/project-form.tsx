@@ -347,10 +347,14 @@ export function ProjectForm({
           </div>
 
           <div hidden={step !== 1} className="flex flex-col gap-4">
-            <p className="text-xs text-zinc-500">First photo is the cover. Up to {PROJECT_LIMITS.photos} photos. The page shows a gallery of 5 and a “Show all photos” view.</p>
+            <p className="text-xs text-zinc-500">
+              First photo is the cover. Crop each photo with a live preview before upload. Up to {PROJECT_LIMITS.photos} photos; the page shows a gallery
+              of 5 and a “Show all photos” view.
+            </p>
             <ImageListUpload
               label="Photos"
               slot="listing"
+              crop
               value={d.photos}
               onChange={(urls) => set("photos", urls)}
               onUploaded={trackUpload}

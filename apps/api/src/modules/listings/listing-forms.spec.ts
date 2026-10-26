@@ -55,6 +55,6 @@ describe('listing forms', () => {
 
   it('shows the locality before the area', () => {
     expect(listingPlace({ area: 'Noida', locality: 'Sector 18' })).toBe('Sector 18, Noida');
-    expect(listingPlace({ area: 'Noida Extension', locality: null })).toBe('Noida Extension');
+    expect(listingPlace({ area: 'Greater Noida West', locality: null })).toBe('Greater Noida West');
   });
 });

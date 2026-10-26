@@ -47,8 +47,8 @@ export interface CategoryListingForm {
 const R = { required: true } as const;
 const H = { highlight: true } as const;
 
-/** Areas a listing can be in. */
-export const LISTING_AREAS = ['Noida', 'Greater Noida', 'Noida Extension'] as const;
+/** The only areas NSB covers: the site's location picker offers these, and listings and projects must be in one. */
+export const LISTING_AREAS = ['Noida', 'Greater Noida', 'Greater Noida West'] as const;
 
 /**
  * Forms by top-level category slug. Only categories listed here can get new listings from the
