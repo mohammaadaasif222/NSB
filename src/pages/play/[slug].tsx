@@ -24,6 +24,7 @@ import { useWallet } from '@/context/WalletContext';
 import { gameHref, playHref } from '@/constants/games';
 import { fetchGameBySlug } from '@/services/games.server';
 import { markUnavailable } from '@/utils/unavailable.server';
+import { displayProvider } from '@/utils/branding';
 import { currentGameDevice, launchGame } from '@/services/games';
 import { BALANCE_REFRESH_EVENT, requestBalanceRefresh } from '@/utils/balanceEvents';
 import { useGameFullscreen } from '@/hooks/useGameFullscreen';
@@ -317,10 +318,11 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
   // aspect ratio. For those we drop the width constraint entirely (the
   // frame then fills the content column from close-button to fullscreen
   // button) and only hint height via aspectRatio. Scoped STRICTLY to the
-  // TEQUITY aggregator — not just "any game with null ratio" — so an
-  // Alea Play / Pragmatic Play game that happens to miss a ratio stays
-  // on the original width-constrained sizing it was designed for.
-  const isTequity = launch?.aggregator_code === 'TEQUITY';
+  // The backend tells us the layout flavour explicitly ("FLUID" fills the
+  // content column, "STANDARD" bounds width by viewport). The field is a
+  // behaviour hint — not the aggregator's name — so a user never sees which
+  // integration served the game.
+  const fluidFrame = launch?.frame_layout === 'FLUID';
   // Desktop: the game's own shape, as large as the viewport allows. Mobile
   // builds fill the screen whatever shape the desktop build has. The offsets
   // cover the sticky top bar (with its winners ticker), the action bar under
@@ -330,7 +332,7 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
     : launch?.device === 'MOBILE'
       ? // Leaves room for the two-row action bar and the floating tab bar.
         { width: '100%', height: 'calc(100dvh - 18rem)' }
-      : isTequity
+      : fluidFrame
         ? // No width — fill the content column — aspectRatio only.
           { aspectRatio: `100 / ${ratio}` }
         : {
@@ -491,7 +493,7 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
         <div className="mx-auto" style={{ maxWidth: frameStyle.width ?? undefined }}>
           <GameActionBar
             title={game.title}
-            provider={game.provider}
+            provider={displayProvider(game.provider)}
             backHref={gameHref(game.slug)}
             currencyNote={
               mode === 'REAL' && launch ? t('game.playsIn', { currency: launch.currency }) : null

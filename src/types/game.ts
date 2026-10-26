@@ -161,12 +161,13 @@ export interface GameLaunch {
   locale: string;
   display_ratio: number | null;
   /**
-   * Stable aggregator code (game_aggregators.code — "TEQUITY", "ALEA_PLAY",
-   * "PRAGMATIC_PLAY"). Lets us branch frame styling on the actual source
-   * without string-matching the provider name, which is the STUDIO name
-   * ("alchemist-provider") rather than the aggregator itself.
+   * The game's layout flavour. "FLUID" games fill the content column (used by
+   * Rolluck Originals), "STANDARD" games use the classic viewport-bounded
+   * aspect-ratio sizing (every other integration). Carries a behaviour hint,
+   * never the integration layer's name — players must not see which
+   * aggregator sources the game.
    */
-  aggregator_code: string;
+  frame_layout: 'FLUID' | 'STANDARD';
   game: { id: string; slug: string; title: string };
   /**
    * What the game shows and takes bets in: the player's display currency
