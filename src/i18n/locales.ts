@@ -510,6 +510,7 @@ const coreEn = {
   'game.stats.round': 'Round {n}',
   'game.stats.start': 'Start',
   'game.insufficientFunds': 'Not enough balance for this bet.',
+  'game.currencyChangedReloading': 'Display currency changed — reloading the game to apply it.',
   'game.playsIn': 'Plays in {currency}',
   'game.currencyUnsupported':
     "{display} isn't available for this game, so it plays in {currency}. Your balance is converted at a fixed rate for this session.",
