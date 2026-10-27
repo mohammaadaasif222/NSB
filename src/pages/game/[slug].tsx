@@ -22,6 +22,7 @@ import {
   fetchShelfList,
 } from '@/services/games.server';
 import { markUnavailable } from '@/utils/unavailable.server';
+import { displayProvider } from '@/utils/branding';
 import { fetchWinnerGames } from '@/services/myGames.server';
 import type { DiceConfig, Game } from '@/types';
 import Seo, { type JsonLd } from '@/components/seo/Seo';
@@ -235,10 +236,10 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
                     href={providerHref(providerSlug)}
                     className="text-slate-200 font-medium underline-offset-2 hover:text-white hover:underline"
                   >
-                    {game.provider}
+                    {displayProvider(game.provider)}
                   </Link>
                 ) : (
-                  <span className="text-slate-200 font-medium">{game.provider}</span>
+                  <span className="text-slate-200 font-medium">{displayProvider(game.provider)}</span>
                 )}
               </p>
 

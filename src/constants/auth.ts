@@ -64,6 +64,7 @@ export const DIAL_CODES: DialCode[] = [
   { iso: 'US', code: '+1' },
   { iso: 'GB', code: '+44' },
   { iso: 'IN', code: '+91' },
+  { iso: 'AM', code: '+374' },
   { iso: 'AU', code: '+61' },
   { iso: 'DE', code: '+49' },
   { iso: 'FR', code: '+33' },
