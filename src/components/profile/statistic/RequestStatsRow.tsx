@@ -20,7 +20,7 @@ const RequestStatsRow: FC<{ onOpen: () => void }> = ({ onOpen }) => {
     <button
       type="button"
       onClick={onOpen}
-      className="rl-field-card flex h-[calc(var(--u)*74)] w-full items-center gap-[calc(var(--u)*16)] rounded-[calc(var(--u)*44)] px-[calc(var(--u)*16)] text-start hover:bg-white/8"
+      className="rl-field-card flex h-[calc(var(--u)*74)] w-full items-center gap-[calc(var(--u)*16)] rounded-[calc(var(--u)*44)] px-[calc(var(--u)*16)] text-start hover:bg-white/8 max-lg:![box-shadow:none] max-lg:before:hidden"
     >
       <span className="flex shrink-0 items-center justify-center text-[#f0f1f5]">
         <RequestStatsIcon />

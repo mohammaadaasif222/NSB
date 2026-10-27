@@ -4,7 +4,12 @@ import { useRouter } from 'next/router';
 import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
 import ProtectedRoute from '@/routes/ProtectedRoute';
-import AccountNav, { isAccountSection, type AccountSection } from '@/components/profile/AccountNav';
+import AccountNav, {
+  ACCOUNT_SECTIONS,
+  isAccountSection,
+  type AccountSection,
+} from '@/components/profile/AccountNav';
+import { ChevronLeftIcon } from '@/components/icons';
 import ProfileSection from '@/components/profile/ProfileSection';
 import StatisticSection from '@/components/profile/StatisticSection';
 import PreferencesSection from '@/components/profile/PreferencesSection';
@@ -173,12 +178,28 @@ const ProfilePage: FC = () => {
             wider than the outer one. Sharing the multiplier keeps the pair in
             proportion at every width instead of only at the two the ladder
             named. The panel still takes whatever is left. */}
+        <div className="mb-5 mt-5 flex items-center gap-3 lg:hidden">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label={t('auth.back')}
+            className="rl-glass-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#f0f1f5]"
+          >
+            <ChevronLeftIcon size={20} />
+          </button>
+          <h1 className="truncate text-[24px] font-medium leading-8 text-[#f0f1f5]">
+            {t(ACCOUNT_SECTIONS.find(({ key }) => key === section)?.labelKey ?? 'account.profile')}
+          </h1>
+        </div>
+
         <div className="grid gap-4 lg:grid-cols-[calc(var(--u)*228)_minmax(0,1fr)] lg:gap-[calc(var(--u)*48)]">
-          <AccountNav
-            active={section}
-            onSelect={selectSection}
-            onLogout={() => setLogoutOpen(true)}
-          />
+          <div className="max-lg:hidden lg:contents">
+            <AccountNav
+              active={section}
+              onSelect={selectSection}
+              onLogout={() => setLogoutOpen(true)}
+            />
+          </div>
 
           {/* `@container` so the sections size themselves against the panel
               rather than the window. The two part company badly: the shelf and
@@ -192,7 +213,7 @@ const ProfilePage: FC = () => {
           {/* The design's panel has no wash of its own (its fill is switched
               off): the stage shows through, and the shared card polish draws
               the rim (see `index.css`). */}
-          <div className="@container rl-panel min-w-0 p-5 [--panel-fill:transparent] lg:p-[calc(var(--u)*30)]">
+          <div className="@container rl-panel min-w-0 p-0 [--panel-fill:transparent] max-lg:!border-0 max-lg:![box-shadow:none] max-lg:before:hidden lg:p-[calc(var(--u)*30)]">
             {!me ? (
               <div className="py-16 text-center">
                 {error && !loading ? (
@@ -214,21 +235,12 @@ const ProfilePage: FC = () => {
               body()
             )}
           </div>
-
-          {/* The rail's log-out is desktop-only; phones get it under the panel. */}
-          <button
-            type="button"
-            onClick={() => setLogoutOpen(true)}
-            className="rl-glass rl-glass-hover rounded-2xl px-3 py-2.5 text-[13px] font-medium text-white/70 lg:hidden"
-          >
-            {t('account.logout')}
-          </button>
         </div>
       </div>
 
       {/* The footer in the account column, 168 under the panel (8 of it the
           column's own foot). */}
-      <div className="mx-auto mt-10 max-w-[1600px] lg:mt-[calc(var(--u)*160)] lg:max-w-[calc(var(--u)*1544)]">
+      <div className="mx-auto mt-[89px] max-w-[1600px] lg:mt-[calc(var(--u)*160)] lg:max-w-[calc(var(--u)*1544)]">
         <SiteFooter />
       </div>
 

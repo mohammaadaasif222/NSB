@@ -25,7 +25,7 @@ import type { PrefGroup, PrefRow } from './preferenceGroups';
  */
 export const PrefCard: FC<{ children: ReactNode; rows: number }> = ({ children, rows }) => (
   <div
-    className={`rl-field-card space-y-[calc(var(--u)*26)] py-[calc(var(--u)*22)] ps-[calc(var(--u)*26)] pe-[calc(var(--u)*20)] ${
+    className={`rl-field-card space-y-[calc(var(--u)*26)] py-[calc(var(--u)*22)] ps-[18px] pe-4 max-lg:![box-shadow:none] max-lg:before:hidden lg:ps-[calc(var(--u)*26)] lg:pe-[calc(var(--u)*20)] ${
       rows > 1 ? 'rounded-[calc(var(--u)*34)]' : 'rounded-[calc(var(--u)*44)]'
     }`}
   >
@@ -38,8 +38,8 @@ export const PrefRowShell: FC<{ children: ReactNode; label: ReactNode }> = ({
   children,
   label,
 }) => (
-  <div className="flex h-[calc(var(--u)*30)] items-center gap-[calc(var(--u)*12)]">
-    <p className="min-w-0 flex-1 truncate text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5]">
+  <div className="flex min-h-[30px] items-center gap-3 lg:h-[calc(var(--u)*30)] lg:gap-[calc(var(--u)*12)]">
+    <p className="min-w-0 flex-1 text-[16px] leading-6 font-medium text-[#f0f1f5] lg:truncate lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[1.5]">
       {label}
     </p>
     <div className="shrink-0">{children}</div>
@@ -48,7 +48,7 @@ export const PrefRowShell: FC<{ children: ReactNode; label: ReactNode }> = ({
 
 /** The sentence under a card. */
 export const PrefNote: FC<{ children: ReactNode }> = ({ children }) => (
-  <p className="mt-[calc(var(--u)*11)] ps-[calc(var(--u)*20)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.2] text-[#9da2b4]">
+  <p className="mt-2.5 ps-2.5 text-[12px] leading-4 text-[#9da2b4] lg:mt-[calc(var(--u)*11)] lg:ps-[calc(var(--u)*20)] lg:text-[length:max(min(11px,12px),calc(var(--u)*12))] lg:leading-[1.2]">
     {children}
   </p>
 );
@@ -57,7 +57,7 @@ const RowControl: FC<{ row: PrefRow; label: string }> = ({ row, label }) => {
   const { t } = useTranslation();
 
   if (row.kind === 'toggle') {
-    return <SoonToggle label={label} />;
+    return <SoonToggle label={label} narrow />;
   }
 
   // No currency picker exists, so the value reads as a label rather than a
@@ -78,12 +78,12 @@ const PrefGroupView: FC<{ group: PrefGroup }> = ({ group }) => {
   const { t } = useTranslation();
 
   return (
-    <section className="space-y-[calc(var(--u)*6)]">
+    <section className="space-y-1 lg:space-y-[calc(var(--u)*6)]">
       <h3 className="text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-normal text-[#9da2b4]">
         {t(group.labelKey)}
       </h3>
 
-      <div className="space-y-[calc(var(--u)*20)]">
+      <div className="space-y-6 lg:space-y-[calc(var(--u)*20)]">
         {group.blocks.map((block, i) => (
           <div key={block.rows[0]?.key ?? i}>
             <PrefCard rows={block.rows.length}>

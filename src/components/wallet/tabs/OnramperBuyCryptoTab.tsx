@@ -1,7 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type FC } from 'react';
-import { AlertTriangle, ChevronDown } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import { ChevronDownIcon } from '@/components/icons';
+import WalletField, {
+  WALLET_ERROR,
+  WALLET_INPUT,
+  WALLET_PILL,
+  WALLET_VALUE,
+} from '../shared/WalletField';
+import WalletSelect from '../shared/WalletSelect';
 import { useMe } from '@/context/UserContext';
 import { useOnramperBuyCrypto } from '@/hooks/useOnramperBuyCrypto';
 import { getCurrencies, getDisplayCurrencies, type DisplayCurrencyOption } from '@/services/wallet';
@@ -211,142 +220,117 @@ const OnramperBuyCryptoTab: FC = () => {
   const fiatSymbol = fiats.find((f) => f.code.toLowerCase() === source)?.symbol ?? '';
 
   return (
-    <div className="space-y-4 p-4">
-      <h2 className="text-lg font-bold text-white">Buy Crypto</h2>
+    <div>
+      <div className="space-y-[19px]">
+        <WalletField htmlFor="buy-amount" label="You pay with">
+          <div className={WALLET_PILL}>
+            <label htmlFor="buy-amount" className={`flex min-w-0 flex-1 items-center ${WALLET_VALUE}`}>
+              <span aria-hidden="true">{fiatSymbol || '$'}</span>
+              <input
+                id="buy-amount"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                min="0"
+                step="any"
+                className={`${WALLET_INPUT} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+              />
+            </label>
+            <span className="relative flex shrink-0 items-center gap-1.5">
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value.toLowerCase())}
+                aria-label="Currency"
+                className="cursor-pointer appearance-none bg-transparent pe-6 text-[16px] font-bold leading-6 text-[#9da2b4] outline-none sm:text-[18px] [&>option]:bg-[#16181d] [&>option]:text-[#f0f1f5]"
+              >
+                {fiats.map((f) => (
+                  <option key={f.code} value={f.code.toLowerCase()}>
+                    {f.code.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon
+                size={22}
+                strokeWidth={1.6}
+                className="pointer-events-none absolute end-0 text-[#f0f1f5]"
+              />
+            </span>
+          </div>
+        </WalletField>
 
-      {/* ── You pay with ── */}
-      <div>
-        <label className="block text-xs text-[#9da2b4] mb-1">You pay with</label>
-        <div className="flex items-center gap-2 rounded-[34px] border border-white/20 bg-white/5 px-4 py-3">
-          <span className="text-[#6a7287] text-lg">{fiatSymbol || '$'}</span>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            min="0"
-            step="any"
-            className="flex-1 bg-transparent text-white text-xl font-semibold outline-none"
-          />
-          <select
-            value={source}
-            onChange={(e) => setSource(e.target.value.toLowerCase())}
-            className="bg-transparent text-white font-semibold outline-none appearance-none cursor-pointer pr-5"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right center',
-            }}
-          >
-            {fiats.map((f) => (
-              <option key={f.code} value={f.code.toLowerCase()}>
-                {f.code.toUpperCase()}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* ── In Exchange For ── */}
-      <div>
-        <label className="block text-xs text-[#9da2b4] mb-1">In Exchange For</label>
-        <div className="relative">
-          <select
+        <WalletField htmlFor="buy-destination" label="In Exchange For">
+          <WalletSelect
+            id="buy-destination"
+            options={cryptos.map((c) => ({ value: c.code, label: c.symbol, detail: c.name }))}
             value={destination}
-            onChange={(e) => setDestination(e.target.value.toLowerCase())}
-            className="w-full appearance-none rounded-[34px] border border-white/20 bg-white/5 px-4 py-3 text-white font-semibold outline-none cursor-pointer"
-          >
-            {cryptos.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.symbol}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="w-4 h-4 text-white absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
-      </div>
+            onChange={(v) => setDestination(v.toLowerCase())}
+            placeholder="BTC"
+          />
+        </WalletField>
 
-      {/* ── Select Provider and Receive ── */}
-      <div>
-        <label className="block text-xs text-[#9da2b4] mb-1">Select Provider and Receive</label>
-        <div className="relative rounded-[34px] border border-white/20 bg-white/5 px-4 py-3">
-          {hook.loadingQuotes ? (
-            <div className="flex items-center justify-between">
-              <span className="text-[#9da2b4] text-sm">Fetching best price…</span>
-              <span className="text-[#6a7287] text-sm tabular-nums">
-                0.00000000 {destination.toUpperCase()}
+        <WalletField htmlFor="buy-provider" label="Select Provider and Receive">
+          {hook.quotes.length === 0 || hook.loadingQuotes ? (
+            <div className={WALLET_PILL}>
+              <span className={`min-w-0 flex-1 truncate ${WALLET_VALUE} !font-normal text-[#9da2b4]`}>
+                {hook.loadingQuotes ? 'Fetching best price…' : 'No providers available'}
               </span>
-            </div>
-          ) : hook.quotes.length === 0 ? (
-            <div className="flex items-center justify-between">
-              <span className="text-[#9da2b4] text-sm">No providers available</span>
-              <span className="text-[#6a7287] text-sm tabular-nums">
+              <span className="shrink-0 text-[14px] leading-5 text-[#f0f1f5]">
                 0.00000000 {destination.toUpperCase()}
               </span>
             </div>
           ) : (
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1">
-                <select
-                  value={selectedRamp}
-                  onChange={(e) => setSelectedRamp(e.target.value)}
-                  className="w-full bg-transparent text-white font-semibold outline-none appearance-none cursor-pointer capitalize"
-                >
-                  {hook.quotes.map((q) => {
-                    const hasError = (q.errors?.length ?? 0) > 0;
-                    const recommended = q.recommendations?.includes('Recommended');
-                    return (
-                      <option key={q.ramp} value={q.ramp} disabled={hasError}>
-                        {q.ramp}
-                        {recommended ? ' · RECOMMENDED' : ''}
-                        {hasError ? ' (unavailable)' : ''}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-              <span className="text-white font-semibold text-sm tabular-nums whitespace-nowrap">
-                {selectedQuote?.payout ?? '0.00000000'} {destination.toUpperCase()}
-              </span>
-            </div>
+            <WalletSelect
+              id="buy-provider"
+              options={hook.quotes.map((q) => ({
+                value: q.ramp,
+                label: `${q.ramp}${(q.errors?.length ?? 0) > 0 ? ' (unavailable)' : ''}`,
+                detail: q.recommendations?.includes('Recommended') ? 'Recommended' : undefined,
+              }))}
+              value={selectedRamp}
+              onChange={setSelectedRamp}
+              placeholder="Select provider"
+              trailing={
+                <span className="text-[14px] font-normal leading-5 text-[#f0f1f5]">
+                  {selectedQuote?.payout ?? '0.00000000'} {destination.toUpperCase()}
+                </span>
+              }
+            />
           )}
-        </div>
 
-        {/* Warning line */}
-        {hook.quotes.length === 0 && !hook.loadingQuotes && (
-          <p className="text-[#e33827] text-xs mt-2 flex items-start gap-1">
-            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
-            Please change the currency or if you use VPN, please turn it off and the methods will be
-            available to you
-          </p>
-        )}
+          {hook.quotes.length === 0 && !hook.loadingQuotes && (
+            <p className={`mt-2 flex items-start gap-1 ${WALLET_ERROR}`}>
+              <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+              Please change the currency or if you use VPN, please turn it off and the methods will be
+              available to you
+            </p>
+          )}
 
-        {selectedQuoteHasError && (
-          <p className="text-[#ffe779] text-xs mt-2">
-            {selectedQuote?.errors?.[0]?.message ?? 'This provider is unavailable'}
-          </p>
-        )}
+          {selectedQuoteHasError && (
+            <p className="mt-2 text-[13px] leading-5 text-[#ffe779]">
+              {selectedQuote?.errors?.[0]?.message ?? 'This provider is unavailable'}
+            </p>
+          )}
 
-        {hook.errorCheckout && <p className="text-[#e33827] text-xs mt-2">{hook.errorCheckout}</p>}
+          {hook.errorCheckout && <p className={`mt-2 ${WALLET_ERROR}`}>{hook.errorCheckout}</p>}
+        </WalletField>
       </div>
 
-      {/* ── Help link ── */}
-      <button
+      <Button
         type="button"
-        className="text-xs text-[#9da2b4] hover:text-[#f0f1f5] flex items-center gap-1"
-        onClick={() => window.open('https://docs.onramper.com/', '_blank', 'noopener')}
-      >
-        How to use Buy Crypto <ChevronDown className="w-3 h-3 -rotate-90" />
-      </button>
-
-      {/* ── Buy Now ── */}
-      <button
-        type="button"
+        fullWidth
+        className="mt-10"
         onClick={() => void handleBuyNow()}
         disabled={!canBuy}
-        className="w-full rounded-full bg-[#f9d028] py-4 text-base font-bold text-[#07080a] transition-colors hover:bg-[#ffe779] disabled:cursor-not-allowed disabled:opacity-40"
       >
         {hook.creatingCheckout ? 'Opening checkout…' : 'Buy Now'}
+      </Button>
+
+      <button
+        type="button"
+        className="mx-auto mt-4 flex items-center gap-1 text-[13px] leading-5 text-[#9da2b4] hover:text-[#f0f1f5]"
+        onClick={() => window.open('https://docs.onramper.com/', '_blank', 'noopener')}
+      >
+        How to use Buy Crypto <ChevronDownIcon size={14} className="-rotate-90 rtl:rotate-90" />
       </button>
     </div>
   );

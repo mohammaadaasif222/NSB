@@ -76,6 +76,7 @@ const BalanceMenu: FC = () => {
       label={t('lobby.balance.label')}
       className="min-w-0"
       tone="glass"
+      phoneSheet={picking}
       // Centred under the chip, as drawn — not hung off its end like the
       // bar's other panels.
       panelClassName="end-auto left-1/2 -translate-x-1/2"

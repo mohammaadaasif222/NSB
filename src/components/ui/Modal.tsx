@@ -34,9 +34,10 @@ interface ModalProps {
    * Below `sm`, a sheet instead of a floating card: full width, joined to the
    * screen's foot, its top corners rounded. `true` reaches up to 140px under
    * the screen's top (Select Game); `'fit'` is as tall as its content, the
-   * auth flows' sheets. The card's class sets the radius.
+   * auth flows' sheets. The card's class sets the radius. `'page'` fills
+   * the screen under the bar, as a page of its own (the wallet).
    */
-  phoneSheet?: boolean | 'fit';
+  phoneSheet?: boolean | 'fit' | 'page';
   children: ReactNode;
 }
 
@@ -107,9 +108,13 @@ const Modal: FC<ModalProps> = ({
 
   if (!open || !mounted) return null;
 
+  const page = phoneSheet === 'page';
+
   return createPortal(
     <div
-      className={`${backdrop === 'dim' ? 'rl-modal-overlay' : ''} fixed inset-0 z-[70] overflow-y-auto`}
+      className={`${backdrop === 'dim' ? (page ? 'sm:rl-modal-overlay' : 'rl-modal-overlay') : ''} ${
+        page ? 'max-sm:top-[var(--player-bar-h,0px)] max-sm:bg-[#07080a]' : ''
+      } fixed inset-0 z-[70] overflow-y-auto`}
       // mousedown rather than click: a text selection dragged out of the card
       // and released over the backdrop must not close the dialog.
       onMouseDown={(e) => {
@@ -118,7 +123,7 @@ const Modal: FC<ModalProps> = ({
     >
       <div
         className={`flex min-h-full justify-center sm:items-center sm:p-6 ${
-          phoneSheet ? 'items-end' : 'items-center px-4 py-6'
+          page ? 'items-stretch' : phoneSheet ? 'items-end' : 'items-center px-4 py-6'
         }`}
         onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClose();
@@ -132,7 +137,9 @@ const Modal: FC<ModalProps> = ({
           aria-label={labelledBy ? undefined : ariaLabel}
           tabIndex={-1}
           className={`${surface} w-full outline-none ${
-            phoneSheet === 'fit'
+            page
+              ? 'max-sm:max-w-none max-sm:!rounded-none max-sm:!border-0 max-sm:!bg-transparent max-sm:![box-shadow:none] max-sm:![backdrop-filter:none] max-sm:![animation:none]'
+              : phoneSheet === 'fit'
               ? 'max-sm:max-h-[calc(100dvh-24px)] max-sm:max-w-none max-sm:overflow-y-auto max-sm:!rounded-b-none'
               : phoneSheet
                 ? 'max-sm:flex max-sm:h-[calc(100dvh-140px)] max-sm:max-w-none max-sm:flex-col max-sm:!rounded-b-none'

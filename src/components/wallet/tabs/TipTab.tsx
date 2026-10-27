@@ -6,6 +6,7 @@ import { useWallet } from '@/context/WalletContext';
 import { useMe } from '@/context/UserContext';
 import AccountReviewGate from '@/components/risk/AccountReviewGate';
 import WalletField, { WALLET_INPUT, WALLET_PILL } from '../shared/WalletField';
+import WalletSelect from '../shared/WalletSelect';
 import { currencySign } from '../shared/currencySign';
 import api from '@/services/api';
 import { getPinStatus } from '@/services/transactionPin';
@@ -32,6 +33,7 @@ const TipTab: FC<{ onLeave?: () => void }> = ({ onLeave }) => {
     ? (display as string)
     : 'USD';
   const sign = useMemo(() => currencySign(fiat, locale), [fiat, locale]);
+  const wallet = summary?.balance?.currency ?? fiat;
 
   const [amount, setAmount] = useState('');
   const [username, setUsername] = useState('');
@@ -110,6 +112,17 @@ const TipTab: FC<{ onLeave?: () => void }> = ({ onLeave }) => {
       </label>
 
       <div className="mt-4 space-y-3.5">
+        <WalletField htmlFor="tip-wallet" label={t('profile.wallet')}>
+          <WalletSelect
+            id="tip-wallet"
+            options={[{ value: wallet, label: wallet }]}
+            value={wallet}
+            onChange={() => undefined}
+            placeholder={wallet}
+            trailing={fiat}
+          />
+        </WalletField>
+
         <WalletField htmlFor="tip-username" label={t('acct.wallet.tipTo')}>
           <div className={WALLET_PILL}>
             <input

@@ -76,15 +76,49 @@ const ReferralTable: FC<{ rows: readonly ReferredPlayer[] }> = ({ rows }) => {
   );
 
   return (
-    <DataTable
-      columns={columns}
-      rows={rows}
-      rowKey={(r) => r.id}
-      surface="rl-table-card"
-      minWidth="820px"
-      title={t('ref.yourReferral')}
-      empty={<p className="py-6 text-center text-sm text-[#9da2b4]">{t('ref.empty')}</p>}
-    />
+    <>
+      <section className="lg:hidden">
+        <h3 className="text-[16px] leading-6 font-medium text-white">{t('ref.yourReferral')}</h3>
+        {rows.length === 0 ? (
+          <p className="py-6 text-center text-sm text-[#9da2b4]">{t('ref.empty')}</p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {rows.map((r) => (
+              <li key={r.id} className="rounded-2xl bg-white/5 p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-[14px] leading-5 font-medium text-white">
+                    {r.username}
+                  </span>
+                  <span className="shrink-0 rounded-md bg-white/10 px-2 py-0.5 text-[11px] leading-[13px] font-semibold text-white">
+                    {t(STATUS_LABELS[r.status])}
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between gap-3 text-[12px] leading-[15px]">
+                  <span className="min-w-0 truncate text-[#b3b3b3]">
+                    {t('ref.colCode')}: {r.code ?? '—'}
+                  </span>
+                  <span className="shrink-0 font-semibold text-white">
+                    +{formatRewardAmount(r.total_commission, 'USD')}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <div className="max-lg:hidden">
+        <DataTable
+          columns={columns}
+          rows={rows}
+          rowKey={(r) => r.id}
+          surface="rl-table-card"
+          minWidth="820px"
+          title={t('ref.yourReferral')}
+          empty={<p className="py-6 text-center text-sm text-[#9da2b4]">{t('ref.empty')}</p>}
+        />
+      </div>
+    </>
   );
 };
 

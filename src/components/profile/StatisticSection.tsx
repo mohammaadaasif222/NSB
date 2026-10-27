@@ -55,7 +55,7 @@ const StatisticSection: FC = () => {
   const money = (value: string | undefined): string =>
     value === undefined ? EMPTY : formatCurrencyDisplay(value);
   const day = (iso: string): string =>
-    new Date(iso).toLocaleDateString(locale, {
+    new Date(iso).toLocaleDateString(locale === 'en' ? 'en-GB' : locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -99,8 +99,8 @@ const StatisticSection: FC = () => {
           query was holding a laptop at the phone's stacked layout for a
           collision that can no longer happen — which is what put the chips on
           their own row instead of beside the title, as the design draws them. */}
-      <div className="flex flex-col items-start gap-[calc(var(--u)*12)] lg:flex-row lg:items-center lg:gap-[calc(var(--u)*18)]">
-        <h2 className={SECTION_HEADING}>{t('profile.statistic')}</h2>
+      <div className="relative flex flex-col items-start gap-[calc(var(--u)*12)] lg:flex-row lg:items-center lg:gap-[calc(var(--u)*18)]">
+        <h2 className={`${SECTION_HEADING} max-lg:hidden`}>{t('profile.statistic')}</h2>
         <RangeFilter active={range} onSelect={setRange} rangeLabel={rangeLabel} />
       </div>
 
@@ -117,20 +117,20 @@ const StatisticSection: FC = () => {
         aria-busy={loading}
         className={`transition-opacity ${loading && stats ? 'opacity-60' : ''}`}
       >
-        <div className="mt-[calc(var(--u)*29)] grid gap-[calc(var(--u)*22)] sm:grid-cols-2">
+        <div className="mt-[18px] grid grid-cols-2 gap-x-3 gap-y-2.5 lg:mt-[calc(var(--u)*29)] lg:gap-[calc(var(--u)*22)]">
           {headlineTiles.map((tile) => (
-            <StatCard key={tile.key} tile={tile} />
+            <StatCard key={tile.key} tile={tile} size="lg" />
           ))}
         </div>
 
-        <div className="mt-[calc(var(--u)*20)] grid gap-[calc(var(--u)*16)] sm:grid-cols-3">
+        <div className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3 lg:mt-[calc(var(--u)*20)] lg:gap-[calc(var(--u)*16)]">
           {amountTiles.map((tile) => (
-            <StatCard key={tile.key} tile={tile} />
+            <StatCard key={tile.key} tile={tile} size="md" />
           ))}
         </div>
       </div>
 
-      <div className="mt-[calc(var(--u)*45)]">
+      <div className="mt-5 lg:mt-[calc(var(--u)*45)]">
         <RequestStatsRow onOpen={() => setRequestOpen(true)} />
       </div>
 

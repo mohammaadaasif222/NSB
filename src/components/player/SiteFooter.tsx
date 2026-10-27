@@ -292,7 +292,17 @@ const SiteFooter: FC = () => {
   );
 
   return (
-    <footer className="flex flex-col">
+    <footer className="relative flex flex-col">
+      {/* The design's light behind the footer (Ellipse 208): an 837 disc,
+          #d9d9d9 to the page's black, blurred 682 at 40%, centred on the
+          brand row — what greys the panels' glass from behind. Desktop only;
+          the phone frames draw none. Behind the content, like the backdrop
+          (PlayerLayout's stage is isolated). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-[calc(var(--u)*47)] -z-10 hidden h-[calc(var(--u)*837)] w-[calc(var(--u)*837)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,#d9d9d9,#07080a)] opacity-40 blur-[calc(var(--u)*341)] lg:block"
+      />
+
       {/* --- Brand, socials, preferences ------------------------------- */}
       <div className="flex flex-col items-center gap-[calc(var(--u)*28)] pb-[calc(var(--u)*2)] lg:min-h-[calc(var(--u)*88)] lg:flex-row lg:justify-between lg:gap-[calc(var(--u)*16)]">
         <Link

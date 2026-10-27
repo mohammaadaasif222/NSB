@@ -25,7 +25,7 @@ import {
   megabytes,
   type LoadedImage,
 } from '@/lib/avatarImage';
-import { CameraIcon, CheckIcon, CloseIcon } from '@/components/icons';
+import { CameraIcon, CheckIcon, ChevronLeftIcon, CloseIcon } from '@/components/icons';
 import Button from '@/components/ui/Button';
 import CircleIconButton from '@/components/ui/CircleIconButton';
 import Modal from '@/components/ui/Modal';
@@ -86,7 +86,7 @@ const Chosen: FC = () => (
     />
     <span
       aria-hidden="true"
-      className="absolute right-[2.6%] top-[2.6%] flex aspect-square w-[27.6%] items-center justify-center rounded-full bg-[#f9d028] text-[#07080a]"
+      className="absolute -right-[6%] top-[3.6%] flex aspect-square w-[38%] items-center justify-center rounded-full bg-[#f9d028] text-[#07080a] sm:right-[2.6%] sm:top-[2.6%] sm:w-[27.6%]"
     >
       <CheckIcon size={18} strokeWidth={3} className="h-[56%] w-[56%]" />
     </span>
@@ -451,8 +451,22 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
       surface="rl-dialog-glass"
       style={{ zoom: scale }}
       // The design's 28 / 36 / 29 insets, less the rim's pixel.
-      className="max-w-[581px] px-4 pb-5 pt-6 sm:px-[27px] sm:pb-[28px] sm:pt-[35px]"
+      className="max-w-[581px] px-4 pb-5 pt-6 max-sm:fixed max-sm:inset-0 max-sm:flex max-sm:max-w-none max-sm:flex-col max-sm:overflow-y-auto max-sm:!rounded-none max-sm:!border-0 max-sm:!bg-[#07080a] max-sm:![box-shadow:none] max-sm:![zoom:1] max-sm:pt-5 max-sm:pb-[39px] sm:px-[27px] sm:pb-[28px] sm:pt-[35px]"
     >
+      <div className="mb-[26px] flex items-center gap-3 sm:hidden">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('common.close')}
+          className="rl-glass-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#f0f1f5]"
+        >
+          <ChevronLeftIcon size={20} />
+        </button>
+        <h2 className="truncate text-[24px] font-medium leading-8 text-[#f0f1f5]">
+          {t('avatar.title')}
+        </h2>
+      </div>
+
       <input
         ref={fileInput}
         type="file"
@@ -466,7 +480,7 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
       <CircleIconButton
         label={t('common.close')}
         onClick={onClose}
-        className="absolute right-3 top-3 z-10 sm:right-[27px] sm:top-[16px]"
+        className="absolute right-3 top-3 z-10 max-sm:hidden sm:right-[27px] sm:top-[16px]"
       >
         <CloseIcon size={33} strokeWidth={1.45} />
       </CircleIconButton>
@@ -527,14 +541,14 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
       )}
 
       <p
-        className={`text-[15px] leading-6 text-[#f0f1f5] sm:text-[16px] ${
-          source ? 'mt-6 sm:mt-[23px]' : 'mt-8 sm:mt-[50px]'
+        className={`text-[16px] leading-6 text-[#f0f1f5] ${
+          source ? 'mt-6 sm:mt-[23px]' : 'mt-9 sm:mt-[50px]'
         }`}
       >
         {t('avatar.pick')}
       </p>
 
-      <ul className="mt-3 grid grid-cols-4 gap-3 sm:mt-[14px] sm:gap-[20px]">
+      <ul className="mt-[21px] grid grid-cols-4 gap-[17px] sm:mt-[14px] sm:gap-[20px]">
         <li>
           <button
             type="button"
@@ -551,7 +565,7 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
               dropping ? 'bg-white/10' : ''
             }`}
           >
-            <CameraIcon size={49} strokeWidth={1.3} className="h-[42%] w-[42%]" />
+            <CameraIcon size={49} strokeWidth={1.3} className="h-[58%] w-[58%] sm:h-[42%] sm:w-[42%]" />
             {source && <Chosen />}
           </button>
         </li>
@@ -582,7 +596,12 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
         </p>
       )}
 
-      <Button fullWidth onClick={() => void save()} loading={busy} className="mt-6 sm:mt-[34px]">
+      <Button
+        fullWidth
+        onClick={() => void save()}
+        loading={busy}
+        className="mt-6 max-sm:mt-auto max-sm:shrink-0 sm:mt-[34px]"
+      >
         {t('avatar.confirm')}
       </Button>
     </Modal>

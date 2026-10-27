@@ -33,9 +33,9 @@ const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone 
 
   return (
     <div>
-      <h2 className={SECTION_HEADING}>{t('profile.preferences')}</h2>
+      <h2 className={`${SECTION_HEADING} max-lg:hidden`}>{t('profile.preferences')}</h2>
 
-      <div className="mt-[calc(var(--u)*23)] space-y-[calc(var(--u)*30)]">
+      <div className="space-y-6 lg:mt-[calc(var(--u)*23)] lg:space-y-[calc(var(--u)*30)]">
         <PersonalGroup
           me={me}
           onChangeUsername={onChangeUsername}

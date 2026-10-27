@@ -24,12 +24,12 @@ const TransactionFilters: FC<Props> = ({ query, onQuery, filter, onFilter }) => 
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-[calc(var(--u)*16)]">
+    <div className="flex flex-col gap-[14px] lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-[calc(var(--u)*16)]">
       {/* `flex-1` rather than `w-full`: at the design's panel width the cap is
           what sets the field's size, but on a laptop's narrower panel `w-full`
           claimed the whole row and pushed the chips onto a second line. It
           shrinks now instead, down to a floor that still fits a search term. */}
-      <label className="rl-chip flex h-[calc(var(--u)*48)] min-w-[calc(var(--u)*200)] flex-1 items-center gap-[calc(var(--u)*10)] ps-[calc(var(--u)*12)] pe-[calc(var(--u)*20)] lg:max-w-[calc(var(--u)*434)]">
+      <label className="rl-chip flex h-[46px] min-w-[calc(var(--u)*200)] flex-none items-center lg:flex-1 gap-[calc(var(--u)*10)] ps-[calc(var(--u)*12)] pe-[calc(var(--u)*20)] lg:h-[calc(var(--u)*48)] lg:max-w-[calc(var(--u)*434)]">
         <SearchIcon size={24} strokeWidth={1.5} className="shrink-0 text-[#f0f1f5]" />
         <input
           type="search"
@@ -41,7 +41,7 @@ const TransactionFilters: FC<Props> = ({ query, onQuery, filter, onFilter }) => 
         />
       </label>
 
-      <div className="flex flex-wrap items-center gap-[calc(var(--u)*11)]">
+      <div className="scrollbar-none -mx-4 flex items-center gap-[calc(var(--u)*11)] overflow-x-auto px-4 py-[18px] -my-[18px] lg:mx-0 lg:my-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:py-0">
         {TX_FILTERS.map(({ key, labelKey }) => {
           const selected = key === filter;
           return (

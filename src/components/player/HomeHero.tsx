@@ -192,7 +192,7 @@ const Odometer: FC<{ value: number }> = ({ value }) => {
 /** The phone's progress bar: the design's glowing gold fill on a glass track. */
 const ProgressBar: FC<{ percent: number; label: string }> = ({ percent, label }) => (
   <div
-    className="rl-liquid h-[17px] w-full rounded-[34px]"
+    className="h-[17px] w-full rounded-[34px] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.09))] shadow-[inset_0_1px_0_rgba(255,255,255,0.27),inset_0_-1px_0_rgba(255,255,255,0.09)]"
     role="progressbar"
     aria-valuenow={percent}
     aria-valuemin={0}
@@ -200,7 +200,7 @@ const ProgressBar: FC<{ percent: number; label: string }> = ({ percent, label })
     aria-label={label}
   >
     <div
-      className="h-full rounded-[34px] bg-[#d1ba3e] shadow-[0_2px_15px_rgba(249,208,40,0.8)]"
+      className="h-full rounded-[34px] bg-[#d1ba3e] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(255,255,255,0.15),inset_-1px_0_0_rgba(255,255,255,0.2),0_1px_15.3px_rgba(249,208,40,0.8)]"
       style={{ width: `${percent}%` }}
     />
   </div>
@@ -284,8 +284,8 @@ const PlayerPanel: FC = () => {
       <div className="flex flex-col items-center px-[15px] pt-5 lg:h-[calc(var(--u)*212)] lg:flex-row lg:items-start lg:justify-between lg:px-[calc(var(--u)*20)] lg:pl-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*20)]">
         <div className="flex flex-col items-center gap-1.5 lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">
           <Avatar ringed />
-          {/* A phone hangs the profile's pencil 8 after the name, which stays
-              centred. */}
+          {/* The profile's pencil sits 8 after the name; on a phone it hangs
+              there so the name stays centred. */}
           <span className="relative flex max-w-full items-center">
             <span className="max-w-[calc(var(--u)*240)] truncate text-[18px] font-medium leading-7 text-white lg:max-w-[calc(var(--u)*140)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
               {name}
@@ -294,9 +294,13 @@ const PlayerPanel: FC = () => {
               href="/profile"
               aria-label={t('nav.profile')}
               title={t('nav.profile')}
-              className="absolute start-full ms-2 w-[18px] opacity-90 transition-opacity hover:opacity-100 lg:hidden"
+              className="absolute start-full ms-2 w-[18px] flex-shrink-0 opacity-90 transition-opacity hover:opacity-100 lg:static lg:ms-[calc(var(--u)*8)] lg:w-[calc(var(--u)*18)]"
             >
-              <img src={editPencil.src} alt="" className="h-[18px] w-[18px]" />
+              <img
+                src={editPencil.src}
+                alt=""
+                className="h-[18px] w-[18px] lg:h-[calc(var(--u)*18)] lg:w-[calc(var(--u)*18)]"
+              />
             </Link>
           </span>
         </div>

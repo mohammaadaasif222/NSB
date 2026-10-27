@@ -76,7 +76,7 @@ const DOC_TYPE_LABELS: Record<string, TranslationKey> = {
  * flattening those into the house grey would cost a player the one thing this
  * page is for.
  */
-const LEVEL_CARD = 'rl-field-card overflow-hidden rounded-[calc(var(--u)*34)]';
+const LEVEL_CARD = 'rl-field-card overflow-hidden rounded-[calc(var(--u)*34)] max-lg:![box-shadow:none] max-lg:before:hidden';
 const LEVEL_HEAD =
   'flex w-full flex-col gap-[calc(var(--u)*8)] px-[calc(var(--u)*18)] py-[calc(var(--u)*16)] text-start sm:flex-row sm:items-center sm:justify-between sm:gap-[calc(var(--u)*12)]';
 /* The status and the chevron drop under the title below `sm`, indented to
@@ -301,14 +301,14 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
     }
   };
 
-  const heading = <h2 className={SECTION_HEADING}>{t('profile.verification')}</h2>;
+  const heading = <h2 className={`${SECTION_HEADING} max-lg:hidden`}>{t('profile.verification')}</h2>;
 
   if (loading) {
     return (
       <div>
         {heading}
         <div
-          className={`${LEVEL_CARD} mt-[calc(var(--u)*32)] flex items-center justify-center gap-[calc(var(--u)*8)] p-[calc(var(--u)*24)] ${BODY}`}
+          className={`${LEVEL_CARD} lg:mt-[calc(var(--u)*32)] flex items-center justify-center gap-[calc(var(--u)*8)] p-[calc(var(--u)*24)] ${BODY}`}
         >
           <RefreshCwIcon size={16} className="animate-spin text-[#35d07f]" />
           <span>{t('kyc.loading')}</span>
@@ -321,7 +321,7 @@ const VerificationSection: FC<Props> = ({ me, onChangeEmail }) => {
     <div>
       {heading}
 
-      <div className="mt-[calc(var(--u)*32)] space-y-[calc(var(--u)*30)]">
+      <div className="space-y-5 lg:mt-[calc(var(--u)*32)] lg:space-y-[calc(var(--u)*30)]">
         {/* Tiered Verification Section.
 
             A plain labelled section rather than `FieldGroup`: each level is

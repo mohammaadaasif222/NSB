@@ -49,12 +49,12 @@ const ReferralSection: FC = () => {
 
   return (
     <div>
-      <h2 className={SECTION_HEADING}>{t('profile.referral')}</h2>
+      <h2 className={`${SECTION_HEADING} max-lg:hidden`}>{t('profile.referral')}</h2>
 
-      <div className="mt-[calc(var(--u)*29)] grid gap-[calc(var(--u)*22)] lg:grid-cols-2">
+      <div className="grid gap-[calc(var(--u)*22)] lg:mt-[calc(var(--u)*29)] lg:grid-cols-2">
         <ReferralCodeCard code={code} />
 
-        <div className="rl-panel flex flex-col justify-between gap-5 px-[calc(var(--u)*24)] py-[calc(var(--u)*24)]">
+        <div className="rl-panel flex flex-col justify-between gap-5 px-[calc(var(--u)*24)] py-[calc(var(--u)*24)] max-lg:hidden">
           <div className="grid grid-cols-2 gap-4">
             {figures.map((f) => (
               <div key={f.label}>
@@ -72,7 +72,7 @@ const ReferralSection: FC = () => {
         </div>
       </div>
 
-      <div className="mt-[calc(var(--u)*22)]">
+      <div className="mt-4 lg:mt-[calc(var(--u)*22)]">
         <ReferralTable rows={referred} />
       </div>
       {pagination && (

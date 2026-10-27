@@ -66,13 +66,13 @@ const SessionsGroup: FC = () => {
           type="button"
           onClick={() => void endAll()}
           disabled={loading || busy !== null || sessions.length === 0}
-          className="cursor-pointer pe-[calc(var(--u)*16)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] text-[#e33827] transition-opacity hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:no-underline"
+          className="cursor-pointer lg:pe-[calc(var(--u)*16)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] text-[#e33827] transition-opacity hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:no-underline"
         >
           {busy === END_ALL ? t('sec.endingSessions') : t('sec.endAllSessions')}
         </button>
       </div>
 
-      <div className="rl-field-card overflow-hidden rounded-[calc(var(--u)*44)]">
+      <div className="rl-field-card overflow-hidden rounded-[24px] max-lg:![box-shadow:none] max-lg:before:hidden lg:rounded-[calc(var(--u)*44)]">
         {loading && (
           <p className="px-[calc(var(--u)*18)] py-[calc(var(--u)*24)] text-center text-[length:max(min(11px,14px),calc(var(--u)*14))] text-[#9da2b4]">
             {t('common.loading')}
@@ -113,7 +113,7 @@ const SessionsGroup: FC = () => {
           sessions.map((session) => (
             <div
               key={session.id}
-              className="flex flex-col gap-[calc(var(--u)*12)] border-t border-white/5 px-[calc(var(--u)*18)] py-[calc(var(--u)*13)] first:border-t-0 sm:flex-row sm:items-center"
+              className="flex flex-col gap-4 border-t border-white/5 px-[calc(var(--u)*18)] py-4 first:border-t-0 sm:flex-row sm:items-center lg:gap-[calc(var(--u)*12)] lg:py-[calc(var(--u)*13)]"
             >
               <div className="flex min-w-0 flex-1 items-center gap-[calc(var(--u)*12)]">
                 <SessionDeviceIcon />
@@ -143,7 +143,7 @@ const SessionsGroup: FC = () => {
                 type="button"
                 onClick={() => void endOne(session.id)}
                 disabled={busy !== null}
-                className="rl-chip-danger ms-[calc(var(--u)*50)] flex h-[calc(var(--u)*48)] w-fit shrink-0 cursor-pointer items-center px-[calc(var(--u)*22)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#e33827] transition-opacity disabled:cursor-not-allowed disabled:opacity-50 sm:ms-0"
+                className="rl-chip-danger flex h-[calc(var(--u)*48)] w-full shrink-0 cursor-pointer items-center justify-center px-[calc(var(--u)*22)] sm:w-fit text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#e33827] transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {busy === session.id ? t('sec.endingSessions') : t('sec.endSession')}
               </button>

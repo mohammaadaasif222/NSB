@@ -105,7 +105,7 @@ const FieldLabel: FC<{ label: string; hint: string; strongHint?: boolean }> = ({
 
 /** A field in the design's clear glass pill. */
 const Field: FC<{ children: ReactNode }> = ({ children }) => (
-  <div className="rl-liquid flex h-[calc(var(--u)*56)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*34)] pl-[calc(var(--u)*17)] pr-[calc(var(--u)*17)] focus-within:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)]">
+  <div className="flex h-[calc(var(--u)*56)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*34)] border border-white/20 bg-white/5 pl-[calc(var(--u)*17)] pr-[calc(var(--u)*17)] transition-colors focus-within:border-white/40">
     {children}
   </div>
 );
@@ -235,8 +235,8 @@ const CrashPreview: FC = () => {
       {/* --- Bet slip ---------------------------------------------------- */}
       {/* The phone design's slip is tighter at its foot: the button 18 under
           the last field, the summary 13 under it, 18 to the card's edge. */}
-      <div className="rl-liquid rounded-b-[calc(var(--u)*34)] px-[calc(var(--u)*28)] pb-[calc(var(--u)*18)] pt-[calc(var(--u)*25)] lg:rounded-b-none lg:pb-[calc(var(--u)*32)] lg:rounded-r-[calc(var(--u)*34)] lg:px-[calc(var(--u)*29)]">
-        <div className="rl-liquid relative grid h-[calc(var(--u)*56)] grid-cols-2 rounded-[calc(var(--u)*34)] p-[calc(var(--u)*3)]">
+      <div className="rounded-b-[calc(var(--u)*34)] bg-white/[0.07] backdrop-blur-md lg:border-l lg:border-white/15 px-[calc(var(--u)*28)] pb-[calc(var(--u)*18)] pt-[calc(var(--u)*25)] lg:rounded-b-none lg:pb-[calc(var(--u)*32)] lg:rounded-r-[calc(var(--u)*34)] lg:px-[calc(var(--u)*29)]">
+        <div className="grid h-[calc(var(--u)*56)] grid-cols-2 rounded-[calc(var(--u)*34)] border border-white/15 bg-white/[0.07] p-[calc(var(--u)*3-1px)] shadow-[0_8px_40px_rgba(0,0,0,0.2)] backdrop-blur-md">
           {(['manual', 'auto'] as const).map((key) => (
             <button
               key={key}

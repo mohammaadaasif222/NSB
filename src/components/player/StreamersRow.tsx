@@ -51,7 +51,7 @@ const Control: FC<{
     aria-label={label}
     title={label}
     className={`flex h-[6.37cqw] w-[6.37cqw] items-center justify-center rounded-full backdrop-blur-md transition-[filter] hover:brightness-125 ${
-      ringed ? 'bg-white/[0.07] ring-1 ring-inset ring-[#f0f1f5]' : 'bg-black/45'
+      ringed ? 'bg-white/[0.07] ring-1 ring-inset ring-[#f0f1f5]' : 'rl-glass-btn [--rl-btn-base:rgba(0,0,0,0.45)]'
     }`}
   >
     {icon ? <img src={icon.src} alt="" className="h-[3.18cqw] w-[3.18cqw]" /> : children}

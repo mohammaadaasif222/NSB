@@ -280,7 +280,7 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-[calc(var(--u)*12)] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-[calc(var(--u)*12)]">
           {summary.map((item) => (
             <div
               key={item.key}
@@ -337,7 +337,7 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-[calc(var(--u)*12)] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-[calc(var(--u)*12)]">
           <FormField label={t('auth.firstName')} htmlFor="kyc-first-name" required>
             <input
               type="text"
@@ -434,7 +434,7 @@ const KycLevel1Form: FC<Props> = ({ profile, onSuccess }) => {
           />
         </FormField>
 
-        <div className="grid grid-cols-1 gap-[calc(var(--u)*12)] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-[calc(var(--u)*12)]">
           <FormField label={t('acct.kyc1.city')} htmlFor="kyc-city" required>
             <input
               type="text"

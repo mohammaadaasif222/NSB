@@ -19,9 +19,9 @@ const ACTIONS: { id: WalletAction; label: TranslationKey; icon: StaticImageData 
 
 /**
  * One of the card's actions: a glass tile with the icon on a small glass disc
- * over its label — the design's 130px square on desktop, 84 × 80 on a phone. A
- * flat 5% wash on desktop, as drawn (not the shared card polish); a phone's is
- * a shade lighter with a hairline.
+ * over its label — the design's 130px square on desktop, 84 × 80 on a phone,
+ * in the design's clear glass with its rim lit at the top-start and
+ * bottom-end corners.
  */
 export const WalletActionTile: FC<{
   icon: StaticImageData;
@@ -31,7 +31,7 @@ export const WalletActionTile: FC<{
   <button
     type="button"
     onClick={onClick}
-    className="flex h-20 flex-col items-center bg-white/[0.07] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] lg:bg-white/5 lg:shadow-none rounded-[14px] pt-3 transition-colors hover:bg-white/10 lg:h-[calc(var(--u)*130)] lg:w-[calc(var(--u)*130)] lg:rounded-[calc(var(--u)*34)] lg:pt-[calc(var(--u)*24)]"
+    className="rl-sport-card flex h-20 flex-col items-center rounded-[14px] pt-3 transition-colors hover:bg-white/10 lg:bg-white/5 lg:hover:bg-white/10 lg:h-[calc(var(--u)*130)] lg:w-[calc(var(--u)*130)] lg:rounded-[calc(var(--u)*34)] lg:pt-[calc(var(--u)*24)]"
   >
     <span className="rl-circle-btn flex h-7 w-7 items-center justify-center rounded-full lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]">
       <img
