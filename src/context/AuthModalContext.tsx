@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 
 import { useAuth } from '@/context/AuthContext';
 import { captureReferral } from '@/lib/referralCapture';
+import { captureAffiliateTag } from '@/lib/affiliateCapture';
 import { recordReferralVisit } from '@/services/referral';
 // Imported statically, not via next/dynamic: Login and Register are the
 // primary calls to action, and a lazy chunk that never resolves leaves the
@@ -29,6 +30,9 @@ import LoginModal, { type LoginEntry } from '@/components/auth/login/LoginModal'
  *
  * `?ref=CODE` is a referral link: the code is kept for signup and a signed-out
  * visitor is shown the register modal.
+ *
+ * `?stag=` is an Affilka affiliate link: the stag is kept for signup and the
+ * page is left as it is (the stag stays in the URL, as Affilka expects).
  */
 
 interface AuthModalContextType {
@@ -88,6 +92,11 @@ export const AuthModalProvider: FC<{ children: ReactNode }> = ({ children }) => 
     }
     router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
   }, [router, hydrated, token, openLogin, openRegister]);
+
+  useEffect(() => {
+    if (!router.isReady || !hydrated || token) return;
+    if (typeof router.query.stag === 'string') captureAffiliateTag(router.query.stag);
+  }, [router.isReady, router.query.stag, hydrated, token]);
 
   // A sign-in completes inside the modal; once there is a session, it has
   // done its job.

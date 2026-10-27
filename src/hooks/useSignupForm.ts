@@ -6,6 +6,7 @@ import { registerAccount } from '@/services/auth';
 import { apiErrorMessage, transportErrorKey } from '@/lib/apiError';
 import { analytics, failureReason } from '@/services/analytics';
 import { clearReferral, storedReferralCode } from '@/lib/referralCapture';
+import { affiliateField, clearAffiliateTag } from '@/lib/affiliateCapture';
 import { ANALYTICS_SIGNUP_METHOD } from '@/constants/auth';
 import { TURNSTILE_ENABLED } from '@/components/auth/TurnstileWidget';
 import {
@@ -96,6 +97,7 @@ const toRequest = (
       : { mobile: v.mobile, country_code: v.dialCode }),
     ...(promo ? { promo_code: promo } : {}),
     ...(referral ? { referral_code: referral } : {}),
+    ...affiliateField(),
     ...(captchaToken ? { captcha_token: captchaToken } : {}),
   };
 };
@@ -179,6 +181,7 @@ export const useSignupForm = ({
       }
 
       analytics.auth.signUpCompleted(tracked);
+      clearAffiliateTag();
       if (body.referral_code) {
         analytics.referral.signUpAttributed(linkedReferral ? 'link' : 'form');
         clearReferral();
