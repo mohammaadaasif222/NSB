@@ -261,7 +261,7 @@ const WelcomePackPanel: FC<Props> = ({
   const { t } = useTranslation();
 
   return (
-    <section className="rl-glass-deep rounded-[24px] px-5 pb-6 pt-7 lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*33)] lg:pb-[calc(var(--u)*26)] lg:pt-[calc(var(--u)*32)]">
+    <section className="rl-glass-deep max-lg:rl-glass-clear rounded-[24px] px-5 pb-6 pt-7 lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*33)] lg:pb-[calc(var(--u)*26)] lg:pt-[calc(var(--u)*32)]">
       <h1 className="text-center text-[24px] font-semibold leading-8 tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(16px,calc(var(--u)*32))] lg:leading-[calc(var(--u)*40)]">
         {t('bonus.welcomeTitle')}
       </h1>

@@ -150,7 +150,7 @@ const ResponsibleGamblingPage: FC<Props> = ({ sections, items }) => {
               other sections in a card; from sm up every section has the panel. */}
           <div
             className={`@container min-w-0 sm:rl-glass-edge sm:p-5 @acct:sm:p-7.5 ${
-              section === 'faqs' ? '' : 'rl-glass-edge p-4'
+              section === 'faqs' ? '' : 'rl-glass-edge p-4 max-sm:bg-white/10 max-sm:shadow-[0_8px_40px_rgba(0,0,0,0.2)]'
             }`}
           >
             {body()}

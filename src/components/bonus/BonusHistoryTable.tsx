@@ -26,7 +26,7 @@ const BonusHistoryTable: FC<Props> = ({ awards, currency, locale }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="rl-glass-deep overflow-x-auto rounded-[24px] lg:rounded-[calc(var(--u)*34)]">
+    <div className="rl-glass-deep max-lg:rl-glass-clear overflow-x-auto rounded-[24px] lg:rounded-[calc(var(--u)*34)]">
       <table className="w-full min-w-[560px] text-left">
         <thead>
           <tr className="border-b border-white/7">

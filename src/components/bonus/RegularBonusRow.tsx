@@ -6,7 +6,7 @@ import { useTranslation } from '@/context/I18nContext';
 import type { AvailableBonus, UserBonus } from '@/types';
 
 const NOTE =
-  'rl-glass-deep rounded-[24px] px-5 py-10 text-center text-[14px] leading-5 text-white/56 lg:rounded-[calc(var(--u)*34)] lg:py-[calc(var(--u)*48)] lg:text-[length:max(11px,calc(var(--u)*16))]';
+  'rl-glass-deep max-lg:rl-glass-clear rounded-[24px] px-5 py-10 text-center text-[14px] leading-5 text-white/56 lg:rounded-[calc(var(--u)*34)] lg:py-[calc(var(--u)*48)] lg:text-[length:max(11px,calc(var(--u)*16))]';
 
 interface Props {
   offers: AvailableBonus[];
