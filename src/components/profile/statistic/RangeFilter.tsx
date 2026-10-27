@@ -54,11 +54,11 @@ const RangeFilter: FC<Props> = ({ active, onSelect, rangeLabel }) => {
         className={`${PILL} max-lg:rl-glass-btn lg:rl-chip ms-auto gap-1.5 ps-3 pe-1 max-lg:absolute max-lg:-top-14 max-lg:end-0 lg:gap-[calc(var(--u)*10)] lg:ps-[calc(var(--u)*15)] lg:pe-[calc(var(--u)*5)]`}
         aria-label={t('stats.range')}
       >
-        <span className="flex h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] shrink-0 items-center justify-center text-[#f0f1f5]">
+        <span className="flex h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] shrink-0 items-center justify-center text-[#f0f1f5] max-[399px]:hidden">
           <RangeCalendarIcon />
         </span>
 
-        <span className="text-[#9da2b4] lg:tabular-nums">{rangeLabel || '—'}</span>
+        <span className="text-[#9da2b4] max-[369px]:text-[11px] lg:tabular-nums">{rangeLabel || '—'}</span>
 
         <span
           title={t('common.soon')}

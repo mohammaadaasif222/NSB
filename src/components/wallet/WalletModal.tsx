@@ -3,6 +3,7 @@ import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import type { TranslationKey } from '@/i18n/locales';
 import GlassDialog from '@/components/ui/GlassDialog';
+import SiteFooter from '@/components/player/SiteFooter';
 import WalletTabBar from './shared/WalletTabBar';
 import DepositTab from './tabs/DepositTab';
 import WithdrawTab from './tabs/WithdrawTab';
@@ -64,10 +65,11 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
       titleId={TITLE_ID}
       title={t('profile.wallet')}
       titleVariant="title"
+      phoneSheet="page"
       // The design's 28 / 20 / 36 insets, less the rim's pixel.
-      className="max-w-[581px] px-4 pb-6 pt-4 sm:min-h-[545px] sm:px-[27px] sm:pb-[35px] sm:pt-[19px]"
+      className="max-w-[581px] px-4 pb-28 pt-5 sm:min-h-[545px] sm:px-[27px] sm:pb-[35px] sm:pt-[19px]"
     >
-      <div className="mt-4 sm:mt-[17px]">
+      <div className="mt-5 sm:mt-[17px]">
         <WalletTabBar
           tabs={TABS.map((tab) => ({ id: tab.id, label: t(tab.label) }))}
           active={active}
@@ -81,7 +83,7 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
       <div
         role="tabpanel"
         className={`relative z-10 ${
-          active === 'deposit' || active === 'withdraw' ? 'pt-4' : 'pt-6 sm:pt-[31px]'
+          active === 'deposit' || active === 'withdraw' ? 'pt-[26px] sm:pt-4' : 'pt-[34px] sm:pt-[31px]'
         }`}
       >
         {active === 'deposit' && <DepositTab onLeave={onClose} />}
@@ -89,6 +91,10 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
         {active === 'buy' && <BuyCryptoTab />}
         {active === 'tip' && <TipTab onLeave={onClose} />}
         {active === 'redeem' && <RedeemTab />}
+      </div>
+
+      <div className="mt-[74px] sm:hidden">
+        <SiteFooter />
       </div>
     </GlassDialog>
   );

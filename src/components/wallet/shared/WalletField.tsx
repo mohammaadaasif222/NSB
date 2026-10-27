@@ -6,7 +6,7 @@ import type { FC, ReactNode } from 'react';
  * insets. Shared by the inputs and the selects so every row lines up.
  */
 export const WALLET_PILL =
-  'flex h-14 items-center gap-2.5 rounded-[34px] border border-white/20 bg-white/5 px-5 sm:px-6';
+  'flex h-14 items-center gap-2.5 rounded-[34px] border border-white/20 bg-white/5 px-6';
 
 /** What is typed or picked inside the pill: 18px bold, the design's ink. */
 export const WALLET_VALUE =

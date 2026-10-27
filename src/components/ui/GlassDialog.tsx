@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { useStageScale } from '@/hooks/useStageScale';
+import { ChevronLeftIcon } from '@/components/icons';
 import Modal from './Modal';
 import ModalHeader from './ModalHeader';
 
@@ -19,8 +20,12 @@ interface Props {
   tone?: 'clear' | 'grey';
   /** Whether the page behind is dimmed (the default) or left clear. */
   backdrop?: 'dim' | 'none';
-  /** Below `sm`, a sheet rising from the screen's foot; `fit` sizes it to its content (see Modal). */
-  phoneSheet?: boolean | 'fit';
+  /**
+   * Below `sm`, a sheet rising from the screen's foot; `fit` sizes it to its
+   * content; `page` makes it a page under the bar, with a back button before
+   * the title in place of the close (see Modal).
+   */
+  phoneSheet?: boolean | 'fit' | 'page';
   /** Extra classes for the title (see ModalHeader). */
   titleClassName?: string;
   /** Classes for the card: width, padding, height. */
@@ -64,14 +69,31 @@ const GlassDialog: FC<Props> = ({
       phoneSheet={phoneSheet}
       className={`${tone === 'grey' ? '[--dialog-fill:rgba(89,89,89,0.2)]' : ''} ${className}`}
     >
-      <ModalHeader
-        id={titleId}
-        title={title}
-        variant={titleVariant}
-        titleClassName={titleClassName}
-        onClose={onClose}
-        closeLabel={t('common.close')}
-      />
+      {phoneSheet === 'page' && (
+        <div className="flex items-center gap-3 sm:hidden">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('auth.back')}
+            className="rl-glass-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#f0f1f5]"
+          >
+            <ChevronLeftIcon size={20} className="rtl:rotate-180" />
+          </button>
+          <p aria-hidden="true" className="truncate text-[24px] font-medium leading-8 text-[#f0f1f5]">
+            {title}
+          </p>
+        </div>
+      )}
+      <div className={phoneSheet === 'page' ? 'max-sm:hidden' : undefined}>
+        <ModalHeader
+          id={titleId}
+          title={title}
+          variant={titleVariant}
+          titleClassName={titleClassName}
+          onClose={onClose}
+          closeLabel={t('common.close')}
+        />
+      </div>
       {children}
     </Modal>
   );

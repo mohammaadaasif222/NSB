@@ -161,7 +161,9 @@ const LanguagePicker: FC<Props> = ({
       ? 'rl-glass-btn inline-flex h-10 w-10 items-center justify-center rounded-full lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]'
       : shell
         ? 'rl-glass-btn flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*6)] rounded-full ps-[calc(var(--u)*12)] pe-[calc(var(--u)*15)] font-rubik text-[length:max(11px,calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white'
-        : 'flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors';
+        : plain
+          ? 'flex items-center gap-[calc(var(--u)*10)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-white'
+          : 'flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors';
 
   // Where the list opens. The auth card's rises over its own trigger, as the
   // design draws it; the rest hang off their trigger on the side with room.
@@ -201,7 +203,7 @@ const LanguagePicker: FC<Props> = ({
                 className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]"
               />
             ) : (
-              <CountryFlag country={meta.country} size={glass ? 24 : 18} />
+              <CountryFlag country={meta.country} size={glass ? 24 : plain ? 16 : 18} />
             )}
             <span className={`${plain ? '' : 'font-medium'} ${compact ? 'hidden sm:inline' : ''}`}>
               {meta.label}

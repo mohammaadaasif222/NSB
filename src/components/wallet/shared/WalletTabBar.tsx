@@ -59,7 +59,7 @@ const WalletTabBar = <K extends string>({ tabs, active, onChange, label }: Props
             role="tab"
             aria-selected={on}
             onClick={() => onChange(tab.id)}
-            className={`inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-4 text-[14px] leading-6 sm:h-12 sm:min-w-0 sm:flex-auto sm:px-3 sm:text-[16px] ${
+            className={`inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-5 text-[16px] leading-6 sm:min-w-0 sm:flex-auto sm:px-3 ${
               on ? CHIP_PICKED : CHIP_IDLE
             }`}
           >
