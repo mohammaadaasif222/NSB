@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import PhoneField from '@/components/auth/PhoneField';
 import OtpInput, { OTP_LENGTH } from '@/components/auth/OtpInput';
@@ -6,12 +6,18 @@ import { useTranslation } from '@/context/I18nContext';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
 import { DIAL_CODES, OTP_RESEND_SECONDS } from '@/constants/auth';
 import { fieldErrorMessage } from '@/lib/apiError';
-import { requestAddMobileOtp, verifyAddMobile } from '@/services/auth';
+import {
+  requestAddMobileOtp,
+  resendSignupOtp,
+  verifyAddMobile,
+  verifySignupOtp,
+} from '@/services/auth';
 import ProfileModalShell from './ProfileModalShell';
 
 interface Props {
   onClose: () => void;
   onSaved: (mobile: string, countryCode: string) => void;
+  verifyExisting?: { mobile: string; countryCode: string };
 }
 
 const emptyCode = (): string[] => Array(OTP_LENGTH).fill('');
@@ -19,11 +25,14 @@ const resendDeadline = (): string => new Date(Date.now() + OTP_RESEND_SECONDS * 
 const apiMessage = (err: unknown, fallback: string): string =>
   fieldErrorMessage(err) || (err as { message?: string })?.message || fallback;
 
-const AddPhoneModal: FC<Props> = ({ onClose, onSaved }) => {
+const AddPhoneModal: FC<Props> = ({ onClose, onSaved, verifyExisting }) => {
   const { t } = useTranslation();
   const [dialCode, setDialCode] = useState(DIAL_CODES[0].code);
   const [mobile, setMobile] = useState('');
-  const [sentTo, setSentTo] = useState<{ mobile: string; dialCode: string } | null>(null);
+  const [sentTo, setSentTo] = useState<{ mobile: string; dialCode: string } | null>(
+    verifyExisting ? { mobile: verifyExisting.mobile, dialCode: verifyExisting.countryCode } : null
+  );
+  const autoSent = useRef(false);
   const [code, setCode] = useState<string[]>(emptyCode);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,7 +43,9 @@ const AddPhoneModal: FC<Props> = ({ onClose, onSaved }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await requestAddMobileOtp(number, dial);
+      const res = verifyExisting
+        ? await resendSignupOtp(number)
+        : await requestAddMobileOtp(number, dial);
       if (!res?.success) {
         setError(res?.message || t('acct.phone.failed'));
         return false;
@@ -48,6 +59,12 @@ const AddPhoneModal: FC<Props> = ({ onClose, onSaved }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!verifyExisting || autoSent.current) return;
+    autoSent.current = true;
+    void sendCode(verifyExisting.mobile, verifyExisting.countryCode);
+  }, [verifyExisting]);
 
   const submitPhone = async (): Promise<void> => {
     if (!/^[0-9]{6,14}$/.test(mobile)) {
@@ -69,6 +86,18 @@ const AddPhoneModal: FC<Props> = ({ onClose, onSaved }) => {
     setLoading(true);
     setError('');
     try {
+      if (verifyExisting) {
+        const verified = await verifySignupOtp(sentTo.mobile, value);
+        if (!verified?.success) {
+          setError(verified?.message || t('acct.phone.failed'));
+          setCode(emptyCode());
+          return;
+        }
+        toast.success(t('acct.phone.verifiedOnly'));
+        onSaved(sentTo.mobile, sentTo.dialCode);
+        onClose();
+        return;
+      }
       const res = await verifyAddMobile(sentTo.mobile, sentTo.dialCode, value);
       if (!res?.success || !res.data) {
         setError(res?.message || t('acct.phone.failed'));
@@ -119,7 +148,7 @@ const AddPhoneModal: FC<Props> = ({ onClose, onSaved }) => {
 
   return (
     <ProfileModalShell
-      title={t('acct.phone.addTitle')}
+      title={t(verifyExisting ? 'acct.phone.verifyTitle' : 'acct.phone.addTitle')}
       onClose={onClose}
       onSubmit={() => void submitCode()}
       loading={loading}
@@ -127,7 +156,9 @@ const AddPhoneModal: FC<Props> = ({ onClose, onSaved }) => {
     >
       <div className="space-y-4 text-center">
         <p className="text-[14px] leading-relaxed text-white/65">
-          {t('acct.email.codeSentTo', { email: `${sentTo.dialCode} ${sentTo.mobile}` })}
+          {t('acct.email.codeSentTo', {
+            email: `${sentTo.dialCode ? `+${sentTo.dialCode.replace(/\D/g, '')} ` : ''}${sentTo.mobile}`,
+          })}
         </p>
         <OtpInput
           value={code}
@@ -147,16 +178,18 @@ const AddPhoneModal: FC<Props> = ({ onClose, onSaved }) => {
               ? t('acct.email.resendIn', { time: formatCountdown(remaining) })
               : t('acct.email.resend')}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSentTo(null);
-              setError('');
-            }}
-            className="text-white/60 hover:text-white/85"
-          >
-            {t('acct.phone.changeNumber')}
-          </button>
+          {!verifyExisting && (
+            <button
+              type="button"
+              onClick={() => {
+                setSentTo(null);
+                setError('');
+              }}
+              className="text-white/60 hover:text-white/85"
+            >
+              {t('acct.phone.changeNumber')}
+            </button>
+          )}
         </div>
       </div>
     </ProfileModalShell>

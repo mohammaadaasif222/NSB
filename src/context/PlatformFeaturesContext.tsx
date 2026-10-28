@@ -24,6 +24,7 @@ export interface PlatformFeatures {
   email_verification: boolean;
   email_verify_modal: boolean;
   phone_verification: boolean;
+  phone_verify_modal: boolean;
   /** System config, Help Center: the profile's Help Centre tab. */
   help_center: boolean;
   /** System config, Help Center: the Responsible Gambling pages and links to them. */
@@ -52,6 +53,7 @@ const ALL_ON: PlatformFeatures = {
   email_verification: false,
   email_verify_modal: false,
   phone_verification: false,
+  phone_verify_modal: false,
   help_center: true,
   responsible_gambling: true,
   promotion_filters: { live: true, expired: true, casino: true, sports: true },

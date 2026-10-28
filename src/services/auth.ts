@@ -15,10 +15,14 @@ import type {
 } from '@/types';
 
 export const registerAccount = async (body: RegisterRequest) =>
-  apiService.post<RegisterResponseData>('/auth/register', {
-    ...body,
-    password: await encryptPassword(body.password),
-  });
+  apiService.post<RegisterResponseData>(
+    '/auth/register',
+    {
+      ...body,
+      password: await encryptPassword(body.password),
+    },
+    { timeout: 45000 }
+  );
 
 export const verifySignupOtp = (identifier: string, code: string) =>
   apiService.post<VerifyOtpResponseData>('/auth/verify-otp', { identifier, code });

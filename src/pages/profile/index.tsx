@@ -44,6 +44,7 @@ type ActiveModal =
   | 'email'
   | 'verifyEmail'
   | 'phone'
+  | 'verifyPhone'
   | 'username'
   | 'timezone'
   | 'password'
@@ -129,6 +130,7 @@ const ProfilePage: FC = () => {
             onAddEmail={() => setActiveModal('email')}
             onVerifyEmail={() => setActiveModal('verifyEmail')}
             onAddPhone={() => setActiveModal('phone')}
+            onVerifyPhone={() => setActiveModal('verifyPhone')}
           />
         );
       case 'statistic':
@@ -293,6 +295,14 @@ const ProfilePage: FC = () => {
         <AddPhoneModal
           onClose={closeModal}
           onSaved={(mobile, country_code) => updateMe({ mobile, country_code })}
+        />
+      )}
+
+      {me && me.mobile && activeModal === 'verifyPhone' && (
+        <AddPhoneModal
+          verifyExisting={{ mobile: me.mobile, countryCode: me.country_code ?? '' }}
+          onClose={closeModal}
+          onSaved={() => updateMe({ is_email_verified: true })}
         />
       )}
 

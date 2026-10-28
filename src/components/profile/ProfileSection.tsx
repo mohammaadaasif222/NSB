@@ -9,6 +9,7 @@ import LinkedAccountsGroup from '@/components/profile/LinkedAccountsGroup';
 import ToggleSwitch from '@/components/profile/ToggleSwitch';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { ContactPhoneIcon } from '@/components/icons';
+import { isUnverifiedPhoneAccount } from '@/utils/phoneVerification';
 
 interface Props {
   me: ApiUser;
@@ -18,6 +19,7 @@ interface Props {
   onAddEmail?: () => void;
   onVerifyEmail?: () => void;
   onAddPhone?: () => void;
+  onVerifyPhone?: () => void;
 }
 
 /** Identity, the email behind the account, 2FA, and third-party links. */
@@ -28,13 +30,16 @@ const ProfileSection: FC<Props> = ({
   onAddEmail,
   onVerifyEmail,
   onAddPhone,
+  onVerifyPhone,
 }) => {
   const { t, locale } = useTranslation();
   const {
     two_factor: twoFactorOn,
     email_verification: emailVerificationOn,
     phone_verification: phoneVerificationOn,
+    phone_verify_modal: phoneVerifyOn,
   } = usePlatformFeatures();
+  const phoneUnverified = phoneVerifyOn && isUnverifiedPhoneAccount(me);
 
   const joined = me.created_at
     ? new Date(me.created_at).toLocaleDateString(locale, {
@@ -73,7 +78,22 @@ const ProfileSection: FC<Props> = ({
             }
             layout="inline"
             action={
-              !me.mobile && phoneVerificationOn && onAddPhone ? (
+              phoneUnverified ? (
+                <div className="flex shrink-0 items-center gap-[calc(var(--u)*8)]">
+                  <span className="rounded-full border border-[#fcd535]/30 bg-[#fcd535]/10 px-[calc(var(--u)*10)] py-[calc(var(--u)*4)] text-[length:max(min(11px,11px),calc(var(--u)*11))] leading-[1.45] font-semibold text-[#fcd535]">
+                    {t('profile.emailUnverified')}
+                  </span>
+                  {onVerifyPhone && (
+                    <button
+                      type="button"
+                      onClick={onVerifyPhone}
+                      className="shrink-0 rounded-full bg-[#fcd535] px-[calc(var(--u)*14)] py-[calc(var(--u)*6)] text-[length:max(min(12px,13px),calc(var(--u)*13))] leading-[1.45] font-semibold text-[#07080a] transition-opacity hover:opacity-90"
+                    >
+                      {t('acct.phone.verifyPhone')}
+                    </button>
+                  )}
+                </div>
+              ) : !me.mobile && phoneVerificationOn && onAddPhone ? (
                 <button
                   type="button"
                   onClick={onAddPhone}
