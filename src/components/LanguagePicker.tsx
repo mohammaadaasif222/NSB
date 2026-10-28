@@ -5,7 +5,6 @@ import globeIcon from '@/assets/lobby/footer/lang-globe.svg';
 import chevronIcon from '@/assets/lobby/footer/lang-chevron.svg';
 import barGlobe from '@/assets/lobby/rail/bar-language.svg';
 import { TranslateIcon, FooterChevron } from '@/components/player/footer/footerIcons';
-import { POPUP_SURFACE } from '@/components/player/popupSurface';
 import type { Locale, LocaleMeta } from '@/i18n/locales';
 
 /**
@@ -24,7 +23,10 @@ export const LanguageMenu: FC<{
   <div
     role="listbox"
     aria-label={title}
-    className={`z-40 w-[142px] rounded-[24px] px-[7px] pb-[9px] pt-[13px] ${POPUP_SURFACE.raised} ${className}`}
+    // The modals' smoked glass and rim (diagonal on a phone, clear corners on
+    // the web). The card class positions itself, so the placement's
+    // `absolute` is forced, as is the menu's smaller radius.
+    className={`rl-modal-card rl-modal-rim [--rim-clear:22px] [--rim-fade:40px] z-40 w-[142px] !rounded-[24px] px-[7px] pb-[9px] pt-[13px] ${className}`}
   >
     <p className="px-1.5 text-[12px] leading-5 text-[#9da2b4]">{title}</p>
     <div className="mt-2 flex flex-col gap-[3px]">
@@ -234,7 +236,7 @@ const LanguagePicker: FC<Props> = ({
             setLocale(code);
             setOpen(false);
           }}
-          className={`absolute ${placement}`}
+          className={`!absolute ${placement}`}
         />
       )}
     </div>

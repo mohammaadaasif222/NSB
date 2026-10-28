@@ -1832,7 +1832,13 @@ html:not([data-theme='dark']) .border-blue-600 {
     var(--tw-ring-shadow, 0 0 #0000),
     var(--tw-shadow, 0 0 #0000),
     0 8px 40px rgba(0, 0, 0, 0.12);
+}
 
+/* The header bar's rim, on its own so other panels can wear it (the
+   footer's): a half-pixel hairline lit from the top-start corner, fading
+   out round the top-end and bottom-start ones. Needs a positioned host
+   whose radius is the bar's (34 units). */
+@utility rl-bar-rim {
   &::before {
     content: '';
     position: absolute;
@@ -2827,7 +2833,7 @@ html:not([data-theme='dark']) .border-blue-600 {
   position: relative;
   border-radius: 32px;
   background: linear-gradient(180deg, rgba(20, 21, 25, 0.55), rgba(7, 8, 10, 0.68));
-  border: 1px solid transparent;
+  border: 0;
   -webkit-backdrop-filter: blur(40px) saturate(140%);
   backdrop-filter: blur(40px) saturate(140%);
   --tw-inset-shadow:
@@ -2838,8 +2844,6 @@ html:not([data-theme='dark']) .border-blue-600 {
     var(--tw-shadow, 0 0 #0000),
     0 40px 100px -30px rgba(0, 0, 0, 0.9);
   animation: auth-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-  /* Its rim (rl-modal-rim) sits over the transparent border. */
-  --rim-inset: -1px;
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: rgba(18, 19, 23, 0.98);
@@ -2855,13 +2859,13 @@ html:not([data-theme='dark']) .border-blue-600 {
    corners and fades out toward the other two, as the language pill's does —
    `to bottom right` puts the clear midline exactly through the top-right and
    bottom-left corners whatever the shape. Needs a positioned host;
-   `--rim-inset: -1px` lays it over a host's transparent 1px border. */
+   it lies on the host's outermost pixel, inside any border. */
 @utility rl-modal-rim {
   &::before {
     content: '';
     position: absolute;
     z-index: 1;
-    inset: var(--rim-inset, 0);
+    inset: 0;
     padding: var(--rim-width, 0.5px);
     border-radius: inherit;
     background: linear-gradient(
@@ -2881,22 +2885,23 @@ html:not([data-theme='dark']) .border-blue-600 {
 
     /* A wide card would lose most of its top and bottom edges to the diagonal
        fade, so from sm up the rim runs whole along all four sides and only
-       the four corners themselves are clear. */
+       the four corners themselves are clear. A small panel sets
+       `--rim-clear` / `--rim-fade` to clear less of each corner. */
     @media (width >= 40rem) {
       background: rgba(255, 255, 255, 0.4);
       -webkit-mask:
-        radial-gradient(circle at 0 0, transparent 34px, #000 80px),
-        radial-gradient(circle at 100% 0, transparent 34px, #000 80px),
-        radial-gradient(circle at 100% 100%, transparent 34px, #000 80px),
-        radial-gradient(circle at 0 100%, transparent 34px, #000 80px),
+        radial-gradient(circle at 0 0, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(circle at 100% 0, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(circle at 100% 100%, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(circle at 0 100%, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
       -webkit-mask-composite: source-in, source-in, source-in, source-in, xor;
       mask:
-        radial-gradient(circle at 0 0, transparent 34px, #000 80px),
-        radial-gradient(circle at 100% 0, transparent 34px, #000 80px),
-        radial-gradient(circle at 100% 100%, transparent 34px, #000 80px),
-        radial-gradient(circle at 0 100%, transparent 34px, #000 80px),
+        radial-gradient(circle at 0 0, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(circle at 100% 0, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(circle at 100% 100%, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(circle at 0 100%, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
       mask-composite: intersect, intersect, intersect, intersect, exclude;

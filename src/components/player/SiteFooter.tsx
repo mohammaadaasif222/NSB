@@ -348,7 +348,7 @@ const SiteFooter: FC<{ glow?: boolean }> = ({ glow = false }) => {
       {/* --- Who to write to --------------------------------------------
           One row only where the design has room for it (2xl); below that the
           four addresses would overrun the panel, so they pair up instead. */}
-      <div className="rl-liquid mt-[calc(var(--u)*30)] grid gap-[calc(var(--u)*26)] rounded-[calc(var(--u)*34)] p-[calc(var(--u)*24)] sm:grid-cols-2 sm:gap-x-[calc(var(--u)*32)] lg:mt-[calc(var(--u)*22)] lg:flex lg:min-h-[calc(var(--u)*147)] lg:items-center lg:justify-between lg:px-[calc(var(--u)*50)] lg:py-0">
+      <div className="rl-liquid rl-bar-rim relative [--tw-inset-shadow:0_0_#0000]! mt-[calc(var(--u)*30)] grid gap-[calc(var(--u)*26)] rounded-[calc(var(--u)*34)] p-[calc(var(--u)*24)] sm:grid-cols-2 sm:gap-x-[calc(var(--u)*32)] lg:mt-[calc(var(--u)*22)] lg:flex lg:min-h-[calc(var(--u)*147)] lg:items-center lg:justify-between lg:px-[calc(var(--u)*50)] lg:py-0">
         {CONTACTS.map(({ icon, label, email }) => (
           <a
             key={label}
@@ -377,14 +377,14 @@ const SiteFooter: FC<{ glow?: boolean }> = ({ glow = false }) => {
         ))}
       </div>
 
-      <div className="rl-liquid mt-[calc(var(--u)*16)] flex flex-col items-center gap-[calc(var(--u)*28)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*17)] py-[calc(var(--u)*26)] lg:hidden">
+      <div className="rl-liquid rl-bar-rim relative [--tw-inset-shadow:0_0_#0000]! mt-[calc(var(--u)*16)] flex flex-col items-center gap-[calc(var(--u)*28)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*17)] py-[calc(var(--u)*26)] lg:hidden">
         {secure}
         {payments}
         {responsibly}
       </div>
 
       {/* --- Sitemap and payments: desktop ------------------------------ */}
-      <div className="rl-liquid mt-[calc(var(--u)*22)] hidden overflow-hidden rounded-[calc(var(--u)*34)] lg:block">
+      <div className="rl-liquid rl-bar-rim relative [--tw-inset-shadow:0_0_#0000]! mt-[calc(var(--u)*22)] hidden overflow-hidden rounded-[calc(var(--u)*34)] lg:block">
         <div className="grid grid-cols-[1fr_1fr_1fr_1.72fr] gap-x-[calc(var(--u)*65)] px-[calc(var(--u)*50)] pb-[calc(var(--u)*29)] pt-[calc(var(--u)*40)]">
           {groups.map((group) => (
             <Column key={group.title} group={group} soon={soon} />
