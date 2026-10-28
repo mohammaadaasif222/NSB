@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
 import { useSeonGuard } from '@/context/SeonGuardContext';
@@ -19,6 +19,8 @@ interface Props {
   onClose: () => void;
   /** `verified` is true when the email was confirmed with a code (add & verify). */
   onSaved: (email: string, verified?: boolean) => void;
+  /** Confirm the email already on file: the code goes straight to it. */
+  verifyExisting?: boolean;
 }
 
 const emptyCode = (): string[] => Array(OTP_LENGTH).fill('');
@@ -27,10 +29,13 @@ const apiMessage = (err: unknown, fallback: string): string =>
   fieldErrorMessage(err) || (err as { message?: string })?.message || fallback;
 
 // No email on file and Email OTP on: send a code, confirm it, save the email as verified.
-const AddVerifyEmail: FC<Omit<Props, 'currentEmail'>> = ({ onClose, onSaved }) => {
+const AddVerifyEmail: FC<
+  Omit<Props, 'currentEmail' | 'verifyExisting'> & { presetEmail?: string }
+> = ({ onClose, onSaved, presetEmail }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
-  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(presetEmail ?? null);
+  const autoSent = useRef(false);
   const [code, setCode] = useState<string[]>(emptyCode);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,6 +61,12 @@ const AddVerifyEmail: FC<Omit<Props, 'currentEmail'>> = ({ onClose, onSaved }) =
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!presetEmail || autoSent.current) return;
+    autoSent.current = true;
+    void sendCode(presetEmail);
+  }, [presetEmail, sendCode]);
 
   const submitEmail = async (): Promise<void> => {
     const trimmed = email.trim().toLowerCase();
@@ -84,7 +95,7 @@ const AddVerifyEmail: FC<Omit<Props, 'currentEmail'>> = ({ onClose, onSaved }) =
         setCode(emptyCode());
         return;
       }
-      toast.success(t('acct.email.verified'));
+      toast.success(t(presetEmail ? 'acct.email.verifiedOnly' : 'acct.email.verified'));
       onSaved(sentTo, true);
       onClose();
     } catch (err) {
@@ -124,7 +135,7 @@ const AddVerifyEmail: FC<Omit<Props, 'currentEmail'>> = ({ onClose, onSaved }) =
 
   return (
     <ProfileModalShell
-      title={t('acct.email.addTitle')}
+      title={t(presetEmail ? 'acct.email.verifyTitle' : 'acct.email.addTitle')}
       onClose={onClose}
       onSubmit={() => void submitCode()}
       loading={loading}
@@ -147,16 +158,18 @@ const AddVerifyEmail: FC<Omit<Props, 'currentEmail'>> = ({ onClose, onSaved }) =
               ? t('acct.email.resendIn', { time: formatCountdown(remaining) })
               : t('acct.email.resend')}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSentTo(null);
-              setError('');
-            }}
-            className="text-white/60 hover:text-white/85"
-          >
-            {t('acct.email.changeAddress')}
-          </button>
+          {!presetEmail && (
+            <button
+              type="button"
+              onClick={() => {
+                setSentTo(null);
+                setError('');
+              }}
+              className="text-white/60 hover:text-white/85"
+            >
+              {t('acct.email.changeAddress')}
+            </button>
+          )}
         </div>
       </div>
     </ProfileModalShell>
@@ -165,6 +178,15 @@ const AddVerifyEmail: FC<Omit<Props, 'currentEmail'>> = ({ onClose, onSaved }) =
 
 const ChangeEmailModal: FC<Props> = (props) => {
   const { email_verification: emailVerificationOn } = usePlatformFeatures();
+  if (props.verifyExisting && props.currentEmail) {
+    return (
+      <AddVerifyEmail
+        onClose={props.onClose}
+        onSaved={props.onSaved}
+        presetEmail={props.currentEmail}
+      />
+    );
+  }
   return !props.currentEmail && emailVerificationOn ? (
     <AddVerifyEmail onClose={props.onClose} onSaved={props.onSaved} />
   ) : (

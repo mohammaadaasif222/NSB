@@ -271,6 +271,11 @@ export const en = {
   'acct.email.verified': 'Email verified. You can now sign in with it.',
   'acct.email.codeIncomplete': 'Enter the 6-digit code',
   'acct.email.codeResent': 'A new code has been sent',
+  'acct.email.verifyEmail': 'Verify Email',
+  'acct.email.verifyTitle': 'Verify Your Email',
+  'acct.email.verifyPromptBody':
+    'Your email {email} is not verified yet. Verify it to keep your account secure and make sure you receive important updates.',
+  'acct.email.verifiedOnly': 'Your email has been verified.',
   'acct.tz.updated': 'Time zone updated successfully',
   'acct.tz.failed': 'Failed to update time zone',
   'acct.tz.title': 'Change Time Zone',

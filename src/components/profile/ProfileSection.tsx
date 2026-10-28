@@ -16,10 +16,12 @@ interface Props {
   onChangeAvatar: () => void;
   /** Opens "Add & Verify Email" for an account with no email. */
   onAddEmail?: () => void;
+  /** Opens "Verify Your Email" for an account whose email is unverified. */
+  onVerifyEmail?: () => void;
 }
 
 /** Identity, the email behind the account, 2FA, and third-party links. */
-const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar, onAddEmail }) => {
+const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar, onAddEmail, onVerifyEmail }) => {
   const { t, locale } = useTranslation();
   const { two_factor: twoFactorOn, email_verification: emailVerificationOn } = usePlatformFeatures();
 
@@ -64,6 +66,7 @@ const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar, onAddEmail
           email={me.email}
           verified={me.is_email_verified}
           onAddEmail={!me.email && emailVerificationOn ? onAddEmail : undefined}
+          onVerifyEmail={me.email && !me.is_email_verified && emailVerificationOn ? onVerifyEmail : undefined}
         />
 
         {twoFactorOn && (

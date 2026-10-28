@@ -38,7 +38,15 @@ import Seo from '@/components/seo/Seo';
  * and it stays reachable from the top bar and the lobby rail, which own their
  * own copy of the modal.
  */
-type ActiveModal = 'avatar' | 'email' | 'username' | 'timezone' | 'password' | '2fa' | null;
+type ActiveModal =
+  | 'avatar'
+  | 'email'
+  | 'verifyEmail'
+  | 'username'
+  | 'timezone'
+  | 'password'
+  | '2fa'
+  | null;
 
 /**
  * The account area: a section nav beside one panel of settings.
@@ -117,6 +125,7 @@ const ProfilePage: FC = () => {
             onToggle2FA={() => setActiveModal('2fa')}
             onChangeAvatar={() => setActiveModal('avatar')}
             onAddEmail={() => setActiveModal('email')}
+            onVerifyEmail={() => setActiveModal('verifyEmail')}
           />
         );
       case 'statistic':
@@ -265,6 +274,15 @@ const ProfilePage: FC = () => {
                   : { email, is_email_verified: false }
             )
           }
+        />
+      )}
+
+      {me && me.email && activeModal === 'verifyEmail' && (
+        <ChangeEmailModal
+          currentEmail={me.email}
+          verifyExisting
+          onClose={closeModal}
+          onSaved={(email) => updateMe({ email, is_email_verified: true })}
         />
       )}
 
