@@ -19,7 +19,6 @@ interface Props {
   onClose: () => void;
   /** `verified` is true when the email was confirmed with a code (add & verify). */
   onSaved: (email: string, verified?: boolean) => void;
-  /** Confirm the email already on file: the code goes straight to it. */
   verifyExisting?: boolean;
 }
 

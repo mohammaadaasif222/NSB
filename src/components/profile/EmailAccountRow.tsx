@@ -11,7 +11,6 @@ interface Props {
   verified?: boolean;
   /** Given when the account has no email and Email OTP is on: shows "Add & Verify Email". */
   onAddEmail?: () => void;
-  /** Given when the email on file is unverified and Email OTP is on: shows "Verify Email". */
   onVerifyEmail?: () => void;
 }
 

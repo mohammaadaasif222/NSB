@@ -271,6 +271,12 @@ export const en = {
   'acct.email.verified': 'Email verified. You can now sign in with it.',
   'acct.email.codeIncomplete': 'Enter the 6-digit code',
   'acct.email.codeResent': 'A new code has been sent',
+  'acct.phone.add': 'Add Phone Number',
+  'acct.phone.addTitle': 'Add & Verify Phone Number',
+  'acct.phone.invalid': 'Enter a valid mobile number (6-14 digits)',
+  'acct.phone.failed': 'Failed to verify phone number',
+  'acct.phone.verified': 'Phone number verified and added to your account.',
+  'acct.phone.changeNumber': 'Use a different number',
   'acct.email.verifyEmail': 'Verify Email',
   'acct.email.verifyTitle': 'Verify Your Email',
   'acct.email.verifyPromptBody':

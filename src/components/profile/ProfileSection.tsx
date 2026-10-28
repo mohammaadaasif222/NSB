@@ -16,14 +16,25 @@ interface Props {
   onChangeAvatar: () => void;
   /** Opens "Add & Verify Email" for an account with no email. */
   onAddEmail?: () => void;
-  /** Opens "Verify Your Email" for an account whose email is unverified. */
   onVerifyEmail?: () => void;
+  onAddPhone?: () => void;
 }
 
 /** Identity, the email behind the account, 2FA, and third-party links. */
-const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar, onAddEmail, onVerifyEmail }) => {
+const ProfileSection: FC<Props> = ({
+  me,
+  onToggle2FA,
+  onChangeAvatar,
+  onAddEmail,
+  onVerifyEmail,
+  onAddPhone,
+}) => {
   const { t, locale } = useTranslation();
-  const { two_factor: twoFactorOn, email_verification: emailVerificationOn } = usePlatformFeatures();
+  const {
+    two_factor: twoFactorOn,
+    email_verification: emailVerificationOn,
+    phone_verification: phoneVerificationOn,
+  } = usePlatformFeatures();
 
   const joined = me.created_at
     ? new Date(me.created_at).toLocaleDateString(locale, {
@@ -51,22 +62,37 @@ const ProfileSection: FC<Props> = ({ me, onToggle2FA, onChangeAvatar, onAddEmail
 
       {/* 32 from the ID line to the first group label, 30 between groups. */}
       <div className="mt-[26px] space-y-[18px] lg:mt-[calc(var(--u)*32)] lg:space-y-[calc(var(--u)*30)]">
-        {me.mobile && (
-          <FieldGroup label={t('verify.phoneNumber')}>
-            <SettingRow
-              icon={<ContactPhoneIcon size={20} strokeWidth={1.5} />}
-              title={t('verify.phoneNumber')}
-              detail={`${me.country_code ? `+${me.country_code.replace(/\D/g, '')} ` : ''}${me.mobile}`}
-              layout="inline"
-            />
-          </FieldGroup>
-        )}
+        <FieldGroup label={t('verify.phoneNumber')}>
+          <SettingRow
+            icon={<ContactPhoneIcon size={20} strokeWidth={1.5} />}
+            title={t('verify.phoneNumber')}
+            detail={
+              me.mobile
+                ? `${me.country_code ? `+${me.country_code.replace(/\D/g, '')} ` : ''}${me.mobile}`
+                : t('profile.notSet')
+            }
+            layout="inline"
+            action={
+              !me.mobile && phoneVerificationOn && onAddPhone ? (
+                <button
+                  type="button"
+                  onClick={onAddPhone}
+                  className="shrink-0 rounded-full bg-[#fcd535] px-[calc(var(--u)*14)] py-[calc(var(--u)*6)] text-[length:max(min(12px,13px),calc(var(--u)*13))] leading-[1.45] font-semibold text-[#07080a] transition-opacity hover:opacity-90"
+                >
+                  {t('acct.phone.add')}
+                </button>
+              ) : undefined
+            }
+          />
+        </FieldGroup>
 
         <EmailAccountRow
           email={me.email}
           verified={me.is_email_verified}
           onAddEmail={!me.email && emailVerificationOn ? onAddEmail : undefined}
-          onVerifyEmail={me.email && !me.is_email_verified && emailVerificationOn ? onVerifyEmail : undefined}
+          onVerifyEmail={
+            me.email && !me.is_email_verified && emailVerificationOn ? onVerifyEmail : undefined
+          }
         />
 
         {twoFactorOn && (

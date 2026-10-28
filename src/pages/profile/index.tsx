@@ -21,6 +21,7 @@ import RolloverSection from '@/components/profile/RolloverSection';
 import HelpCentreSection from '@/components/profile/HelpCentreSection';
 import ChangeAvatarModal from '@/components/modals/profile/ChangeAvatarModal';
 import ChangeEmailModal from '@/components/modals/profile/ChangeEmailModal';
+import AddPhoneModal from '@/components/modals/profile/AddPhoneModal';
 import ChangeUsernameModal from '@/components/modals/profile/ChangeUsernameModal';
 import ChangeTimezoneModal from '@/components/modals/profile/ChangeTimezoneModal';
 import ChangePasswordModal from '@/components/modals/profile/ChangePasswordModal';
@@ -42,6 +43,7 @@ type ActiveModal =
   | 'avatar'
   | 'email'
   | 'verifyEmail'
+  | 'phone'
   | 'username'
   | 'timezone'
   | 'password'
@@ -126,6 +128,7 @@ const ProfilePage: FC = () => {
             onChangeAvatar={() => setActiveModal('avatar')}
             onAddEmail={() => setActiveModal('email')}
             onVerifyEmail={() => setActiveModal('verifyEmail')}
+            onAddPhone={() => setActiveModal('phone')}
           />
         );
       case 'statistic':
@@ -283,6 +286,13 @@ const ProfilePage: FC = () => {
           verifyExisting
           onClose={closeModal}
           onSaved={(email) => updateMe({ email, is_email_verified: true })}
+        />
+      )}
+
+      {me && activeModal === 'phone' && (
+        <AddPhoneModal
+          onClose={closeModal}
+          onSaved={(mobile, country_code) => updateMe({ mobile, country_code })}
         />
       )}
 
