@@ -162,7 +162,7 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  * strip along its foot. A phone stacks the same pieces — preferences first,
  * then the brand — and folds each sitemap group into a pill of its own.
  */
-const SiteFooter: FC = () => {
+const SiteFooter: FC<{ glow?: boolean }> = ({ glow = false }) => {
   const { t } = useTranslation();
   const socialLinks = useSocialLinks();
   const {
@@ -260,11 +260,7 @@ const SiteFooter: FC = () => {
           title={label}
           className="flex aspect-[46/32] w-full items-center justify-center rl-plate rounded-[calc(var(--u)*10)] lg:aspect-auto lg:h-[calc(var(--u)*54)] lg:w-[calc(var(--u)*76)] lg:rounded-[calc(var(--u)*16)]"
         >
-          <Image
-            src={mark}
-            alt={label}
-            className="h-auto w-[65%] lg:w-[calc(var(--u)*50)]"
-          />
+          <Image src={mark} alt={label} className="h-auto w-[65%] lg:w-[calc(var(--u)*50)]" />
         </span>
       ))}
     </div>
@@ -298,10 +294,12 @@ const SiteFooter: FC = () => {
           brand row — what greys the panels' glass from behind. Desktop only;
           the phone frames draw none. Behind the content, like the backdrop
           (PlayerLayout's stage is isolated). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[calc(var(--u)*47)] -z-10 hidden h-[calc(var(--u)*837)] w-[calc(var(--u)*837)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,#d9d9d9,#07080a)] opacity-40 blur-[calc(var(--u)*341)] lg:block"
-      />
+      {glow && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-[calc(var(--u)*47)] -z-10 hidden h-[calc(var(--u)*837)] w-[calc(var(--u)*837)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,#d9d9d9,#07080a)] opacity-40 blur-[calc(var(--u)*341)] lg:block"
+        />
+      )}
 
       {/* --- Brand, socials, preferences ------------------------------- */}
       <div className="flex flex-col items-center gap-[calc(var(--u)*28)] pb-[calc(var(--u)*2)] lg:min-h-[calc(var(--u)*88)] lg:flex-row lg:justify-between lg:gap-[calc(var(--u)*16)]">

@@ -1042,11 +1042,12 @@ html:not([data-theme='dark']) .border-blue-600 {
    and the water drop's rim without its shaded body (the design's pill is lit
    by what it shows, not darkened at the crown). */
 @utility glass-pill {
+  position: relative;
   color: #e7ebf3;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid transparent;
-  --tw-inset-shadow: var(--rl-drop-rim), inset 0 0 10px rgba(255, 255, 255, 0.05);
+  --tw-inset-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
   box-shadow: var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(1.15);
   backdrop-filter: blur(5px) saturate(180%) brightness(1.15);
@@ -1056,6 +1057,30 @@ html:not([data-theme='dark']) .border-blue-600 {
 
   &:hover {
     background: rgba(255, 255, 255, 0.09);
+  }
+
+  /* Whitish at the top-left and bottom-right, clear through the other two
+     corners — the same rim as the modal card it sits in. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0) 38% 62%,
+      rgba(255, 255, 255, 0.6)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
   }
 }
 
@@ -1174,6 +1199,11 @@ html:not([data-theme='dark']) .border-blue-600 {
   --rl-drop-depth:
     inset 6px 6px 12px rgba(0, 0, 0, 0.35), inset -6px -6px 12px rgba(255, 255, 255, 0.03);
   --rl-drop: var(--rl-drop-rim), var(--rl-drop-depth);
+  --rl-corner-fade:
+    radial-gradient(circle at 0 0, transparent 30px, #000 50px),
+    radial-gradient(circle at 100% 0, transparent 30px, #000 50px),
+    radial-gradient(circle at 0 100%, transparent 30px, #000 50px),
+    radial-gradient(circle at 100% 100%, transparent 30px, #000 50px);
 
   /* The water drop on the header's buttons, the footer's payment plates and
      the modals' round buttons: a face sunk along its top-start and lifted
@@ -1407,13 +1437,23 @@ html:not([data-theme='dark']) .border-blue-600 {
 
 @utility rl-menu-panel {
   border: 1px solid transparent;
-  background:
-    linear-gradient(rgba(12, 13, 14, 0.94), rgba(12, 13, 14, 0.94)) padding-box,
-    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 60px) border-box,
-    linear-gradient(rgba(12, 13, 14, 0.94), rgba(12, 13, 14, 0.94)) border-box;
+  /* Fill only: the account menu's rim is rl-modal-rim, over this border. */
+  background: linear-gradient(rgba(12, 13, 14, 0.94), rgba(12, 13, 14, 0.94)) border-box;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
   -webkit-backdrop-filter: blur(28px);
   backdrop-filter: blur(28px);
+}
+
+@utility rl-menu-panel-glass {
+  border: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
+    rgba(0, 0, 0, 0.34);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 8px 40px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 @utility rl-menu-rim {
@@ -1535,6 +1575,32 @@ html:not([data-theme='dark']) .border-blue-600 {
     linear-gradient(#000 0 0) content-box exclude,
     linear-gradient(#000 0 0);
   pointer-events: none;
+}
+
+/* The big square cards drop the polish's lit curves: an even hairline on
+   the straight edges that fades out round every corner (`rl-corner-rim`). */
+:is(.rl-glass-deep, .rl-panel):not(header *, footer *, [aria-modal='true'] *)::before {
+  background: rgba(255, 255, 255, 0.16);
+  -webkit-mask:
+    var(--rl-corner-fade),
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: source-in, source-in, source-in, source-in, xor;
+  mask:
+    var(--rl-corner-fade),
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: intersect, intersect, intersect, intersect, exclude;
+}
+
+/* The home player card and its Casino / Sports tiles, as Figma's render
+   measures them (node 10153:74508): an even 1px hairline right round the
+   edge, corners included — lit a little harder along the top and start than
+   along the bottom and end. Set as the card's inset shadow; the card polish's
+   `::before` rim is switched off on them (`before:hidden`). */
+:root {
+  --hero-panel-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.16), inset -1px -1px 0 rgba(255, 255, 255, 0.09);
+  --hero-tile-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.18), inset -1px -1px 0 rgba(255, 255, 255, 0.115);
 }
 
 /* A digit cell on the wagering odometer: a pale glass face (about 12%
@@ -1877,7 +1943,7 @@ html:not([data-theme='dark']) .border-blue-600 {
 @utility rl-rail-row {
   background: rgba(255, 255, 255, 0.075);
   border-radius: 1000px;
-  --tw-inset-shadow: var(--rl-drop);
+  --tw-inset-shadow: 0 0 #0000;
   box-shadow:
     var(--tw-inset-shadow),
     var(--tw-ring-shadow, 0 0 #0000),
@@ -2101,8 +2167,7 @@ html:not([data-theme='dark']) .border-blue-600 {
      these the fill is flat and the panel reads as paper, not glass. The third
      shadow is the one it drops on the stage. */
   --tw-inset-shadow:
-    var(--rl-drop-rim-pane), inset 2px 2px 12px rgba(0, 0, 0, 0.3),
-    inset -2px -2px 12px rgba(255, 255, 255, 0.08);
+    inset 2px 2px 12px rgba(0, 0, 0, 0.3), inset -2px -2px 12px rgba(255, 255, 255, 0.08);
   box-shadow:
     var(--tw-inset-shadow),
     var(--tw-ring-shadow, 0 0 #0000),
@@ -2138,18 +2203,49 @@ html:not([data-theme='dark']) .border-blue-600 {
   /* No drop shadow — measured against the design, the panel under this card
      is not darkened at all, where a real panel's is. */
   --tw-inset-shadow:
-    var(--rl-drop-rim-pane), inset 2px 2px 12px rgba(0, 0, 0, 0.3),
-    inset -2px -2px 12px rgba(255, 255, 255, 0.08);
+    inset 2px 2px 12px rgba(0, 0, 0, 0.3), inset -2px -2px 12px rgba(255, 255, 255, 0.08);
   box-shadow: var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
+  @apply rl-corner-rim;
 }
 
 /* The Referral tab's table sits in a card that goes the other way from the
    panel it is on — a black wash rather than a white one, so the rows read as
    recessed into the panel rather than lifted off it. */
+@utility rl-corner-rim {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.16);
+    -webkit-mask:
+      var(--rl-corner-fade),
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: source-in, source-in, source-in, source-in, xor;
+    mask:
+      var(--rl-corner-fade),
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: intersect, intersect, intersect, intersect, exclude;
+    pointer-events: none;
+  }
+}
+
 @utility rl-table-card {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)),
+    rgba(0, 0, 0, 0.4);
   border-radius: 34px;
+  box-shadow:
+    inset 10px 10px 16px -6px rgba(0, 0, 0, 0.15),
+    inset -10px -10px 18px -6px rgba(255, 255, 255, 0.03),
+    0 8px 40px rgba(0, 0, 0, 0.12);
+  @apply rl-corner-rim;
 }
 
 /* --- Range chips ------------------------------------------------------ */
@@ -2711,10 +2807,12 @@ html:not([data-theme='dark']) .border-blue-600 {
 /* Modals — the register flow's dark frosted dialog                      */
 /* ==================================================================== */
 
+/* Light enough that the page still reads behind the card: the card's own
+   blur does the frosting, so the overlay only dims. */
 @utility rl-modal-overlay {
-  background: rgba(0, 0, 0, 0.55);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
   animation: rl-fade-in 0.2s ease both;
 
   @media (prefers-reduced-motion: reduce) {
@@ -2722,30 +2820,26 @@ html:not([data-theme='dark']) .border-blue-600 {
   }
 }
 
+/* Dark smoked glass: the page shows through, heavily blurred and tinted
+   near-black, under a hairline rim. The depth sits inside the pane — shaded
+   along the top and start edges, catching light along the bottom and end. */
 @utility rl-modal-card {
   position: relative;
   border-radius: 32px;
-  background: linear-gradient(180deg, rgba(34, 35, 40, 0.74), rgba(12, 13, 16, 0.82));
+  background: linear-gradient(180deg, rgba(20, 21, 25, 0.55), rgba(7, 8, 10, 0.68));
   border: 1px solid transparent;
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
-  backdrop-filter: blur(28px) saturate(140%);
-  --tw-inset-shadow: var(--rl-drop-pane);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  backdrop-filter: blur(40px) saturate(140%);
+  --tw-inset-shadow:
+    inset 8px 8px 16px rgba(0, 0, 0, 0.45), inset -8px -8px 16px rgba(255, 255, 255, 0.045);
   box-shadow:
     var(--tw-inset-shadow),
     var(--tw-ring-shadow, 0 0 #0000),
     var(--tw-shadow, 0 0 #0000),
     0 40px 100px -30px rgba(0, 0, 0, 0.9);
   animation: auth-card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-
-  /* The warm glow pooled at the card's foot in the design. */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(55% 32% at 50% 102%, rgba(214, 44, 44, 0.3), transparent 70%);
-    pointer-events: none;
-  }
+  /* Its rim (rl-modal-rim) sits over the transparent border. */
+  --rim-inset: -1px;
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: rgba(18, 19, 23, 0.98);
@@ -2753,6 +2847,60 @@ html:not([data-theme='dark']) .border-blue-600 {
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
+  }
+}
+
+/* The rim shared by the modals and the header dropdowns (notifications, the
+   account menu). On a phone it catches light at the top-left and bottom-right
+   corners and fades out toward the other two, as the language pill's does —
+   `to bottom right` puts the clear midline exactly through the top-right and
+   bottom-left corners whatever the shape. Needs a positioned host;
+   `--rim-inset: -1px` lays it over a host's transparent 1px border. */
+@utility rl-modal-rim {
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: var(--rim-inset, 0);
+    padding: var(--rim-width, 0.5px);
+    border-radius: inherit;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0) 38% 62%,
+      rgba(255, 255, 255, 0.6)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+
+    /* A wide card would lose most of its top and bottom edges to the diagonal
+       fade, so from sm up the rim runs whole along all four sides and only
+       the four corners themselves are clear. */
+    @media (width >= 40rem) {
+      background: rgba(255, 255, 255, 0.4);
+      -webkit-mask:
+        radial-gradient(circle at 0 0, transparent 34px, #000 80px),
+        radial-gradient(circle at 100% 0, transparent 34px, #000 80px),
+        radial-gradient(circle at 100% 100%, transparent 34px, #000 80px),
+        radial-gradient(circle at 0 100%, transparent 34px, #000 80px),
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: source-in, source-in, source-in, source-in, xor;
+      mask:
+        radial-gradient(circle at 0 0, transparent 34px, #000 80px),
+        radial-gradient(circle at 100% 0, transparent 34px, #000 80px),
+        radial-gradient(circle at 100% 100%, transparent 34px, #000 80px),
+        radial-gradient(circle at 0 100%, transparent 34px, #000 80px),
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      mask-composite: intersect, intersect, intersect, intersect, exclude;
+    }
   }
 }
 

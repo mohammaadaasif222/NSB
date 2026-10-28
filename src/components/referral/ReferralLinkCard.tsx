@@ -1,5 +1,7 @@
-import { useEffect, useState, type FC } from 'react';
+import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
+import { CheckIcon } from '@/components/icons';
 import { CopyIcon } from '@/components/profile/referral/ReferralCodeCard';
 import { shareTargets } from '@/components/profile/referral/shareTargets';
 import { referralLink } from '@/services/referral';
@@ -25,21 +27,12 @@ interface Props {
  */
 const ReferralLinkCard: FC<Props> = ({ code, signedIn, onChange, onSignIn }) => {
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
+  const { copied, copy: copyText } = useCopyToClipboard();
   const link = code ? referralLink(code) : '';
 
-  // Clears itself so the control does not sit on "Copied" forever.
-  useEffect(() => {
-    if (!copied) return;
-    const id = window.setTimeout(() => setCopied(false), 2000);
-    return () => window.clearTimeout(id);
-  }, [copied]);
-
   const copy = (): void => {
-    if (!link) return;
-    void navigator.clipboard?.writeText(link).then(() => {
-      setCopied(true);
-      analytics.referral.linkCopied();
+    void copyText(link).then((ok) => {
+      if (ok) analytics.referral.linkCopied();
     });
   };
 
@@ -55,9 +48,13 @@ const ReferralLinkCard: FC<Props> = ({ code, signedIn, onChange, onSignIn }) => 
           the card's 32px insets. The button keeps its width and the field takes
           what is left, so the row holds its shape at any panel width. */}
       <div className="mt-7 flex flex-col gap-3 @sm:flex-row @sm:items-center @sm:gap-5.25">
-        <div className="rl-field-card flex h-14 min-w-0 flex-1 items-center gap-2 rounded-[34px] border border-white/20 ps-5.5 pe-6">
-          <span className="min-w-0 flex-1 truncate text-sm leading-5 text-[#9da2b4]">
-            {link || (signedIn ? '…' : t('aff.signInForLink'))}
+        <div
+          className={`rl-field-card flex h-14 min-w-0 flex-1 items-center gap-2 rounded-[34px] border ps-5.5 pe-6 transition-colors ${copied ? 'border-[#03b739]/60' : 'border-white/20'}`}
+        >
+          <span
+            className={`min-w-0 flex-1 truncate text-sm leading-5 transition-colors ${copied ? 'text-[#03b739]' : 'text-[#9da2b4]'}`}
+          >
+            {copied ? t('aff.copied') : link || (signedIn ? '…' : t('aff.signInForLink'))}
           </span>
           <button
             type="button"
@@ -65,10 +62,13 @@ const ReferralLinkCard: FC<Props> = ({ code, signedIn, onChange, onSignIn }) => 
             disabled={!link}
             aria-label={copied ? t('aff.copied') : t('aff.copyLink')}
             title={copied ? t('aff.copied') : t('aff.copyLink')}
-            className="shrink-0 text-[#f0f1f5] transition-opacity hover:opacity-70"
+            className={`shrink-0 transition-[opacity,transform] hover:opacity-70 active:scale-90 ${copied ? 'text-[#03b739]' : 'text-[#f0f1f5]'}`}
           >
-            <CopyIcon />
+            {copied ? <CheckIcon size={24} /> : <CopyIcon />}
           </button>
+          <span className="sr-only" aria-live="polite">
+            {copied ? t('aff.copied') : ''}
+          </span>
         </div>
 
         <button
@@ -100,10 +100,10 @@ const ReferralLinkCard: FC<Props> = ({ code, signedIn, onChange, onSignIn }) => 
               aria-disabled={!link}
               onClick={() => {
                 if (!link) return;
-                if (name === 'Instagram') void navigator.clipboard?.writeText(link);
+                if (name === 'Instagram') void copyText(link);
                 analytics.referral.shared(name.toLowerCase());
               }}
-              className="rl-chip-disc relative flex h-12 w-12 shrink-0 items-center justify-center -ms-4.5 first:ms-0 hover:z-10 aria-disabled:opacity-50"
+              className="rl-glass-btn relative flex h-12 w-12 rounded-full [--rl-btn-base:#121317] shrink-0 items-center justify-center -ms-4.5 first:ms-0 hover:z-10 aria-disabled:opacity-50"
               style={{ zIndex: i }}
             >
               <Mark />

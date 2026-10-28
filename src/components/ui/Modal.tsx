@@ -50,7 +50,7 @@ const Modal: FC<ModalProps> = ({
   labelledBy,
   ariaLabel,
   className = '',
-  surface = 'rl-modal-card',
+  surface = 'rl-modal-card rl-modal-rim',
   style,
   backdrop = 'dim',
   phoneSheet = false,

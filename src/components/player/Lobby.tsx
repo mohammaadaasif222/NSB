@@ -223,7 +223,7 @@ const Lobby: FC<Props> = ({
         {!casino && <StreamersRow />}
         <RecentWinners games={winnerGames} tabs={player || casino ? 'player' : 'landing'} />
         <FaqAccordion items={faqs} />
-        <SiteFooter />
+        <SiteFooter glow={variant === 'home'} />
       </div>
     </PlayerLayout>
   );

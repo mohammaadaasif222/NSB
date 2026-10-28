@@ -329,8 +329,9 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   tone="frost"
                   dim
                   phoneSheet
-                  // The design hangs the panel 41px past the bell's end.
-                  panelClassName="lg:-end-[calc(var(--u)*41)]"
+                  // The design hangs the panel 41px past the bell's end. The
+                  // modals' rim replaces the surface's even inset ring.
+                  panelClassName="rl-modal-rim !shadow-[0_8px_40px_rgba(0,0,0,0.12)] lg:-end-[calc(var(--u)*41)]"
                   trigger={
                     <IconButton
                       label={t('nav.notifications')}
