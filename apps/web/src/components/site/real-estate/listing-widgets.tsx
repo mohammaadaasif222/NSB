@@ -38,6 +38,33 @@ export function SortSelect({ value }: { value: string }) {
   );
 }
 
+/** A filter as a dropdown (phones show these instead of the chips); "" clears it. Changing it reloads from page 1. */
+export function FilterSelect({ name, value, label, options }: { name: string; value: string; label: string; options: { value: string; label: string }[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  return (
+    <select
+      className="re-sort re-fsel"
+      aria-label={label}
+      value={value}
+      onChange={(e) => {
+        const next = new URLSearchParams(params);
+        if (e.target.value) next.set(name, e.target.value);
+        else next.delete(name);
+        next.delete("page");
+        router.push(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
+      }}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 /** A horizontal row with previous / next arrows (the NSB Shorts strip). */
 export function ShortsRow({ header, children }: { header: ReactNode; children: ReactNode }) {
   const row = useRef<HTMLDivElement>(null);

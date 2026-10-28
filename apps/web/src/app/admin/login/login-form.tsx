@@ -32,7 +32,10 @@ export function LoginForm({ next }: { next: string }) {
         const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
         setError(
           res.status === 429
-            ? "Too many attempts. Please wait a minute and try again."
+            ? // A locked account says how long to wait; the per-minute rate limit does not.
+              body?.message?.startsWith("Too many wrong passwords")
+              ? body.message
+              : "Too many attempts. Please wait a minute and try again."
             : (body?.message ?? "Sign in failed"),
         );
         return;

@@ -8,7 +8,7 @@ import { adminClient } from "@/lib/admin-client";
 
 const EMPTY: ChangePasswordInput = { currentPassword: "", newPassword: "", confirmPassword: "" };
 
-/** The signed-in admin's own password. Other sessions stay signed in until they expire. */
+/** The signed-in admin's own password. Changing it signs out their other sessions; this one stays signed in. */
 export function PasswordForm() {
   const { run, pending } = useAdminAction();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -27,7 +27,7 @@ export function PasswordForm() {
     <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-5" noValidate>
       <div>
         <h2 className="text-base font-semibold text-zinc-900">Change password</h2>
-        <p className="mt-1 text-sm text-zinc-500">The password you use to sign in to this admin panel.</p>
+        <p className="mt-1 text-sm text-zinc-500">The password you use to sign in to this admin panel. Changing it signs you out on your other devices.</p>
       </div>
 
       <Field label="Current password" error={errors.currentPassword}>

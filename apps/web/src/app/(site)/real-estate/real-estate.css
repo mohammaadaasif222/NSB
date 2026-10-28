@@ -179,6 +179,9 @@
   font-size: 14px;
   font-weight: 600;
 }
+.re-fsel {
+  display: none;
+}
 .re-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 290px;
@@ -1306,6 +1309,17 @@ h3.re-pth {
   font-size: 14px;
   font-weight: 600;
 }
+.re-mg.d9:not(.open) > :nth-child(n + 10) {
+  display: none;
+}
+.re-mgb {
+  margin-top: 12px;
+}
+@media (min-width: 641px) {
+  .re-mgb.m {
+    display: none;
+  }
+}
 .re-sp3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1376,9 +1390,27 @@ h3.re-pth {
   background: #fff;
   color: var(--re-blue-d);
 }
+/* Logo beside the name; the description and note sit under the name (phones: full width). */
 .re-dv {
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 0 16px;
+  align-items: start;
+}
+.re-dv .lg {
+  grid-row: span 3;
+}
+.re-dv .hd b {
+  display: block;
+  font-size: 17px;
+}
+.re-dv .hd small,
+.re-dv .nt {
+  display: block;
+}
+.re-dv p,
+.re-dv .nt {
+  grid-column: 2;
 }
 .re-dv .lg {
   width: 58px;
@@ -1549,34 +1581,17 @@ h3.re-pth {
 }
 
 /* Photo lightbox and floor plan zoom. */
-.re-lb2,
+/* Floor plan zoom. The photo popups are in components/site/photo-modals.tsx. */
 .re-zm2 {
   position: fixed;
   inset: 0;
-  z-index: 110;
-  background: rgba(11, 10, 51, 0.88);
-  padding: 24px;
-  overflow: auto;
-}
-.re-zm2 {
   z-index: 120;
+  background: rgba(11, 10, 51, 0.88);
+  overflow: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-}
-.re-lb2 .grid {
-  max-width: 1000px;
-  margin: 30px auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.re-lb2 img {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  display: block;
 }
 .re-zm2 .zb {
   background: #fff;
@@ -1594,7 +1609,6 @@ h3.re-pth {
   object-fit: contain;
   display: block;
 }
-.re-lb2 .re-x,
 .re-zm2 .re-x {
   position: fixed;
   top: calc(14px + env(safe-area-inset-top, 0px));
@@ -1840,6 +1854,60 @@ button.re-pl4::after {
   .re-search {
     max-width: none;
   }
+  /* Phones: back button and breadcrumb share one line, no subtitle, and the filters become one
+     row of dropdowns instead of chips, all spaced tightly. */
+  .re-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0 8px;
+  }
+  .re-top .re-crumb,
+  .re-top .re-crumb.d {
+    padding: 0;
+    min-width: 0;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .re-sub {
+    display: none;
+  }
+  .re-head {
+    gap: 8px;
+  }
+  .re-head h1 {
+    font-size: 21px;
+  }
+  .re-search {
+    height: 40px;
+    margin-bottom: 0;
+  }
+  .re-fb {
+    flex-wrap: nowrap;
+    padding: 8px 0;
+  }
+  .re-fb .re-chip,
+  .re-fb .re-sp {
+    display: none;
+  }
+  .re-fb .re-chip[aria-label^="Clear search"] {
+    display: inline-block;
+    flex: none;
+    white-space: nowrap;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .re-fsel {
+    display: block;
+  }
+  .re-fb .re-sort {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 6px;
+    font-size: 13px;
+  }
   .re-ad {
     padding: 0 16px;
   }
@@ -1946,15 +2014,6 @@ button.re-pl4::after {
     grid-column: 2;
     justify-self: end;
   }
-  .re-hl2,
-  .re-ov,
-  .re-nb,
-  .re-sp3,
-  .re-amg,
-  .re-sim,
-  .re-lb2 .grid {
-    grid-template-columns: 1fr;
-  }
   .re-tp {
     text-align: left;
   }
@@ -1964,5 +2023,198 @@ button.re-pl4::after {
   .re-fa .re-btn {
     flex: 1;
     padding: 10px 8px;
+  }
+}
+
+/* ---------- project page on phones: an app-like layout ---------- */
+/* Compact sections, two-column grids that stop after three rows (MoreGrid), and the pricing and
+   similar-project cards as swipeable rows two cards wide. */
+@media (max-width: 640px) {
+  .re-top .re-crumb.d {
+    display: none;
+  }
+  .re-ttl {
+    padding: 12px 0 2px;
+    gap: 8px;
+  }
+  .re-ttl h1 {
+    font-size: 22px;
+  }
+  .re-ttl .re-by,
+  .re-ttl .lc {
+    font-size: 13px;
+  }
+  .re-tp b {
+    font-size: 21px;
+  }
+  .re-tabs a {
+    padding: 11px 10px;
+    font-size: 13px;
+  }
+  .re-dg {
+    margin-top: 12px;
+  }
+  .re-sec {
+    padding: 16px 14px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+  }
+  .re-sec h2 {
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+
+  .re-mg.p6:not(.open) > :nth-child(n + 7),
+  .re-mg.p3:not(.open) > :nth-child(n + 4) {
+    display: none;
+  }
+  .re-hl2,
+  .re-amg,
+  .re-nb,
+  .re-sp3 {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .re-hl2 div,
+  .re-am {
+    gap: 7px;
+    padding: 9px 10px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .re-am {
+    align-items: flex-start;
+  }
+  .re-hl2 svg,
+  .re-am svg {
+    width: 16px;
+    height: 16px;
+  }
+  .re-nb div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 10px;
+    font-size: 13px;
+  }
+  .re-sp3 {
+    gap: 14px 12px;
+  }
+  .re-sp3 p {
+    font-size: 13px;
+  }
+
+  /* Overview keeps its rows, in one column cut after three. */
+  .re-ov {
+    grid-template-columns: 1fr;
+  }
+  .re-ov div {
+    padding: 10px 0;
+    font-size: 13px;
+  }
+
+  /* Configuration tabs scroll sideways instead of wrapping. */
+  .re-ft {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-bottom: 12px;
+  }
+  .re-ft::-webkit-scrollbar {
+    display: none;
+  }
+  .re-ftb {
+    flex: none;
+    padding: 7px 16px;
+    font-size: 13px;
+  }
+
+  /* Pricing and similar projects: swipe through cards, two in view and the next peeking in. */
+  h3.re-pth {
+    margin: 20px 0 10px;
+  }
+  .re-pt2 tbody,
+  .re-sim {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .re-pt2 tbody::-webkit-scrollbar,
+  .re-sim::-webkit-scrollbar {
+    display: none;
+  }
+  .re-pt2 tr,
+  .re-sim > * {
+    flex: 0 0 46%;
+    scroll-snap-align: start;
+  }
+  .re-pt2 tr {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+    align-content: start;
+  }
+  .re-pt2 td,
+  .re-pt2 td.t {
+    font-size: 13px;
+  }
+  .re-pt2 td.pl {
+    grid-row: auto;
+    grid-column: auto;
+    justify-self: stretch;
+    align-self: end;
+  }
+  .re-pt2 td.pl .re-btn {
+    display: block;
+    text-align: center;
+    padding: 7px 8px;
+  }
+  .re-sc .i {
+    height: 96px;
+  }
+  .re-sc .b {
+    padding: 10px;
+  }
+  /* Every card the same height: long names and places are cut to one line. */
+  .re-sc b,
+  .re-sc span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .re-sc b {
+    font-size: 14px;
+  }
+  .re-dv {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 0 12px;
+    align-items: center;
+  }
+  .re-dv .lg {
+    grid-row: auto;
+    width: 48px;
+    height: 48px;
+    font-size: 17px;
+    border-radius: 12px;
+  }
+  .re-dv .hd small {
+    font-size: 12px;
+  }
+  .re-dv p,
+  .re-dv .nt {
+    grid-column: 1 / -1;
+  }
+  .re-dv p {
+    font-size: 13px;
+    margin: 12px 0 10px;
+  }
+  .re-dv .nt {
+    font-size: 12px;
   }
 }

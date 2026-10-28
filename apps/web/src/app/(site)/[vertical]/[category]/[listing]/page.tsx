@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight, Crown, MapPin, MessageCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import { listingPlace, parseService, WEDDING_EVENT_TYPES } from "@nsb/shared";
+import { BackButton } from "@/components/site/back-button";
 import { EnquiryCard } from "@/components/site/listing/enquiry-form";
 import { ExpandableList, ReadMore } from "@/components/site/listing/expandable";
 import { Gallery } from "@/components/site/listing/gallery";
@@ -87,9 +88,10 @@ export default async function ListingDetailPage({ params }: Props) {
   return (
     <>
       <div className="container-page pt-4 pb-28 lg:pb-14">
+        <BackButton fallback={`/${vertical.slug}/${category.slug}`} />
         <Link
           href={`/${vertical.slug}/${category.slug}`}
-          className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
+          className="hidden items-center gap-1 text-sm font-medium text-brand hover:underline sm:inline-flex"
         >
           <ChevronLeft className="size-4" aria-hidden /> Browse {category.name}
         </Link>

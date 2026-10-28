@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import { type ProjectConfiguration, type VideoChapter, youTubeId } from "@nsb/shared";
+import { opensPhotoList, PhotoList, PhotoViewer } from "@/components/site/photo-modals";
 import { priceText, sqftText } from "./format";
 import { BuildingArt } from "./project-art";
 import { type LeadTarget, LeadButton } from "./lead-dialog";
@@ -42,11 +43,14 @@ const PLACES: Record<number, [col: string, row: string][]> = {
   ],
 };
 
-/** Up to five photos in a mosaic with the badges on the first, and "Show all photos". */
+/**
+ * Up to five photos in a mosaic with the badges on the first, and "Show all photos". Desktops open
+ * the photo viewer (as on the wedding pages), phones the list of every photo.
+ */
 export function ProjectGallery({ name, photos, tags }: { name: string; photos: string[]; tags: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
-  useOverlay(open, close);
+  const [open, setOpen] = useState<number | null>(null);
+  const [list, setList] = useState(false);
+  const show = (i: number) => (opensPhotoList() ? setList(true) : setOpen(i));
   const shown = photos.slice(0, 5);
   const places = PLACES[photos.length];
 
@@ -70,31 +74,19 @@ export function ProjectGallery({ name, photos, tags }: { name: string; photos: s
           {shown.map((url, i) => (
             <figure key={url} style={places ? ({ "--gc": places[i]![0], "--gr": places[i]![1] } as CSSProperties) : undefined}>
               <Image src={url} alt={i === 0 ? name : ""} fill priority={i === 0} sizes={i === 0 ? "(max-width: 640px) 100vw, 50vw" : "(max-width: 640px) 100vw, 25vw"} />
-              <button type="button" className="open" onClick={() => setOpen(true)} aria-label={`Open photo ${i + 1} of ${photos.length}`} />
+              <button type="button" className="open" onClick={() => show(i)} aria-label={`Open photo ${i + 1} of ${photos.length}`} />
               {i === 0 && tags}
             </figure>
           ))}
         </div>
         {photos.length > 1 && (
-          <button type="button" className="re-all" onClick={() => setOpen(true)}>
+          <button type="button" className="re-all" onClick={() => show(0)}>
             ▦ Show all photos{photos.length > 5 ? ` (${photos.length})` : ""}
           </button>
         )}
       </div>
-      {open && (
-        <div className="re-lb2" role="dialog" aria-modal="true" aria-label={`${name} photos`} onClick={close}>
-          <button type="button" className="re-x" onClick={close} aria-label="Close">
-            ×
-          </button>
-          <div className="grid">
-            {photos.map((url, i) => (
-              // Full-size photos at their own shape; plain img so any upload host works.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={url} src={url} alt={`${name}, photo ${i + 1}`} loading="lazy" />
-            ))}
-          </div>
-        </div>
-      )}
+      {open !== null && <PhotoViewer name={name} images={photos} index={open} onIndex={setOpen} onClose={() => setOpen(null)} />}
+      {list && <PhotoList name={name} images={photos} onClose={() => setList(false)} />}
     </>
   );
 }
@@ -119,26 +111,53 @@ export function AboutText({ paragraphs }: { paragraphs: string[] }) {
   );
 }
 
-const AMENITY_LIMIT = 9;
-
-export function Amenities({ items, icon }: { items: string[]; icon: ReactNode }) {
-  const [all, setAll] = useState(false);
+/**
+ * A grid that shows its first items until "Show all": `desktop` of them on wide screens (all when
+ * omitted) and `phone` on phones (6 = three rows of two, 3 = three rows of one). The cut is CSS,
+ * so the server-rendered page has every item.
+ */
+export function MoreGrid({
+  className,
+  items,
+  noun,
+  desktop,
+  phone = 6,
+  as: Tag = "div",
+}: {
+  className: string;
+  items: ReactNode[];
+  noun: string;
+  desktop?: number;
+  phone?: 3 | 6;
+  as?: "div" | "dl";
+}) {
+  const [open, setOpen] = useState(false);
+  const phoneOnly = items.length <= (desktop ?? Infinity);
   return (
     <>
-      <div className="re-amg">
-        {(all ? items : items.slice(0, AMENITY_LIMIT)).map((a) => (
-          <div key={a} className="re-am">
-            {icon}
-            {a}
-          </div>
-        ))}
-      </div>
-      {items.length > AMENITY_LIMIT && (
-        <button type="button" className="re-lnk" style={{ marginTop: 14 }} onClick={() => setAll((v) => !v)}>
-          {all ? "Show less" : `+${items.length - AMENITY_LIMIT} more amenities`}
+      <Tag className={`${className} re-mg p${phone}${desktop ? ` d${desktop}` : ""}${open ? " open" : ""}`}>{items}</Tag>
+      {items.length > phone && (
+        <button type="button" className={`re-lnk re-mgb${phoneOnly ? " m" : ""}`} onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+          {open ? "Show less" : `Show all ${items.length} ${noun}`}
         </button>
       )}
     </>
+  );
+}
+
+export function Amenities({ items, icon }: { items: string[]; icon: ReactNode }) {
+  return (
+    <MoreGrid
+      className="re-amg"
+      noun="amenities"
+      desktop={9}
+      items={items.map((a) => (
+        <div key={a} className="re-am">
+          {icon}
+          {a}
+        </div>
+      ))}
+    />
   );
 }
 

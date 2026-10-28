@@ -11,11 +11,12 @@ import {
   specLine,
   textLines,
 } from "@nsb/shared";
+import { BackButton } from "@/components/site/back-button";
 import { priceText, sqftText } from "@/components/site/real-estate/format";
 import { LeadButton, LeadProvider } from "@/components/site/real-estate/lead-dialog";
 import { BuildingArt } from "@/components/site/real-estate/project-art";
 import { AdStrip } from "@/components/site/real-estate/project-card";
-import { AboutText, Amenities, FloorPlans, ProjectGallery, type ProjectVideoItem, ProjectVideos } from "@/components/site/real-estate/project-sections";
+import { AboutText, Amenities, FloorPlans, MoreGrid, ProjectGallery, type ProjectVideoItem, ProjectVideos } from "@/components/site/real-estate/project-sections";
 import { getProject, projectPath } from "@/lib/catalog";
 import { CATEGORY_PAGES_ENABLED, COMING_SOON_METADATA } from "@/lib/flags";
 import { getSiteSettings } from "@/lib/site-settings";
@@ -154,9 +155,12 @@ export default async function ProjectPage({ params }: Props) {
     <div className="re has-mb">
       <LeadProvider>
         <div className="re-w">
-          <nav className="re-crumb d" aria-label="Breadcrumb">
-            <Link href="/">Home</Link> › <Link href="/real-estate">Real Estate</Link> › {p.area} › {p.locality} › <b aria-current="page">{p.name}</b>
-          </nav>
+          <div className="re-top">
+            <BackButton fallback="/real-estate" />
+            <nav className="re-crumb d" aria-label="Breadcrumb">
+              <Link href="/">Home</Link> › <Link href="/real-estate">Real Estate</Link> › {p.area} › {p.locality} › <b aria-current="page">{p.name}</b>
+            </nav>
+          </div>
 
           <ProjectGallery name={p.name} photos={p.photos} tags={tags} />
 
@@ -195,25 +199,31 @@ export default async function ProjectPage({ params }: Props) {
             <div>
               {p.highlights.length > 0 && (
                 <Section id="ov" title={`${p.name} Highlights`}>
-                  <div className="re-hl2">
-                    {p.highlights.slice(0, 8).map((h) => (
+                  <MoreGrid
+                    className="re-hl2"
+                    noun="highlights"
+                    items={p.highlights.slice(0, 8).map((h) => (
                       <div key={h}>
                         <Check />
                         {h}
                       </div>
                     ))}
-                  </div>
+                  />
                 </Section>
               )}
               <Section id={p.highlights.length ? undefined : "ov"} title="Overview">
-                <dl className="re-ov">
-                  {overview.map(([label, value]) => (
+                <MoreGrid
+                  as="dl"
+                  className="re-ov"
+                  noun="details"
+                  phone={3}
+                  items={overview.map(([label, value]) => (
                     <div key={label}>
                       <dt>{label}</dt>
                       <dd>{value}</dd>
                     </div>
                   ))}
-                </dl>
+                />
               </Section>
               {about.length > 0 && (
                 <Section title={`About ${p.name}`}>
@@ -265,17 +275,19 @@ export default async function ProjectPage({ params }: Props) {
               )}
               {p.nearby.length > 0 && (
                 <Section id="lc" title="Around This Project">
-                  <div className="re-nb">
-                    {p.nearby.map((n, i) => (
+                  <MoreGrid
+                    className="re-nb"
+                    noun="places"
+                    items={p.nearby.map((n, i) => (
                       <div key={`${n.name}-${i}`}>
                         <span>
                           {n.name}
-                          <small>{n.type}</small>
+                          {n.type && <small>{n.type}</small>}
                         </span>
                         <em>{[n.minutes ? `${n.minutes} mins` : "", n.km ? `${n.km} km` : ""].filter(Boolean).join(" · ")}</em>
                       </div>
                     ))}
-                  </div>
+                  />
                 </Section>
               )}
               {p.hasBrochure && (
@@ -294,15 +306,9 @@ export default async function ProjectPage({ params }: Props) {
                   <div className="lg" aria-hidden>
                     {initials}
                   </div>
-                  <div>
-                    <b style={{ fontSize: 17 }}>{a.name}</b>
-                    {isBroker && a.firm && (
-                      <>
-                        <br />
-                        <small>{a.firm}</small>
-                      </>
-                    )}
-                    <br />
+                  <div className="hd">
+                    <b>{a.name}</b>
+                    {isBroker && a.firm && <small>{a.firm}</small>}
                     <small>
                       {(isBroker
                         ? [a.experienceYears ? `${a.experienceYears} years of experience` : "", a.reraId ? `RERA agent ID ${a.reraId}` : ""]
@@ -311,13 +317,13 @@ export default async function ProjectPage({ params }: Props) {
                         .filter(Boolean)
                         .join(" · ")}
                     </small>
-                    <p>{a.about || (isBroker ? "A local property advisor for this project." : "A builder with residential projects across Noida and Greater Noida.")}</p>
-                    {isBroker && (
-                      <small>
-                        Builder of this project: {p.builder}. This project is listed on NSB only with this broker.
-                      </small>
-                    )}
                   </div>
+                  <p>{a.about || (isBroker ? "A local property advisor for this project." : "A builder with residential projects across Noida and Greater Noida.")}</p>
+                  {isBroker && (
+                    <small className="nt">
+                      Builder of this project: {p.builder}. This project is listed on NSB only with this broker.
+                    </small>
+                  )}
                 </div>
               </Section>
               <Section id="fq" title={`FAQs about ${p.name}`}>

@@ -24,7 +24,8 @@ export const Allow = (permission: AdminPermission) => SetMetadata(PERMISSION_KEY
 
 /**
  * Requires a valid admin session cookie and a role allowed to use the route. The admin is read
- * from the database on every request, so a changed role or a removed user takes effect at once.
+ * from the database on every request, so a changed role, a removed user or a password change
+ * (which ends the admin's other sessions) takes effect at once.
  * Apply with @UseGuards(AdminGuard).
  */
 @Injectable()
@@ -39,7 +40,7 @@ export class AdminGuard implements CanActivate {
     const token: unknown = req.cookies?.[SESSION_COOKIE];
     if (typeof token !== 'string' || !token) throw new UnauthorizedException('Not signed in');
     const session = await this.auth.verify(token);
-    const admin = await this.auth.findAdmin(session.sub);
+    const admin = await this.auth.findSessionAdmin(session);
     req.admin = { ...admin, sub: admin.id };
 
     const required =

@@ -14,7 +14,6 @@ import {
   LISTING_STATUSES,
   type ListingStatus,
   monthlyEmi,
-  NEARBY_PLACE_TYPES,
   POSSESSION_STATUSES,
   PROJECT_AMENITIES,
   PROJECT_LIMITS,
@@ -63,7 +62,8 @@ interface ConfigDraft {
   plan2dUrl: string | null;
   plan3dUrl: string | null;
 }
-type NearbyDraft = { name: string; type: (typeof NEARBY_PLACE_TYPES)[number]; minutes: string; km: string };
+// "type" is kept as saved on older projects; the form no longer asks for it.
+type NearbyDraft = { name: string; type: string; minutes: string; km: string };
 type VideoDraft = { title: string; url: string; chapters: string };
 type FaqDraft = { question: string; answer: string };
 
@@ -98,7 +98,7 @@ function draftOf(p?: AdminProject) {
     amenities: p?.amenities.filter((a) => predefined.includes(a)) ?? [],
     otherAmenities: p?.amenities.filter((a) => !predefined.includes(a)).join(", ") ?? "",
     specifications: p?.specifications ?? { flooring: "", fittings: "", walls: "" },
-    nearby: p?.nearby.map((n) => ({ ...n, minutes: str(n.minutes), km: str(n.km) })) ?? [{ name: "", type: "School", minutes: "", km: "" }],
+    nearby: p?.nearby.map((n) => ({ ...n, minutes: str(n.minutes), km: str(n.km) })) ?? [{ name: "", type: "", minutes: "", km: "" }],
     advertiser: {
       type: p?.advertiser.type ?? "builder",
       name: p?.advertiserType === "broker" ? p.advertiser.name : "",
@@ -522,16 +522,9 @@ export function ProjectForm({
           <div hidden={step !== 5} className="flex flex-col gap-4">
             {d.nearby.map((n, i) => (
               <div key={i} className="a-hc">
-                <div className="grid gap-4 sm:grid-cols-4">
-                  <Field label="Place" error={errors[`nearby.${i}.name`]}>
-                    <TextInput value={n.name} maxLength={80} placeholder="Kidzee School" onChange={(e) => setRow("nearby", i, { name: e.target.value })} />
-                  </Field>
-                  <Field label="Type">
-                    <Select value={n.type} onChange={(e) => setRow("nearby", i, { type: e.target.value as NearbyDraft["type"] })}>
-                      {NEARBY_PLACE_TYPES.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </Select>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Field label="Place or landmark" error={errors[`nearby.${i}.name`]}>
+                    <TextInput value={n.name} maxLength={80} placeholder="e.g. Kidzee School, Sector 148 Metro" onChange={(e) => setRow("nearby", i, { name: e.target.value })} />
                   </Field>
                   <Field label="Minutes by car" error={errors[`nearby.${i}.minutes`]}>
                     <TextInput inputMode="numeric" value={n.minutes} placeholder="6" onChange={(e) => setRow("nearby", i, { minutes: e.target.value })} />
@@ -546,7 +539,7 @@ export function ProjectForm({
               </div>
             ))}
             {d.nearby.length < PROJECT_LIMITS.nearby && (
-              <Button variant="secondary" className="self-start" onClick={() => addRow("nearby", { name: "", type: "School", minutes: "", km: "" })}>
+              <Button variant="secondary" className="self-start" onClick={() => addRow("nearby", { name: "", type: "", minutes: "", km: "" })}>
                 <Plus className="size-4" aria-hidden /> Add place
               </Button>
             )}

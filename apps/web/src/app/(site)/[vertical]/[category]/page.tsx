@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { LayoutGrid, List, X } from "lucide-react";
 import type { Category, ListingSummary, Paginated } from "@nsb/shared";
+import { BackButton } from "@/components/site/back-button";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { BrowsePanel } from "@/components/site/listing/browse-panel";
 import { ListingCard, type ListingView } from "@/components/site/listing/listing-card";
@@ -92,6 +93,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
     <div className="bg-surface">
       <div className="container-page pt-4 pb-8 sm:pt-6 sm:pb-12">
         {/* Phones skip the breadcrumb, as apps do: the category chips below lead to the rest of the vertical. */}
+        <BackButton fallback="/" className="mb-3" />
         <Breadcrumb
           className="hidden sm:block"
           items={[

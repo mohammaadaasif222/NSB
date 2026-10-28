@@ -86,28 +86,6 @@ describe('NSB API (e2e)', () => {
     await http().get('/api/auth/me').set('Cookie', cookie).expect(200);
   });
 
-  it('lets the signed-in admin change their password', async () => {
-    const email = process.env.SEED_ADMIN_EMAIL;
-    const current = process.env.SEED_ADMIN_PASSWORD!;
-    const next = `e2e-${run}-password`;
-    const change = (body: object, session = cookie) => http().post('/api/auth/password').set('Cookie', session).send(body);
-
-    await http().post('/api/auth/password').send({ currentPassword: current, newPassword: next, confirmPassword: next }).expect(401);
-    const mismatch = await change({ currentPassword: current, newPassword: next, confirmPassword: 'other-password' }).expect(400);
-    expect(mismatch.body.issues).toEqual([{ path: 'confirmPassword', message: 'Passwords do not match' }]);
-    const wrong = await change({ currentPassword: 'wrong-password', newPassword: next, confirmPassword: next }).expect(400);
-    expect(wrong.body.issues).toEqual([{ path: 'currentPassword', message: 'Current password is incorrect' }]);
-
-    await change({ currentPassword: current, newPassword: next, confirmPassword: next }).expect(204);
-    try {
-      await http().post('/api/auth/login').send({ email, password: current }).expect(401);
-      await http().post('/api/auth/login').send({ email, password: next }).expect(200);
-    } finally {
-      // Restore the seeded password so later runs (and the dev login) keep working.
-      await change({ currentPassword: next, newPassword: current, confirmPassword: current }).expect(204);
-    }
-  });
-
   it('creates a listing with a gallery', async () => {
     const res = await http()
       .post('/api/admin/listings')

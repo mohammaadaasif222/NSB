@@ -51,7 +51,6 @@ export const PROJECT_AMENITIES = [
   'EV Charging', 'Rainwater Harvesting', 'Library', 'Co-working Space', 'Multipurpose Hall', 'Visitor Parking',
 ] as const;
 
-export const NEARBY_PLACE_TYPES = ['School', 'Hospital', 'Mall', 'Metro station', 'Market', 'Park', 'Airport'] as const;
 
 /** Suggestions for a configuration's name; any text is accepted. */
 export const CONFIGURATION_SUGGESTIONS = ['1 BHK', '2 BHK', '2.5 BHK', '3 BHK', '3 BHK+', '4 BHK', '5 BHK', 'Villa', 'Plot'] as const;
@@ -183,7 +182,8 @@ export type ProjectVideo = z.infer<typeof projectVideoSchema>;
 
 export const nearbyPlaceSchema = z.object({
   name: trimmed(80),
-  type: z.enum(NEARBY_PLACE_TYPES),
+  /** Older projects have a type such as "School"; new places are typed in freely, as a name or landmark. */
+  type: z.string().trim().max(40).default(''),
   minutes: count(600),
   km: blankAsNull(z.coerce.number().min(0).max(500)),
 });

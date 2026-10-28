@@ -65,16 +65,30 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
-export const MIN_PASSWORD_LENGTH = 8;
+/** For new passwords only; existing ones keep working whatever their length. */
+export const MIN_PASSWORD_LENGTH = 12;
+
+/** Passwords people pick most often (and admin-panel guesses), compared ignoring case. */
+const COMMON_PASSWORDS = new Set([
+  '123456789012', 'password1234', 'password@123', 'qwertyuiop12', 'qwerty123456', 'iloveyou1234',
+  'admin@123456', 'admin1234567', 'administrator', 'welcome@1234', 'welcome12345', 'letmein12345',
+  'changeme1234', 'passw0rd1234', 'p@ssw0rd1234', 'india@123456', 'noida@123456', 'nsbadmin1234',
+  'superadmin123', 'abcdefghijkl', '1q2w3e4r5t6y', 'zaq12wsxcde3', 'qwertyuiopas', 'asdfghjkl123',
+]);
+
+/** A new admin password: long, not a well-known one, and not one character over and over. */
+export const newPasswordSchema = z
+  .string()
+  .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
+  .max(200, 'Use at most 200 characters')
+  .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), 'This password is too common. Choose another.')
+  .refine((p) => new Set(p.toLowerCase()).size >= 4, 'Use a mix of different characters');
 
 /** The signed-in admin changing their own password. `confirmPassword` is checked here so the form shows the error. */
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Enter your current password').max(200),
-    newPassword: z
-      .string()
-      .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
-      .max(200, 'Use at most 200 characters'),
+    newPassword: newPasswordSchema,
     confirmPassword: z.string(),
   })
   .refine((v) => v.confirmPassword === v.newPassword, { path: ['confirmPassword'], message: 'Passwords do not match' })
@@ -91,10 +105,7 @@ export type ProfileInput = z.infer<typeof profileSchema>;
 /** A Super Admin adds a teammate with a first password, which they can change in Settings. */
 export const adminUserInputSchema = profileSchema.extend({
   role: z.enum(ADMIN_ROLES),
-  password: z
-    .string()
-    .min(MIN_PASSWORD_LENGTH, `Use at least ${MIN_PASSWORD_LENGTH} characters`)
-    .max(200, 'Use at most 200 characters'),
+  password: newPasswordSchema,
 });
 export type AdminUserInput = z.infer<typeof adminUserInputSchema>;
 

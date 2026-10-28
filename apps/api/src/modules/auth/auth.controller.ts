@@ -47,9 +47,13 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<AdminUser> {
     const { token, user } = await this.auth.login(body);
+    this.setSession(res, token);
+    return user;
+  }
+
+  private setSession(res: Response, token: string) {
     const days = this.config.get('SESSION_TTL_DAYS', { infer: true });
     res.cookie(SESSION_COOKIE, token, { ...this.cookieOptions(), maxAge: days * 86_400_000 });
-    return user;
   }
 
   @Post('logout')
@@ -58,17 +62,21 @@ export class AuthController {
     res.clearCookie(SESSION_COOKIE, this.cookieOptions());
   }
 
-  /** The signed-in admin changes their own password; their current session stays signed in. */
+  /**
+   * The signed-in admin changes their own password. Their other sessions (other devices, or a
+   * stolen cookie) are signed out; this one stays signed in with a fresh cookie.
+   */
   @Post('password')
   @HttpCode(204)
   @UseGuards(AdminGuard, ThrottlerGuard)
   @Allow('view')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  changePassword(
+  async changePassword(
     @CurrentAdmin() admin: CurrentAdminInfo,
     @Body(new ZodPipe(changePasswordSchema)) body: ChangePasswordInput,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    return this.auth.changePassword(admin.sub, body);
+    this.setSession(res, await this.auth.changePassword(admin.sub, body));
   }
 
   /** The signed-in admin's own name and email (any role). */

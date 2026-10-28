@@ -3,9 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { POSSESSION_STATUSES, type Paginated, type ProjectLocality, type ProjectSummary, REAL_ESTATE_SLUG } from "@nsb/shared";
+import { BackButton } from "@/components/site/back-button";
 import { pageItems } from "@/components/site/pagination";
 import { LeadButton, LeadProvider } from "@/components/site/real-estate/lead-dialog";
-import { SortSelect } from "@/components/site/real-estate/listing-widgets";
+import { FilterSelect, SortSelect } from "@/components/site/real-estate/listing-widgets";
 import { AdStrip, ProjectCard, PromoStrip, ShortsStrip } from "@/components/site/real-estate/project-card";
 import { api } from "@/lib/api";
 import { getCategory } from "@/lib/catalog";
@@ -79,9 +80,12 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
     <div className="re">
       <LeadProvider>
         <div className="re-w">
-          <nav className="re-crumb" aria-label="Breadcrumb">
-            <Link href="/">Home</Link> › <Link href="/real-estate">Real Estate</Link> › <span aria-current="page">{place}</span>
-          </nav>
+          <div className="re-top">
+            <BackButton fallback="/" />
+            <nav className="re-crumb" aria-label="Breadcrumb">
+              <Link href="/">Home</Link> › <Link href="/real-estate">Real Estate</Link> › <span aria-current="page">{place}</span>
+            </nav>
+          </div>
           <div className="re-head">
             <div>
               <h1>New Projects in {place}</h1>
@@ -118,6 +122,13 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
                 “{q}” ×
               </Link>
             )}
+            <FilterSelect name="bhk" value={bhk} label="Filter by BHK" options={[{ value: "", label: "All BHK" }, ...BHK]} />
+            <FilterSelect
+              name="possession"
+              value={possession}
+              label="Filter by status"
+              options={[{ value: "", label: "Any status" }, ...POSSESSION_STATUSES.map((s) => ({ value: s, label: s }))]}
+            />
             <span className="re-sp" />
             <SortSelect value={sort} />
           </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BackButton } from "@/components/site/back-button";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { CategoryIcon } from "@/components/site/home/category-grid";
 import { getCategory } from "@/lib/catalog";
@@ -34,6 +35,7 @@ export default async function CategoryLandingPage({ params }: PageProps<"/[verti
   return (
     <>
       <div className="container-page pt-6">
+        <BackButton fallback="/" className="mb-3" />
         <Breadcrumb items={[{ label: "Home", href: "/" }, { label: name }]} />
       </div>
 

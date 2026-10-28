@@ -50,6 +50,13 @@ export const adminUsers = pgTable('admin_users', {
   passwordHash: text('password_hash').notNull(),
   /** What this admin may do (ADMIN_PERMISSIONS). Admins from before roles are Super Admins. */
   role: text('role').$type<AdminRole>().notNull().default('super'),
+  /** In every session token; raising it (on a password change) signs out the other sessions. */
+  sessionVersion: integer('session_version').notNull().default(0),
+  /** Wrong passwords in a row, counted while they come less than LOCK_WINDOW apart. */
+  failedLogins: integer('failed_logins').notNull().default(0),
+  lastFailedAt: timestamp('last_failed_at', { withTimezone: true }),
+  /** Sign-in refused until then, after too many wrong passwords. */
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
   createdAt: createdAt(),
 });
 
