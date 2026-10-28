@@ -1,6 +1,5 @@
 import type { TranslationKey } from '@/i18n/locales';
 import { ALL_GAMES_PATH, LIVE_CASINO_HREF, categoryHref, gameHref } from '@/constants/games';
-import { DICE_SLUG } from '@/constants/dice';
 import { sportHref } from '@/constants/sportsbook';
 
 /** A row inside an expandable rail group. No `href`: drawn as "Soon". */
@@ -27,12 +26,17 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
     href: categoryHref('originals'),
     items: [
       { labelKey: 'lobby.rail.shootOut' },
-      { labelKey: 'lobby.rail.plinko' },
-      { labelKey: 'lobby.chips.blackjack' },
-      { labelKey: 'lobby.rail.keno' },
-      { labelKey: 'lobby.rail.mines' },
-      { labelKey: 'lobby.rail.limbo' },
-      { labelKey: 'lobby.rail.dice', href: gameHref(DICE_SLUG) },
+      // Tequity's originals, by their catalogue slugs.
+      { labelKey: 'lobby.rail.plinko', href: gameHref('plinko-tequity') },
+      { labelKey: 'lobby.chips.blackjack', href: gameHref('blackjack-tequity') },
+      { labelKey: 'lobby.rail.keno', href: gameHref('keno-tequity') },
+      { labelKey: 'lobby.rail.mines', href: gameHref('mines-tequity') },
+      { labelKey: 'lobby.rail.limbo', href: gameHref('limbo-tequity') },
+      { labelKey: 'lobby.rail.dice', href: gameHref('dice-tequity') },
+      { labelKey: 'lobby.rail.crash', href: gameHref('crash-tequity') },
+      { labelKey: 'lobby.rail.hilo', href: gameHref('hilo-tequity') },
+      { labelKey: 'lobby.chips.baccarat', href: gameHref('baccarat-tequity') },
+      { labelKey: 'lobby.rail.wheel', href: gameHref('wheel') },
       { labelKey: 'lobby.rail.allOriginals', href: categoryHref('originals') },
     ],
   },
@@ -41,7 +45,6 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
     labelKey: 'nav.casino',
     href: '/casino',
     items: [
-      { labelKey: 'lobby.rail.pinned', href: '/favourites' },
       { labelKey: 'lobby.rail.popularGames', href: categoryHref('popular') },
       { labelKey: 'lobby.rail.dropsWins' },
       { labelKey: 'dash.slots', href: categoryHref('slots') },

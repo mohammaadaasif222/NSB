@@ -20,6 +20,8 @@ import AccountReviewNotice from '@/components/risk/AccountReviewNotice';
 import LoginPopup from '@/components/player/LoginPopup';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import RegionRestrictedModal from '@/components/modals/RegionRestrictedModal';
+import EmailVerifyPromptModal from '@/components/modals/EmailVerifyPromptModal';
+import PhoneVerifyPromptModal from '@/components/modals/PhoneVerifyPromptModal';
 import Analytics from '@/components/analytics/Analytics';
 import Seo from '@/components/seo/Seo';
 import { SITE_NAME } from '@/constants/site';
@@ -110,6 +112,8 @@ export default function App({ Component, pageProps }: AppProps) {
                           both could be showing, this one wins the overlap. */}
                             <AuthGate />
                             <AccountReviewNotice />
+                            <EmailVerifyPromptModal />
+                            <PhoneVerifyPromptModal />
                             <LoginPopup />
                             {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching
