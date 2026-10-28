@@ -22,6 +22,8 @@ export interface PlatformFeatures {
   two_factor: boolean;
   /** System config, Signup OTP: Email OTP is on, so mobile-only accounts can add & verify an email. */
   email_verification: boolean;
+  email_verify_modal: boolean;
+  phone_verification: boolean;
   /** System config, Help Center: the profile's Help Centre tab. */
   help_center: boolean;
   /** System config, Help Center: the Responsible Gambling pages and links to them. */
@@ -48,6 +50,8 @@ const ALL_ON: PlatformFeatures = {
   two_factor: false,
   // Off until the API says otherwise, like 2FA: no button for a code that will not be sent.
   email_verification: false,
+  email_verify_modal: false,
+  phone_verification: false,
   help_center: true,
   responsible_gambling: true,
   promotion_filters: { live: true, expired: true, casino: true, sports: true },

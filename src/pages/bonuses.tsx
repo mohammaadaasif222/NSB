@@ -27,7 +27,7 @@ const Section: FC<{ title: string; children: ReactNode }> = ({ title, children }
   </section>
 );
 
-const PANEL = 'rl-glass-deep rounded-[24px] px-5 py-16 text-center lg:rounded-[calc(var(--u)*34)]';
+const PANEL = 'rl-glass-deep max-lg:rl-glass-clear rounded-[24px] px-5 py-16 text-center lg:rounded-[calc(var(--u)*34)]';
 
 const COLUMN =
   'mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0';
@@ -89,7 +89,7 @@ const BonusesPage: FC<Props> = ({ faqs }) => {
 
       <div className={COLUMN}>
         {error && (
-          <section className="rl-glass-deep flex flex-wrap items-center justify-between gap-3 rounded-[24px] px-5 py-4 lg:rounded-[calc(var(--u)*34)]">
+          <section className="rl-glass-deep max-lg:rl-glass-clear flex flex-wrap items-center justify-between gap-3 rounded-[24px] px-5 py-4 lg:rounded-[calc(var(--u)*34)]">
             <p className="text-[13px] leading-5 text-white/64">{t('bonus.loadFailed')}</p>
             <button
               type="button"

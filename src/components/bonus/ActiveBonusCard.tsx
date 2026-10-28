@@ -33,7 +33,7 @@ const ActiveBonusCard: FC<Props> = ({ award, currency, clockOffset, busyId, onFo
   const hasRequirement = Number(award.wagering_required) > 0;
 
   return (
-    <article className="rl-glass-deep rounded-[24px] p-5 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*24)]">
+    <article className="rl-glass-deep max-lg:rl-glass-clear rounded-[24px] p-5 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*24)]">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span

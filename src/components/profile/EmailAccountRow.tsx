@@ -11,6 +11,7 @@ interface Props {
   verified?: boolean;
   /** Given when the account has no email and Email OTP is on: shows "Add & Verify Email". */
   onAddEmail?: () => void;
+  onVerifyEmail?: () => void;
 }
 
 /**
@@ -20,7 +21,7 @@ interface Props {
  * Read-only by design — the address is changed from the Verification tab,
  * which is also where the player is told why it matters.
  */
-const EmailAccountRow: FC<Props> = ({ email, verified, onAddEmail }) => {
+const EmailAccountRow: FC<Props> = ({ email, verified, onAddEmail, onVerifyEmail }) => {
   const { t } = useTranslation();
   const host = mailHostOf(email);
 
@@ -45,9 +46,20 @@ const EmailAccountRow: FC<Props> = ({ email, verified, onAddEmail }) => {
           ) : verified ? (
             <VerifiedCheck title={t('profile.emailVerified')} />
           ) : (
-            <span className="rounded-full border border-[#fcd535]/30 bg-[#fcd535]/10 px-[calc(var(--u)*10)] py-[calc(var(--u)*4)] text-[length:max(min(11px,11px),calc(var(--u)*11))] leading-[1.45] font-semibold text-[#fcd535]">
-              {t('profile.emailUnverified')}
-            </span>
+            <div className="flex shrink-0 items-center gap-[calc(var(--u)*8)]">
+              <span className="rounded-full border border-[#fcd535]/30 bg-[#fcd535]/10 px-[calc(var(--u)*10)] py-[calc(var(--u)*4)] text-[length:max(min(11px,11px),calc(var(--u)*11))] leading-[1.45] font-semibold text-[#fcd535]">
+                {t('profile.emailUnverified')}
+              </span>
+              {onVerifyEmail && (
+                <button
+                  type="button"
+                  onClick={onVerifyEmail}
+                  className="shrink-0 rounded-full bg-[#fcd535] px-[calc(var(--u)*14)] py-[calc(var(--u)*6)] text-[length:max(min(12px,13px),calc(var(--u)*13))] leading-[1.45] font-semibold text-[#07080a] transition-opacity hover:opacity-90"
+                >
+                  {t('acct.email.verifyEmail')}
+                </button>
+              )}
+            </div>
           )
         }
       />

@@ -1577,6 +1577,13 @@ html:not([data-theme='dark']) .border-blue-600 {
   backdrop-filter: blur(20px) saturate(140%);
 }
 
+@utility rl-glass-clear {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    var(--rl-drop-pane),
+    0 8px 40px rgba(0, 0, 0, 0.2);
+}
+
 /* The desktop FAQ's two panes, drawn as one object. Between them, one even
    seam runs the full height — the list's (`::after`) — so the answer pane
    draws no rim on that side.

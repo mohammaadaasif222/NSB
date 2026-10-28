@@ -32,7 +32,7 @@ const BonusCodeForm: FC<Props> = ({ busyId, onRedeem }) => {
   };
 
   return (
-    <section className="rl-glass-deep rounded-[24px] p-5 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*24)]">
+    <section className="rl-glass-deep max-lg:rl-glass-clear rounded-[24px] p-5 lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*24)]">
       <h2 className="text-[16px] font-semibold leading-6 text-[#f0f1f5] lg:text-[length:max(13px,calc(var(--u)*20))] lg:leading-[calc(var(--u)*28)]">
         {t('bonus.haveACode')}
       </h2>
