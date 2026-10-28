@@ -14,19 +14,21 @@ import type {
   VerifyOtpResponseData,
 } from '@/types';
 
-
 export const registerAccount = async (body: RegisterRequest) =>
-  apiService.post<RegisterResponseData>('/auth/register', {
-    ...body,
-    password: await encryptPassword(body.password),
-  });
+  apiService.post<RegisterResponseData>(
+    '/auth/register',
+    {
+      ...body,
+      password: await encryptPassword(body.password),
+    },
+    { timeout: 45000 }
+  );
 
 export const verifySignupOtp = (identifier: string, code: string) =>
   apiService.post<VerifyOtpResponseData>('/auth/verify-otp', { identifier, code });
 
 export const resendSignupOtp = (identifier: string) =>
   apiService.post('/auth/resend-otp', { identifier });
-
 
 export const loginWithPassword = async (
   identifier: string,
@@ -48,15 +50,14 @@ export const loginWithPassword = async (
 export const verifyLoginOtp = (challenge: string, code: string, headers?: Record<string, string>) =>
   apiService.post<LoginResponseData>('/auth/login/verify-otp', { challenge, code }, { headers });
 
-export const resendLoginOtp = (challenge: string) =>
-  apiService.post('/auth/login/resend-otp', { challenge });
+export const resendLoginOtp = (challenge: string, channel?: 'email' | 'mobile') =>
+  apiService.post('/auth/login/resend-otp', { challenge, ...(channel ? { channel } : {}) });
 
 export const requestPasswordReset = (identifier: string, countryCode?: string) =>
   apiService.post('/auth/forgot-password', {
     identifier,
     ...(countryCode ? { country_code: countryCode } : {}),
   });
-
 
 export const resetPassword = (identifier: string, code: string, newPassword: string) =>
   apiService.post('/auth/reset-password', { identifier, code, new_password: newPassword });
@@ -87,3 +88,12 @@ export const requestAddEmailOtp = (email: string) =>
 /** Confirm that code; the email is then saved to the account as verified. */
 export const verifyAddEmail = (email: string, code: string) =>
   apiService.post<{ verified: boolean; email: string }>('/auth/email/verify', { email, code });
+
+export const requestAddMobileOtp = (mobile: string, countryCode: string) =>
+  apiService.post('/auth/mobile/request-otp', { mobile, country_code: countryCode });
+
+export const verifyAddMobile = (mobile: string, countryCode: string, code: string) =>
+  apiService.post<{ verified: boolean; mobile: string; country_code: string }>(
+    '/auth/mobile/verify',
+    { mobile, country_code: countryCode, code }
+  );

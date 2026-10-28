@@ -21,6 +21,7 @@ import RolloverSection from '@/components/profile/RolloverSection';
 import HelpCentreSection from '@/components/profile/HelpCentreSection';
 import ChangeAvatarModal from '@/components/modals/profile/ChangeAvatarModal';
 import ChangeEmailModal from '@/components/modals/profile/ChangeEmailModal';
+import AddPhoneModal from '@/components/modals/profile/AddPhoneModal';
 import ChangeUsernameModal from '@/components/modals/profile/ChangeUsernameModal';
 import ChangeTimezoneModal from '@/components/modals/profile/ChangeTimezoneModal';
 import ChangePasswordModal from '@/components/modals/profile/ChangePasswordModal';
@@ -38,7 +39,17 @@ import Seo from '@/components/seo/Seo';
  * and it stays reachable from the top bar and the lobby rail, which own their
  * own copy of the modal.
  */
-type ActiveModal = 'avatar' | 'email' | 'username' | 'timezone' | 'password' | '2fa' | null;
+type ActiveModal =
+  | 'avatar'
+  | 'email'
+  | 'verifyEmail'
+  | 'phone'
+  | 'verifyPhone'
+  | 'username'
+  | 'timezone'
+  | 'password'
+  | '2fa'
+  | null;
 
 /**
  * The account area: a section nav beside one panel of settings.
@@ -117,6 +128,9 @@ const ProfilePage: FC = () => {
             onToggle2FA={() => setActiveModal('2fa')}
             onChangeAvatar={() => setActiveModal('avatar')}
             onAddEmail={() => setActiveModal('email')}
+            onVerifyEmail={() => setActiveModal('verifyEmail')}
+            onAddPhone={() => setActiveModal('phone')}
+            onVerifyPhone={() => setActiveModal('verifyPhone')}
           />
         );
       case 'statistic':
@@ -265,6 +279,30 @@ const ProfilePage: FC = () => {
                   : { email, is_email_verified: false }
             )
           }
+        />
+      )}
+
+      {me && me.email && activeModal === 'verifyEmail' && (
+        <ChangeEmailModal
+          currentEmail={me.email}
+          verifyExisting
+          onClose={closeModal}
+          onSaved={(email) => updateMe({ email, is_email_verified: true })}
+        />
+      )}
+
+      {me && activeModal === 'phone' && (
+        <AddPhoneModal
+          onClose={closeModal}
+          onSaved={(mobile, country_code) => updateMe({ mobile, country_code })}
+        />
+      )}
+
+      {me && me.mobile && activeModal === 'verifyPhone' && (
+        <AddPhoneModal
+          verifyExisting={{ mobile: me.mobile, countryCode: me.country_code ?? '' }}
+          onClose={closeModal}
+          onSaved={() => updateMe({ is_email_verified: true })}
         />
       )}
 

@@ -46,7 +46,7 @@ export const MOBILE_PATTERN = /^[0-9]{6,14}$/;
 
 export const SIGNUP_CODE_PATTERN = /^[A-Za-z0-9_-]{3,50}$/;
 
-export const OTP_RESEND_SECONDS = 30;
+export const OTP_RESEND_SECONDS = 60;
 
 export const ANALYTICS_SIGNUP_METHOD = {
   mobile: 'phone',
