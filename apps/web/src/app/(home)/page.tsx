@@ -2,6 +2,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import type { Banner, Category } from "@nsb/shared";
 import { CookieBar } from "@/components/site/cookie-bar";
 import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
 import { HERO_FALLBACK } from "@/components/site/nsb-home/content";
 import type { HeroSlide } from "@/components/site/nsb-home/hero-slides";
 import {
@@ -12,7 +13,6 @@ import {
   Faqs,
   HeroBanners,
   Highlights,
-  HomeHeader,
   JohriBazaar,
   PopularMarkets,
   TopPicks,
@@ -47,7 +47,7 @@ function heroSlides(banners: Banner[]): HeroSlide[] {
   }));
 }
 
-/** The home page from "NSB Live Demo.html", with its own header; the footer is the site-wide one. */
+/** The home page from "NSB Live Demo.html", with the site-wide header and footer. */
 export default async function HomePage() {
   const location = await getSiteLocation();
   const [banners, categories, { whatsapp, homeCards, footer }, counts] = await Promise.all([
@@ -60,7 +60,7 @@ export default async function HomePage() {
 
   return (
     <div className={`nsb-home ${jakarta.variable}`}>
-      <HomeHeader location={location} />
+      <SiteHeader location={location} />
       <main>
         <HeroBanners slides={heroSlides(banners)} cards={homeCards} />
         <Categories categories={categories} counts={counts} location={location} />

@@ -41,6 +41,7 @@ const projectBody = (overrides: Partial<ProjectFormInput> = {}): ProjectFormInpu
   possessionDate: 'Dec 2029',
   launchDate: 'Jan 2026',
   isPremium: false,
+  tags: ['Lake View', `E2E Tag ${run}`, 'lake view'],
   units: '400',
   landArea: '5 Acres',
   towers: '',
@@ -126,6 +127,9 @@ describe('Real estate projects (e2e)', () => {
     expect(project.towers).toBeNull();
     expect(project.phone).toBe('9810012345');
     expect(project.amenities).toEqual(['Swimming Pool', 'Gymnasium', 'Rooftop lounge']);
+    expect(project.tags).toEqual(['Lake View', `E2E Tag ${run}`]);
+    // Featured is off unless the admin sets it.
+    expect(project.isFeatured).toBe(false);
     // A builder advertises as itself, without broker fields.
     expect(project.advertiser).toMatchObject({ type: 'builder', name: 'E2E Builders', firm: '', experienceYears: null, established: 2005 });
     expect(project.advertiserName).toBe('E2E Builders');
@@ -163,11 +167,12 @@ describe('Real estate projects (e2e)', () => {
 
   it('shows only live projects on the site, without the phone or brochure link', async () => {
     await http().get(`/api/projects/${project.slug}`).expect(404);
-    await admin.patch(`/api/admin/projects/${project.id}`).send({ status: 'live' }).expect(200);
+    await admin.patch(`/api/admin/projects/${project.id}`).send({ status: 'live', isFeatured: true }).expect(200);
 
     const detail = (await http().get(`/api/projects/${project.slug}`).expect(200)).body as ProjectDetail;
     expect(detail.name).toBe(`E2E ${run} Heights`);
     expect(detail.hasBrochure).toBe(true);
+    expect(detail.isFeatured).toBe(true);
     expect(detail).not.toHaveProperty('phone');
     expect(detail).not.toHaveProperty('brochureUrl');
     expect(detail.similar.every((s) => s.area === 'Greater Noida' && s.id !== project.id)).toBe(true);
@@ -183,6 +188,11 @@ describe('Real estate projects (e2e)', () => {
     expect(await mine('bhk=3')).toEqual([]);
     expect(await mine('possession=Ready%20to%20Move')).toEqual([]);
     expect(await mine('sort=lo')).toEqual([project.id]);
+
+    // The status change above left the tags out, so they are kept; search matches any tag.
+    expect(detail.tags).toEqual(['Lake View', `E2E Tag ${run}`]);
+    const byTag = (await http().get(`/api/projects?q=${encodeURIComponent(`tag ${run}`)}`).expect(200)).body as Paginated<ProjectSummary>;
+    expect(byTag.items.map((p) => p.id)).toEqual([project.id]);
 
     const localities = (await http().get('/api/projects/localities?area=Greater%20Noida').expect(200)).body as ProjectLocality[];
     expect(Array.isArray(localities)).toBe(true);
@@ -216,6 +226,16 @@ describe('Real estate projects (e2e)', () => {
     const { rows } = await pool.query('select source, message from enquiries where id = $1', [asked.id]);
     expect(rows[0].source).toBe('Enquiry');
     expect(rows[0].message).toContain('Message: Is a 3 BHK on a high floor left?');
+    // A site visit needs a date from today on; it is saved as the preferred date, the second date in the message.
+    const missing = await lead({ projectId: project.id, source: 'Site visit' }).expect(400);
+    expect(missing.body.issues.map((i: { path: string }) => i.path)).toContain('visitDate');
+    await lead({ projectId: project.id, source: 'Site visit', visitDate: '2020-01-01' }).expect(400);
+    const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+    const visit = (await lead({ projectId: project.id, source: 'Site visit', visitDate: day(3), altVisitDate: day(5) }).expect(201)).body as ProjectEnquiryResult;
+    const saved = (await pool.query('select preferred_date::text as date, message from enquiries where id = $1', [visit.id])).rows[0];
+    expect(saved.date).toBe(day(3));
+    expect(saved.message).toMatch(/^Other preferred date: /m);
+    expect(saved.message).not.toContain('Property dealer');
     const bad = await lead({ projectId: project.id, agreed: false, mobile: '12345' }).expect(400);
     expect(bad.body.issues.map((i: { path: string }) => i.path)).toEqual(expect.arrayContaining(['agreed', 'mobile']));
     await admin.patch(`/api/admin/projects/${project.id}`).send({ status: 'draft' }).expect(200);

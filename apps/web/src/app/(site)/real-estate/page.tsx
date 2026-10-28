@@ -95,7 +95,7 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
               {possession && <input type="hidden" name="possession" value={possession} />}
               {sort !== "rel" && <input type="hidden" name="sort" value={sort} />}
               <Search size={18} strokeWidth={1.7} aria-hidden />
-              <input name="q" type="search" defaultValue={q} placeholder="Search project, builder or sector" aria-label="Search projects" maxLength={100} />
+              <input name="q" type="search" defaultValue={q} placeholder="Search project, builder, sector or tag" aria-label="Search projects" maxLength={100} />
             </form>
           </div>
 

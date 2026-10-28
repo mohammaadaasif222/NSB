@@ -208,6 +208,10 @@ export const projects = pgTable(
     possessionDate: text('possession_date').notNull().default(''),
     launchDate: text('launch_date').notNull().default(''),
     isPremium: boolean('is_premium').notNull().default(false),
+    /** Featured badge only; it does not change the listing order. */
+    isFeatured: boolean('is_featured').notNull().default(false),
+    /** Admin tags such as "Luxury" or "Near Metro"; the listing page's search matches them. */
+    tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
     units: integer('units'),
     landArea: text('land_area').notNull().default(''),
     towers: integer('towers'),

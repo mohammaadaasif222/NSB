@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, type FormEvent, type ReactNode, useContext, useEffect, useId, useRef, useState } from "react";
-import { type ApiErrorBody, BUY_WITHIN, type ProjectEnquiryResult, type ProjectLeadSource } from "@nsb/shared";
+import { type ApiErrorBody, BUY_WITHIN, type ProjectEnquiryResult, type ProjectLeadSource, todayInIndia } from "@nsb/shared";
 
 /** Who the visitor wants to reach, and which button they pressed. */
 export interface LeadTarget {
@@ -75,42 +75,31 @@ function LeadDialog({ target, onClose }: { target: LeadTarget; onClose: () => vo
 }
 
 /**
- * The enquiry form on the project page: the View Number form with a message box, always open.
- * After sending, "Done" clears it for another enquiry.
- */
-export function ProjectEnquiry(target: Omit<LeadTarget, "source"> & { projectId: string }) {
-  const [round, setRound] = useState(0);
-  return (
-    <div className="re-eq">
-      <LeadForm key={round} target={{ ...target, source: "Enquiry" }} withMessage onDone={() => setRound((n) => n + 1)} />
-    </div>
-  );
-}
-
-/**
  * The demo's View Number form: dealer, name, phone, buying timeline, loan and site visit interest,
- * consent, and on the project page a message. Saved as a lead in Admin › Leads › Real Estate; the
- * visitor then sees the advertiser's number. Without `titleId` it shows no heading (the page has one).
+ * consent; a callback asks only name and mobile. Saved as a lead in Admin › Leads › Real Estate; the
+ * visitor then sees the advertiser's number.
  */
 function LeadForm({
   target,
   titleId,
-  withMessage = false,
   autoFocus = false,
   onDone,
 }: {
   target: LeadTarget;
-  titleId?: string;
-  withMessage?: boolean;
+  titleId: string;
   autoFocus?: boolean;
   onDone: () => void;
 }) {
   const id = useId();
   const nameInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
-  const [invalid, setInvalid] = useState<"name" | "mobile" | null>(null);
+  const [invalid, setInvalid] = useState<"name" | "mobile" | "visitDate" | null>(null);
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<ProjectEnquiryResult | null>(null);
+  // "Schedule a site visit" asks name, mobile and visit dates; the callbacks only name and mobile.
+  const visit = target.source === "Site visit";
+  const short = target.source === "Callback" || visit;
+  const today = todayInIndia();
 
   useEffect(() => {
     if (autoFocus) nameInput.current?.focus();
@@ -130,7 +119,12 @@ function LeadForm({
       setInvalid("mobile");
       return setError("Enter a valid 10-digit mobile number.");
     }
-    if (!form.get("agreed")) return setError("Please accept the Terms and Privacy Policy.");
+    const visitDate = String(form.get("visitDate") ?? "");
+    if (visit && (!visitDate || visitDate < today)) {
+      setInvalid("visitDate");
+      return setError(visitDate ? "Pick today or a later date." : "Pick your preferred visit date.");
+    }
+    if (!short && !form.get("agreed")) return setError("Please accept the Terms and Privacy Policy.");
     setError("");
     setPending(true);
     try {
@@ -145,8 +139,9 @@ function LeadForm({
           isDealer: form.get("dealer") === "yes",
           buyWithin: form.get("buyWithin") || undefined,
           homeLoan: form.has("homeLoan"),
-          siteVisit: form.has("siteVisit"),
-          message: withMessage ? String(form.get("message") ?? "").trim() || undefined : undefined,
+          siteVisit: visit || form.has("siteVisit"),
+          visitDate: visit ? visitDate : undefined,
+          altVisitDate: visit ? String(form.get("altVisitDate") ?? "") || undefined : undefined,
           agreed: true,
         }),
       });
@@ -195,22 +190,28 @@ function LeadForm({
     </div>
   ) : (
     <form onSubmit={onSubmit} noValidate>
-      {titleId && <h3 id={titleId}>{TITLES[target.source]}</h3>}
-      <p className="ps">Share your details to {target.projectId ? `view ${target.advertiser}’s number` : "get a call from the NSB team"}</p>
-      <fieldset className="re-fl">
-        <legend className="t">Are you a property dealer?</legend>
-        <div className="re-op">
-          <label>
-            <input type="radio" name="dealer" value="yes" /> Yes
-          </label>
-          <label>
-            <input type="radio" name="dealer" value="no" defaultChecked /> No
-          </label>
-        </div>
-      </fieldset>
+      <h3 id={titleId}>{TITLES[target.source]}</h3>
+      <p className="ps">
+        {visit
+          ? "Share your details and the dates that suit you to visit the project."
+          : `Share your details to ${target.projectId ? `view ${target.advertiser}’s number` : "get a call from the NSB team"}`}
+      </p>
+      {!short && (
+        <fieldset className="re-fl">
+          <legend className="t">Are you a property dealer?</legend>
+          <div className="re-op">
+            <label>
+              <input type="radio" name="dealer" value="yes" /> Yes
+            </label>
+            <label>
+              <input type="radio" name="dealer" value="no" defaultChecked /> No
+            </label>
+          </div>
+        </fieldset>
+      )}
       <div className="re-fl">
         <label className="t" htmlFor={`${id}-name`}>
-          Name
+          {visit ? "Full name" : "Name"}
         </label>
         <input
           ref={nameInput}
@@ -225,7 +226,7 @@ function LeadForm({
       </div>
       <div className="re-fl">
         <label className="t" htmlFor={`${id}-mobile`}>
-          Phone
+          {visit ? "Mobile number" : "Phone"}
         </label>
         <div className="re-ph">
           <span>+91</span>
@@ -242,40 +243,49 @@ function LeadForm({
           />
         </div>
       </div>
-      <fieldset className="re-fl">
-        <legend className="t">Planning to buy in?</legend>
-        <div className="re-op">
-          {BUY_WITHIN.map((w) => (
-            <label key={w}>
-              <input type="radio" name="buyWithin" value={w} /> {w}
+      {visit && (
+        <div className="re-fl2">
+          <div className="re-fl">
+            <label className="t" htmlFor={`${id}-visit`}>
+              Preferred visit date
             </label>
-          ))}
-        </div>
-      </fieldset>
-      {withMessage && (
-        <div className="re-fl">
-          <label className="t" htmlFor={`${id}-message`}>
-            Message <span className="font-normal">(optional)</span>
-          </label>
-          <textarea
-            id={`${id}-message`}
-            name="message"
-            className="re-in"
-            rows={3}
-            maxLength={1000}
-            placeholder="e.g. I'd like the price of a 3 BHK on a higher floor"
-          />
+            <input id={`${id}-visit`} name="visitDate" className="re-in" type="date" min={today} required aria-invalid={invalid === "visitDate" || undefined} />
+          </div>
+          <div className="re-fl">
+            <label className="t" htmlFor={`${id}-alt`}>
+              Preferred date <span className="font-normal">(optional)</span>
+            </label>
+            <input id={`${id}-alt`} name="altVisitDate" className="re-in" type="date" min={today} />
+          </div>
         </div>
       )}
-      <label className="re-ck">
-        <input type="checkbox" name="homeLoan" /> I’m interested in a home loan
-      </label>
-      <label className="re-ck">
-        <input type="checkbox" name="siteVisit" defaultChecked={target.source !== "Price sheet"} /> I’m interested in site visits
-      </label>
-      <label className="re-ck">
-        <input type="checkbox" name="agreed" /> I agree to the <b>Terms</b> and <b>Privacy Policy</b>
-      </label>
+      {short ? (
+        <p className="re-cs">
+          By submitting, you agree to the <b>Terms</b> and <b>Privacy Policy</b>.
+        </p>
+      ) : (
+        <>
+          <fieldset className="re-fl">
+            <legend className="t">Planning to buy in?</legend>
+            <div className="re-op">
+              {BUY_WITHIN.map((w) => (
+                <label key={w}>
+                  <input type="radio" name="buyWithin" value={w} /> {w}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <label className="re-ck">
+            <input type="checkbox" name="homeLoan" /> I’m interested in a home loan
+          </label>
+          <label className="re-ck">
+            <input type="checkbox" name="siteVisit" defaultChecked={target.source !== "Price sheet"} /> I’m interested in site visits
+          </label>
+          <label className="re-ck">
+            <input type="checkbox" name="agreed" /> I agree to the <b>Terms</b> and <b>Privacy Policy</b>
+          </label>
+        </>
+      )}
       <p className="re-er" role="alert">
         {error}
       </p>

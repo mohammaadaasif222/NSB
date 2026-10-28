@@ -13,6 +13,9 @@ import { adminClient } from "@/lib/admin-client";
 import { formatDate, formatDateTime } from "@/lib/format";
 
 const STATUS_LABEL: Record<LeadStatus, string> = { new: "New", contacted: "Contacted", won: "Won", lost: "Lost" };
+
+/** A site visit's second date, from its message line (written by the API's project-lead-message.ts). */
+const otherVisitDate = (e: Enquiry) => (e.source === "Site visit" ? (/^Other preferred date: (.+)$/m.exec(e.message)?.[1] ?? null) : null);
 /** Pill colours from the demo: new blue, contacted amber, won green, lost red. */
 const STATUS_PILL: Record<LeadStatus, string> = { new: "new", contacted: "draft", won: "live", lost: "hidden" };
 
@@ -110,7 +113,12 @@ export function LeadsTable({ leads, section, empty }: { leads: Enquiry[]; sectio
                     <small className="block text-zinc-500">{e.categoryName}</small>
                   </td>
                   <td>{section === "wedding" ? e.categoryName : e.projectType ? PROJECT_TYPE_LABELS[e.projectType] : "—"}</td>
-                  <td>{e.source ?? "Enquiry form"}</td>
+                  <td>
+                    {e.source ?? "Enquiry form"}
+                    {e.source === "Site visit" && e.preferredDate && (
+                      <small className="block whitespace-nowrap text-zinc-500">Visit: {formatDate(e.preferredDate)}</small>
+                    )}
+                  </td>
                   <td className="whitespace-nowrap" title={formatDateTime(e.createdAt)}>
                     {ago(e.createdAt)}
                   </td>
@@ -189,7 +197,8 @@ function LeadDetails({ enquiry: e, pending, canSeeNumbers, onUnread }: { enquiry
         )}
         <Row label="Status">{STATUS_LABEL[e.leadStatus]}</Row>
         {e.eventType && <Row label="Event">{e.eventType}</Row>}
-        {e.preferredDate && <Row label="Preferred date">{formatDate(e.preferredDate)}</Row>}
+        {e.preferredDate && <Row label={e.source === "Site visit" ? "Visit date" : "Preferred date"}>{formatDate(e.preferredDate)}</Row>}
+        {otherVisitDate(e) && <Row label="Other preferred date">{otherVisitDate(e)}</Row>}
         {e.source ? <Row label="Lead type">{e.source}</Row> : <Row label="Budget">{e.budget || "Not given"}</Row>}
         <Row label={e.source ? "Project" : "Listing"}>
           <SourceLink e={e} />

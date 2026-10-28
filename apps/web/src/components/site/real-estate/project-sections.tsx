@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { type ReactNode, useEffect, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import { type ProjectConfiguration, type VideoChapter, youTubeId } from "@nsb/shared";
 import { priceText, sqftText } from "./format";
 import { BuildingArt } from "./project-art";
@@ -64,19 +64,22 @@ export function ProjectGallery({ name, photos, tags }: { name: string; photos: s
   }
   return (
     <>
-      <div className="re-gal">
-        {shown.map((url, i) => (
-          <figure key={url} style={places ? { gridColumn: places[i]![0], gridRow: places[i]![1] } : undefined}>
-            <Image src={url} alt={i === 0 ? name : ""} fill priority={i === 0} sizes={i === 0 ? "(max-width: 640px) 100vw, 50vw" : "25vw"} />
-            <button type="button" className="open" onClick={() => setOpen(true)} aria-label={`Open photo ${i + 1} of ${photos.length}`} />
-            {i === 0 && tags}
-            {i === shown.length - 1 && photos.length > 1 && (
-              <button type="button" className="re-all" onClick={() => setOpen(true)}>
-                ▦ Show all photos{photos.length > 5 ? ` (${photos.length})` : ""}
-              </button>
-            )}
-          </figure>
-        ))}
+      {/* The mosaic's places are CSS variables so phones can drop them and swipe through the photos instead. */}
+      <div className="re-galw">
+        <div className="re-gal">
+          {shown.map((url, i) => (
+            <figure key={url} style={places ? ({ "--gc": places[i]![0], "--gr": places[i]![1] } as CSSProperties) : undefined}>
+              <Image src={url} alt={i === 0 ? name : ""} fill priority={i === 0} sizes={i === 0 ? "(max-width: 640px) 100vw, 50vw" : "(max-width: 640px) 100vw, 25vw"} />
+              <button type="button" className="open" onClick={() => setOpen(true)} aria-label={`Open photo ${i + 1} of ${photos.length}`} />
+              {i === 0 && tags}
+            </figure>
+          ))}
+        </div>
+        {photos.length > 1 && (
+          <button type="button" className="re-all" onClick={() => setOpen(true)}>
+            ▦ Show all photos{photos.length > 5 ? ` (${photos.length})` : ""}
+          </button>
+        )}
       </div>
       {open && (
         <div className="re-lb2" role="dialog" aria-modal="true" aria-label={`${name} photos`} onClick={close}>
@@ -231,16 +234,17 @@ export function FloorPlans({ configurations, lead }: { configurations: ProjectCo
           <tbody>
             {configurations.map((c, i) => (
               <tr key={`${c.title}-${i}`} className={i === index ? "on" : undefined}>
-                <td>
+                <td className="t">
                   <b className="c">{c.title}</b>
                 </td>
-                <td>{c.superArea ? sqftText(c.superArea) : "–"}</td>
-                <td>{c.carpetArea ? sqftText(c.carpetArea) : "–"}</td>
-                <td>{c.price && c.superArea ? `₹${(c.price / c.superArea / 1000).toFixed(1)}K/sq ft` : "–"}</td>
-                <td>
+                {/* data-label names each value when phones show a row as a card. */}
+                <td data-label="Super area">{c.superArea ? sqftText(c.superArea) : "–"}</td>
+                <td data-label="Carpet area">{c.carpetArea ? sqftText(c.carpetArea) : "–"}</td>
+                <td data-label="Rate">{c.price && c.superArea ? `₹${(c.price / c.superArea / 1000).toFixed(1)}K/sq ft` : "–"}</td>
+                <td data-label="Price">
                   <b>{c.price ? priceText(c.price) : "On request"}</b>
                 </td>
-                <td>
+                <td className="pl">
                   <a
                     href="#fp"
                     className="re-btn o"

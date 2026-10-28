@@ -18,6 +18,7 @@ import {
   POSSESSION_STATUSES,
   PROJECT_AMENITIES,
   PROJECT_LIMITS,
+  PROJECT_TAG_SUGGESTIONS,
   PROJECT_TERM_MONTHS,
   PROJECT_TYPE_LABELS,
   PROJECT_TYPES,
@@ -30,6 +31,7 @@ import {
 import { Modal } from "@/components/admin/dialog";
 import { Affix, Button, Field, Select, TextArea, TextInput, Toggle } from "@/components/admin/form";
 import { ImageListUpload, useSessionUploads, useUploader } from "@/components/admin/image-upload";
+import { TagPicker } from "@/components/admin/tag-picker";
 import { useToast } from "@/components/admin/toast";
 import { useAdminAction } from "@/components/admin/use-admin-action";
 import { adminClient } from "@/lib/admin-client";
@@ -85,6 +87,8 @@ function draftOf(p?: AdminProject) {
     possessionDate: p?.possessionDate ?? "",
     launchDate: p?.launchDate ?? "",
     isPremium: p?.isPremium ?? false,
+    isFeatured: p?.isFeatured ?? false,
+    tags: p?.tags ?? [],
     units: str(p?.units),
     landArea: p?.landArea ?? "",
     towers: str(p?.towers),
@@ -343,6 +347,18 @@ export function ProjectForm({
             <div className="flex flex-col gap-2 text-[13px] font-semibold">
               Listing page
               <Toggle label="Show as Premium (top of the listing page)" showLabel checked={d.isPremium} onChange={(v) => set("isPremium", v)} />
+              <Toggle label="Show Featured badge (any number of projects)" showLabel checked={d.isFeatured} onChange={(v) => set("isFeatured", v)} />
+            </div>
+            <div className="flex flex-col gap-2 sm:col-span-2">
+              <span className="text-[13px] font-semibold">Tags</span>
+              <TagPicker
+                value={d.tags}
+                onChange={(tags) => set("tags", tags)}
+                groups={[{ title: "Suggested", tags: [...PROJECT_TAG_SUGGESTIONS] }]}
+                max={PROJECT_LIMITS.tags}
+                error={errors.tags}
+                hint="Visitors find this project by searching any of its tags."
+              />
             </div>
           </div>
 
@@ -460,6 +476,19 @@ export function ProjectForm({
           </div>
 
           <div hidden={step !== 4} className="flex flex-col gap-4">
+            <label className="flex w-fit items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                className="size-4"
+                checked={d.amenities.length === PROJECT_AMENITIES.length}
+                // Part-ticked while only some amenities are chosen.
+                ref={(el) => {
+                  if (el) el.indeterminate = d.amenities.length > 0 && d.amenities.length < PROJECT_AMENITIES.length;
+                }}
+                onChange={(e) => set("amenities", e.target.checked ? [...PROJECT_AMENITIES] : [])}
+              />
+              Select all amenities
+            </label>
             <fieldset className="a-amg2">
               <legend className="sr-only">Amenities</legend>
               {PROJECT_AMENITIES.map((a) => (
@@ -521,9 +550,11 @@ export function ProjectForm({
                 <Plus className="size-4" aria-hidden /> Add place
               </Button>
             )}
-            <div className="mt-3">
+            <div className="mt-3 flex flex-col gap-1 border-t border-zinc-200 pt-4">
               <h4 className="font-extrabold">Who is advertising this project?</h4>
-              <p className="a-hsub">Shown on the project page under “Listed by”. A broker can list many projects, but each project has only one advertiser.</p>
+              <p className="text-[13px] leading-snug text-zinc-500">
+                Shown on the project page under “Listed by”. A broker can list many projects, but each project has only one advertiser.
+              </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Advertiser type" className="sm:col-span-2">

@@ -1,34 +1,60 @@
 "use client";
 
 import { type ReactNode, useEffect, useId, useOptimistic, useRef, useState, useTransition } from "react";
+import { usePathname } from "next/navigation";
 import { Check, ChevronDown, MapPin } from "lucide-react";
 import { LISTING_AREAS } from "@nsb/shared";
 import { setSiteLocation } from "@/app/actions/location";
-import { locationLabel, sameLocation, type SiteLocation } from "@/lib/location";
+import { LOCATION_COOKIE, LOCATION_PATH_COOKIE, locationLabel, sameLocation, type SiteLocation } from "@/lib/location";
 
 /**
- * Chooses the site-wide location. The new choice shows at once (optimistic) while the cookie is
- * saved and the page re-renders on the server with filtered data; `pending` is true until then.
+ * Chooses the location for this page. The new choice shows at once (optimistic) while the cookie
+ * is saved and the page re-renders on the server with filtered data; `pending` is true until then.
  */
 export function useSiteLocation(current: SiteLocation | null) {
-  const [location, setOptimistic] = useOptimistic(current);
+  const [optimistic, setOptimistic] = useOptimistic(current);
   const [pending, startTransition] = useTransition();
+  const path = usePathname();
+  // The header's layout is not re-rendered between pages, so `current` can be the last page's;
+  // it counts only on the page it arrived on (or was chosen on).
+  const [chosenOn, setChosenOn] = useState(current ? path : null);
+  const [last, setLast] = useState(current);
+  if (!sameLocation(current, last)) {
+    setLast(current);
+    setChosenOn(current ? path : null);
+  }
+  const location = chosenOn === path ? optimistic : null;
   const choose = (next: SiteLocation | null) => {
     if (sameLocation(next, location)) return;
+    setChosenOn(next ? path : null);
     startTransition(async () => {
       setOptimistic(next);
-      await setSiteLocation(next);
+      await setSiteLocation(next, path);
     });
   };
   return { location, choose, pending };
 }
 
 /**
- * Location menu for the site headers, as in the NSB Live Demo: Noida, Greater Noida or Greater
- * Noida West, plus All locations. `variant` only changes the trigger, so it matches each header's design.
+ * On any other page the server already shows the default; this also forgets the old choice, so
+ * going back to the page it was made on opens on the default too.
  */
-export function LocationPicker({ current, variant }: { current: SiteLocation | null; variant: "home" | "site" }) {
+function useForgetOtherPageLocation() {
+  const path = usePathname();
+  useEffect(() => {
+    const saved = document.cookie.split("; ").find((c) => c.startsWith(`${LOCATION_PATH_COOKIE}=`));
+    if (!saved || decodeURIComponent(saved.slice(LOCATION_PATH_COOKIE.length + 1)) === path) return;
+    for (const name of [LOCATION_COOKIE, LOCATION_PATH_COOKIE]) document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
+  }, [path]);
+}
+
+/**
+ * Location menu for the site header, as in the NSB Live Demo: Noida, Greater Noida or Greater
+ * Noida West, plus All locations. Styled by site-header.css (.loc, .lb).
+ */
+export function LocationPicker({ current }: { current: SiteLocation | null }) {
   const { location, choose, pending } = useSiteLocation(current);
+  useForgetOtherPageLocation();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -46,35 +72,13 @@ export function LocationPicker({ current, variant }: { current: SiteLocation | n
   }, [open]);
 
   const label = locationLabel(location);
-  const trigger =
-    variant === "home" ? (
+  return (
+    <div ref={box} className={`loc relative ${pending ? "opacity-70" : ""}`}>
       <button type="button" className="lb" aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} aria-busy={pending || undefined} onClick={() => setOpen((o) => !o)}>
         <MapPin size={16} aria-hidden />
         <span>{label}</span>
         <ChevronDown size={14} aria-hidden />
       </button>
-    ) : (
-      <button
-        type="button"
-        className="flex items-center gap-1"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={menuId}
-        aria-busy={pending || undefined}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <span className="flex rounded-full bg-brand-soft p-1.5">
-          <MapPin className="size-4 text-brand" aria-hidden />
-        </span>
-        <span className="hidden max-w-44 truncate pl-1 text-sm leading-5 font-medium whitespace-nowrap text-[#4b5563] sm:inline">{label}</span>
-        <span className="sr-only sm:hidden">Location: {label}</span>
-        <ChevronDown className="size-5 text-muted" aria-hidden />
-      </button>
-    );
-
-  return (
-    <div ref={box} className={`relative ${variant === "home" ? "loc" : ""} ${pending ? "opacity-70" : ""}`}>
-      {trigger}
       {open && (
         <div
           id={menuId}

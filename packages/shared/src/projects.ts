@@ -11,11 +11,32 @@ import { youTubeId } from './youtube.js';
 
 // ---------- Constants ----------
 
-export const PROJECT_TYPES = ['apartments', 'villas', 'plots'] as const;
+/** Property types; the first three keys predate the rest and keep their stored values. */
+export const PROJECT_TYPES = [
+  'apartments',
+  'villas',
+  'independent-house',
+  'plots',
+  'builder-floor',
+  'penthouse',
+  'studio',
+  'commercial',
+  'farmhouse',
+] as const;
 export type ProjectType = (typeof PROJECT_TYPES)[number];
-export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = { apartments: 'Apartments', villas: 'Villas', plots: 'Plots' };
+export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+  apartments: 'Apartment / Flat',
+  villas: 'Villa',
+  'independent-house': 'Independent House',
+  plots: 'Plot / Land',
+  'builder-floor': 'Builder Floor',
+  penthouse: 'Penthouse',
+  studio: 'Studio Apartment',
+  commercial: 'Commercial Property',
+  farmhouse: 'Farmhouse',
+};
 
-export const POSSESSION_STATUSES = ['Under Construction', 'Ready to Move'] as const;
+export const POSSESSION_STATUSES = ['Upcoming', 'New Launch', 'Under Construction', 'Ready to Move', 'Completed'] as const;
 export type PossessionStatus = (typeof POSSESSION_STATUSES)[number];
 
 /** Who advertises the project on NSB: the builder itself, or one broker (a broker can list many projects). */
@@ -33,9 +54,12 @@ export const PROJECT_AMENITIES = [
 export const NEARBY_PLACE_TYPES = ['School', 'Hospital', 'Mall', 'Metro station', 'Market', 'Park', 'Airport'] as const;
 
 /** Suggestions for a configuration's name; any text is accepted. */
-export const CONFIGURATION_SUGGESTIONS = ['1 BHK', '2 BHK', '2.5 BHK', '3 BHK', '3 BHK+', '4 BHK', 'Villa', 'Plot'] as const;
+export const CONFIGURATION_SUGGESTIONS = ['1 BHK', '2 BHK', '2.5 BHK', '3 BHK', '3 BHK+', '4 BHK', '5 BHK', 'Villa', 'Plot'] as const;
 
-export const PROJECT_LIMITS = { photos: 10, configurations: 6, videos: 4, nearby: 6, faqs: 6, highlights: 8 } as const;
+export const PROJECT_LIMITS = { photos: 10, configurations: 6, videos: 4, nearby: 6, faqs: 6, highlights: 8, tags: 20 } as const;
+
+/** Tag suggestions in the admin form; any text is accepted. Visitors find a project by searching any of its tags. */
+export const PROJECT_TAG_SUGGESTIONS = ['Luxury', 'Affordable', 'Near Metro', 'Expressway', 'Gated Society', 'Lake View', 'Golf View', 'Investment'] as const;
 
 /** Term lengths an advertiser can buy; real estate is sold by the year. */
 export const PROJECT_TERM_MONTHS = [12, 6] as const;
@@ -45,7 +69,10 @@ export const PROJECT_PLAN_PRICE = 25_000;
 /** "Planning to buy in?" on the View Number form. */
 export const BUY_WITHIN = ['3 months', '6 months', '6+ months'] as const;
 
-/** The button a project lead came from; "Enquiry" is the form on the project page. */
+/** Today's date in India as YYYY-MM-DD, the earliest site visit date. */
+export const todayInIndia = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+/** The button a project lead came from; "Enquiry" was the project page's former inline form, kept for its leads. */
 export const PROJECT_LEAD_SOURCES = ['View Number', 'Site visit', 'Callback', 'Price sheet', 'Brochure', 'Enquiry'] as const;
 export type ProjectLeadSource = (typeof PROJECT_LEAD_SOURCES)[number];
 
@@ -204,6 +231,13 @@ const projectFields = z.object({
   launchDate: z.string().trim().max(40),
   /** Shown first on the listing page, with a Premium badge. */
   isPremium: z.boolean(),
+  /** A Featured badge on the card and project page; any number of projects can have it. */
+  isFeatured: z.boolean(),
+  /** Search tags, e.g. "Luxury" or "Near Metro". Duplicates (ignoring case) are dropped. */
+  tags: z
+    .array(trimmed(40))
+    .max(PROJECT_LIMITS.tags, `Up to ${PROJECT_LIMITS.tags} tags`)
+    .transform((tags) => tags.filter((t, i) => tags.findIndex((u) => u.toLowerCase() === t.toLowerCase()) === i)),
   units: count(100_000),
   /** e.g. "6.5 Acres". */
   landArea: z.string().trim().max(40),
@@ -251,7 +285,10 @@ function checkProject(p: ProjectFieldsShape, ctx: z.RefinementCtx) {
   }
 }
 
-export const projectInputSchema = projectFields.superRefine(checkProject);
+// Tags and Featured default on create only: a default on PATCH would clear them on every update that leaves them out.
+export const projectInputSchema = projectFields
+  .extend({ tags: projectFields.shape.tags.default([]), isFeatured: projectFields.shape.isFeatured.default(false) })
+  .superRefine(checkProject);
 export type ProjectInput = z.infer<typeof projectInputSchema>;
 /** What the admin form sends, before numbers are parsed. */
 export type ProjectFormInput = z.input<typeof projectInputSchema>;
@@ -266,7 +303,7 @@ export const projectQuerySchema = paginationSchema.extend({
   area: blankAsUndefined(z.enum(LISTING_AREAS)),
   /** A sector, matched ignoring case. */
   locality: blankAsUndefined(z.string().trim().min(1).max(120)),
-  /** Matches the project, builder, advertiser or sector. */
+  /** Matches the project, builder, advertiser, sector or a tag. */
   q: blankAsUndefined(z.string().trim().min(1).max(100)),
   /** 2 or 3 bedrooms, or 4 for "4 BHK+". */
   bhk: blankAsUndefined(z.enum(['2', '3', '4'])),
@@ -296,21 +333,38 @@ export const projectDuplicateQuerySchema = z.object({
 });
 export type ProjectDuplicateQuery = z.infer<typeof projectDuplicateQuerySchema>;
 
-/** The View Number form (also Site visit, Callback, Price sheet, Brochure and the project page's enquiry form). */
-export const projectEnquiryInputSchema = z.object({
-  /** Omit for "Get a callback" from the NSB team. */
-  projectId: z.uuid().optional(),
-  name: trimmed(80),
-  mobile: mobileSchema,
-  isDealer: z.boolean().default(false),
-  buyWithin: blankAsUndefined(z.enum(BUY_WITHIN)),
-  homeLoan: z.boolean().default(false),
-  siteVisit: z.boolean().default(false),
-  /** The enquiry form's optional question for the advertiser. */
-  message: blankAsUndefined(z.string().trim().max(1000, 'Keep your message under 1000 characters')),
-  agreed: z.literal(true, { error: 'Please accept the Terms and Privacy Policy.' }),
-  source: z.enum(PROJECT_LEAD_SOURCES).default('View Number'),
-});
+/**
+ * The View Number form (also Price sheet, Brochure and the project page's former enquiry form).
+ * Callback asks only name and mobile; Site visit adds a preferred visit date (required) and a
+ * second preferred date (optional).
+ */
+export const projectEnquiryInputSchema = z
+  .object({
+    /** Omit for "Get a callback" from the NSB team. */
+    projectId: z.uuid().optional(),
+    name: trimmed(80),
+    mobile: mobileSchema,
+    isDealer: z.boolean().default(false),
+    buyWithin: blankAsUndefined(z.enum(BUY_WITHIN)),
+    homeLoan: z.boolean().default(false),
+    siteVisit: z.boolean().default(false),
+    /** The enquiry form's optional question for the advertiser. */
+    message: blankAsUndefined(z.string().trim().max(1000, 'Keep your message under 1000 characters')),
+    agreed: z.literal(true, { error: 'Please accept the Terms and Privacy Policy.' }),
+    source: z.enum(PROJECT_LEAD_SOURCES).default('View Number'),
+    visitDate: blankAsUndefined(z.iso.date({ error: 'Pick a visit date' })),
+    /** A second date that also suits the visitor. */
+    altVisitDate: blankAsUndefined(z.iso.date({ error: 'Pick a date' })),
+  })
+  .superRefine((input, ctx) => {
+    if (input.source !== 'Site visit') return;
+    const today = todayInIndia();
+    if (!input.visitDate) ctx.addIssue({ code: 'custom', path: ['visitDate'], message: 'Pick a visit date' });
+    else if (input.visitDate < today) ctx.addIssue({ code: 'custom', path: ['visitDate'], message: 'Pick today or a later date' });
+    if (input.altVisitDate && input.altVisitDate < today) {
+      ctx.addIssue({ code: 'custom', path: ['altVisitDate'], message: 'Pick today or a later date' });
+    }
+  });
 export type ProjectEnquiryInput = z.infer<typeof projectEnquiryInputSchema>;
 
 // ---------- Response types ----------
@@ -328,6 +382,7 @@ export interface ProjectSummary {
   area: string;
   locality: string;
   isPremium: boolean;
+  isFeatured: boolean;
   possessionStatus: PossessionStatus;
   possessionDate: string;
   reraId: string;
@@ -348,6 +403,7 @@ export interface ProjectDetail extends ProjectSummary {
   towers: number | null;
   about: string;
   highlights: string[];
+  tags: string[];
   configurations: ProjectConfiguration[];
   amenities: string[];
   specifications: ProjectSpecifications;

@@ -80,7 +80,7 @@ describe('enquiriesWorkbook', () => {
     expect(headers).not.toContain('Email');
     expect(row(2)).toMatchObject({
       Project: 'ATS Kingston Heath',
-      'Property type': 'Apartments',
+      'Property type': 'Apartment / Flat',
       'Lead type': 'Enquiry',
       'Property dealer': 'No',
       'Buying in': '3 months',

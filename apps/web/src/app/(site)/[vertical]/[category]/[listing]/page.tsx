@@ -196,7 +196,7 @@ export default async function ListingDetailPage({ params }: Props) {
             </Section>
           </div>
 
-          <aside id="enquire" className="scroll-mt-32 lg:sticky lg:top-4 lg:scroll-mt-4">
+          <aside id="enquire" className="scroll-mt-(--site-header-h) lg:sticky lg:top-[calc(var(--site-header-h)+1rem)]">
             <EnquiryCard
               listingId={listing.id}
               vendorName={listing.name}

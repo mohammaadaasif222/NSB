@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Category, HomeCard, ListingCounts } from "@nsb/shared";
-import { LocationPicker } from "@/components/site/location-picker";
 import { locationPlace, type SiteLocation } from "@/lib/location";
 import { HomeLink, Icon } from "./bits";
 import {
@@ -15,7 +14,6 @@ import {
   HOW_IT_WORKS,
   ICON,
   JOHRI,
-  LOGO,
   MARKETS,
   MORE_CATEGORIES,
   PICKS,
@@ -29,31 +27,6 @@ import { ShowMore } from "./show-more";
 const PHONE_CATEGORIES = 6;
 
 const lookOf = (c: Category) => CATEGORY_LOOK[c.slug] ?? DEFAULT_LOOK;
-
-/** Header from the demo. The location picker filters every page; search, cart and login are not wired up (not Phase-1). */
-export function HomeHeader({ location }: { location: SiteLocation | null }) {
-  return (
-    <header className="hd">
-      <div className="w bar">
-        <Link className="logo" href="/" aria-label="Noida Super Bazaar">
-          <Image src={LOGO} alt="Noida Super Bazaar" width={560} height={283} priority />
-        </Link>
-        <label className="sb">
-          <Icon d={ICON.search} size={18} />
-          <input type="search" placeholder="Search wedding venues, salons, AC repair…" aria-label="Search" />
-        </label>
-        <LocationPicker variant="home" current={location} />
-        <a className="ct" href="#" aria-label="Cart">
-          <Icon d={ICON.bag} />
-          <i>0</i>
-        </a>
-        <a className="lg" href="#">
-          Login
-        </a>
-      </div>
-    </header>
-  );
-}
 
 /** The hero slider and, beside it, the four cards set in Admin › Home page (with their tags, e.g. "New"). */
 export function HeroBanners({ slides, cards }: { slides: HeroSlide[]; cards: HomeCard[] }) {
@@ -291,7 +264,9 @@ export function BrandStores() {
         <div className="brs">
           {BRANDS.map((b) => (
             <a key={b.name} className="br" href="#">
-              <span className="bl lgi" style={{ backgroundImage: `url(${b.logo})` }} />
+              <span className="bl" aria-hidden>
+                {b.initials}
+              </span>
               <span className="bt">
                 <b>{b.name}</b>
                 <small>Visit store →</small>

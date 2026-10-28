@@ -1,0 +1,301 @@
+/* The site header from "NSB Live Demo.html", shared by the home page and every other page. */
+:root {
+  /* Height of the sticky header, for sticky bars and scroll offsets below it. */
+  --site-header-h: calc(73px + env(safe-area-inset-top, 0px));
+}
+@media (max-width: 960px) {
+  :root {
+    --site-header-h: calc(133px + env(safe-area-inset-top, 0px));
+  }
+}
+@media (max-width: 600px) {
+  :root {
+    --site-header-h: calc(109px + env(safe-area-inset-top, 0px));
+  }
+}
+
+.nsb-hd {
+  --hd-bg: #fff;
+  --hd-soft: #f5f6fa;
+  --hd-ink: #0f172a;
+  --hd-mute: #64748b;
+  --hd-line: #e5e7eb;
+  --hd-blue: #1700d6;
+  --hd-red: #df0709;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--hd-bg);
+  border-bottom: 1px solid var(--hd-line);
+  color: var(--hd-ink);
+  font-family: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  line-height: 1.5;
+}
+.nsb-hd a {
+  color: inherit;
+  text-decoration: none;
+}
+.nsb-hd a:focus-visible,
+.nsb-hd button:focus-visible,
+.nsb-hd input:focus-visible {
+  outline: 2px solid var(--hd-blue);
+  outline-offset: 2px;
+}
+.nsb-hd .hw {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.nsb-hd .bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 72px;
+}
+.nsb-hd .logo img {
+  height: 50px;
+  width: auto;
+  display: block;
+}
+.nsb-hd .sb {
+  flex: 1;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--hd-soft);
+  border: 1px solid var(--hd-line);
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 44px;
+  color: var(--hd-mute);
+}
+.nsb-hd .sb input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--hd-ink);
+  outline: 0;
+}
+.nsb-hd .lb {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid var(--hd-line);
+  border-radius: 999px;
+  background: var(--hd-bg);
+  color: var(--hd-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.nsb-hd .lb svg:first-child {
+  color: var(--hd-red);
+}
+.nsb-hd .ct {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--hd-line);
+  border-radius: 12px;
+}
+.nsb-hd .ct i {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--hd-red);
+  color: #fff;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+}
+.nsb-hd .lg {
+  padding: 6px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--hd-blue);
+  color: var(--hd-blue);
+  font-weight: 700;
+  font-size: 14px;
+}
+.nsb-hd .lg:hover {
+  background: var(--hd-blue);
+  color: #fff;
+}
+
+/* Menu button: phones only, where it takes Login's place. */
+.nsb-hd .mn {
+  display: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--hd-line);
+  border-radius: 50%;
+  background: none;
+  color: var(--hd-ink);
+  cursor: pointer;
+}
+
+/* The menu panel, portalled to <body>, so it repeats the header's colours. */
+.nsb-mn {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.45);
+  font-family: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+}
+.nsb-mn .pn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(300px, 82vw);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) 16px;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: -20px 0 50px -20px rgba(15, 23, 42, 0.4);
+}
+.nsb-mn .x {
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: #f5f6fa;
+  color: inherit;
+  cursor: pointer;
+}
+.nsb-mn ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nsb-mn a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.nsb-mn ul a:hover,
+.nsb-mn ul a[aria-current="page"] {
+  background: #eef0ff;
+  color: #1700d6;
+}
+.nsb-mn .lg {
+  margin-top: auto;
+  justify-content: center;
+  border: 1.5px solid #1700d6;
+  color: #1700d6;
+  font-weight: 700;
+}
+.nsb-mn a:focus-visible,
+.nsb-mn button:focus-visible {
+  outline: 2px solid #1700d6;
+  outline-offset: 2px;
+}
+
+/* Tablets: search moves to its own row. Heights here match --site-header-h. */
+@media (max-width: 960px) {
+  .nsb-hd .bar {
+    flex-wrap: wrap;
+    row-gap: 18px;
+    height: auto;
+    padding-block: 10px;
+  }
+  .nsb-hd .sb {
+    order: 5;
+    flex-basis: 100%;
+    max-width: none;
+    margin: 0;
+  }
+  .nsb-hd .loc {
+    margin-left: auto;
+  }
+}
+
+/* Phones: a compact app bar. */
+@media (max-width: 600px) {
+  .nsb-hd {
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  }
+  .nsb-hd .hw {
+    padding: 0 16px;
+  }
+  .nsb-hd .bar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-rows: 38px 42px;
+    gap: 10px 8px;
+    padding-block: 8px 10px;
+  }
+  .nsb-hd .sb {
+    grid-column: 1 / -1;
+    height: 42px;
+    border-radius: 999px;
+  }
+  .nsb-hd .sb input {
+    font-size: 16px;
+  }
+  .nsb-hd .loc {
+    min-width: 0;
+    display: flex;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+  .nsb-hd .lb {
+    max-width: 100%;
+    padding: 8px 10px;
+    gap: 5px;
+    font-size: 13px;
+  }
+  .nsb-hd .lb svg {
+    flex: none;
+  }
+  .nsb-hd .lb span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nsb-hd .logo img {
+    height: 36px;
+  }
+  .nsb-hd .ct {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+  }
+  /* Login lives in the menu on phones. */
+  .nsb-hd .lg {
+    display: none;
+  }
+  .nsb-hd .mn {
+    display: grid;
+  }
+}

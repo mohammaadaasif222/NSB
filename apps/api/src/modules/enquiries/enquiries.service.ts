@@ -12,6 +12,7 @@ import {
   type Paginated,
   type ProjectEnquiryInput,
   type ProjectEnquiryResult,
+  type ProjectType,
   projectPlace,
   REAL_ESTATE_SLUG,
   type UnreadCount,
@@ -102,6 +103,8 @@ export class EnquiriesService {
         name: input.name,
         mobile: input.mobile,
         message: projectLeadMessage(input),
+        // A site visit's date; admin shows it as the preferred date.
+        preferredDate: input.source === 'Site visit' ? (input.visitDate ?? null) : null,
         source: input.source,
         projectId: project?.id ?? null,
         listingName: project?.name ?? GENERAL_PROPERTY_LEAD,
@@ -195,7 +198,8 @@ export class EnquiriesService {
     if (query.leadStatus) filters.push(eq(enquiries.leadStatus, query.leadStatus));
     if (query.source) filters.push(eq(enquiries.source, query.source));
     if (query.projectType) {
-      filters.push(inArray(enquiries.projectId, this.db.select({ id: projects.id }).from(projects).where(eq(projects.type, query.projectType))));
+      // Validated as text (the list lives in projects.ts); an unknown type matches no project.
+      filters.push(inArray(enquiries.projectId, this.db.select({ id: projects.id }).from(projects).where(eq(projects.type, query.projectType as ProjectType))));
     }
     if (query.status) filters.push(query.status === 'unread' ? isNull(enquiries.readAt) : isNotNull(enquiries.readAt));
     if (query.from) filters.push(gte(enquiries.createdAt, istDayStart(query.from)));

@@ -1,7 +1,7 @@
 import type { ProjectConfiguration, ProjectInput, ProjectType } from '@nsb/shared';
 
 /**
- * The 16 demo projects of the NSB Live Demo, for design review. Not real projects. Photos are the
+ * The 16 demo projects of the NSB Live Demo and four more, for design review. Not real projects. Photos are the
  * demo's renders in apps/web/public/images/real-estate; the walkthrough video is a public YouTube
  * video by another creator that allows embedding, there only to show the Videos section.
  * The seed removes a demo project only when both its slug and its RERA ID still match.
@@ -28,25 +28,29 @@ const AMENITIES = [
 ];
 const BROKERS = ['Prime Estates', 'Delhi NCR Properties', 'Sharma Realty', 'Metro Homes', 'Urban Brokers', 'Noida Property Hub'];
 
-type Row = [name: string, builder: string, area: ProjectInput['area'], locality: string, crore: number, type: ProjectType, premium: boolean, possession: ProjectInput['possessionStatus'], possessionDate: string];
+type Row = [name: string, builder: string, area: ProjectInput['area'], locality: string, crore: number, type: ProjectType, premium: boolean, possession: ProjectInput['possessionStatus'], possessionDate: string, tags: string[]];
 
 const ROWS: Row[] = [
-  ['Skyline Heights', 'Aarav Realty', 'Noida', 'Sector 150', 1.25, 'apartments', true, 'Under Construction', 'Dec 2028'],
-  ['Green Arcade Residency', 'Kapoor Group', 'Noida', 'Sector 137', 0.85, 'apartments', false, 'Ready to Move', 'Immediate'],
-  ['The Palm Court', 'Sharma Developers', 'Noida', 'Expressway', 2.4, 'apartments', true, 'Under Construction', 'Jun 2029'],
-  ['Ivory Towers', 'Mehra Infra', 'Noida', 'Sector 128', 1.9, 'apartments', false, 'Ready to Move', 'Immediate'],
-  ['Orchid Meadows', 'Gupta Builders', 'Noida', 'Sector 143', 0.95, 'apartments', false, 'Under Construction', 'Mar 2028'],
-  ['Aurum Residences', 'Aarav Realty', 'Noida', 'Sector 107', 1.45, 'apartments', false, 'Under Construction', 'Sep 2028'],
-  ['Lotus Greens', 'Kapoor Group', 'Noida', 'Sector 78', 0.72, 'apartments', false, 'Ready to Move', 'Immediate'],
-  ['Crest Vista', 'Sharma Developers', 'Noida', 'Sector 62', 1.15, 'apartments', false, 'Ready to Move', 'Immediate'],
-  ['Sapphire Bay', 'Mehra Infra', 'Noida', 'Sector 44', 2.1, 'villas', false, 'Under Construction', 'Dec 2029'],
-  ['Willow Heights', 'Gupta Builders', 'Noida', 'Sector 119', 0.68, 'apartments', false, 'Under Construction', 'Jun 2028'],
-  ['Regal Gardens', 'Aarav Realty', 'Noida', 'Sector 100', 1.6, 'villas', false, 'Ready to Move', 'Immediate'],
-  ['Maple Square', 'Kapoor Group', 'Noida', 'Sector 75', 1.05, 'apartments', false, 'Under Construction', 'Nov 2028'],
-  ['Urban Nest', 'Mehra Infra', 'Greater Noida', 'Pi Sector', 0.52, 'apartments', false, 'Ready to Move', 'Immediate'],
-  ['Ivory Residences', 'Kapoor Group', 'Greater Noida', 'Omicron', 1.1, 'plots', false, 'Ready to Move', 'Immediate'],
-  ['Royal Orchid', 'Gupta Builders', 'Greater Noida West', 'Sector 4', 0.64, 'apartments', false, 'Under Construction', 'Mar 2028'],
-  ['Lakeview Towers', 'Aarav Realty', 'Greater Noida West', 'Techzone 4', 0.78, 'apartments', true, 'Under Construction', 'Sep 2028'],
+  ['Skyline Heights', 'Aarav Realty', 'Noida', 'Sector 150', 1.25, 'apartments', true, 'Under Construction', 'Dec 2028', ['Expressway', 'Gated Society', 'Investment']],
+  ['Green Arcade Residency', 'Kapoor Group', 'Noida', 'Sector 137', 0.85, 'apartments', false, 'Ready to Move', 'Immediate', ['Near Metro', 'Affordable']],
+  ['The Palm Court', 'Sharma Developers', 'Noida', 'Expressway', 2.4, 'apartments', true, 'Under Construction', 'Jun 2029', ['Luxury', 'Expressway']],
+  ['Ivory Towers', 'Mehra Infra', 'Noida', 'Sector 128', 1.9, 'apartments', false, 'Ready to Move', 'Immediate', ['Luxury', 'Golf View']],
+  ['Orchid Meadows', 'Gupta Builders', 'Noida', 'Sector 143', 0.95, 'apartments', false, 'Under Construction', 'Mar 2028', ['Near Metro', 'Investment']],
+  ['Aurum Residences', 'Aarav Realty', 'Noida', 'Sector 107', 1.45, 'apartments', false, 'Under Construction', 'Sep 2028', ['Gated Society']],
+  ['Lotus Greens', 'Kapoor Group', 'Noida', 'Sector 78', 0.72, 'apartments', false, 'Ready to Move', 'Immediate', ['Affordable', 'Near Metro']],
+  ['Crest Vista', 'Sharma Developers', 'Noida', 'Sector 62', 1.15, 'apartments', false, 'Ready to Move', 'Immediate', ['Near Metro', 'IT Hub']],
+  ['Sapphire Bay', 'Mehra Infra', 'Noida', 'Sector 44', 2.1, 'villas', false, 'Under Construction', 'Dec 2029', ['Luxury', 'Gated Society']],
+  ['Willow Heights', 'Gupta Builders', 'Noida', 'Sector 119', 0.68, 'apartments', false, 'Under Construction', 'Jun 2028', ['Affordable']],
+  ['Regal Gardens', 'Aarav Realty', 'Noida', 'Sector 100', 1.6, 'villas', false, 'Ready to Move', 'Immediate', ['Gated Society', 'Expressway']],
+  ['Maple Square', 'Kapoor Group', 'Noida', 'Sector 75', 1.05, 'apartments', false, 'Under Construction', 'Nov 2028', ['Near Metro']],
+  ['Urban Nest', 'Mehra Infra', 'Greater Noida', 'Pi Sector', 0.52, 'apartments', false, 'Ready to Move', 'Immediate', ['Affordable', 'Investment']],
+  ['Ivory Residences', 'Kapoor Group', 'Greater Noida', 'Omicron', 1.1, 'plots', false, 'Ready to Move', 'Immediate', ['Investment']],
+  ['Royal Orchid', 'Gupta Builders', 'Greater Noida West', 'Sector 4', 0.64, 'apartments', false, 'Under Construction', 'Mar 2028', ['Affordable', 'Gated Society']],
+  ['Lakeview Towers', 'Aarav Realty', 'Greater Noida West', 'Techzone 4', 0.78, 'apartments', true, 'Under Construction', 'Sep 2028', ['Lake View', 'Investment']],
+  ['Golfview Estates', 'Sharma Developers', 'Noida', 'Sector 152', 3.2, 'villas', true, 'Ready to Move', 'Immediate', ['Luxury', 'Golf View', 'Gated Society']],
+  ['Metro Square', 'Gupta Builders', 'Greater Noida West', 'Sector 1', 0.58, 'apartments', false, 'Under Construction', 'Dec 2027', ['Near Metro', 'Affordable']],
+  ['Lakeshore Plots', 'Kapoor Group', 'Greater Noida', 'Sector Mu', 0.9, 'plots', false, 'Ready to Move', 'Immediate', ['Lake View', 'Investment']],
+  ['Elan Skyvue', 'Aarav Realty', 'Noida', 'Sector 94', 4.5, 'apartments', true, 'Under Construction', 'Mar 2030', ['Luxury', 'Expressway', 'Near Metro']],
 ];
 
 const plan = { plan2dUrl: null, plan3dUrl: null };
@@ -78,7 +82,7 @@ const photosOf = (i: number) =>
   i === 0 ? [1, 2, 3, 4, 5].map(img) : i === 6 ? [] : i % 3 === 0 ? [2, 5, 3].map(img) : i % 3 === 1 ? [4, 1].map(img) : [img(5)];
 
 export function demoProjects(now = Date.now()): ProjectInput[] {
-  return ROWS.map(([name, builder, area, locality, crore, type, isPremium, possessionStatus, possessionDate], i) => {
+  return ROWS.map(([name, builder, area, locality, crore, type, isPremium, possessionStatus, possessionDate, tags], i) => {
     const broker = i % 3 === 1 ? BROKERS[Math.floor(i / 3) % BROKERS.length] : null;
     const configs = configurations(type, crore, i);
     if (i === 0) configs[1] = { ...configs[1], plan3dUrl: PLAN_3D };
@@ -93,6 +97,8 @@ export function demoProjects(now = Date.now()): ProjectInput[] {
       possessionDate,
       launchDate: ['Jan 2025', 'Mar 2024', 'Aug 2025'][i % 3],
       isPremium,
+      isFeatured: false,
+      tags,
       units: 300 + i * 40,
       landArea: `${3 + (i % 5) * 1.5} Acres`,
       towers: 2 + (i % 4),

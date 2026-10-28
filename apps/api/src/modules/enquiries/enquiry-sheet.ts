@@ -43,6 +43,8 @@ const REAL_ESTATE: Column[] = [
   { header: 'Buying in', width: 12, value: (_, a) => a.buyWithin },
   { header: 'Home loan', width: 11, value: (_, a) => a.homeLoan },
   { header: 'Site visit', width: 10, value: (_, a) => a.siteVisit },
+  { header: 'Visit date', width: 13, value: (e) => (e.preferredDate ? new Date(`${e.preferredDate}T00:00:00Z`) : null), format: 'dd mmm yyyy' },
+  { header: 'Other date', width: 13, value: (_, a) => a.altVisitDate },
   { header: 'Message', width: 45, value: (_, a) => a.message, wrap: true },
   ...END,
 ];

@@ -146,13 +146,20 @@ export const PICKS = [
   { name: "Finwing loans", area: "Sector 2, Noida", category: "Loans & Finance", style: { backgroundImage: `url(${IMG}/pick-4.jpg)`, backgroundPosition: "center 24%" } },
 ];
 
-export const BRANDS = ["Rosier", "JhaJi", "Rajdhani", "Bellavita"].map((name, i) => ({ name, logo: `${IMG}/brand-${i + 1}.png` }));
+/** Sample stores and products for the design, not real brands. Photos: Unsplash (Unsplash License). */
+export const BRANDS = ["Desi Dairy", "Achar House", "Stone Mill", "Scent Studio"].map((name) => ({
+  name,
+  initials: name
+    .split(" ")
+    .map((w) => w[0])
+    .join(""),
+}));
 
 export const PRODUCTS = [
-  { brand: "Rosier · 250 ml", name: "A2 Gir Cow Bilona Ghee", price: "₹699", mrp: "₹799", off: "13% off" },
-  { brand: "JhaJi · Pickle", name: "Sookha Bharua Mango Pickle", price: "₹349", mrp: "₹399", off: "13% off" },
-  { brand: "Rajdhani · 5 kg", name: "Chakki Atta – Full Fibre Wheat Flour", price: "₹289", mrp: "₹320", off: "10% off" },
-  { brand: "Bellavita · 100 ml", name: "CEO Man Eau de Parfum", price: "₹999", mrp: "₹1,499", off: "33% off" },
+  { brand: "Desi Dairy · 250 ml", name: "A2 Cow Ghee", price: "₹699", mrp: "₹799", off: "13% off" },
+  { brand: "Achar House · 400 g", name: "Homemade Mixed Pickle", price: "₹349", mrp: "₹399", off: "13% off" },
+  { brand: "Stone Mill · 5 kg", name: "Whole Wheat Chakki Atta", price: "₹289", mrp: "₹320", off: "10% off" },
+  { brand: "Scent Studio · 100 ml", name: "Classic Eau de Parfum", price: "₹999", mrp: "₹1,499", off: "33% off" },
 ].map((p, i) => ({ ...p, image: `${IMG}/product-${i + 1}.jpg` }));
 
 export const HOW_IT_WORKS = [

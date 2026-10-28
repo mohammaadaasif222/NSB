@@ -58,6 +58,7 @@ const toSummary = (p: Row): ProjectSummary => ({
   area: p.area,
   locality: p.locality,
   isPremium: p.isPremium,
+  isFeatured: p.isFeatured,
   possessionStatus: p.possessionStatus,
   possessionDate: p.possessionDate,
   reraId: p.reraId,
@@ -80,6 +81,7 @@ const toPage = (p: Row) => ({
   towers: p.towers,
   about: p.about,
   highlights: p.highlights,
+  tags: p.tags,
   configurations: p.configurations,
   amenities: p.amenities,
   specifications: p.specifications,
@@ -107,6 +109,8 @@ const toInput = (p: Row): ProjectInput => ({
   possessionDate: p.possessionDate,
   launchDate: p.launchDate,
   isPremium: p.isPremium,
+  isFeatured: p.isFeatured,
+  tags: p.tags,
   units: p.units,
   landArea: p.landArea,
   towers: p.towers,
@@ -305,7 +309,13 @@ export class ProjectsService {
 
   private search(q: string): SQL {
     const term = likeTerm(q);
-    return or(ilike(projects.name, term), ilike(projects.builder, term), ilike(projects.advertiserName, term), ilike(projects.locality, term))!;
+    return or(
+      ilike(projects.name, term),
+      ilike(projects.builder, term),
+      ilike(projects.advertiserName, term),
+      ilike(projects.locality, term),
+      sql`exists (select 1 from unnest(${projects.tags}) as t(tag) where t.tag ilike ${term})`,
+    )!;
   }
 
   /** One project, one listing: a second listing of the same project in the same area is refused. */

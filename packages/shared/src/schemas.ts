@@ -655,7 +655,7 @@ export const enquiryQuerySchema = paginationSchema.extend({
   /** The real estate button the lead came from, e.g. View Number. */
   source: blankAsUndefined(z.string().trim().min(1).max(40)),
   /** Real estate leads for projects of one type. */
-  projectType: blankAsUndefined(z.enum(['apartments', 'villas', 'plots'])),
+  projectType: blankAsUndefined(z.string().trim().min(1).max(40)),
   status: blankAsUndefined(z.enum(ENQUIRY_STATUSES)),
   /** Received on or after / on or before these dates (India time). */
   from: blankAsUndefined(z.iso.date()),

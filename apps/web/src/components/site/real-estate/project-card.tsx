@@ -16,7 +16,13 @@ export function ProjectCard({ project: p }: { project: ProjectSummary }) {
         <Link href={href} className="re-cover" aria-label={p.name} tabIndex={-1}>
           {p.coverImageUrl ? <Image src={p.coverImageUrl} alt={p.name} fill sizes="(max-width: 640px) 100vw, 310px" /> : <BuildingArt />}
         </Link>
-        <span className={`re-bd${p.isPremium ? " p" : ""}`}>{p.isPremium ? "PREMIUM" : p.possessionStatus}</span>
+        {/* Only the badges the admin sets; the possession status is shown under the name. */}
+        {(p.isPremium || p.isFeatured) && (
+          <div className="re-bds">
+            {p.isPremium && <span className="re-bd p">PREMIUM</span>}
+            {p.isFeatured && <span className="re-bd f">FEATURED</span>}
+          </div>
+        )}
         <SaveButton name={p.name} />
       </div>
       <div className="re-info">

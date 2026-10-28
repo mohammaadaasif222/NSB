@@ -12,7 +12,7 @@ import {
   textLines,
 } from "@nsb/shared";
 import { priceText, sqftText } from "@/components/site/real-estate/format";
-import { LeadButton, LeadProvider, ProjectEnquiry } from "@/components/site/real-estate/lead-dialog";
+import { LeadButton, LeadProvider } from "@/components/site/real-estate/lead-dialog";
 import { BuildingArt } from "@/components/site/real-estate/project-art";
 import { AdStrip } from "@/components/site/real-estate/project-card";
 import { AboutText, Amenities, FloorPlans, ProjectGallery, type ProjectVideoItem, ProjectVideos } from "@/components/site/real-estate/project-sections";
@@ -139,13 +139,13 @@ export default async function ProjectPage({ params }: Props) {
     specs.length ? ["sp", "Specifications"] : null,
     p.nearby.length ? ["lc", "Around This Project"] : null,
     ["dv", "Listed by"],
-    ["eq", "Enquire"],
     ["fq", "FAQs"],
   ].filter((t): t is [string, string] => !!t);
 
   const tags = (
     <div className="re-tg">
       {p.isPremium && <span>PREMIUM</span>}
+      {p.isFeatured && <span className="f">FEATURED</span>}
       {p.possessionStatus && <span className="w">{p.possessionStatus}</span>}
     </div>
   );
@@ -319,9 +319,6 @@ export default async function ProjectPage({ params }: Props) {
                     )}
                   </div>
                 </div>
-              </Section>
-              <Section id="eq" title={`Enquire about ${p.name}`}>
-                <ProjectEnquiry projectId={p.id} advertiser={p.advertiserName} advertiserType={p.advertiserType} />
               </Section>
               <Section id="fq" title={`FAQs about ${p.name}`}>
                 {faqs.map(([q, answer]) => (

@@ -4,15 +4,19 @@ export type SiteArea = (typeof LISTING_AREAS)[number];
 
 /**
  * The visitor's chosen location: Noida, Greater Noida or Greater Noida West. It lives in a cookie
- * so every page can filter on the server; null means "all locations". Safe to import from client components.
+ * so the page can filter on the server; null means "all locations". It applies only to the page it
+ * was chosen on (its path is kept beside it), so another page opens on the default. Safe to import
+ * from client components.
  */
 export interface SiteLocation {
   area: SiteArea;
 }
 
 export const LOCATION_COOKIE = "nsb_location";
-/** One year, in seconds. */
-export const LOCATION_MAX_AGE = 60 * 60 * 24 * 365;
+/** The path the location was chosen on. */
+export const LOCATION_PATH_COOKIE = "nsb_location_path";
+/** Set by proxy.ts on page requests, so server components know the page they render. */
+export const PATH_HEADER = "x-nsb-path";
 
 const areas: readonly string[] = LISTING_AREAS;
 

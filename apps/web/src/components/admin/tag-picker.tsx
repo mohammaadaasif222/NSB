@@ -16,12 +16,15 @@ export function TagPicker({
   groups,
   max,
   error,
+  hint = "Tags under a heading are the filters visitors click on this category's page.",
 }: {
   value: string[];
   onChange: (tags: string[]) => void;
   groups: { title: string; tags: string[] }[];
   max: number;
   error?: string;
+  /** Shown after the tag count. */
+  hint?: string;
 }) {
   const [draft, setDraft] = useState("");
   const has = (tag: string) => value.some((t) => same(t, tag));
@@ -50,7 +53,11 @@ export function TagPicker({
       aria-pressed={on}
       disabled={!on && full}
       onClick={() => toggle(tag)}
-      className="inline-flex items-center gap-1 rounded-full border border-zinc-300 bg-white px-3 py-1 text-[13px] font-medium text-zinc-700 hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-[#1700d6] aria-pressed:bg-[#1700d6] aria-pressed:text-white"
+      // Colors by state, not aria-pressed: variants: admin.css remaps bg-white and the zinc colors
+      // outside Tailwind's layers, so those would win over the pressed colors.
+      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
+        on ? "border-[#1700d6] bg-[#1700d6] text-white" : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400"
+      }`}
     >
       {tag}
       {on && !suggested.some((s) => same(s, tag)) && <X className="size-3" aria-hidden />}
@@ -84,7 +91,7 @@ export function TagPicker({
         </div>
       </div>
       <span className={`text-xs ${error ? "text-red-600" : "text-zinc-500"}`}>
-        {error ?? `${value.length} of ${max} tags. Tags under a heading are the filters visitors click on this category's page.`}
+        {error ?? `${value.length} of ${max} tags. ${hint}`}
       </span>
     </div>
   );

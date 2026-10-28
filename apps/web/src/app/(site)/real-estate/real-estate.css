@@ -14,18 +14,13 @@
   --re-blue-s: #eef0ff;
   --re-red: #df0709;
   --re-navy: #0b0a33;
-  /* The site header is sticky on phones and tablets only. */
-  --re-sticky: calc(109px + env(safe-area-inset-top, 0px));
+  /* Sticky bars sit under the sticky site header. */
+  --re-sticky: var(--site-header-h);
   background: var(--re-soft);
   color: var(--re-ink);
   font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.5;
-}
-@media (min-width: 1024px) {
-  .re {
-    --re-sticky: 0px;
-  }
 }
 .re button {
   font-family: inherit;
@@ -231,20 +226,31 @@
   height: 72%;
   color: var(--re-blue);
 }
-.re-bd {
+.re-bds {
   position: absolute;
   top: 12px;
   left: 12px;
+  right: 52px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  z-index: 1;
+  pointer-events: none;
+}
+.re-bd {
   background: var(--re-bg);
   color: var(--re-ink);
   border-radius: 8px;
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 700;
-  z-index: 1;
 }
 .re-bd.p {
   background: var(--re-red);
+  color: #fff;
+}
+.re-bd.f {
+  background: var(--re-blue);
   color: #fff;
 }
 .re-hr {
@@ -762,6 +768,17 @@
   font-weight: 600;
   color: var(--re-ink);
 }
+/* The site visit form's two dates, side by side when there is room. */
+.re-fl2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  align-items: end;
+  gap: 0 12px;
+}
+.re-fl2 .re-in {
+  min-width: 0;
+  min-height: 44px;
+}
 .re-in {
   width: 100%;
   border: 1px solid var(--re-line);
@@ -837,6 +854,12 @@
   color: var(--re-blue);
   font-weight: 700;
 }
+/* Consent line on the short callback form, which has no checkbox. p so it outranks ".re p". */
+p.re-cs {
+  font-size: 12px;
+  color: var(--re-mute);
+  margin: 10px 0 0;
+}
 .re-er {
   color: var(--re-red);
   font-size: 12px;
@@ -866,24 +889,6 @@
   margin-top: 14px;
 }
 
-/* Enquiry form on the project page: the View Number form, inline. */
-.re-eq {
-  max-width: 520px;
-}
-.re-eq .ps {
-  color: var(--re-mute);
-  font-size: 13px;
-  margin: -6px 0 14px;
-}
-.re-eq h3 {
-  font-size: 18px;
-  font-weight: 800;
-  margin: 0;
-}
-.re-eq textarea.re-in {
-  resize: vertical;
-}
-
 /* ---------- project page ---------- */
 .re-crumb.d {
   padding: 16px 0 10px;
@@ -897,16 +902,21 @@
   overflow: hidden;
   position: relative;
 }
+.re-galw {
+  position: relative;
+}
 .re-gal figure {
   margin: 0;
   position: relative;
   overflow: hidden;
   background: var(--re-blue-s);
   cursor: pointer;
+  grid-column: var(--gc, auto);
+  grid-row: var(--gr, auto);
 }
 .re-gal figure:first-child {
-  grid-column: span 2;
-  grid-row: span 2;
+  grid-column: var(--gc, span 2);
+  grid-row: var(--gr, span 2);
 }
 .re-gal figure.n0 {
   grid-column: 1/-1;
@@ -943,6 +953,9 @@
   padding: 4px 10px;
   border-radius: 999px;
   letter-spacing: 0.4px;
+}
+.re-tg span.f {
+  background: var(--re-blue);
 }
 .re-tg span.w {
   background: var(--re-bg);
@@ -1236,8 +1249,9 @@ button.re-fr {
 .re-fa .re-btn {
   padding: 10px 24px;
 }
-.re-pth {
-  margin: 22px 0 10px;
+/* h3 so this outranks the ".re h3" margin reset. */
+h3.re-pth {
+  margin: 28px 0 12px;
   font-size: 16px;
   font-weight: 800;
 }
@@ -1740,6 +1754,24 @@ button.re-pl4::after {
 }
 
 /* ---------- responsive ---------- */
+/* The listing page has its own project search, so below desktop the header's search row goes,
+   as in the demo (one search box). Heights match the header without that row. */
+@media (max-width: 960px) {
+  :root:has(.re-search) {
+    --site-header-h: calc(71px + env(safe-area-inset-top, 0px));
+  }
+  :root:has(.re-search) .nsb-hd .sb {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  :root:has(.re-search) {
+    --site-header-h: calc(57px + env(safe-area-inset-top, 0px));
+  }
+  :root:has(.re-search) .nsb-hd .bar {
+    grid-template-rows: 38px;
+  }
+}
 @media (max-width: 960px) {
   .re-grid,
   .re-dg {
@@ -1817,16 +1849,102 @@ button.re-pl4::after {
   .re-ad .wl {
     display: none;
   }
+  /* Phones swipe through the photos; the next one peeks in at the edge. */
   .re-gal {
-    grid-template-columns: 1fr;
-    grid-template-rows: 216px;
+    display: flex;
+    gap: 8px;
+    height: 230px;
+    border-radius: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
   }
-  .re-gal figure:not(:first-child) {
+  .re-gal::-webkit-scrollbar {
     display: none;
   }
+  .re-gal figure,
   .re-gal figure:first-child {
-    grid-column: auto;
-    grid-row: auto;
+    flex: 0 0 88%;
+    border-radius: 14px;
+    scroll-snap-align: start;
+  }
+  .re-gal figure:only-child {
+    flex-basis: 100%;
+  }
+  .re-gal figure:hover img {
+    transform: none;
+  }
+  .re-all {
+    right: 10px;
+    bottom: 10px;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+  .re-tg {
+    top: 10px;
+    left: 10px;
+    flex-wrap: wrap;
+    right: 10px;
+  }
+  /* Each configuration becomes a card: title and plan button on top, its four values below. */
+  .re-ptw {
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+  .re-pt2 {
+    min-width: 0;
+  }
+  .re-pt2 thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .re-pt2,
+  .re-pt2 tbody {
+    display: block;
+  }
+  .re-pt2 tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .re-pt2 tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    padding: 14px;
+    border: 1px solid var(--re-line);
+    border-radius: 14px;
+  }
+  .re-pt2 tr.on {
+    border-color: var(--re-blue);
+    background: var(--re-blue-s);
+  }
+  .re-pt2 td,
+  .re-pt2 tr.on td {
+    padding: 0;
+    border: 0;
+    background: none;
+    min-width: 0;
+  }
+  .re-pt2 td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--re-mute);
+    font-size: 12px;
+  }
+  .re-pt2 td.t {
+    align-self: center;
+    font-size: 15px;
+  }
+  .re-pt2 td.pl {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
   }
   .re-hl2,
   .re-ov,

@@ -1,4 +1,4 @@
-import { and, eq, inArray, like, min, or } from 'drizzle-orm';
+import { and, eq, inArray, like, min, or, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import type { ListingVideo, QuickInfoItem } from '@nsb/shared';
@@ -284,8 +284,26 @@ try {
     }
     console.log(`Demo banners added: ${missing.length}`);
 
-    const addedProjects = await db.insert(projects).values(DEMO_PROJECTS).onConflictDoNothing({ target: projects.slug }).returning({ id: projects.id });
+    // A demo project is already seeded if its name and RERA ID are there: slugs seeded before an
+    // area was renamed (e.g. "-noida-extension") no longer match the demo's.
+    const isDemo = (p: (typeof DEMO_PROJECTS)[number]) => and(eq(projects.name, p.name), eq(projects.reraId, p.reraId));
+    const seeded = await db.select({ name: projects.name, reraId: projects.reraId }).from(projects).where(or(...DEMO_PROJECTS.map(isDemo)));
+    const newProjects = DEMO_PROJECTS.filter((p) => !seeded.some((s) => s.name === p.name && s.reraId === p.reraId));
+    const addedProjects = newProjects.length
+      ? await db.insert(projects).values(newProjects).onConflictDoNothing({ target: projects.slug }).returning({ id: projects.id })
+      : [];
     console.log(`Demo projects added: ${addedProjects.length}`);
+    // Demo projects seeded before tags existed get theirs, only while still the demo's and untagged.
+    let projectsTagged = 0;
+    for (const p of DEMO_PROJECTS) {
+      const tagged = await db
+        .update(projects)
+        .set({ tags: p.tags })
+        .where(and(isDemo(p), sql`cardinality(${projects.tags}) = 0`))
+        .returning({ id: projects.id });
+      projectsTagged += tagged.length;
+    }
+    console.log(`Existing demo projects given tags: ${projectsTagged}`);
   }
 } finally {
   await pool.end();

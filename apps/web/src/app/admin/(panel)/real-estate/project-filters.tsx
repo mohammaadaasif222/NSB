@@ -27,7 +27,7 @@ export function ProjectFilters({ values, children }: { values: ProjectFilterValu
       {values.status && <input type="hidden" name="status" value={values.status} />}
       <label className="a-gs">
         <Search size={16} aria-hidden />
-        <input name="q" type="search" defaultValue={values.q} placeholder="Search name or builder" aria-label="Search projects" maxLength={100} />
+        <input name="q" type="search" defaultValue={values.q} placeholder="Search name, builder or tag" aria-label="Search projects" maxLength={100} />
       </label>
       <select name="type" className="a-sel" defaultValue={values.type} onChange={submit} aria-label="Property type">
         <option value="">All property types</option>
