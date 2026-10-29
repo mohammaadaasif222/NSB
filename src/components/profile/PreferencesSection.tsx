@@ -37,25 +37,30 @@ const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone 
   const { t } = useTranslation();
   const { updateMe } = useMe();
   const [savingAcceptTips, setSavingAcceptTips] = useState(false);
+  const [savingDisableNotes, setSavingDisableNotes] = useState(false);
 
   // Optimistic PATCH /users/me — flip the cached copy first so the switch
-  // moves immediately; roll back and toast if the server rejects. The one
-  // wired toggle on this page lives in the "tipping" group.
-  const toggleAcceptTips = async (next: boolean): Promise<void> => {
-    if (savingAcceptTips) return;
-    setSavingAcceptTips(true);
-    updateMe({ accept_tips: next });
+  // moves immediately; roll back and toast if the server rejects. Generic
+  // helper so new toggles stay a one-liner at the call site.
+  const patchMe = async <K extends keyof ApiUser>(
+    field: K,
+    next: ApiUser[K],
+    setBusy: (busy: boolean) => void,
+  ): Promise<void> => {
+    const previous = me[field];
+    setBusy(true);
+    updateMe({ [field]: next } as Partial<ApiUser>);
     try {
-      const res = await apiService.patch('/users/me', { accept_tips: next });
+      const res = await apiService.patch('/users/me', { [field]: next });
       if (!res?.success) {
-        updateMe({ accept_tips: !next });
+        updateMe({ [field]: previous } as Partial<ApiUser>);
         toast.error(res?.message || 'Could not save — please try again');
       }
     } catch (err) {
-      updateMe({ accept_tips: !next });
+      updateMe({ [field]: previous } as Partial<ApiUser>);
       toast.error((err as { message?: string })?.message || 'Could not save — please try again');
     } finally {
-      setSavingAcceptTips(false);
+      setBusy(false);
     }
   };
 
@@ -63,8 +68,14 @@ const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone 
     tipping: {
       acceptTips: {
         value: me.accept_tips,
-        onToggle: (next) => void toggleAcceptTips(next),
+        onToggle: (next) => void patchMe('accept_tips', next, setSavingAcceptTips),
         busy: savingAcceptTips,
+      },
+      disableTipsNotes: {
+        value: me.disable_tip_notifications,
+        onToggle: (next) =>
+          void patchMe('disable_tip_notifications', next, setSavingDisableNotes),
+        busy: savingDisableNotes,
       },
     },
   };
