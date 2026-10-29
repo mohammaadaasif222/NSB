@@ -15,10 +15,14 @@ import type {
 } from '@/types';
 
 export const registerAccount = async (body: RegisterRequest) =>
-  apiService.post<RegisterResponseData>('/auth/register', {
-    ...body,
-    password: await encryptPassword(body.password),
-  });
+  apiService.post<RegisterResponseData>(
+    '/auth/register',
+    {
+      ...body,
+      password: await encryptPassword(body.password),
+    },
+    { timeout: 45000 }
+  );
 
 export const verifySignupOtp = (identifier: string, code: string) =>
   apiService.post<VerifyOtpResponseData>('/auth/verify-otp', { identifier, code });
@@ -46,8 +50,8 @@ export const loginWithPassword = async (
 export const verifyLoginOtp = (challenge: string, code: string, headers?: Record<string, string>) =>
   apiService.post<LoginResponseData>('/auth/login/verify-otp', { challenge, code }, { headers });
 
-export const resendLoginOtp = (challenge: string) =>
-  apiService.post('/auth/login/resend-otp', { challenge });
+export const resendLoginOtp = (challenge: string, channel?: 'email' | 'mobile') =>
+  apiService.post('/auth/login/resend-otp', { challenge, ...(channel ? { channel } : {}) });
 
 export const requestPasswordReset = (identifier: string, countryCode?: string) =>
   apiService.post('/auth/forgot-password', {

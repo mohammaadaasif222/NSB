@@ -23,6 +23,7 @@ const REMOTE_IMAGE_HOSTS = [
   // move together, and both still point at the staging bucket.
   'rolluck-staging-assets-2026.fra1.cdn.digitaloceanspaces.com',
   'i.ytimg.com',
+  'luckmedia.link',
 ];
 
 /** @type {import('next').NextConfig} */

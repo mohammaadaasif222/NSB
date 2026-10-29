@@ -277,6 +277,11 @@ export const en = {
   'acct.phone.failed': 'Failed to verify phone number',
   'acct.phone.verified': 'Phone number verified and added to your account.',
   'acct.phone.changeNumber': 'Use a different number',
+  'acct.phone.verifyPhone': 'Verify Phone',
+  'acct.phone.verifyTitle': 'Verify Your Phone Number',
+  'acct.phone.verifyPromptBody':
+    'Your phone number {phone} is not verified yet. Verify it with the code we text you to keep using your account.',
+  'acct.phone.verifiedOnly': 'Your phone number has been verified.',
   'acct.email.verifyEmail': 'Verify Email',
   'acct.email.verifyTitle': 'Verify Your Email',
   'acct.email.verifyPromptBody':

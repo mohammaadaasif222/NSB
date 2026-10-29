@@ -82,7 +82,7 @@ export const useTwoFactorLogin = ({ onLoggedIn, onRestart }: Options) => {
 
   const resend = async (pending: TwoFactorChallenge): Promise<void> => {
     try {
-      const res = await resendLoginOtp(pending.challenge);
+      const res = await resendLoginOtp(pending.challenge, pending.channel);
       if (!res?.success) toast.error(res?.message || t('loginModal.codeFailed'));
     } catch (err) {
       const apiErr = err as ApiError;
