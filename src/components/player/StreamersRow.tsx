@@ -5,31 +5,7 @@ import pauseIcon from '@/assets/lobby/stream-pause.svg';
 import linkIcon from '@/assets/lobby/stream-link.svg';
 import shareIcon from '@/assets/lobby/stream-share.svg';
 import { useTranslation } from '@/context/I18nContext';
-
-/**
- * "Games loved by live streamers": two YouTube streams.
- *
- * Each card starts as the video's own thumbnail with the design's controls and
- * caption over it — two YouTube players are heavy for a lobby, so nothing loads
- * until the player asks — and becomes the embedded player when they press
- * play. The caption is the video's real title and channel, so the card never
- * claims a stream is someone it is not; swap the ids here to change them.
- */
-interface Stream {
-  /** The YouTube video id. */
-  id: string;
-  title: string;
-  channel: string;
-}
-
-const STREAMS: Stream[] = [
-  { id: 'f17J3AXVK5w', title: 'AVENGERS: DOOMSDAY CLOCK', channel: 'Marvel Entertainment' },
-  {
-    id: 'FtukH_bCDHg',
-    title: '40Hz Binaural Gamma Waves - Ultra Deep Concentration',
-    channel: 'Amplifocus',
-  },
-];
+import type { LiveStream } from '@/services/liveStreams';
 
 const watchUrl = (id: string): string => `https://www.youtube.com/watch?v=${id}`;
 
@@ -51,7 +27,9 @@ const Control: FC<{
     aria-label={label}
     title={label}
     className={`flex h-[6.37cqw] w-[6.37cqw] items-center justify-center rounded-full backdrop-blur-md transition-[filter] hover:brightness-125 ${
-      ringed ? 'bg-white/[0.07] ring-1 ring-inset ring-[#f0f1f5]' : 'rl-glass-btn [--rl-btn-base:rgba(0,0,0,0.45)]'
+      ringed
+        ? 'bg-white/[0.07] ring-1 ring-inset ring-[#f0f1f5]'
+        : 'rl-glass-btn [--rl-btn-base:rgba(0,0,0,0.45)]'
     }`}
   >
     {icon ? <img src={icon.src} alt="" className="h-[3.18cqw] w-[3.18cqw]" /> : children}
@@ -70,17 +48,17 @@ const PlayGlyph: FC = () => (
 );
 
 /** One stream: the thumbnail until played, then the YouTube player in its place. */
-const StreamCard: FC<{ stream: Stream }> = ({ stream }) => {
+const StreamCard: FC<{ stream: LiveStream }> = ({ stream }) => {
   const { t } = useTranslation();
   const [playing, setPlaying] = useState(false);
-  const [thumb, setThumb] = useState(`https://i.ytimg.com/vi/${stream.id}/maxresdefault.jpg`);
+  const [thumb, setThumb] = useState(`https://i.ytimg.com/vi/${stream.video_id}/maxresdefault.jpg`);
 
   const open = (): void => {
-    window.open(watchUrl(stream.id), '_blank', 'noopener,noreferrer');
+    window.open(watchUrl(stream.video_id), '_blank', 'noopener,noreferrer');
   };
 
   const share = async (): Promise<void> => {
-    const url = watchUrl(stream.id);
+    const url = watchUrl(stream.video_id);
     try {
       if (navigator.share) {
         await navigator.share({ title: stream.title, url });
@@ -97,7 +75,7 @@ const StreamCard: FC<{ stream: Stream }> = ({ stream }) => {
     <div className="group @container relative aspect-[754/579] w-full flex-shrink-0 snap-start overflow-hidden rounded-[calc(var(--u)*17)] bg-black lg:w-[calc(50%-20px)] lg:rounded-[calc(var(--u)*34)]">
       {playing ? (
         <iframe
-          src={`https://www.youtube-nocookie.com/embed/${stream.id}?autoplay=1&playsinline=1&rel=0`}
+          src={`https://www.youtube-nocookie.com/embed/${stream.video_id}?autoplay=1&playsinline=1&rel=0`}
           title={stream.title}
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           allowFullScreen
@@ -116,7 +94,7 @@ const StreamCard: FC<{ stream: Stream }> = ({ stream }) => {
             fill
             sizes="(min-width: 1024px) 40vw, 92vw"
             // Not every video has a full-size still; YouTube always has this one.
-            onError={() => setThumb(`https://i.ytimg.com/vi/${stream.id}/hqdefault.jpg`)}
+            onError={() => setThumb(`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`)}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
           {/* Grounds the caption over whatever the stream shows at the foot. */}
@@ -172,8 +150,10 @@ const StreamCard: FC<{ stream: Stream }> = ({ stream }) => {
  * card — the phone design is the same card at half size — with floors on the
  * caption so it stays readable there.
  */
-const StreamersRow: FC = () => {
+const StreamersRow: FC<{ streams: LiveStream[] }> = ({ streams }) => {
   const { t } = useTranslation();
+
+  if (streams.length === 0) return null;
 
   return (
     <section className="space-y-[calc(var(--u)*14)] lg:space-y-[calc(var(--u)*45)]">
@@ -182,8 +162,8 @@ const StreamersRow: FC = () => {
       </h2>
 
       <div className="rl-shelf flex snap-x snap-mandatory gap-[calc(var(--u)*12)] lg:gap-[calc(var(--u)*40)]">
-        {STREAMS.map((s) => (
-          <StreamCard key={s.id} stream={s} />
+        {streams.map((s) => (
+          <StreamCard key={`${s.id}:${s.video_id}`} stream={s} />
         ))}
       </div>
     </section>

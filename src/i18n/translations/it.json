@@ -103,6 +103,7 @@
   "registerModal.needHelp": "Serve aiuto?",
   "registerModal.close": "Chiudi",
   "loginModal.title": "Accedi",
+  "loginModal.loginWith": "Accedi con",
   "loginModal.suggestion": "1.625 utenti online",
   "loginModal.username": "Nome utente",
   "loginModal.withUsername": "Accedi con nome utente",

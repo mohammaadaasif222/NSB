@@ -103,6 +103,7 @@
   "registerModal.needHelp": "Yardım mı lazım?",
   "registerModal.close": "Kapat",
   "loginModal.title": "Giriş Yap",
+  "loginModal.loginWith": "Şununla giriş yap",
   "loginModal.suggestion": "1.625 çevrimiçi kullanıcı",
   "loginModal.username": "Kullanıcı adı",
   "loginModal.withUsername": "Kullanıcı adı ile giriş",

@@ -103,6 +103,7 @@
   "registerModal.needHelp": "تحتاج مساعدة؟",
   "registerModal.close": "إغلاق",
   "loginModal.title": "تسجيل الدخول",
+  "loginModal.loginWith": "تسجيل الدخول عبر",
   "loginModal.suggestion": "1,625 مستخدمًا متصلًا",
   "loginModal.username": "اسم المستخدم",
   "loginModal.withUsername": "تسجيل الدخول باسم المستخدم",

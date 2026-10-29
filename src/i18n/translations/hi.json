@@ -103,6 +103,7 @@
   "registerModal.needHelp": "मदद चाहिए?",
   "registerModal.close": "बंद करें",
   "loginModal.title": "लॉग इन",
+  "loginModal.loginWith": "इसके साथ लॉगिन करें",
   "loginModal.suggestion": "1,625 ऑनलाइन उपयोगकर्ता",
   "loginModal.username": "यूज़रनेम",
   "loginModal.withUsername": "यूज़रनेम से लॉग इन करें",

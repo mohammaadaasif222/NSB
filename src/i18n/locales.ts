@@ -172,6 +172,7 @@ const coreEn = {
   'registerModal.close': 'Close',
 
   'loginModal.title': 'Login',
+  'loginModal.loginWith': 'Login with',
   'loginModal.suggestion': '1,625 online users',
   'loginModal.username': 'Username',
   'loginModal.withUsername': 'Login with Username',
