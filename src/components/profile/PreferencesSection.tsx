@@ -1,11 +1,16 @@
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
+import { toast } from 'react-toastify';
+import apiService from '@/services/api';
+import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import type { ApiUser } from '@/types/profile';
 import PersonalGroup from '@/components/profile/preferences/PersonalGroup';
 import LanguageGroup from '@/components/profile/preferences/LanguageGroup';
 import SoundGroup from '@/components/profile/preferences/SoundGroup';
-import PrefGroupView from '@/components/profile/preferences/PrefGroupView';
+import PrefGroupView, {
+  type PrefToggleWires,
+} from '@/components/profile/preferences/PrefGroupView';
 import {
   GROUPS_ABOVE_LANGUAGE,
   GROUPS_BELOW_LANGUAGE,
@@ -30,6 +35,39 @@ interface Props {
  */
 const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone }) => {
   const { t } = useTranslation();
+  const { updateMe } = useMe();
+  const [savingAcceptTips, setSavingAcceptTips] = useState(false);
+
+  // Optimistic PATCH /users/me — flip the cached copy first so the switch
+  // moves immediately; roll back and toast if the server rejects. The one
+  // wired toggle on this page lives in the "tipping" group.
+  const toggleAcceptTips = async (next: boolean): Promise<void> => {
+    if (savingAcceptTips) return;
+    setSavingAcceptTips(true);
+    updateMe({ accept_tips: next });
+    try {
+      const res = await apiService.patch('/users/me', { accept_tips: next });
+      if (!res?.success) {
+        updateMe({ accept_tips: !next });
+        toast.error(res?.message || 'Could not save — please try again');
+      }
+    } catch (err) {
+      updateMe({ accept_tips: !next });
+      toast.error((err as { message?: string })?.message || 'Could not save — please try again');
+    } finally {
+      setSavingAcceptTips(false);
+    }
+  };
+
+  const wiresByGroup: Record<string, PrefToggleWires> = {
+    tipping: {
+      acceptTips: {
+        value: me.accept_tips,
+        onToggle: (next) => void toggleAcceptTips(next),
+        busy: savingAcceptTips,
+      },
+    },
+  };
 
   return (
     <div>
@@ -43,7 +81,7 @@ const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone 
         />
 
         {GROUPS_ABOVE_LANGUAGE.map((group) => (
-          <PrefGroupView key={group.key} group={group} />
+          <PrefGroupView key={group.key} group={group} wires={wiresByGroup[group.key]} />
         ))}
 
         <LanguageGroup />
@@ -51,7 +89,7 @@ const PreferencesSection: FC<Props> = ({ me, onChangeUsername, onChangeTimezone 
         <SoundGroup />
 
         {GROUPS_BELOW_LANGUAGE.map((group) => (
-          <PrefGroupView key={group.key} group={group} />
+          <PrefGroupView key={group.key} group={group} wires={wiresByGroup[group.key]} />
         ))}
       </div>
     </div>
