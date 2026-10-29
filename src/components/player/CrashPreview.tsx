@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useId,
   useState,
   type FC,
@@ -8,8 +9,15 @@ import {
 import { useRouter } from 'next/router';
 import { categoryHref, playHref } from '@/constants/games';
 import SelectGameModal from '@/components/player/SelectGameModal';
+import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
-import { currentGameDevice, launchGame } from '@/services/games';
+import {
+  currentGameDevice,
+  fetchGame,
+  fetchLastGame,
+  launchGame,
+  saveLastGame,
+} from '@/services/games';
 import { trackGameLaunch } from '@/utils/events';
 import type { ApiError, Game, GameLaunch, GameMode } from '@/types';
 import chevronSmall from '@/assets/lobby/chevron-small.svg';
@@ -158,6 +166,7 @@ type ActiveGameState =
 const CrashPreview: FC = () => {
   const router = useRouter();
   const { t, locale } = useTranslation();
+  const { user, hydrated } = useAuth();
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [betAmount, setBetAmount] = useState('0.00100000');
   const [autoCashout, setAutoCashout] = useState('2.00');
@@ -176,10 +185,18 @@ const CrashPreview: FC = () => {
   // (not signed in, blocked territory, provider unavailable) surfaces as a
   // small error with a "Open in full page" fallback so the user is never
   // stuck looking at a dead iframe spinner. DEMO mode works signed-out.
+  //
+  // Signed-in players: the (slug, mode) is persisted server-side (fire-and-
+  // forget) so this exact card restores on their next device.
   const openGame = (game: Game, mode: GameMode = 'REAL'): void => {
     setActive({ status: 'loading', game, mode });
     void launchGame(game.slug, mode, locale, currentGameDevice())
-      .then((launch) => setActive({ status: 'ready', game, mode, launch }))
+      .then((launch) => {
+        setActive({ status: 'ready', game, mode, launch });
+        if (user) {
+          void saveLastGame(game.slug, mode);
+        }
+      })
       .catch((err: ApiError) =>
         setActive({
           status: 'failed',
@@ -191,6 +208,31 @@ const CrashPreview: FC = () => {
   };
 
   const closeGame = (): void => setActive({ status: 'idle' });
+
+  // Rehydrate the lobby card with whatever game the player last opened on
+  // it, on any device. Runs once after sign-in. A signed-out player, a
+  // never-played user, a delisted slug or any API failure all land the same
+  // way: stay on the Crash preview, silently.
+  useEffect(() => {
+    if (!hydrated || !user) return;
+    // Only restore when the player has not already picked something this
+    // session — otherwise refetching would clobber their current game.
+    if (active.status !== 'idle') return;
+    let cancelled = false;
+    void (async () => {
+      const pref = await fetchLastGame();
+      if (cancelled || !pref?.slug) return;
+      const game = await fetchGame(pref.slug);
+      if (cancelled || !game) return;
+      openGame(game, pref.mode);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally keyed only to the player's identity: we restore once
+    // per sign-in, not on every state change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, user?.id]);
 
   const activeGame = active.status === 'idle' ? null : active.game;
   const headerLabel = activeGame?.title ?? 'Crash';
