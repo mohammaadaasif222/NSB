@@ -41,6 +41,13 @@ export interface ApiUser {
   timezone: string | null;
   theme: ThemeName | null;
   two_factor_enabled: boolean;
+  /** Per-user opt-in to peer tips and rain. True by default — false blocks
+   *  incoming tips with a specific error so the sender knows why. */
+  accept_tips: boolean;
+  /** "Disable Tips/Rain Notifications" toggle. True still lets the user
+   *  receive tips but silences their tip-bell writes. Applied to both the
+   *  recipient and the sender's own receipt. */
+  disable_tip_notifications: boolean;
   display_name?: string | null;
   avatar_url?: string | null;
   is_email_verified?: boolean;

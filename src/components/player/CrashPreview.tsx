@@ -1,8 +1,25 @@
-import { useId, useState, type FC, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useState,
+  type FC,
+  type HTMLAttributeReferrerPolicy,
+  type ReactNode,
+} from 'react';
 import { useRouter } from 'next/router';
-import { categoryHref } from '@/constants/games';
+import { categoryHref, playHref } from '@/constants/games';
 import SelectGameModal from '@/components/player/SelectGameModal';
+import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import {
+  currentGameDevice,
+  fetchGame,
+  fetchLastGame,
+  launchGame,
+  saveLastGame,
+} from '@/services/games';
+import { trackGameLaunch } from '@/utils/events';
+import type { ApiError, Game, GameLaunch, GameMode } from '@/types';
 import chevronSmall from '@/assets/lobby/chevron-small.svg';
 import clearIcon from '@/assets/lobby/clear-x.svg';
 
@@ -140,13 +157,21 @@ const Summary: FC<{ label: string; value: string }> = ({ label, value }) => (
  * the bet slip in a clear glass column down its right edge; on a phone the
  * slip drops below the chart.
  */
+type ActiveGameState =
+  | { status: 'idle' }
+  | { status: 'loading'; game: Game; mode: GameMode }
+  | { status: 'ready'; game: Game; mode: GameMode; launch: GameLaunch }
+  | { status: 'failed'; game: Game; mode: GameMode; message: string };
+
 const CrashPreview: FC = () => {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { user, hydrated } = useAuth();
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [betAmount, setBetAmount] = useState('0.00100000');
   const [autoCashout, setAutoCashout] = useState('2.00');
   const [picking, setPicking] = useState(false);
+  const [active, setActive] = useState<ActiveGameState>({ status: 'idle' });
 
   const bet = Number.parseFloat(betAmount) || 0;
   const multiplier = Number.parseFloat(autoCashout) || 0;
@@ -155,6 +180,160 @@ const CrashPreview: FC = () => {
   const play = (): void => {
     void router.push(categoryHref('originals'));
   };
+
+  // Pick → launch inline. REAL mode needs the player's session; a failure
+  // (not signed in, blocked territory, provider unavailable) surfaces as a
+  // small error with a "Open in full page" fallback so the user is never
+  // stuck looking at a dead iframe spinner. DEMO mode works signed-out.
+  //
+  // Signed-in players: the (slug, mode) is persisted server-side (fire-and-
+  // forget) so this exact card restores on their next device.
+  const openGame = (game: Game, mode: GameMode = 'REAL'): void => {
+    setActive({ status: 'loading', game, mode });
+    void launchGame(game.slug, mode, locale, currentGameDevice())
+      .then((launch) => {
+        setActive({ status: 'ready', game, mode, launch });
+        if (user) {
+          void saveLastGame(game.slug, mode);
+        }
+      })
+      .catch((err: ApiError) =>
+        setActive({
+          status: 'failed',
+          game,
+          mode,
+          message: err?.message || t('game.launchFailed'),
+        })
+      );
+  };
+
+  const closeGame = (): void => setActive({ status: 'idle' });
+
+  // Rehydrate the lobby card with whatever game the player last opened on
+  // it, on any device. Runs once after sign-in. A signed-out player, a
+  // never-played user, a delisted slug or any API failure all land the same
+  // way: stay on the Crash preview, silently.
+  useEffect(() => {
+    if (!hydrated || !user) return;
+    // Only restore when the player has not already picked something this
+    // session — otherwise refetching would clobber their current game.
+    if (active.status !== 'idle') return;
+    let cancelled = false;
+    void (async () => {
+      const pref = await fetchLastGame();
+      if (cancelled || !pref?.slug) return;
+      const game = await fetchGame(pref.slug);
+      if (cancelled || !game) return;
+      openGame(game, pref.mode);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally keyed only to the player's identity: we restore once
+    // per sign-in, not on every state change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, user?.id]);
+
+  const activeGame = active.status === 'idle' ? null : active.game;
+  const headerLabel = activeGame?.title ?? 'Crash';
+
+  // Game-in-iframe mode: the picked game takes the whole card, with the
+  // picker + "back to Crash" on top. The real game has its own bet UI, so
+  // the Crash bet slip would just be visual noise alongside it.
+  //
+  // Height is viewport-driven here, not --crash-h: real games need a lot
+  // more vertical room than the preview's chart does. 80vh capped at 860px
+  // keeps the frame comfortable on laptops and desktops without becoming
+  // enormous on 4K screens; the min-height floor (560px on mobile, 640px
+  // from lg up) keeps enough room on short viewports and short laptops.
+  if (activeGame) {
+    return (
+      <section className="rl-glass-deep overflow-hidden rounded-[calc(var(--u)*34)] flex h-[min(80vh,860px)] min-h-[560px] lg:min-h-[640px] flex-col">
+        <div className="flex items-center justify-between gap-3 px-[calc(var(--u)*16)] pt-[calc(var(--u)*20)] lg:px-[calc(var(--u)*30)] lg:pt-[calc(var(--u)*27)]">
+          <div className="flex items-center gap-[calc(var(--u)*10)]">
+            <button
+              type="button"
+              onClick={() => setPicking(true)}
+              aria-haspopup="dialog"
+              aria-expanded={picking}
+              className="flex h-[calc(var(--u)*50)] items-center gap-[calc(var(--u)*10)] rounded-[calc(var(--u)*12.5)] border border-white/[0.07] bg-[#1b1d28] px-[calc(var(--u)*15)] text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f5f6f9] transition-colors hover:bg-[#232634]"
+            >
+              {headerLabel}
+              <img
+                src={chevronSmall.src}
+                alt=""
+                className="h-[calc(var(--u)*18)] w-[calc(var(--u)*18)]"
+              />
+            </button>
+            {active.status !== 'idle' && active.mode === 'DEMO' && (
+              <span
+                className="inline-flex h-[calc(var(--u)*26)] items-center rounded-full border border-[#f9d028]/40 bg-[#f9d028]/15 px-[calc(var(--u)*10)] text-[length:max(min(var(--tf,11px),12px),calc(var(--u)*12))] font-semibold uppercase leading-none tracking-wide text-[#f9d028]"
+                aria-label="Demo mode — fun play, no real money"
+              >
+                Demo
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={closeGame}
+            aria-label={t('common.close')}
+            title={t('common.close')}
+            className="flex h-[calc(var(--u)*50)] w-[calc(var(--u)*50)] items-center justify-center rounded-[calc(var(--u)*12.5)] border border-white/[0.07] bg-[#1b1d28] text-[#9da2b4] transition-colors hover:bg-[#232634] hover:text-white"
+          >
+            <img src={clearIcon.src} alt="" className="h-[calc(var(--u)*12)] w-[calc(var(--u)*12)]" />
+          </button>
+        </div>
+
+        <div className="relative mt-[calc(var(--u)*20)] flex-1 overflow-hidden bg-black">
+          {active.status === 'ready' && (
+            <iframe
+              key={active.launch.url}
+              src={active.launch.url}
+              title={activeGame.title}
+              referrerPolicy={active.launch.referrer_policy as HTMLAttributeReferrerPolicy}
+              allow="autoplay; fullscreen; encrypted-media; clipboard-write"
+              className="absolute inset-0 h-full w-full border-0"
+              onLoad={() => trackGameLaunch(activeGame.slug, active.mode)}
+            />
+          )}
+          {active.status === 'loading' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-[#9da2b4]">
+              <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-[#f9d028]" />
+              <span className="text-[14px]">Loading {activeGame.title}…</span>
+            </div>
+          )}
+          {active.status === 'failed' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
+              <p className="text-[14px] text-red-400">{active.message}</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => openGame(activeGame, active.mode)}
+                  className="rounded-lg bg-white/10 px-3 py-1.5 text-[13px] text-white hover:bg-white/15"
+                >
+                  Retry
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void router.push(playHref(activeGame.slug))}
+                  className="rounded-lg bg-[#f9d028] px-3 py-1.5 text-[13px] font-medium text-[#07080a] hover:brightness-110"
+                >
+                  Open in full page
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <SelectGameModal
+          open={picking}
+          onClose={() => setPicking(false)}
+          onPlay={openGame}
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="rl-glass-deep overflow-hidden rounded-[calc(var(--u)*34)] lg:grid lg:h-[var(--crash-h,calc(var(--u)*586))] lg:grid-cols-[minmax(0,1fr)_calc(var(--uw,var(--u))*385)]">
@@ -317,7 +496,11 @@ const CrashPreview: FC = () => {
         </div>
       </div>
 
-      <SelectGameModal open={picking} onClose={() => setPicking(false)} />
+      <SelectGameModal
+        open={picking}
+        onClose={() => setPicking(false)}
+        onPlay={openGame}
+      />
     </section>
   );
 };

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type FC, type ReactNode, type Ref } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Game, GameVolatility } from '@/types';
+import type { Game, GameMode, GameVolatility } from '@/types';
 import type { TranslationKey } from '@/i18n/locales';
 import { gameHref, playHref } from '@/constants/games';
 import { useTranslation } from '@/context/I18nContext';
@@ -9,6 +9,7 @@ import { useGameImpression } from '@/hooks/useGameImpression';
 import { trackGameOpen } from '@/utils/events';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
 import { useFavourites } from '@/context/FavouritesContext';
+import { useJackpots } from '@/hooks/useJackpots';
 import personIcon from '@/assets/lobby/person.svg';
 import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
 
@@ -35,6 +36,13 @@ interface Props {
    */
   onSelect?: () => void;
   selected?: boolean;
+  /**
+   * When set, Play and Play DEMO on the chosen tile call this with the game
+   * and mode instead of navigating to /play/[slug]. Lets the lobby's
+   * featured card swap in a game iframe in place rather than leave the home
+   * page.
+   */
+  onPlayInline?: (game: Game, mode: GameMode) => void;
 }
 
 /**
@@ -76,9 +84,27 @@ const FootPill: FC<{ children: ReactNode }> = ({ children }) => (
  * blurred under a slate veil, the name and studio, the gold play button (real
  * money) and the Play DEMO pill. In the card's own shape and `cqw` units.
  */
-const PickedVeil: FC<{ game: Game; surface?: string }> = ({ game, surface }) => {
+const PickedVeil: FC<{
+  game: Game;
+  surface?: string;
+  onPlayInline?: (game: Game, mode: GameMode) => void;
+}> = ({ game, surface, onPlayInline }) => {
   const { t } = useTranslation();
   const open = (): void => trackGameOpen(game.slug, surface);
+
+  // When the lobby's featured card wants to host the game itself, Play and
+  // Play DEMO become buttons that bubble the choice up — no navigation.
+  const inline = (mode: GameMode) => (e: React.MouseEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    open();
+    onPlayInline?.(game, mode);
+  };
+
+  const playCommonClass =
+    'absolute left-1/2 top-[61.6cqw] flex h-[31.3cqw] w-[31.3cqw] -translate-x-1/2 items-center justify-center rounded-full bg-[#f9d028] transition-[filter] hover:brightness-110';
+  const demoCommonClass =
+    'absolute left-1/2 top-[103cqw] flex h-[15.15cqw] w-[46.5cqw] -translate-x-1/2 items-center justify-center whitespace-nowrap rounded-full bg-[#f0f1f5] text-[max(8px,6.06cqw)] font-medium text-[#07080a] transition-colors hover:bg-white';
 
   return (
     <div className="rl-card-shape absolute inset-0 bg-[rgba(50,48,48,0.61)] text-center backdrop-blur-md">
@@ -88,27 +114,46 @@ const PickedVeil: FC<{ game: Game; surface?: string }> = ({ game, surface }) => 
       <p className="absolute inset-x-[5.05cqw] top-[40.9cqw] truncate text-[max(8px,5.05cqw)] leading-[6.57cqw] text-[#f0f1f5]">
         {game.provider}
       </p>
-      <Link
-        href={playHref(game.slug)}
-        onClick={open}
-        aria-label={`${t('lobby.selectGame.play')} — ${game.title}`}
-        className="absolute left-1/2 top-[61.6cqw] flex h-[31.3cqw] w-[31.3cqw] -translate-x-1/2 items-center justify-center rounded-full bg-[#f9d028] transition-[filter] hover:brightness-110"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="ml-[1.5cqw] h-[45%] w-[45%] fill-[#07080a]"
+      {onPlayInline ? (
+        <button
+          type="button"
+          onClick={inline('REAL')}
+          aria-label={`${t('lobby.selectGame.play')} — ${game.title}`}
+          className={playCommonClass}
         >
-          <path d="M5 3.5v17a1 1 0 0 0 1.5.86l14-8.5a1 1 0 0 0 0-1.72l-14-8.5A1 1 0 0 0 5 3.5Z" />
-        </svg>
-      </Link>
-      <Link
-        href={playHref(game.slug, 'DEMO')}
-        onClick={open}
-        className="absolute left-1/2 top-[103cqw] flex h-[15.15cqw] w-[46.5cqw] -translate-x-1/2 items-center justify-center whitespace-nowrap rounded-full bg-[#f0f1f5] text-[max(8px,6.06cqw)] font-medium text-[#07080a] transition-colors hover:bg-white"
-      >
-        {t('lobby.selectGame.demo')}
-      </Link>
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="ml-[1.5cqw] h-[45%] w-[45%] fill-[#07080a]"
+          >
+            <path d="M5 3.5v17a1 1 0 0 0 1.5.86l14-8.5a1 1 0 0 0 0-1.72l-14-8.5A1 1 0 0 0 5 3.5Z" />
+          </svg>
+        </button>
+      ) : (
+        <Link
+          href={playHref(game.slug)}
+          onClick={open}
+          aria-label={`${t('lobby.selectGame.play')} — ${game.title}`}
+          className={playCommonClass}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="ml-[1.5cqw] h-[45%] w-[45%] fill-[#07080a]"
+          >
+            <path d="M5 3.5v17a1 1 0 0 0 1.5.86l14-8.5a1 1 0 0 0 0-1.72l-14-8.5A1 1 0 0 0 5 3.5Z" />
+          </svg>
+        </Link>
+      )}
+      {onPlayInline ? (
+        <button type="button" onClick={inline('DEMO')} className={demoCommonClass}>
+          {t('lobby.selectGame.demo')}
+        </button>
+      ) : (
+        <Link href={playHref(game.slug, 'DEMO')} onClick={open} className={demoCommonClass}>
+          {t('lobby.selectGame.demo')}
+        </Link>
+      )}
     </div>
   );
 };
@@ -300,9 +345,18 @@ const PickedRim: FC = () => (
  * neither is drawn again; the title rides on the image's `alt` and the link's
  * tooltip.
  */
-const GameTile: FC<Props> = ({ game, shelf = false, surface, onSelect, selected = false }) => {
+const GameTile: FC<Props> = ({
+  game,
+  shelf = false,
+  surface,
+  onSelect,
+  selected = false,
+  onPlayInline,
+}) => {
   const { t } = useTranslation();
   const { isFavourite, toggle } = useFavourites();
+  // In a winnable provider jackpot, linked through our own game ids.
+  const jackpot = useJackpots().gameIds.has(game.id);
 
   const impressionRef = useGameImpression(game.slug, surface);
 
@@ -356,6 +410,16 @@ const GameTile: FC<Props> = ({ game, shelf = false, surface, onSelect, selected 
         </span>
       )}
 
+      {jackpot && (
+        <span
+          className={`absolute left-[5.05cqw] flex h-[12.12cqw] items-center rounded-full border border-[#f9d028]/70 bg-black/60 px-[5.05cqw] text-[max(8px,6.06cqw)] font-medium leading-none text-[#f9d028] backdrop-blur-sm ${
+            game.is_new ? 'top-[19.7cqw]' : 'top-[5.05cqw]'
+          }`}
+        >
+          {t('lobby.jackpots.badge')}
+        </span>
+      )}
+
       <span className="absolute inset-x-[5.05cqw] bottom-[5.05cqw] flex items-center justify-between gap-1">
         <FootPill>
           <img src={personIcon.src} alt="" className="h-[6.06cqw] w-[6.06cqw]" />
@@ -404,7 +468,9 @@ const GameTile: FC<Props> = ({ game, shelf = false, surface, onSelect, selected 
           </Link>
         )}
 
-        {onSelect && selected && <PickedVeil game={game} surface={surface} />}
+        {onSelect && selected && (
+          <PickedVeil game={game} surface={surface} onPlayInline={onPlayInline} />
+        )}
         {onSelect && selected && <PickedRim />}
 
         {/* Not in the picker: there the chosen tile carries Play instead. */}

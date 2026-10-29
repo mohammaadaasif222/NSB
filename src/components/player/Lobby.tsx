@@ -11,6 +11,7 @@ import SportsRow, { SportsShelf } from '@/components/player/SportsRow';
 import FavouritesShelf from '@/components/player/FavouritesShelf';
 import RecentShelf from '@/components/player/RecentShelf';
 import ComingSoonShelf from '@/components/player/ComingSoonShelf';
+import JackpotShelf from '@/components/player/JackpotShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
 import { CASINO_SHELF_KEYS, LIVE_SHELF_KEYS, PLAYER_SHELF_KEYS } from '@/constants/games';
 import StreamersRow from '@/components/player/StreamersRow';
@@ -76,14 +77,16 @@ const PLAYER_INSERTS: readonly ShelfInsert[] = [
 
 /**
  * The casino page's rows among its shelves, as the sheet orders them: the
- * player's favourites after Originals, their last played and Drops & Wins
- * after Recommended, Providers after Instant Wins, Hot after Trending.
+ * player's favourites after Originals, the provider jackpots, their last
+ * played and Drops & Wins after Recommended, Providers after Instant Wins,
+ * Hot after Trending.
  */
 const CASINO_INSERTS = (
   providerRow: ReactNode,
   t: (key: TranslationKey) => string
 ): readonly ShelfInsert[] => [
   { id: 'favourites', after: 'originals', node: <FavouritesShelf /> },
+  { id: 'jackpots', after: 'featured', node: <JackpotShelf /> },
   { id: 'recents', after: 'featured', node: <RecentShelf /> },
   {
     id: 'drops-wins',
@@ -217,6 +220,9 @@ const Lobby: FC<Props> = ({
           </>
         )}
 
+        {/* Provider jackpots and their latest winners; on /casino they sit
+            among the shelves instead. */}
+        {!casino && <JackpotShelf />}
         {/* Curated in the admin console's Providers screen; on /casino it
             sits among the shelves instead. */}
         {!casino && providerRow}
