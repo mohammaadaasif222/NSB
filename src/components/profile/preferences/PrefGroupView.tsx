@@ -1,8 +1,21 @@
 import type { FC, ReactNode } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { SoonToggle } from '@/components/profile/SectionShell';
+import ToggleSwitch from '@/components/profile/ToggleSwitch';
 import { CurrencyCoinIcon, PrefChevronIcon } from '@/components/profile/preferences/prefIcons';
 import type { PrefGroup, PrefRow } from './preferenceGroups';
+
+/**
+ * Live wiring for one or more rows in a group. The parent passes the current
+ * value and an `onToggle`; rows whose key isn't in this map still render the
+ * inert `SoonToggle` so unmigrated prefs stay visually consistent.
+ */
+export interface PrefToggleWire {
+  value: boolean;
+  onToggle: (next: boolean) => void;
+  busy?: boolean;
+}
+export type PrefToggleWires = Record<string, PrefToggleWire | undefined>;
 
 /**
  * A labelled group of preference cards.
@@ -53,10 +66,25 @@ export const PrefNote: FC<{ children: ReactNode }> = ({ children }) => (
   </p>
 );
 
-const RowControl: FC<{ row: PrefRow; label: string }> = ({ row, label }) => {
+const RowControl: FC<{ row: PrefRow; label: string; wire?: PrefToggleWire }> = ({
+  row,
+  label,
+  wire,
+}) => {
   const { t } = useTranslation();
 
   if (row.kind === 'toggle') {
+    if (wire) {
+      return (
+        <ToggleSwitch
+          enabled={wire.value}
+          onToggle={() => wire.onToggle(!wire.value)}
+          label={label}
+          disabled={wire.busy}
+          narrow
+        />
+      );
+    }
     return <SoonToggle label={label} narrow />;
   }
 
@@ -74,7 +102,10 @@ const RowControl: FC<{ row: PrefRow; label: string }> = ({ row, label }) => {
   );
 };
 
-const PrefGroupView: FC<{ group: PrefGroup }> = ({ group }) => {
+const PrefGroupView: FC<{ group: PrefGroup; wires?: PrefToggleWires }> = ({
+  group,
+  wires,
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -91,7 +122,7 @@ const PrefGroupView: FC<{ group: PrefGroup }> = ({ group }) => {
                 const label = t(row.labelKey);
                 return (
                   <PrefRowShell key={row.key} label={label}>
-                    <RowControl row={row} label={label} />
+                    <RowControl row={row} label={label} wire={wires?.[row.key]} />
                   </PrefRowShell>
                 );
               })}
