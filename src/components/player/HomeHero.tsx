@@ -104,7 +104,7 @@ const SectionTile: FC<{
 }> = ({ href, label, art, mark }) => (
   <Link
     href={href}
-    className={`rl-liquid before:hidden [--tw-inset-shadow:var(--hero-tile-rim)]! group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0`}
+    className={`rl-liquid rl-diag-rim [--rim-radius:24px] lg:[--rim-radius:calc(var(--u)*24)] [--tw-inset-shadow:0_0_#0000]! group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0`}
   >
     <img
       src={mark}
