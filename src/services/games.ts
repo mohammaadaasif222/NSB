@@ -51,6 +51,50 @@ export const currentGameDevice = (): GameDevice =>
   window.matchMedia('(max-width: 767px)').matches ? 'MOBILE' : 'DESKTOP';
 
 /**
+ * Resolve a slug (e.g. "amiry-plinko") to its catalog entry, in the browser.
+ * Used to rehydrate the lobby card's last-played game — the API returns the
+ * slug + mode and the lobby needs the game's title (for the header) and the
+ * launch call. Null when the slug no longer resolves (delisted / renamed).
+ */
+export async function fetchGame(slug: string): Promise<Game | null> {
+  try {
+    const res = await apiService.get<Game>(`/games/${encodeURIComponent(slug)}`);
+    return res?.success && res.data ? res.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The player's last-played game on the lobby card, so the CrashPreview can
+ * restore it on next sign-in from any device. Fire-and-forget on the write
+ * side (a failed save is better than a blocked launch); null on read when
+ * the user has never opened an inline game.
+ */
+export async function fetchLastGame(): Promise<{
+  slug: string | null;
+  mode: GameMode;
+} | null> {
+  try {
+    const res = await apiService.get<{ slug: string | null; mode: GameMode } | null>(
+      '/users/me/last-game'
+    );
+    return res?.success && res.data ? res.data : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveLastGame(slug: string, mode: GameMode): Promise<void> {
+  try {
+    await apiService.put('/users/me/last-game', { slug, mode });
+  } catch {
+    // Fire-and-forget — the player is already playing; a failed save just
+    // means they will not see this game restored on the next device.
+  }
+}
+
+/**
  * One page of a shelf's listing, fetched in the browser as its slider nears
  * the end of what the server rendered. The same query the shelf's "View all"
  * page sends, so the slider and that page agree on order.

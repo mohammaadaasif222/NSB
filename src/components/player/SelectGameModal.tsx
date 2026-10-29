@@ -7,11 +7,18 @@ import { playHref, shelfFor } from '@/constants/games';
 import { useTranslation } from '@/context/I18nContext';
 import { fetchShelfPage } from '@/services/games';
 import { trackGameOpen } from '@/utils/events';
-import type { ApiError, Game } from '@/types';
+import type { ApiError, Game, GameMode } from '@/types';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  /**
+   * When set, "Play Game" (bottom CTA), the tile's gold Play button, and
+   * Play DEMO all call this with the chosen game and mode instead of
+   * navigating to /play/[slug]. Used by the lobby's featured game card to
+   * swap its own iframe in place rather than leaving the home page.
+   */
+  onPlay?: (game: Game, mode: GameMode) => void;
 }
 
 /** How many originals the picker loads — the whole shelf, in practice. */
@@ -32,7 +39,7 @@ const TITLE_ID = 'select-game-title';
  * over the tab bar: 16 in, the 122px tiles 11 apart and 13 between rows, the
  * grid filling what Play Game (28 off the foot) leaves.
  */
-const SelectGameModal: FC<Props> = ({ open, onClose }) => {
+const SelectGameModal: FC<Props> = ({ open, onClose, onPlay }) => {
   const { t } = useTranslation();
   const router = useRouter();
   const [games, setGames] = useState<Game[] | null>(null);
@@ -60,8 +67,22 @@ const SelectGameModal: FC<Props> = ({ open, onClose }) => {
     if (!chosen) return;
     trackGameOpen(chosen.slug, SURFACE);
     onClose();
+    if (onPlay) {
+      onPlay(chosen, 'REAL');
+      return;
+    }
     void router.push(playHref(chosen.slug));
   };
+
+  // The tile's own Play / Play DEMO buttons on the picked card. These bubble
+  // up the same way as the bottom CTA so the lobby's featured card can host
+  // whichever mode the operator clicks — no navigation.
+  const playInline = onPlay
+    ? (game: Game, mode: GameMode): void => {
+        onClose();
+        onPlay(game, mode);
+      }
+    : undefined;
 
   return (
     <GlassDialog
@@ -98,6 +119,7 @@ const SelectGameModal: FC<Props> = ({ open, onClose }) => {
                     surface={SURFACE}
                     selected={game.id === picked}
                     onSelect={() => setPicked(game.id)}
+                    onPlayInline={playInline}
                   />
                 ))
               : Array.from({ length: 6 }, (_, i) => (
