@@ -103,6 +103,7 @@
   "registerModal.needHelp": "Нужна помощь?",
   "registerModal.close": "Закрыть",
   "loginModal.title": "Вход",
+  "loginModal.loginWith": "Войти через",
   "loginModal.suggestion": "1 625 пользователей онлайн",
   "loginModal.username": "Имя пользователя",
   "loginModal.withUsername": "Вход по имени пользователя",

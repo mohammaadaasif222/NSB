@@ -45,6 +45,7 @@ const AuthModalShell: FC<AuthModalShellProps> = ({
       onClose={onClose}
       labelledBy={titleId}
       phoneSheet="fit"
+      brand
       // The design's phone insets: the rail 20 from the top and 16 in, the
       // body 3 further in, 20 left at the foot.
       className="max-w-[480px] px-4 pb-5 pt-5 max-sm:!rounded-t-[34px] sm:p-4"

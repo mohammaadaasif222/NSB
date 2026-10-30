@@ -162,7 +162,7 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
  * strip along its foot. A phone stacks the same pieces — preferences first,
  * then the brand — and folds each sitemap group into a pill of its own.
  */
-const SiteFooter: FC = () => {
+const SiteFooter: FC<{ glow?: boolean }> = ({ glow = false }) => {
   const { t } = useTranslation();
   const socialLinks = useSocialLinks();
   const {
@@ -260,11 +260,7 @@ const SiteFooter: FC = () => {
           title={label}
           className="flex aspect-[46/32] w-full items-center justify-center rl-plate rounded-[calc(var(--u)*10)] lg:aspect-auto lg:h-[calc(var(--u)*54)] lg:w-[calc(var(--u)*76)] lg:rounded-[calc(var(--u)*16)]"
         >
-          <Image
-            src={mark}
-            alt={label}
-            className="h-auto w-[65%] lg:w-[calc(var(--u)*50)]"
-          />
+          <Image src={mark} alt={label} className="h-auto w-[65%] lg:w-[calc(var(--u)*50)]" />
         </span>
       ))}
     </div>
@@ -298,10 +294,12 @@ const SiteFooter: FC = () => {
           brand row — what greys the panels' glass from behind. Desktop only;
           the phone frames draw none. Behind the content, like the backdrop
           (PlayerLayout's stage is isolated). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[calc(var(--u)*47)] -z-10 hidden h-[calc(var(--u)*837)] w-[calc(var(--u)*837)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,#d9d9d9,#07080a)] opacity-40 blur-[calc(var(--u)*341)] lg:block"
-      />
+      {glow && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-[calc(var(--u)*47)] -z-10 hidden h-[calc(var(--u)*837)] w-[calc(var(--u)*837)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,#d9d9d9,#07080a)] opacity-40 blur-[calc(var(--u)*341)] lg:block"
+        />
+      )}
 
       {/* --- Brand, socials, preferences ------------------------------- */}
       <div className="flex flex-col items-center gap-[calc(var(--u)*28)] pb-[calc(var(--u)*2)] lg:min-h-[calc(var(--u)*88)] lg:flex-row lg:justify-between lg:gap-[calc(var(--u)*16)]">
@@ -350,7 +348,7 @@ const SiteFooter: FC = () => {
       {/* --- Who to write to --------------------------------------------
           One row only where the design has room for it (2xl); below that the
           four addresses would overrun the panel, so they pair up instead. */}
-      <div className="rl-liquid mt-[calc(var(--u)*30)] grid gap-[calc(var(--u)*26)] rounded-[calc(var(--u)*34)] p-[calc(var(--u)*24)] sm:grid-cols-2 sm:gap-x-[calc(var(--u)*32)] lg:mt-[calc(var(--u)*22)] lg:flex lg:min-h-[calc(var(--u)*147)] lg:items-center lg:justify-between lg:px-[calc(var(--u)*50)] lg:py-0">
+      <div className="rl-liquid rl-bar-rim relative [--tw-inset-shadow:0_0_#0000]! mt-[calc(var(--u)*30)] grid gap-[calc(var(--u)*26)] rounded-[calc(var(--u)*34)] p-[calc(var(--u)*24)] sm:grid-cols-2 sm:gap-x-[calc(var(--u)*32)] lg:mt-[calc(var(--u)*22)] lg:flex lg:min-h-[calc(var(--u)*147)] lg:items-center lg:justify-between lg:px-[calc(var(--u)*50)] lg:py-0">
         {CONTACTS.map(({ icon, label, email }) => (
           <a
             key={label}
@@ -379,14 +377,14 @@ const SiteFooter: FC = () => {
         ))}
       </div>
 
-      <div className="rl-liquid mt-[calc(var(--u)*16)] flex flex-col items-center gap-[calc(var(--u)*28)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*17)] py-[calc(var(--u)*26)] lg:hidden">
+      <div className="rl-liquid rl-bar-rim relative [--tw-inset-shadow:0_0_#0000]! mt-[calc(var(--u)*16)] flex flex-col items-center gap-[calc(var(--u)*28)] rounded-[calc(var(--u)*34)] px-[calc(var(--u)*17)] py-[calc(var(--u)*26)] lg:hidden">
         {secure}
         {payments}
         {responsibly}
       </div>
 
       {/* --- Sitemap and payments: desktop ------------------------------ */}
-      <div className="rl-liquid mt-[calc(var(--u)*22)] hidden overflow-hidden rounded-[calc(var(--u)*34)] lg:block">
+      <div className="rl-liquid rl-bar-rim relative [--tw-inset-shadow:0_0_#0000]! mt-[calc(var(--u)*22)] hidden overflow-hidden rounded-[calc(var(--u)*34)] lg:block">
         <div className="grid grid-cols-[1fr_1fr_1fr_1.72fr] gap-x-[calc(var(--u)*65)] px-[calc(var(--u)*50)] pb-[calc(var(--u)*29)] pt-[calc(var(--u)*40)]">
           {groups.map((group) => (
             <Column key={group.title} group={group} soon={soon} />

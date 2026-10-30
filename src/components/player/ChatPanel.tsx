@@ -326,7 +326,7 @@ const MessageRow: FC<RowProps> = ({
           {isVoice ? (
             <VoiceMessage clip={message.voice!} mine />
           ) : (
-            <div className="rounded-2xl rounded-ee-md bg-[#2b3141] px-3.5 py-2">
+            <div className="rounded-2xl rounded-ee-md bg-white/10 px-3.5 py-2">
               <MessageBody message={message} meId={meId} />
             </div>
           )}
@@ -391,7 +391,7 @@ const MessageRow: FC<RowProps> = ({
 
 const Empty: FC<{ message: string }> = ({ message }) => (
   <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-slate-600">
+    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-slate-600">
       <ChatIcon size={22} />
     </span>
     <p className="text-xs text-slate-500">{message}</p>
@@ -402,7 +402,7 @@ const ConnectionNote: FC<{ state: ConnectionState; label: string }> = ({ state, 
   if (state === 'connected') return null;
 
   return (
-    <p className="border-t border-slate-800 bg-slate-900/60 px-4 py-1.5 text-center text-[10px] text-amber-400/90">
+    <p className="border-t border-white/10 bg-white/5 px-4 py-1.5 text-center text-[10px] text-amber-400/90">
       {label}
     </p>
   );
@@ -725,7 +725,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
     <>
       {/* A phone draws the design's back disc at the start, the room name
           beside it, and no rule under them. */}
-      <header className="relative flex items-center gap-3 px-4 pb-2 pt-4 sm:gap-2 sm:border-b sm:border-slate-800 sm:py-3">
+      <header className="relative flex items-center gap-3 px-4 pb-2 pt-4 sm:gap-2 sm:border-b sm:border-white/10 sm:py-3">
         <button
           type="button"
           onClick={onClose}
@@ -838,7 +838,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
 
       <ConnectionNote state={connection} label={t('chat.reconnecting')} />
 
-      <form onSubmit={submit} className="relative border-t border-slate-800 p-3">
+      <form onSubmit={submit} className="relative border-t border-white/10 p-3">
         <EmojiPopover
           open={emojiOpen}
           onClose={() => setEmojiOpen(false)}
@@ -856,7 +856,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
         )}
 
         {replyingTo && (
-          <div className="mb-2 flex items-center gap-2 rounded-lg border-s-2 border-[#4a9eff] bg-slate-900 px-3 py-1.5">
+          <div className="mb-2 flex items-center gap-2 rounded-lg border-s-2 border-[#4a9eff] bg-white/5 px-3 py-1.5">
             <ReplyIcon size={13} className="flex-shrink-0 text-[#4a9eff]" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-[11px] font-semibold text-[#4a9eff]">
@@ -880,7 +880,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
 
         {recording ? (
           <div className="flex items-center gap-2">
-            <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-full border border-rose-500/40 bg-slate-900 px-4 py-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-full border border-rose-500/40 bg-white/5 px-4 py-2">
               <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-rose-500" />
               <span className="text-[13px] text-slate-300">{t('chat.recording')}</span>
               <span className="ms-auto tabular-nums text-[13px] text-slate-400">
@@ -893,7 +893,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
               onClick={recorder.cancel}
               aria-label={t('chat.cancelRecording')}
               title={t('chat.cancelRecording')}
-              className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+              className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-slate-400 transition-colors hover:bg-white/15 hover:text-white"
             >
               <TrashIcon size={17} />
             </button>
@@ -910,7 +910,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="relative flex min-w-0 flex-1 items-center rounded-full border border-slate-700 bg-slate-900 ps-4 pe-1 transition-colors focus-within:border-blue-500/60">
+            <div className="relative flex min-w-0 flex-1 items-center rounded-full border border-white/15 bg-white/5 ps-4 pe-1 transition-colors focus-within:border-blue-500/60">
               <input
                 ref={inputRef}
                 type="text"
@@ -958,7 +958,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
                 disabled={sending || cooling}
                 aria-label={t('chat.record')}
                 title={cooling ? t('chat.slowMode') : t('chat.record')}
-                className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#2b3141] text-white transition-colors hover:bg-[#363d50] disabled:text-slate-500"
+                className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/15 disabled:text-slate-500"
               >
                 <MicIcon size={18} />
               </button>
@@ -968,7 +968,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
                 disabled={!canSend}
                 aria-label={t('chat.send')}
                 title={cooling ? t('chat.slowMode') : t('chat.send')}
-                className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#2b3141] text-white transition-colors hover:bg-[#363d50] disabled:text-slate-500 disabled:hover:bg-[#2b3141]"
+                className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/15 disabled:text-slate-500 disabled:hover:bg-white/10"
               >
                 <ArrowUpIcon size={18} />
               </button>

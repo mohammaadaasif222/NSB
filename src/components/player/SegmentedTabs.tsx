@@ -14,13 +14,21 @@ interface Props<K extends string> {
   onChange: (key: K) => void;
   /** Names the tab list for assistive tech. */
   label: string;
+  /** Extra classes for the track — a surface of its own (the wallet's glass). */
+  className?: string;
 }
 
-const SegmentedTabs = <K extends string>({ items, active, onChange, label }: Props<K>) => (
+const SegmentedTabs = <K extends string>({
+  items,
+  active,
+  onChange,
+  label,
+  className = '',
+}: Props<K>) => (
   <div
     role="tablist"
     aria-label={label}
-    className="rl-liquid flex h-14 items-center gap-px rounded-full px-1 lg:h-[calc(var(--u)*56)] lg:px-[calc(var(--u)*4)]"
+    className={`rl-liquid relative flex h-14 items-center gap-px rounded-full px-1 lg:h-[calc(var(--u)*56)] lg:px-[calc(var(--u)*4)] ${className}`}
   >
     {items.map((item) => {
       const on = item.key === active;

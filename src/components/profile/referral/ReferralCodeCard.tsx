@@ -1,6 +1,8 @@
-import { useEffect, useState, type FC } from 'react';
+import type { FC } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/context/I18nContext';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
+import { CheckIcon } from '@/components/icons';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
 import { shareTargets } from '@/components/profile/referral/shareTargets';
 import { referralLink } from '@/services/referral';
@@ -32,23 +34,16 @@ export const CopyIcon: FC = () => (
 /** The code, the way to copy its link, and the ways to pass it on. */
 const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
+  const { copied, copy: copyText } = useCopyToClipboard();
   const link = code ? referralLink(code) : '';
 
-  // Clears itself so the button does not sit on "Copied" forever.
-  useEffect(() => {
-    if (!copied) return;
-    const id = window.setTimeout(() => setCopied(false), 2000);
-    return () => window.clearTimeout(id);
-  }, [copied]);
-
   const copy = (): void => {
-    if (!link) return;
-    void navigator.clipboard?.writeText(link).then(() => {
-      setCopied(true);
-      analytics.referral.linkCopied();
+    void copyText(link).then((ok) => {
+      if (ok) analytics.referral.linkCopied();
     });
   };
+
+  const mark = copied ? <CheckIcon size={24} /> : <CopyIcon />;
 
   const shares = shareTargets(link, t('ref.shareMessage')).map(({ Mark, name, href }) => ({
     Mark,
@@ -56,7 +51,7 @@ const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
     href: code ? href : undefined,
     onClick: () => {
       if (!code) return;
-      if (name === 'Instagram') void navigator.clipboard?.writeText(link);
+      if (name === 'Instagram') void copyText(link);
       analytics.referral.shared(name.toLowerCase());
     },
   }));
@@ -71,15 +66,15 @@ const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
           type="button"
           onClick={copy}
           disabled={!code}
-          aria-label={t('ref.copyLink')}
-          className="mt-[22px] flex h-14 w-full items-center gap-3 rounded-[34px] border border-white/20 bg-white/5 ps-[22px] pe-[18px] text-start disabled:opacity-50"
+          aria-label={copied ? t('ref.copied') : t('ref.copyLink')}
+          className={`mt-[22px] flex h-14 w-full items-center gap-3 rounded-[34px] border bg-white/5 ps-[22px] pe-[18px] text-start transition-[colors,transform] active:scale-[0.98] disabled:opacity-50 ${copied ? 'border-[#03b739]/60' : 'border-white/20'}`}
         >
-          <span className="min-w-0 flex-1 truncate text-[14px] leading-5 text-[#9da2b4]">
+          <span
+            className={`min-w-0 flex-1 truncate text-[14px] leading-5 ${copied ? 'text-[#03b739]' : 'text-[#9da2b4]'}`}
+          >
             {copied ? t('ref.copied') : link || '—'}
           </span>
-          <span className="shrink-0 text-[#f0f1f5]">
-            <CopyIcon />
-          </span>
+          <span className={`shrink-0 ${copied ? 'text-[#03b739]' : 'text-[#f0f1f5]'}`}>{mark}</span>
         </button>
 
         <Link
@@ -100,7 +95,7 @@ const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
                 aria-label={t('ref.shareOn', { name })}
                 aria-disabled={!code}
                 onClick={onClick}
-                className="rl-glass-btn flex h-12 w-12 items-center justify-center rounded-full not-first:-ms-[18px] aria-disabled:opacity-50"
+                className="rl-glass-btn relative flex h-12 w-12 items-center justify-center rounded-full [--rl-btn-base:#121317] not-first:-ms-[18px] aria-disabled:opacity-50"
               >
                 <Mark />
               </a>
@@ -121,11 +116,14 @@ const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
           type="button"
           onClick={copy}
           disabled={!code}
-          className="rl-field-card mt-[calc(var(--u)*11)] flex h-[calc(var(--u)*56)] w-full max-w-[calc(var(--u)*434)] items-center justify-center gap-[calc(var(--u)*5)] rounded-[calc(var(--u)*34)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium text-[#f0f1f5] hover:bg-white/8 disabled:opacity-50"
+          className={`rl-field-card mt-[calc(var(--u)*11)] flex h-[calc(var(--u)*56)] w-full max-w-[calc(var(--u)*434)] items-center justify-center gap-[calc(var(--u)*5)] rounded-[calc(var(--u)*34)] text-[length:max(min(11px,16px),calc(var(--u)*16))] leading-[1.5] font-medium transition-[colors,transform] hover:bg-white/8 active:scale-[0.98] disabled:opacity-50 ${copied ? 'text-[#03b739]' : 'text-[#f0f1f5]'}`}
         >
           {copied ? t('ref.copied') : t('ref.copyLink')}
-          <CopyIcon />
+          {mark}
         </button>
+        <span className="sr-only" aria-live="polite">
+          {copied ? t('ref.copied') : ''}
+        </span>
 
         <p className="mt-[calc(var(--u)*22)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] text-[#9da2b4]">
           {t('ref.orShare')}
@@ -141,7 +139,7 @@ const ReferralCodeCard: FC<{ code: string | null }> = ({ code }) => {
               aria-label={t('ref.shareOn', { name })}
               aria-disabled={!code}
               onClick={onClick}
-              className="rl-chip flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center aria-disabled:opacity-50"
+              className="rl-glass-btn flex h-[calc(var(--u)*48)] w-[calc(var(--u)*48)] items-center justify-center rounded-full aria-disabled:opacity-50"
             >
               <Mark />
             </a>

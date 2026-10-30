@@ -220,7 +220,7 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
  * stop a blur nested in it from reaching the page.
  */
 const PANEL =
-  'rl-menu-panel z-40 overflow-y-auto rounded-[34px] p-[13px] thin-scrollbar lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*14-1px)]';
+  'rl-menu-panel lg:rl-menu-panel-glass rl-modal-rim lg:!shadow-[0_8px_40px_rgba(0,0,0,0.12)] z-40 overflow-y-auto rounded-[34px] p-[13px] thin-scrollbar lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*14-1px)]';
 
 const PLACEMENT = {
   /**

@@ -121,6 +121,7 @@ const Lobby: FC<Props> = ({
   providers,
   catalogueFailed,
   faqs,
+  streams,
   registeredToday,
   seo,
   basePath,
@@ -226,10 +227,10 @@ const Lobby: FC<Props> = ({
             sits among the shelves instead. */}
         {!casino && providerRow}
         {!player && !casino && <SportsRow />}
-        {!casino && <StreamersRow />}
+        {!casino && <StreamersRow streams={streams} />}
         <RecentWinners games={winnerGames} tabs={player || casino ? 'player' : 'landing'} />
         <FaqAccordion items={faqs} />
-        <SiteFooter />
+        <SiteFooter glow={variant === 'home'} />
       </div>
     </PlayerLayout>
   );

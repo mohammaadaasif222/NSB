@@ -1,13 +1,24 @@
 import { useEffect, useRef } from 'react';
 /*
- * The design's chip glass, as measured off its render: a 20% white hairline,
- * the pane nearly clear, and the same depth inside it as the dialog — shaded
- * top and start, lit bottom and end. The chosen chip adds a gold wash and the
- * design's 17.6px gold glow.
+ * The chips wear the wallet dialog's own glass: the pane nearly clear (2%
+ * white) with the same depth inside it — shaded top and start, lit bottom and
+ * end — and its rim, a half-pixel whitish hairline on the diagonal, clear
+ * round the top-end and bottom-start corners (`rl-diag-rim`, its radius the
+ * pill's 24). The chosen chip adds a gold wash and the design's 17.6px gold
+ * glow.
  */
-const CHIP_GLASS = 'border border-white/20 backdrop-blur-md transition-colors';
-const CHIP_IDLE = `${CHIP_GLASS} bg-black/40 text-[#9da2b4] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04)] hover:bg-white/[0.08] hover:text-[#f0f1f5]`;
+const CHIP_GLASS =
+  'rl-diag-rim relative [--rim-radius:24px] [--rim-clear:48px] [--rim-fade:96px] border border-transparent backdrop-blur-md transition-colors';
+const CHIP_IDLE = `${CHIP_GLASS} bg-white/[0.02] text-[#9da2b4] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04)] hover:bg-white/[0.08] hover:text-[#f0f1f5]`;
 const CHIP_PICKED = `${CHIP_GLASS} bg-[#ffe779]/[0.16] font-rubik font-medium text-[#ffe779] shadow-[inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04),0_0_17.6px_rgba(255,231,121,0.2)]`;
+
+/**
+ * The wallet's Crypto / Local currency track in the same glass as the chips:
+ * the dialog's near-clear pane and depth in place of the shared track's, and
+ * the diagonal rim at the 56px track's radius.
+ */
+export const WALLET_TRACK =
+  'rl-diag-rim [--rim-radius:28px] [--rim-clear:56px] [--rim-fade:112px] lg:[--rim-radius:calc(var(--u)*28)] !bg-white/[0.02] [--tw-inset-shadow:inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04)]!';
 
 export interface WalletTabItem<K extends string> {
   id: K;

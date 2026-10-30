@@ -21,6 +21,7 @@ import AccountReviewGate from '@/components/risk/AccountReviewGate';
 import { useMe } from '@/context/UserContext';
 import Button from '@/components/ui/Button';
 import SegmentedTabs from '@/components/player/SegmentedTabs';
+import { WALLET_TRACK } from '@/components/wallet/shared/WalletTabBar';
 import WalletField, {
   WALLET_ERROR,
   WALLET_INPUT,
@@ -416,6 +417,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
         active={withdrawalType}
         onChange={setWithdrawalType}
         label={t('acct.wallet.tabWithdraw')}
+        className={WALLET_TRACK}
       />
 
       {/* Where it goes, and how much can go — over either form. */}

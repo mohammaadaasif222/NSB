@@ -1,9 +1,9 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { FacebookMark, GmailMark, TelegramMark, WhatsappMark } from '@/components/brand';
+import { GmailMark } from '@/components/brand';
 import { MailIcon, PhoneIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
-import SocialDot from '@/components/auth/SocialDot';
+import SocialShortcuts from '@/components/auth/SocialShortcuts';
 import { useRegisteredTodayLabel } from '@/hooks/useRegisteredToday';
 
 import type { SignupMethod } from '@/types';
@@ -59,43 +59,12 @@ const MethodStep: FC<MethodStepProps> = ({
         ]}
       />
 
-      {/* A phone: 18 under Email, the 48px discs with 24px marks. */}
-      <div className="flex items-center justify-center gap-4 pt-[6px] sm:pt-4">
-        <div className="flex items-center max-sm:[&_svg]:h-6 max-sm:[&_svg]:w-6">
-          <SocialDot
-            size={40}
-            label={t('auth.methodTelegram')}
-            colour="text-[#2aabee]"
-            onClick={onTelegram}
-            first
-          >
-            <TelegramMark size={18} />
-          </SocialDot>
-          <SocialDot
-            size={40}
-            label="Facebook"
-            colour="text-[#1877f2]"
-            onClick={() => onUnavailable('Facebook')}
-          >
-            <FacebookMark size={18} />
-          </SocialDot>
-          <SocialDot
-            size={40}
-            label="WhatsApp"
-            colour="text-[#25d366]"
-            onClick={() => onUnavailable('WhatsApp')}
-          >
-            <WhatsappMark size={19} />
-          </SocialDot>
-        </div>
-        <button
-          type="button"
-          onClick={onMore}
-          className="text-[16px] font-medium text-[#9da2b4] transition-colors hover:text-white sm:text-[15px] sm:font-normal sm:text-white/70"
-        >
-          {t('registerModal.moreOptions')}
-        </button>
-      </div>
+      <SocialShortcuts
+        onTelegram={onTelegram}
+        onUnavailable={onUnavailable}
+        onMore={onMore}
+        moreLabel={t('registerModal.moreOptions')}
+      />
     </div>
   );
 };
