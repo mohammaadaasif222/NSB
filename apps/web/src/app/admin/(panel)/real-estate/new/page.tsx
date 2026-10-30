@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { AdminSettings } from "@nsb/shared";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 import { ProjectForm } from "../project-form";
 import { editorsOnly } from "@/components/admin/editors-only";
 

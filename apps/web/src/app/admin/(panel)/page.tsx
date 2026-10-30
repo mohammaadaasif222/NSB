@@ -13,18 +13,13 @@ import { Bell, Building2, CalendarClock, ChevronRight, Heart, Home, IndianRupee,
 import type { ReactNode } from "react";
 import { ListingThumb, hueOf } from "@/components/admin/listing-thumb";
 import { Kpi } from "@/components/admin/ui";
-import { adminApi } from "@/lib/api";
-import { formatDate } from "@/lib/format";
+import { adminApi } from "@/lib/admin-api";
+import { ago, formatDate } from "@/lib/format";
 
 const AMBER = "#F59E0B";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
-
-function ago(iso: string) {
-  const m = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 60_000));
-  return m < 60 ? `${m}m ago` : m < 1440 ? `${Math.floor(m / 60)}h ago` : `${Math.floor(m / 1440)}d ago`;
-}
 
 function SectionRow({ href, icon, title, note }: { href: string; icon: ReactNode; title: string; note: string }) {
   return (

@@ -8,6 +8,7 @@ import { ArrowUpRight, Bell, Menu, Moon, Search, Sun } from "lucide-react";
 import { ADMIN_ROLE_LABELS, type AdminUser, canDo } from "@nsb/shared";
 import { AdminNav } from "./admin-nav";
 import { useUnreadEnquiries } from "./unread-enquiries";
+import { sitePath } from "@/lib/admin-links";
 
 const ADMIN_THEME_KEY = "nsb-admin-theme";
 const ADMIN_THEME_EVENT = "nsb-admin-theme-change";
@@ -99,7 +100,7 @@ export function AdminShell({ admin, expiringSoon, children }: { admin: AdminUser
             <input ref={search} name="q" placeholder="Search listings…" aria-label="Search listings" maxLength={100} />
             <kbd>/</kbd>
           </form>
-          <Link href="/" target="_blank" rel="noreferrer" className="a-btn g s">
+          <Link href={sitePath("/")} target="_blank" rel="noreferrer" className="a-btn g s">
             <span>View site</span>
             <ArrowUpRight size={15} aria-hidden />
           </Link>

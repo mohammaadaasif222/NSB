@@ -127,6 +127,13 @@
       "when": 1793369282704,
       "tag": "0017_confused_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793371697996,
+      "tag": "0018_ambitious_lady_mastermind",
+      "breakpoints": true
     }
   ]
 }

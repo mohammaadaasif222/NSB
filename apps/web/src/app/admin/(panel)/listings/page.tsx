@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { type AdminCategory, LISTING_STATUSES, type ListingStatus, type ListingSummary, type Paginated } from "@nsb/shared";
 import { PageHeader, Pagination } from "@/components/admin/ui";
-import { adminApi, isUuid } from "@/lib/api";
+import { adminApi, isUuid } from "@/lib/admin-api";
 import { ListingFilters, type ListingFilterValues } from "./listing-filters";
 import { ListingsTable } from "./listings-table";
 

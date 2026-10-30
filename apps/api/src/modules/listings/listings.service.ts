@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, desc, eq, gte, ilike, inArray, isNotNull, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
   type AdminListing,
@@ -30,7 +30,7 @@ import { DB, type Database } from '../../db/db.module.js';
 import { categories, enquiries, listingImages, listingReviews, listings } from '../../db/schema.js';
 import { rethrowDbError } from '../../common/db-errors.js';
 import { istDayStart } from '../../common/dates.js';
-import { likeTerm } from '../../common/like.js';
+import { searchMatch } from '../../common/like.js';
 import { pageWindow } from '../../common/pagination.js';
 import { MediaService } from '../media/media.service.js';
 
@@ -342,12 +342,7 @@ export class ListingsService {
     if (query.category) filters.push(eq(categories.slug, query.category));
     if (query.featured !== undefined) filters.push(eq(listings.isFeatured, query.featured));
     if (query.tag) filters.push(sql`exists (select 1 from unnest(${listings.tags}) as t(tag) where lower(t.tag) = lower(${query.tag}))`);
-    if (query.q) {
-      const term = likeTerm(query.q);
-      filters.push(
-        or(ilike(listings.name, term), ilike(listings.area, term), ilike(listings.locality, term), ilike(listings.shortDescription, term))!,
-      );
-    }
+    if (query.q) filters.push(searchMatch([listings.name, listings.area, listings.locality, listings.shortDescription], listings.tags, query.q));
     const where = filters.length ? and(...filters) : undefined;
 
     const [rows, [{ total }]] = await Promise.all([

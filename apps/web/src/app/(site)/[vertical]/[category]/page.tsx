@@ -6,9 +6,9 @@ import { type Category, defaultEliteBanner, type ListingSummary, type Paginated 
 import { BackButton } from "@/components/site/back-button";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { BrowsePanel } from "@/components/site/listing/browse-panel";
-import { EliteBanner } from "@/components/site/listing/elite-banner";
+import { EliteBanner } from "@/components/shared/elite-banner";
 import { FilterMenu } from "@/components/site/listing/filter-menu";
-import { ListingCard, type ListingView } from "@/components/site/listing/listing-card";
+import { ListingCard, type ListingView } from "@/components/shared/listing-card";
 // import { ListingSearch } from "@/components/site/listing/listing-search";
 import { ClearLocationButton } from "@/components/site/location-picker";
 import { Pagination } from "@/components/site/pagination";
@@ -72,8 +72,8 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
   const sidebar = view === "list" && panels.length > 0;
   const tags = [...new Set(panels.flatMap((p) => p.tiles.map((tile) => tile.label)))];
   const banner = eliteBanners[category.slug] ?? defaultEliteBanner(category.name);
-  // First page only, and never above a page with no Elite listing (a search, a narrow location).
-  const showBanner = page === 1 && banner.enabled && listings.items.some((l) => l.isElite);
+  // First page only, whether or not any listing is Elite yet.
+  const showBanner = page === 1 && banner.enabled;
   // NSB's own number: public pages never carry a vendor's.
   const nsbPhone = footer.showPhone && footer.phone ? footer.phone.replace(/[^\d+]/g, "") : whatsapp && `+91${whatsapp.number}`;
 

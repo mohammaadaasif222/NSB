@@ -142,7 +142,12 @@ export const listings = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index('listings_category_idx').on(t.categoryId), uniqueIndex('listings_category_top_rank_idx').on(t.categoryId, t.topRank)],
+  (t) => [
+    index('listings_category_idx').on(t.categoryId),
+    uniqueIndex('listings_category_top_rank_idx').on(t.categoryId, t.topRank),
+    // Trigrams let "contains" searches use an index. Same columns, in order, as ListingsService's search.
+    index('listings_search_idx').using('gin', sql`search_text(array[name, area, locality, short_description], tags) gin_trgm_ops`),
+  ],
 );
 
 /** Reviews the NSB team adds to a listing: copied from Google or given by customers. */
@@ -259,7 +264,11 @@ export const projects = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index('projects_status_area_idx').on(t.status, t.area)],
+  (t) => [
+    index('projects_status_area_idx').on(t.status, t.area),
+    // Same columns, in order, as ProjectsService's search.
+    index('projects_search_idx').using('gin', sql`search_text(array[name, builder, advertiser_name, locality], tags) gin_trgm_ops`),
+  ],
 );
 
 /**

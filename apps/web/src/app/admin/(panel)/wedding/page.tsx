@@ -12,7 +12,7 @@ import {
   type ListingSummary,
   type Paginated,
 } from "@nsb/shared";
-import { adminApi, isUuid } from "@/lib/api";
+import { adminApi, isUuid } from "@/lib/admin-api";
 import { WeddingListingsTable } from "./listings-table";
 import { ManageSubcategories } from "./manage-subcategories";
 import { WeddingFilters, type WeddingFilterValues } from "./wedding-filters";

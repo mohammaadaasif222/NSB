@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { AdminCategory, AdminSettings, ListingSummary } from "@nsb/shared";
 import { editorsOnly } from "@/components/admin/editors-only";
-import { adminApi, isUuid } from "@/lib/api";
+import { adminApi, isUuid } from "@/lib/admin-api";
 import { EliteBannerForm } from "./elite-banner-form";
 import { EliteManager } from "./elite-manager";
 

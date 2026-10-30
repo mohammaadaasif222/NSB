@@ -20,6 +20,7 @@ export interface EnquiryNotice {
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly siteUrl: string | undefined;
+  private readonly adminUrl: string | undefined;
 
   constructor(
     private readonly settings: SettingsService,
@@ -27,6 +28,7 @@ export class NotificationsService {
     config: ConfigService<Env, true>,
   ) {
     this.siteUrl = config.get('SITE_URL', { infer: true });
+    this.adminUrl = config.get('ADMIN_URL', { infer: true }) ?? this.siteUrl;
   }
 
   /** Emails the NSB recipients and, if enabled, the vendor. Rejects if any email failed. */
@@ -38,7 +40,7 @@ export class NotificationsService {
       return;
     }
     const sends = [
-      { label: 'NSB recipients', send: () => this.mail.send(config, config.adminRecipients, adminEnquiryEmail(enquiry, listing, this.siteUrl)) },
+      { label: 'NSB recipients', send: () => this.mail.send(config, config.adminRecipients, adminEnquiryEmail(enquiry, listing, this.siteUrl, this.adminUrl)) },
       // The site-wide switch (Settings) and the listing's own switch must both allow it.
       ...(config.notifyVendor && listing?.notifyVendor && vendorEmail
         ? [{ label: 'vendor', send: () => this.mail.send(config, [vendorEmail], vendorEnquiryEmail(enquiry)) }]

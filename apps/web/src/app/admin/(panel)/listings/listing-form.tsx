@@ -29,7 +29,7 @@ import { DetailsSection, type DetailsDraft, detailsFromDraft, draftFromDetails, 
 import { draftFromGroups, groupsFromDraft, type ServiceGroupDraft, ServiceGroupsEditor } from "@/components/admin/service-groups-editor";
 import { TagPicker } from "@/components/admin/tag-picker";
 import { useAdminAction } from "@/components/admin/use-admin-action";
-import { ListingCard, type ListingView } from "@/components/site/listing/listing-card";
+import { ListingCard, type ListingView } from "@/components/shared/listing-card";
 import { adminClient } from "@/lib/admin-client";
 import { browseTagGroups } from "@/lib/browse-panels";
 

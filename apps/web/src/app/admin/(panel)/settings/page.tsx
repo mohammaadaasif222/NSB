@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { type AdminCategory, type AdminSettings, type AdminUser, type AdminUserRow, canDo } from "@nsb/shared";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 import { EmailForm } from "./email-form";
 import { PasswordForm } from "./password-form";
 import { PricingForm } from "./pricing-form";

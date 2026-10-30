@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { type AdminCategory, LISTING_AREAS, type ListingSummary, type Paginated } from "@nsb/shared";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 
 /**
  * Slots and terms, as in the NSB Live Demo admin: 10 vendors per sub-category per location,

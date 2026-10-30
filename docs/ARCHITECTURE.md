@@ -49,7 +49,7 @@ main.ts / app.setup.ts   helmet, cookie-parser, trust proxy, global prefix /api
 config/env.ts            zod-validated environment; the app refuses to boot when a value is invalid
 db/schema.ts             Drizzle tables, the single source of the DB schema
 db/migrate.ts, seed.ts   run migrations; seed the 5 categories and the first admin
-common/                  ZodPipe, Postgres error mapping (23505→409, 23503→400), pagination, reorderRows
+common/                  ZodPipe, Postgres error mapping (23505→409, 23503→400), pagination, reorderRows, likeTerm and searchMatch
 modules/
   auth/                  login/logout/me, AdminGuard, @CurrentAdmin (global module)
   categories/            public read + admin create/update/reorder
@@ -91,7 +91,7 @@ modules/
 | GET | `/api/auth/me` | admin |
 | POST | `/api/auth/password` `{ currentPassword, newPassword, confirmPassword }` (wrong current password → 400 on `currentPassword`, not 401) | admin |
 | GET | `/api/categories` (top-level) · `?parent=<slug>` (sub-categories) · `/api/categories/:slug` (with parent + children) | – |
-| GET | `/api/listings?category=&q=&featured=&page=&pageSize=` (`q` matches name, area or short description) · `/api/listings/:slug` | – |
+| GET | `/api/listings?category=&q=&featured=&page=&pageSize=` (`q` matches any part of the name, area, locality, short description or tags) · `/api/listings/:slug` | – |
 | GET | `/api/banners` (active only) | – |
 | POST | `/api/enquiries` | – |
 | GET, POST | `/api/admin/categories` | admin |
@@ -173,7 +173,9 @@ Migrations are SQL files generated into `apps/api/drizzle/` and committed. The A
 
 ```
 proxy.ts                    optimistic /admin gate (cookie present?), formerly "middleware"
-lib/api.ts                  server-only fetch helpers: api (public) and adminApi (forwards the cookie)
+lib/api.ts                  server-only fetch helper: api (public)
+lib/admin-api.ts            server-only adminApi (forwards the cookie); lib/admin-client.ts is the browser client
+components/shared/          UI both sides use: the vendor card, Elite banner, icons
 app/(site)/                 public site (M2 adds /wedding, M3 adds /wedding/[category]/[slug])
 app/admin/login/            sign-in page (client form → POST /api/auth/login)
 app/admin/logout/route.ts   clears the cookie (POST from the button; GET when a session expires)
@@ -181,13 +183,17 @@ app/admin/(panel)/          authenticated layout; it verifies the session via /a
 components/admin/           nav, table, page header
 ```
 
+Admin and public code never import each other: `docs/ADMIN-SEPARATION.md` has the boundary, which lint enforces, and the steps to move the admin to its own app.
+
 Next 16 rules apply: `params`, `searchParams` and `cookies()` are async, `fetch` is uncached by default, and `proxy.ts` replaces `middleware.ts`. Read `node_modules/next/dist/docs/` before using any Next API.
 
 **Categories are two levels.** Top-level categories (Wedding first, plus the other verticals from the home design) fill the home grid. Wedding's sub-categories (Wedding Venues, Makeup & Beauty, …) hold listings. Opening a top-level category (e.g. `/wedding`) redirects to its first sub-category in admin order (e.g. `/wedding/wedding-venues`), whose page shows the sibling sub-categories as chips across the top. A top-level category with no sub-categories shows a "Coming soon" landing.
 
 **Listing and detail pages:** the listing page defaults to list view (`?view=list`; use `?view=grid` for grid), with `?q=` search (its box, `ListingSearch`, is commented out on the page for now) and numbered `?page=` pagination; the vendor profile uses only roadmap fields. The layout follows the NSB venue page design (`lp-` classes in `listing-page.css`): dropdowns for sub-category and tag in the header, one card design for both views, one column on phones, where the card shows dots for its photos and NSB's WhatsApp and Call buttons (never the vendor's number). In list view only, desktop shows the "by budget" / "by type" side cards (`lib/browse-panels.ts`). A card shows key info as two label/value pairs plus two chips (the first four quick-info items).
 
-**Elite 10:** Admin › Wedding › Elite 10 gives each sub-category up to 10 top places (`top_rank`), shown first, then featured, then newest, so with 10 listings a page they fill page 1. Any listing with a place can be Elite (`is_elite`): a blue card that spans the row in grid view. Removing a place or moving the listing to another sub-category clears both. The black banner above the listings is per sub-category (`site.eliteBanners`, `defaultEliteBanner` until saved) and shows on page 1 only, while that page has an Elite listing. The detail page shows a Videos section when the listing has YouTube links: Videos (16:9) then Shorts (9:16); each loads the youtube-nocookie player only when tapped. The enquiry card follows the ezweddingz booking card: headline price (first quick-info item), event type (wedding vertical) and date, a big Enquire now button that opens name, mobile, budget and requirement, and the WhatsApp button. It sits in a sticky side card (stacked under the content on mobile, with a fixed Enquire bar). Demo vendors and three photo hero banners: `npm run db:seed:demo`; remove both before launch with `npm run db:seed:demo -- --remove` (vendors all use @example.com emails; banners are matched by their image URL; photos are hotlinked from Unsplash).
+**Search.** Listings and projects search one `search_text(fields[], tags[])` expression (`searchMatch` in `common/like.ts`), with a GIN trigram index (`pg_trgm`) per table, so any part of a word matches and `%` and `_` are plain text. A new searched column must be added to both the service and the index. In the admin, `useLiveSearch` is the search-as-you-type hook: it debounces, cancels replaced requests, skips repeats and loads more.
+
+**Elite 10:** Admin › Wedding › Elite 10 gives each sub-category up to 10 top places (`top_rank`), shown first, then featured, then newest, so with 10 listings a page they fill page 1. Any listing with a place can be Elite (`is_elite`): a blue card that spans the row in grid view. Removing a place or moving the listing to another sub-category clears both. The black banner above the listings is per sub-category (`site.eliteBanners`, `defaultEliteBanner` until saved) and shows on page 1 only, whether or not any listing is Elite. The detail page shows a Videos section when the listing has YouTube links: Videos (16:9) then Shorts (9:16); each loads the youtube-nocookie player only when tapped. The enquiry card follows the ezweddingz booking card: headline price (first quick-info item), event type (wedding vertical) and date, a big Enquire now button that opens name, mobile, budget and requirement, and the WhatsApp button. It sits in a sticky side card (stacked under the content on mobile, with a fixed Enquire bar). Demo vendors and three photo hero banners: `npm run db:seed:demo`; remove both before launch with `npm run db:seed:demo -- --remove` (vendors all use @example.com emails; banners are matched by their image URL; photos are hotlinked from Unsplash).
 
 **URLs:** `/` (home), `/[vertical]` (one landing template, e.g. `/wedding`), `/[vertical]/[category]` (M3), `/[vertical]/[category]/[vendor-slug]` (M3), `/real-estate` and `/real-estate/[project]` (static segment, wins over `/[vertical]`; styles in `real-estate.css`, `re-` classes), `/admin/…`.
 

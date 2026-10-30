@@ -493,6 +493,25 @@ describe('Admin CMS (e2e)', () => {
       await admin.patch(`/api/admin/listings/${second.id}`).send({ categoryId: sub.id }).expect(200);
     });
 
+    it('finds listings by any part of a name, or by a tag', async () => {
+      const name = `ATS Homekraft 50% a_b ${run}`;
+      const found = (await admin
+        .post('/api/admin/listings')
+        .send({ categoryId: sub.id, name, slug: `e2e-${run}-ats`, area: 'Noida', shortDescription: 'Test', tags: ['Near Metro'] })
+        .expect(201)).body as AdminListing;
+      const search = async (q: string) => {
+        const page = (await admin.get(`/api/admin/listings?categoryId=${sub.id}&q=${encodeURIComponent(q)}`).expect(200)).body as Paginated<ListingSummary>;
+        return page.items.map((l) => l.id);
+      };
+      try {
+        for (const q of ['ATS', 'Home', 'TS H', 'homekraft', 'ear Met', '50%', 'a_b', run]) expect(await search(q), q).toContain(found.id);
+        // The wildcards are plain text, and two fields never join into one match.
+        for (const q of ['AT%kraft', 'a_c', 'Test Near', 'zzz']) expect(await search(q), q).toEqual([]);
+      } finally {
+        await admin.delete(`/api/admin/listings/${found.id}`).expect(204);
+      }
+    });
+
     it('saves a sub-category banner', async () => {
       const before = (await pool.query(`select value from settings where key = 'site.eliteBanners'`)).rows[0]?.value;
       try {

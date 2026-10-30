@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { LoginForm } from "./login-form";
+import { sitePath } from "@/lib/admin-links";
 
 export const metadata: Metadata = { title: "Admin Login" };
 
@@ -34,10 +35,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/admin/logi
       />
 
       <header className="relative z-10 flex items-center justify-between px-[18px] pt-[calc(18px+env(safe-area-inset-top,0px))] sm:px-8">
-        <Link href="/" className="animate-rise block" aria-label="Noida Super Bazaar">
+        <Link href={sitePath("/")} className="animate-rise block" aria-label="Noida Super Bazaar">
           <Image src="/images/admin/login-logo.png" alt="Noida Super Bazaar" width={260} height={131} priority className="h-[46px] w-auto sm:h-14 [@media(max-height:700px)]:h-[46px]!" />
         </Link>
-        <Link href="/" className="animate-rise text-[13px] font-semibold text-[#64748B] [animation-delay:160ms] hover:text-[#1700D6]">
+        <Link href={sitePath("/")} className="animate-rise text-[13px] font-semibold text-[#64748B] [animation-delay:160ms] hover:text-[#1700D6]">
           ← Back to website
         </Link>
       </header>

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { AdminCategory, AdminSettings, Banner } from "@nsb/shared";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 import { BannerManager } from "../banners/banner-manager";
 import { CategoryManager } from "../categories/category-manager";
 import { FooterManager } from "./footer-manager";
 import { HomeCardsManager } from "./home-cards-manager";
 import { editorsOnly } from "@/components/admin/editors-only";
+import { sitePath } from "@/lib/admin-links";
 
 export const metadata: Metadata = { title: "Home page" };
 
@@ -27,7 +28,7 @@ export default async function HomePageManager() {
           <h2>Home page</h2>
           <p>Four things you can change. Changes show on the site as soon as they are saved.</p>
         </div>
-        <Link href="/" target="_blank" rel="noreferrer" className="a-btn g">
+        <Link href={sitePath("/")} target="_blank" rel="noreferrer" className="a-btn g">
           View homepage
         </Link>
       </div>
