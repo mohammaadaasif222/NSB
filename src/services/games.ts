@@ -155,6 +155,10 @@ export const fetchFavourites = (): Promise<Game[]> =>
 export const fetchRecentGames = (): Promise<Game[]> =>
   listOrThrow<Game>('/games/recent', 'myGames.failed');
 
+/** The games recommended to the player: the staff's picks first, then games like their own. */
+export const fetchRecommendedGames = (): Promise<Game[]> =>
+  listOrThrow<Game>('/games/recommended', 'myGames.failed');
+
 /** The studios the player has hearted, newest-hearted first. */
 export const fetchFavouriteProviders = (): Promise<LobbyProvider[]> =>
   listOrThrow<LobbyProvider>('/game-providers/favourites', 'favourites.providersFailed');

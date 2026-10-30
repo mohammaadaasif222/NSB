@@ -13,7 +13,9 @@ import RecentShelf from '@/components/player/RecentShelf';
 import ComingSoonShelf from '@/components/player/ComingSoonShelf';
 import JackpotShelf from '@/components/player/JackpotShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
-import { CASINO_SHELF_KEYS, HOME_SHELF_KEYS, LIVE_SHELF_KEYS } from '@/constants/games';
+import { CASINO_BROWSER_KEYS, HOME_SHELF_KEYS, LIVE_SHELF_KEYS } from '@/constants/games';
+import RecommendedShelf from '@/components/player/RecommendedShelf';
+import type { GameShelf } from '@/types';
 import StreamersRow from '@/components/player/StreamersRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import FaqAccordion from '@/components/player/FaqAccordion';
@@ -82,20 +84,23 @@ const HOME_INSERTS = (providerRow: ReactNode): readonly ShelfInsert[] => [
 
 /**
  * The casino page's rows among its shelves, as the sheet orders them: the
- * player's favourites after Originals, the provider jackpots, their last
- * played and Drops & Wins after Recommended, Providers after Instant Wins,
- * Hot after Trending.
+ * player's favourites and Recommended for you after Originals, then the
+ * provider jackpots, their last played and Drops & Wins, Providers after
+ * Instant Wins, Hot after Trending. Recommended takes the place of the
+ * Featured shelf, which it falls back to (CASINO_BROWSER_KEYS).
  */
 const CASINO_INSERTS = (
   providerRow: ReactNode,
-  t: (key: TranslationKey) => string
+  t: (key: TranslationKey) => string,
+  featured: GameShelf | undefined
 ): readonly ShelfInsert[] => [
   { id: 'favourites', after: 'originals', node: <FavouritesShelf /> },
-  { id: 'jackpots', after: 'featured', node: <JackpotShelf /> },
-  { id: 'recents', after: 'featured', node: <RecentShelf /> },
+  { id: 'recommended', after: 'originals', node: <RecommendedShelf featured={featured} /> },
+  { id: 'jackpots', after: 'originals', node: <JackpotShelf /> },
+  { id: 'recents', after: 'originals', node: <RecentShelf /> },
   {
     id: 'drops-wins',
-    after: 'featured',
+    after: 'originals',
     node: <ComingSoonShelf title={t('lobby.rail.dropsWins')} />,
   },
   { id: 'providers', after: 'instant-wins', node: providerRow },
@@ -169,10 +174,14 @@ const Lobby: FC<Props> = ({
           ? {
               // The sheet's casino rows, with the player's own, Providers and
               // the not-yet-available ones among them.
-              shelfKeys: CASINO_SHELF_KEYS,
-              titles: { originals: 'nav.originals', featured: 'lobby.casino.recommended' },
+              shelfKeys: CASINO_BROWSER_KEYS,
+              titles: { originals: 'nav.originals' },
               chipsOnPhone: true,
-              inserts: CASINO_INSERTS(providerRow, t),
+              inserts: CASINO_INSERTS(
+                providerRow,
+                t,
+                shelves.find((s) => s.key === 'featured')
+              ),
             }
           : {
               // The sheet's home shelves, with Sports and Providers among them.

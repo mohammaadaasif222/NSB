@@ -149,6 +149,15 @@ export const CASINO_SHELF_KEYS: readonly GameShelfKey[] = [
 ];
 
 /**
+ * The shelves the casino page draws. Featured is fetched with them but not
+ * drawn: Recommended for you shows it to visitors and to players it has
+ * nothing personal for.
+ */
+export const CASINO_BROWSER_KEYS: readonly GameShelfKey[] = CASINO_SHELF_KEYS.filter(
+  (key) => key !== 'featured'
+);
+
+/**
  * The Live Casino lobby's rows, in the Casino Manager sheet's order. Live
  * tables arrive slowly, so these rows stay on the page while empty and say
  * "Coming soon" instead of disappearing.
