@@ -2,13 +2,10 @@ import apiService from '@/services/api';
 
 /** The Suggestion Box's categories, in the order the backend accepts and the picker lists them. */
 export const SUGGESTION_CATEGORIES = [
-  'feature',
   'games',
   'bonuses',
   'payments',
   'ux',
-  'transparency',
-  'fairness',
   'bug',
   'other',
 ] as const;
