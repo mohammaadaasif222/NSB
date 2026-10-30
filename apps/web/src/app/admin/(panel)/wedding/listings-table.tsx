@@ -153,7 +153,17 @@ export function WeddingListingsTable({
                   <td>
                     <span className={`a-pl ${listing.status}`}>{STATUS_LABEL[listing.status]}</span>
                   </td>
-                  <td>{listing.isFeatured ? <span className="a-pl new">Featured</span> : <span className="text-zinc-500">—</span>}</td>
+                  <td>
+                    {listing.isElite ? (
+                      <span className="a-pl new">Elite #{listing.topRank}</span>
+                    ) : listing.topRank ? (
+                      <span className="a-pl new">Top #{listing.topRank}</span>
+                    ) : listing.isFeatured ? (
+                      <span className="a-pl new">Featured</span>
+                    ) : (
+                      <span className="text-zinc-500">—</span>
+                    )}
+                  </td>
                   <td>
                     {listing.leadCount ? (
                       <Link

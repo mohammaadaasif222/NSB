@@ -239,6 +239,8 @@ export function ListingForm({
     keyInfo: shownInfo.slice(0, 4),
     services: [...services, ...groupsFromDraft(groups).flatMap((g) => g.items)],
     isFeatured: values.isFeatured,
+    topRank: listing?.topRank ?? null,
+    isElite: listing?.isElite ?? false,
     createdAt: listing?.createdAt ?? new Date().toISOString(),
     status: values.status,
     rating: values.googleRating.trim() && !Number.isNaN(Number(values.googleRating))

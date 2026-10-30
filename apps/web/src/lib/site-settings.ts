@@ -11,6 +11,7 @@ export function getSiteSettings(): Promise<SiteSettings> {
       projectSideAd: null,
       homeCards: DEFAULT_HOME_CARDS,
       footer: DEFAULT_FOOTER,
+      eliteBanners: {},
     }));
 }
 

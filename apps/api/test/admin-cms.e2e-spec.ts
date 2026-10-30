@@ -409,4 +409,101 @@ describe('Admin CMS (e2e)', () => {
       await admin.delete(`/api/admin/categories/${parent.id}`).expect(404);
     });
   });
+
+  describe('elite 10', () => {
+    let parent: Category;
+    let sub: Category;
+    let other: Category;
+    let vendors: AdminListing[];
+
+    const addCategory = async (slug: string, parentId?: string) =>
+      (await admin.post('/api/admin/categories').send({ name: slug, slug, parentId }).expect(201)).body as Category;
+    const addListing = async (slug: string) =>
+      (await admin.post('/api/admin/listings').send({ categoryId: sub.id, name: slug, slug, area: 'Noida', shortDescription: 'Test' }).expect(201))
+        .body as AdminListing;
+    const publicOrder = async () => {
+      const page = (await http().get(`/api/listings?category=${sub.slug}`).expect(200)).body as Paginated<ListingSummary>;
+      return page.items.map((l) => l.id);
+    };
+    const setTop = (items: { id: string; isElite: boolean }[], categoryId = sub.id) => admin.put('/api/admin/listings/top').send({ categoryId, items });
+
+    beforeAll(async () => {
+      parent = await addCategory(`e2e-${run}-elite`);
+      sub = await addCategory(`e2e-${run}-elite-sub`, parent.id);
+      other = await addCategory(`e2e-${run}-elite-other`, parent.id);
+      vendors = [await addListing(`e2e-${run}-e1`), await addListing(`e2e-${run}-e2`), await addListing(`e2e-${run}-e3`)];
+    });
+
+    afterAll(async () => {
+      for (const v of vendors) await admin.delete(`/api/admin/listings/${v.id}`).expect(204);
+      await admin.delete(`/api/admin/categories/${sub.id}`).expect(204);
+      await admin.delete(`/api/admin/categories/${other.id}`).expect(204);
+      await admin.delete(`/api/admin/categories/${parent.id}`).expect(204);
+    });
+
+    it('keeps the usual order until top places are set', async () => {
+      const [first, second, third] = vendors;
+      expect(await publicOrder()).toEqual([third.id, second.id, first.id]);
+      expect(first).toMatchObject({ topRank: null, isElite: false });
+    });
+
+    it('shows top places first and marks Elite listings', async () => {
+      const [first, second, third] = vendors;
+      const res = await setTop([
+        { id: first.id, isElite: true },
+        { id: second.id, isElite: false },
+      ]).expect(200);
+      expect((res.body as ListingSummary[]).map((l) => [l.id, l.topRank, l.isElite])).toEqual([
+        [first.id, 1, true],
+        [second.id, 2, false],
+      ]);
+      expect(await publicOrder()).toEqual([first.id, second.id, third.id]);
+
+      // Swapping places, and dropping one, is a plain replace.
+      await setTop([{ id: second.id, isElite: true }]).expect(200);
+      expect(await publicOrder()).toEqual([second.id, third.id, first.id]);
+      const top = (await admin.get(`/api/admin/listings/top?categoryId=${sub.id}`).expect(200)).body as ListingSummary[];
+      expect(top.map((l) => l.id)).toEqual([second.id]);
+      expect(((await admin.get(`/api/admin/listings/${first.id}`).expect(200)).body as AdminListing).isElite).toBe(false);
+    });
+
+    it('refuses a bad list and changes nothing', async () => {
+      const [first, second] = vendors;
+      await setTop([
+        { id: first.id, isElite: false },
+        { id: first.id, isElite: false },
+      ]).expect(400);
+      const eleven = Array.from({ length: 11 }, () => ({ id: crypto.randomUUID(), isElite: false }));
+      await setTop(eleven).expect(400);
+      await setTop([{ id: first.id, isElite: true }], other.id).expect(400);
+      await setTop([
+        { id: first.id, isElite: true },
+        { id: crypto.randomUUID(), isElite: true },
+      ]).expect(400);
+      const top = (await admin.get(`/api/admin/listings/top?categoryId=${sub.id}`).expect(200)).body as ListingSummary[];
+      expect(top.map((l) => l.id)).toEqual([second.id]);
+    });
+
+    it('takes a listing out of the top places when it moves sub-category', async () => {
+      const [, second] = vendors;
+      const kept = (await admin.patch(`/api/admin/listings/${second.id}`).send({ categoryId: sub.id, name: `${second.name} x` }).expect(200)).body as AdminListing;
+      expect(kept).toMatchObject({ topRank: 1, isElite: true });
+      const moved = (await admin.patch(`/api/admin/listings/${second.id}`).send({ categoryId: other.id }).expect(200)).body as AdminListing;
+      expect(moved).toMatchObject({ topRank: null, isElite: false });
+      await admin.patch(`/api/admin/listings/${second.id}`).send({ categoryId: sub.id }).expect(200);
+    });
+
+    it('saves a sub-category banner', async () => {
+      const before = (await pool.query(`select value from settings where key = 'site.eliteBanners'`)).rows[0]?.value;
+      try {
+        const banner = { enabled: false, eyebrow: 'THE ELITE 10', title: 'Hand-picked', text: '', buttonLabel: '', link: '' };
+        await admin.patch('/api/admin/settings').send({ eliteBanners: { [sub.slug]: { ...banner, title: '' } } }).expect(400);
+        await admin.patch('/api/admin/settings').send({ eliteBanners: { [sub.slug]: banner } }).expect(200);
+        expect((await http().get('/api/site-settings').expect(200)).body.eliteBanners).toEqual({ [sub.slug]: banner });
+      } finally {
+        await pool.query(`delete from settings where key = 'site.eliteBanners'`);
+        if (before) await pool.query(`insert into settings (key, value) values ('site.eliteBanners', $1)`, [JSON.stringify(before)]);
+      }
+    });
+  });
 });

@@ -2,23 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { LayoutGrid, List, X } from "lucide-react";
-import type { Category, ListingSummary, Paginated } from "@nsb/shared";
+import { type Category, defaultEliteBanner, type ListingSummary, type Paginated } from "@nsb/shared";
 import { BackButton } from "@/components/site/back-button";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { BrowsePanel } from "@/components/site/listing/browse-panel";
+import { EliteBanner } from "@/components/site/listing/elite-banner";
+import { FilterMenu } from "@/components/site/listing/filter-menu";
 import { ListingCard, type ListingView } from "@/components/site/listing/listing-card";
-import { ListingSearch } from "@/components/site/listing/listing-search";
+// import { ListingSearch } from "@/components/site/listing/listing-search";
 import { ClearLocationButton } from "@/components/site/location-picker";
 import { Pagination } from "@/components/site/pagination";
 import { api } from "@/lib/api";
 import { browsePanels } from "@/lib/browse-panels";
-import { getSiteSettings } from "@/lib/site-settings";
+import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
 import { getCategory, listingPath } from "@/lib/catalog";
 import { CATEGORY_PAGES_ENABLED, COMING_SOON_METADATA } from "@/lib/flags";
 import { locationLabel, locationPlace, withLocation } from "@/lib/location";
 import { getListingCounts, getSiteLocation } from "@/lib/location-server";
 
-/** Category listing page — one template for every sub-category, styled after WedMeGood. */
+/** Category listing page — one template for every sub-category, after the NSB venue page design. */
 
 type Props = PageProps<"/[vertical]/[category]">;
 
@@ -40,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** Listings per page: featured first, then newest; the rest move to page 2, 3… */
+/** Listings per page: the admin's top places, then featured, then newest; the rest move to page 2, 3… */
 const PAGE_SIZE = 10;
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -58,7 +60,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
   const listingQuery = withLocation(new URLSearchParams({ category: category.slug, page: String(page), pageSize: String(PAGE_SIZE) }), location);
   if (q) listingQuery.set("q", q);
   if (tag) listingQuery.set("tag", tag);
-  const [listings, siblings, counts, { listingSidebar }] = await Promise.all([
+  const [listings, siblings, counts, { listingSidebar, eliteBanners, whatsapp, footer }] = await Promise.all([
     api.get<Paginated<ListingSummary>>(`/listings?${listingQuery}`),
     api.get<Category[]>(`/categories?parent=${encodeURIComponent(vertical.slug)}`),
     getListingCounts(location, vertical.slug),
@@ -68,9 +70,17 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
   // Side cards as switched on in Admin › Settings; shown beside list view only.
   const panels = listingSidebar.enabled ? browsePanels(category.slug, category.name).filter((p) => listingSidebar[p.kind]) : [];
   const sidebar = view === "list" && panels.length > 0;
+  const tags = [...new Set(panels.flatMap((p) => p.tiles.map((tile) => tile.label)))];
+  const banner = eliteBanners[category.slug] ?? defaultEliteBanner(category.name);
+  // First page only, and never above a page with no Elite listing (a search, a narrow location).
+  const showBanner = page === 1 && banner.enabled && listings.items.some((l) => l.isElite);
+  // NSB's own number: public pages never carry a vendor's.
+  const nsbPhone = footer.showPhone && footer.phone ? footer.phone.replace(/[^\d+]/g, "") : whatsapp && `+91${whatsapp.number}`;
 
   const basePath = `/${vertical.slug}/${category.slug}`;
   const pageCount = Math.max(1, Math.ceil(listings.total / listings.pageSize));
+  const firstShown = listings.total ? (page - 1) * listings.pageSize + 1 : 0;
+  const lastShown = Math.min(page * listings.pageSize, listings.total);
   const href = (next: { view?: ListingView; page?: number; q?: string | null; tag?: string | null }) => {
     const sp = new URLSearchParams();
     const v = next.view ?? view;
@@ -92,10 +102,8 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
   return (
     <div className="bg-surface">
       <div className="container-page pt-4 pb-8 sm:pt-6 sm:pb-12">
-        {/* Phones skip the breadcrumb, as apps do: the category chips below lead to the rest of the vertical. */}
         <BackButton fallback="/" className="mb-3" />
         <Breadcrumb
-          className="hidden sm:block"
           items={[
             { label: "Home", href: "/" },
             { label: vertical.name, href: `/${vertical.slug}` },
@@ -103,19 +111,44 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
           ]}
         />
 
-        <div className="flex flex-wrap items-end justify-between gap-3 sm:mt-6 sm:gap-4">
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-3 sm:mt-6 sm:gap-4">
           <div>
             <h1 className="text-[22px] leading-tight font-semibold text-ink sm:text-[26px]">
               {category.name} in {place}
             </h1>
             <p className="mt-1 text-[13px] text-ink-soft sm:text-sm">
-              Showing <b>{listings.total} results</b> as per your search criteria
+              Showing{" "}
+              <b>
+                {firstShown}–{lastShown}
+              </b>{" "}
+              of <b>{listings.total}</b> results as per your search criteria
             </p>
           </div>
-          <div className="flex w-full items-center gap-x-4 gap-y-3 sm:w-auto sm:flex-wrap sm:gap-x-6">
-            <ListingSearch categoryName={category.name} q={q} view={view} tag={tag} />
-            {/* Phones: an icon-only segmented control beside the search box. */}
-            <div className="flex shrink-0 items-center gap-1 rounded-lg border border-[#e5e7eb] bg-white p-1 text-base sm:gap-5 sm:border-0 sm:bg-transparent sm:p-0" role="group" aria-label="Layout">
+          <div className="lp-ctl">
+            {/* <ListingSearch categoryName={category.name} q={q} view={view} tag={tag} /> */}
+            <FilterMenu
+              label={category.name}
+              ariaLabel={`${vertical.name} categories`}
+              items={siblings.map((s) => ({
+                label: s.name,
+                href: `/${vertical.slug}/${s.slug}`,
+                current: s.slug === category.slug,
+                count: location ? (counts[s.slug] ?? 0) : undefined,
+              }))}
+            />
+            {tags.length > 0 && (
+              <FilterMenu
+                label={tag ?? "Filters"}
+                ariaLabel="Filter by tag"
+                wide
+                items={tags.map((label) => {
+                  const on = tag?.toLowerCase() === label.toLowerCase();
+                  return { label, href: href({ tag: on ? null : label, page: 1 }), current: on };
+                })}
+              />
+            )}
+            {/* Phones show one column either way, so they do without the switch. */}
+            <div className="hidden shrink-0 items-center gap-5 text-base min-[701px]:flex" role="group" aria-label="Layout">
               {(
                 [
                   ["list", "List", List],
@@ -126,57 +159,16 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
                   key={value}
                   href={href({ view: value, page: 1 })}
                   aria-current={view === value ? "true" : undefined}
-                  className="flex size-9 items-center justify-center gap-2 rounded-md text-ink-soft hover:text-brand aria-[current=true]:bg-brand-soft aria-[current=true]:text-brand sm:size-auto sm:aria-[current=true]:bg-transparent"
+                  className="flex items-center justify-center gap-2 text-ink-soft hover:text-brand aria-[current=true]:text-brand"
                   scroll={false}
                 >
                   <Icon className="size-5" aria-hidden />
-                  <span className="sr-only sm:not-sr-only">{label}</span>
+                  {label}
                 </Link>
               ))}
             </div>
           </div>
         </div>
-
-        <nav aria-label={`${vertical.name} categories`} className="no-scrollbar -mx-4 mt-4 overflow-x-auto px-4 sm:mt-5">
-          <ul className="flex gap-2">
-            {siblings.map((s) => (
-              <li key={s.id} className="shrink-0">
-                <Link
-                  href={`/${vertical.slug}/${s.slug}`}
-                  aria-current={s.slug === category.slug ? "page" : undefined}
-                  className="block rounded-full border border-[#e5e7eb] bg-white px-4 py-2 sm:py-1.5 text-sm text-ink-soft transition-colors hover:border-brand hover:text-brand aria-[current=page]:border-brand aria-[current=page]:bg-brand-soft aria-[current=page]:font-medium aria-[current=page]:text-brand"
-                >
-                  {s.name}
-                  {location && <span className="ml-1.5 text-xs text-muted tabular-nums">{counts[s.slug] ?? 0}</span>}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {panels.length > 0 && (
-          <nav aria-label="Filter by tag" className={`no-scrollbar -mx-4 mt-3 overflow-x-auto px-4 ${sidebar ? "lg:hidden" : ""}`}>
-            <ul className="flex gap-2">
-              {panels
-                .flatMap((p) => p.tiles)
-                .map((tile) => {
-                  const on = tag?.toLowerCase() === tile.label.toLowerCase();
-                  return (
-                    <li key={tile.label} className="shrink-0">
-                      <Link
-                        href={href({ tag: on ? null : tile.label, page: 1 })}
-                        scroll={false}
-                        aria-current={on ? "true" : undefined}
-                        className="block rounded-full border border-dashed border-[#d1d5db] px-3 py-1 text-[13px] text-ink-soft hover:border-brand hover:text-brand aria-[current=true]:border-solid aria-[current=true]:border-brand aria-[current=true]:bg-brand-soft aria-[current=true]:text-brand"
-                      >
-                        {tile.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-            </ul>
-          </nav>
-        )}
 
         {(q || location || tag) && (
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
@@ -219,6 +211,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
         {/* The browse side cards sit beside list view only; grid view uses the full width. */}
         <div className={`mt-5 grid gap-5 sm:mt-8 ${sidebar ? "lg:grid-cols-[minmax(0,1fr)_280px]" : ""}`}>
           <div className="min-w-0">
+            {showBanner && <EliteBanner banner={banner} />}
             {listings.items.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-[#e5e7eb] px-4 py-16 text-center text-muted">
                 {tag && !q ? (
@@ -249,16 +242,26 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
                 )}
               </p>
             ) : (
-              <ul className={view === "list" ? "flex flex-col gap-4 sm:gap-5" : "grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-3"}>
+              <ul id="listings" className={`lp-list scroll-mt-24 ${view === "grid" ? "is-grid" : ""}`}>
                 {listings.items.map((listing) => (
-                  <li key={listing.id}>
-                    <ListingCard listing={listing} view={view} href={listingPath(vertical.slug, category.slug, listing.slug)} />
+                  <li key={listing.id} className={listing.isElite ? "lp-wide" : undefined}>
+                    <ListingCard
+                      listing={listing}
+                      view={view}
+                      href={listingPath(vertical.slug, category.slug, listing.slug)}
+                      contact={{ whatsapp: whatsapp ? whatsappHref(whatsapp, listing.name) : undefined, phone: nsbPhone ? `tel:${nsbPhone}` : undefined }}
+                    />
                   </li>
                 ))}
               </ul>
             )}
 
             <Pagination page={page} pageCount={pageCount} href={(p) => href({ page: p })} />
+            {pageCount > 1 && (
+              <p className="lp-pn">
+                Page {page} of {pageCount} · {listings.pageSize} listings per page
+              </p>
+            )}
           </div>
 
           {sidebar && (

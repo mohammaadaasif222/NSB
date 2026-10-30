@@ -1,7 +1,7 @@
 import type { AdminRole, ImageStorageProvider, LeadStatus, ListingStatus, ReviewSource, SmtpSecurity } from './constants.js';
 import type { ListingDetails } from './listing-forms.js';
 import type { ProjectType } from './projects.js';
-import type { FooterSettings, HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
+import type { EliteBanners, FooterSettings, HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
 
 /** API response shapes shared by the API (producer) and web (consumer). Dates are ISO strings. */
 
@@ -78,6 +78,10 @@ export interface ListingSummary {
   /** What the vendor offers; the card shows a few as chips and the rest under "+N more". */
   services: string[];
   isFeatured: boolean;
+  /** Place 1–10 at the top of its sub-category; null for every other listing. */
+  topRank: number | null;
+  /** Shows the blue premium card. Only a listing with a top place can be Elite. */
+  isElite: boolean;
   category: Pick<Category, 'id' | 'name' | 'slug'>;
   /** When the listing was added (ISO timestamp). */
   createdAt: string;
@@ -230,6 +234,8 @@ export interface AdminSettings {
   projectSideAd: ProjectSideAd | null;
   /** Slot and plan prices; sub-categories without a saved price use DEFAULT_SLOT_PRICE. */
   pricing: Pricing;
+  /** Elite banners saved so far, by sub-category slug. */
+  eliteBanners: EliteBanners;
   /** The four home page cards (DEFAULT_HOME_CARDS until saved). */
   homeCards: HomeCard[];
   /** The site footer (DEFAULT_FOOTER until saved). */
@@ -251,6 +257,8 @@ export interface SiteSettings {
   listingSidebar: ListingSidebarSettings;
   /** Present only while the ad is switched on. */
   projectSideAd: ProjectSideAd | null;
+  /** Elite banners saved so far, by sub-category slug; the others use defaultEliteBanner. */
+  eliteBanners: EliteBanners;
   /** The four cards beside the home hero, in order. */
   homeCards: HomeCard[];
   footer: FooterSettings;

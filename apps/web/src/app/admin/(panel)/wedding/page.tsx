@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Crown, Plus } from "lucide-react";
 import {
   type AdminCategory,
   type AdminSettings,
@@ -98,6 +98,9 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
         </div>
         {canEdit && wedding && pricing && (
           <div className="flex flex-wrap gap-2">
+            <Link href={`/admin/wedding/elite${sub ? `?sub=${sub.id}` : ""}`} className="a-btn o">
+              <Crown size={16} aria-hidden /> Elite 10
+            </Link>
             <ManageSubcategories weddingId={wedding.id} subs={subs} pricing={pricing} />
             <Link href="/admin/listings/new" className="a-btn">
               <Plus size={16} aria-hidden /> Add listing
