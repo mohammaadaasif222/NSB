@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { AdminCategory, AdminSettings } from "@nsb/shared";
 import { PageHeader } from "@/components/admin/ui";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 import { ListingForm } from "../listing-form";
 import { editorsOnly } from "@/components/admin/editors-only";
 

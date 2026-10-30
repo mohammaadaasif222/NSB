@@ -14,7 +14,7 @@ import {
   type ProjectStats,
 } from "@nsb/shared";
 import { Kpi } from "@/components/admin/ui";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 import { ProjectFilters, type ProjectFilterValues } from "./project-filters";
 import { ProjectsTable } from "./projects-table";
 import { AdBannerForm } from "./ad-banner-form";

@@ -18,8 +18,8 @@ import {
 import { Button, Field, IconButton, Select, TextInput, Toggle } from "@/components/admin/form";
 import { useSessionUploads, useUploader } from "@/components/admin/image-upload";
 import { useAdminAction } from "@/components/admin/use-admin-action";
-import { Icon } from "@/components/site/nsb-home/bits";
-import { HOME_CARD_ICON_PATHS } from "@/components/site/nsb-home/content";
+import { Icon } from "@/components/shared/icon";
+import { HOME_CARD_ICON_PATHS } from "@/components/shared/home-card-icons";
 import { adminClient } from "@/lib/admin-client";
 
 const TONE_LABELS: Record<HomeCardTag["tone"], string> = { red: "Red", blue: "Blue", gold: "Gold", green: "Green", dark: "Dark" };

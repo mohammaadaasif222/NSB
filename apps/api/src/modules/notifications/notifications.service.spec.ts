@@ -84,6 +84,9 @@ describe('enquiry emails', () => {
   });
 
   it('still sends the admin email without the site address or listing details', () => {
+    const split = adminEnquiryEmail(enquiry, listing, 'https://nsb.example.com', 'https://admin.example.com').text;
+    expect(split).toContain('https://admin.example.com/admin/enquiries?status=unread');
+
     const { text, html } = adminEnquiryEmail(enquiry, null);
     expect(text).toContain('Category: Wedding Venues');
     expect(html).not.toContain('/admin/enquiries');

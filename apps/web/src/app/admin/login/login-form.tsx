@@ -3,7 +3,7 @@
 import { Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import type { ApiErrorBody } from "@nsb/shared";
+import { adminClient, RequestError } from "@/lib/admin-client";
 
 /** Icon-and-input row from the login design: grey well that turns white with a blue ring on focus. */
 const wellClass =
@@ -23,27 +23,13 @@ export function LoginForm({ next }: { next: string }) {
     setPending(true);
     const form = new FormData(event.currentTarget);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
-      });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
-        setError(
-          res.status === 429
-            ? // A locked account says how long to wait; the per-minute rate limit does not.
-              body?.message?.startsWith("Too many wrong passwords")
-              ? body.message
-              : "Too many attempts. Please wait a minute and try again."
-            : (body?.message ?? "Sign in failed"),
-        );
-        return;
-      }
+      await adminClient.login(String(form.get("email")), String(form.get("password")));
       router.replace(next);
       router.refresh();
-    } catch {
-      setError("Could not reach the server. Check your connection.");
+    } catch (err) {
+      const message = err instanceof RequestError ? err.message : "Sign in failed";
+      // A locked account says how long to wait; the per-minute rate limit does not.
+      setError(err instanceof RequestError && err.status === 429 && !message.startsWith("Too many wrong passwords") ? "Too many attempts. Please wait a minute and try again." : message);
     } finally {
       setPending(false);
     }

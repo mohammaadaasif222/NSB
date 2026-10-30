@@ -1,5 +1,5 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, desc, eq, ilike, ne, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ne, type SQL, sql } from 'drizzle-orm';
 import {
   type AdminProject,
   type AdminProjectQuery,
@@ -20,7 +20,7 @@ import { DB, type Database } from '../../db/db.module.js';
 import { categories, enquiries, projects } from '../../db/schema.js';
 import { rethrowDbError } from '../../common/db-errors.js';
 import { istToday } from '../../common/dates.js';
-import { likeTerm } from '../../common/like.js';
+import { searchMatch } from '../../common/like.js';
 import { pageWindow } from '../../common/pagination.js';
 import { MediaService } from '../media/media.service.js';
 import { projectImages, projectValues } from './project-values.js';
@@ -311,14 +311,7 @@ export class ProjectsService {
   }
 
   private search(q: string): SQL {
-    const term = likeTerm(q);
-    return or(
-      ilike(projects.name, term),
-      ilike(projects.builder, term),
-      ilike(projects.advertiserName, term),
-      ilike(projects.locality, term),
-      sql`exists (select 1 from unnest(${projects.tags}) as t(tag) where t.tag ilike ${term})`,
-    )!;
+    return searchMatch([projects.name, projects.builder, projects.advertiserName, projects.locality], projects.tags, q);
   }
 
   /**

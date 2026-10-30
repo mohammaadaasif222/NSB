@@ -12,6 +12,7 @@ import { useToast } from "@/components/admin/toast";
 import { useAdminAction } from "@/components/admin/use-admin-action";
 import { adminClient, RequestError } from "@/lib/admin-client";
 import { formatDate } from "@/lib/format";
+import { sitePath } from "@/lib/admin-links";
 
 const STATUS_LABEL: Record<ListingStatus, string> = { live: "Live", draft: "Draft", hidden: "Hidden" };
 type BulkAction = "publish" | "unpublish" | "delete";
@@ -157,7 +158,7 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
                   <td>
                     <div className="a-ac">
                       {p.status === "live" && (
-                        <a href={`/real-estate/${p.slug}`} target="_blank" rel="noreferrer" title="View on site" aria-label={`View ${p.name} on the site`}>
+                        <a href={sitePath(`/real-estate/${p.slug}`)} target="_blank" rel="noreferrer" title="View on site" aria-label={`View ${p.name} on the site`}>
                           <ExternalLink size={15} aria-hidden />
                         </a>
                       )}

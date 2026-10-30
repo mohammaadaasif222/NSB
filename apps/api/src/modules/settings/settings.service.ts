@@ -6,6 +6,8 @@ import {
   type AdminSettings,
   DEFAULT_FOOTER,
   DEFAULT_HOME_CARDS,
+  type EliteBanners,
+  eliteBannersSchema,
   type EmailSettings,
   type FooterSettings,
   footerSettingsSchema,
@@ -67,6 +69,7 @@ const KEYS = {
   pricing: 'site.pricing',
   homeCards: 'home.cards',
   footer: 'home.footer',
+  eliteBanners: 'site.eliteBanners',
 } as const;
 
 /** Its cards' imageUrl values are uploads, so the media cleanup checks this key too. */
@@ -132,6 +135,7 @@ interface Saved {
   pricing: Pricing | null;
   homeCards: HomeCard[] | null;
   footer: FooterSettings | null;
+  eliteBanners: EliteBanners | null;
 }
 
 interface Resolved<T> {
@@ -205,6 +209,7 @@ export class SettingsService {
       pricing: saved.pricing ?? DEFAULT_PRICING,
       homeCards: saved.homeCards ?? DEFAULT_HOME_CARDS,
       footer: saved.footer ?? DEFAULT_FOOTER,
+      eliteBanners: saved.eliteBanners ?? {},
     };
   }
 
@@ -215,7 +220,7 @@ export class SettingsService {
 
   /** What the public website needs: the WhatsApp button and the project page ad only while switched on. */
   async siteSettings(): Promise<SiteSettings> {
-    const { whatsapp, listingSidebar, projectSideAd, realEstateAd, homeCards, footer } = await this.load();
+    const { whatsapp, listingSidebar, projectSideAd, realEstateAd, homeCards, footer, eliteBanners } = await this.load();
     return {
       whatsapp: whatsapp?.enabled ? { number: whatsapp.number, message: whatsapp.message } : null,
       listingSidebar: listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
@@ -224,6 +229,7 @@ export class SettingsService {
       realEstateAd,
       homeCards: homeCards ?? DEFAULT_HOME_CARDS,
       footer: footer ?? DEFAULT_FOOTER,
+      eliteBanners: eliteBanners ?? {},
     };
   }
 
@@ -273,6 +279,7 @@ export class SettingsService {
       if (input.pricing) next.pricing = input.pricing;
       if (input.homeCards) next.homeCards = input.homeCards;
       if (input.footer) next.footer = input.footer;
+      if (input.eliteBanners) next.eliteBanners = input.eliteBanners;
       if (input.imageStorage) next.imageStorage = input.imageStorage;
 
       const active = this.active(next);
@@ -295,6 +302,7 @@ export class SettingsService {
       await this.write(tx, KEYS.pricing, next.pricing, !!input.pricing);
       await this.write(tx, KEYS.homeCards, next.homeCards, !!input.homeCards);
       await this.write(tx, KEYS.footer, next.footer, !!input.footer);
+      await this.write(tx, KEYS.eliteBanners, next.eliteBanners, !!input.eliteBanners);
     });
     return this.get();
   }
@@ -408,6 +416,7 @@ export class SettingsService {
       pricing: parse(pricingSchema, value(KEYS.pricing)),
       homeCards: parse(homeCardsSchema, value(KEYS.homeCards)),
       footer: parse(footerSettingsSchema, value(KEYS.footer)),
+      eliteBanners: parse(eliteBannersSchema, value(KEYS.eliteBanners)),
     };
   }
 

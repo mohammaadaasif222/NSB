@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { UnreadCount } from "@nsb/shared";
+import { adminClient } from "@/lib/admin-client";
 import { useToast } from "./toast";
 
 const POLL_MS = 30_000;
@@ -31,9 +32,7 @@ export function UnreadEnquiriesProvider({ initial, children }: { initial: number
 
   const poll = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/enquiries/unread-count", { cache: "no-store" });
-      if (!res.ok) return;
-      const { unread: count } = (await res.json()) as UnreadCount;
+      const { unread: count } = await adminClient.get<UnreadCount>("/admin/enquiries/unread-count", { on401: "throw" });
       const arrived = count - known.current;
       known.current = count;
       setUnread(count);

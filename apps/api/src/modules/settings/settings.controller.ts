@@ -17,7 +17,7 @@ export class SiteSettingsController {
 }
 
 /** Home page and sponsor content that Admins (not only Super Admins) manage. */
-const EDITOR_SETTINGS = new Set(['projectSideAd', 'realEstateAd', 'homeCards']);
+const EDITOR_SETTINGS = new Set(['projectSideAd', 'homeCards', 'eliteBanners']);
 
 @Controller('admin/settings')
 @UseGuards(AdminGuard)
@@ -31,7 +31,7 @@ export class AdminSettingsController {
     return this.settings.get();
   }
 
-  /** Editors may save the home page cards and the project page sponsor ad; everything else is for Super Admins. */
+  /** Editors may save the home page cards, the project page sponsor ad and the Elite banners; everything else is for Super Admins. */
   @Patch()
   @Allow('edit')
   update(@CurrentAdmin() admin: CurrentAdminInfo, @Body(new ZodPipe(settingsUpdateSchema)) body: SettingsUpdate): Promise<AdminSettings> {

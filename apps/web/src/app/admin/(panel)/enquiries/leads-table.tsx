@@ -10,7 +10,7 @@ import { Modal } from "@/components/admin/dialog";
 import { Button } from "@/components/admin/form";
 import { useAdminAction } from "@/components/admin/use-admin-action";
 import { adminClient } from "@/lib/admin-client";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { ago, formatDate, formatDateTime } from "@/lib/format";
 
 const STATUS_LABEL: Record<LeadStatus, string> = { new: "New", contacted: "Contacted", won: "Won", lost: "Lost" };
 
@@ -20,11 +20,6 @@ const otherVisitDate = (e: Enquiry) => (e.source === "Site visit" ? (/^Other pre
 const STATUS_PILL: Record<LeadStatus, string> = { new: "new", contacted: "draft", won: "live", lost: "hidden" };
 
 const mask = (mobile: string) => `${mobile.slice(0, 2)}XXXXXX${mobile.slice(-2)}`;
-
-function ago(iso: string) {
-  const m = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 60_000));
-  return m < 60 ? `${m}m ago` : m < 1440 ? `${Math.floor(m / 60)}h ago` : `${Math.floor(m / 1440)}d ago`;
-}
 
 /** Where a lead came from, linked to its listing or project while it exists. */
 function SourceLink({ e }: { e: Enquiry }) {

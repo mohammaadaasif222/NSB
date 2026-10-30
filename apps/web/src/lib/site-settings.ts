@@ -12,6 +12,7 @@ export function getSiteSettings(): Promise<SiteSettings> {
       realEstateAd: null,
       homeCards: DEFAULT_HOME_CARDS,
       footer: DEFAULT_FOOTER,
+      eliteBanners: {},
     }));
 }
 

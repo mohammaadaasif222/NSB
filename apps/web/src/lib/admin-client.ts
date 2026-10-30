@@ -21,7 +21,13 @@ export class RequestError extends Error {
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+interface RequestOptions {
+  signal?: AbortSignal;
+  /** "throw" leaves a 401 to the caller instead of ending the session: a wrong password, a background poll. */
+  on401?: "signOut" | "throw";
+}
+
+async function request<T>(method: string, path: string, body?: unknown, { signal, on401 = "signOut" }: RequestOptions = {}): Promise<T> {
   const isForm = body instanceof FormData;
   let res: Response;
   try {
@@ -29,12 +35,15 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       method,
       headers: body === undefined || isForm ? undefined : { "content-type": "application/json" },
       body: isForm ? body : body === undefined ? undefined : JSON.stringify(body),
+      signal,
+      cache: "no-store",
     });
-  } catch {
+  } catch (err) {
+    if (signal?.aborted) throw err;
     throw new RequestError(0, "Could not reach the server. Check your connection.");
   }
 
-  if (res.status === 401) {
+  if (res.status === 401 && on401 === "signOut") {
     // Session expired: /admin/logout is a route handler that clears the cookie and redirects to
     // sign in, so it needs a full document request rather than a client-side navigation.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
@@ -56,7 +65,9 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const adminClient = {
-  get: <T>(path: string) => request<T>("GET", path),
+  get: <T>(path: string, options?: RequestOptions) => request<T>("GET", path, undefined, options),
+  /** Signs in; the API sets the session cookie. */
+  login: (email: string, password: string) => request<unknown>("POST", "/auth/login", { email, password }, { on401: "throw" }),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   patch: <T>(path: string, body: unknown) => request<T>("PATCH", path, body),
   put: <T>(path: string, body: unknown) => request<T>("PUT", path, body),

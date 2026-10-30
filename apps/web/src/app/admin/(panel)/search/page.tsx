@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { AdminProjectRow, ListingSummary, Paginated } from "@nsb/shared";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim().slice(0, 100) ?? "";
 

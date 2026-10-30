@@ -35,6 +35,7 @@ import { TagPicker } from "@/components/admin/tag-picker";
 import { useToast } from "@/components/admin/toast";
 import { useAdminAction } from "@/components/admin/use-admin-action";
 import { adminClient } from "@/lib/admin-client";
+import { sitePath } from "@/lib/admin-links";
 
 /** The form's steps, as in the NSB Live Demo admin: each is a section of the project page. */
 const STEPS = ["Basics", "Photos & Videos", "Overview", "Floor plans & pricing", "Amenities & specs", "Nearby & advertiser", "FAQs & SEO", "Publish"];
@@ -715,7 +716,7 @@ export function ProjectForm({
             Back to listings
           </Button>
           {saved?.status === "live" && (
-            <a className="a-btn" href={`/real-estate/${saved.slug}`} target="_blank" rel="noreferrer">
+            <a className="a-btn" href={sitePath(`/real-estate/${saved.slug}`)} target="_blank" rel="noreferrer">
               View on site
             </a>
           )}

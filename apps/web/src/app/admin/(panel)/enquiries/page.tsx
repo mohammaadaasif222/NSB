@@ -4,7 +4,7 @@ import { Download } from "lucide-react";
 import { type AdminCategory, type Enquiry, LEAD_STATUSES, type LeadSectionCounts, type LeadStatus, type Paginated, PROJECT_LEAD_SOURCES, PROJECT_TYPES } from "@nsb/shared";
 import { Can } from "@/components/admin/admin-role";
 import { Pagination } from "@/components/admin/ui";
-import { adminApi, isUuid } from "@/lib/api";
+import { adminApi, isUuid } from "@/lib/admin-api";
 import { type LeadFilterValues, LeadFilters } from "./lead-filters";
 import { LeadsTable } from "./leads-table";
 import { MarkAllReadButton } from "./mark-all-read-button";

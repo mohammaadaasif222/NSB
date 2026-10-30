@@ -6,7 +6,8 @@ import { AdminProvider } from "@/components/admin/admin-role";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { ToastProvider } from "@/components/admin/toast";
 import { UnreadEnquiriesProvider } from "@/components/admin/unread-enquiries";
-import { adminApi, ApiError } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
+import { ApiError } from "@/lib/api";
 import "./admin.css";
 
 const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"] });

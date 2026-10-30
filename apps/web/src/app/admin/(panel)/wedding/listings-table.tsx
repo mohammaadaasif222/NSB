@@ -13,6 +13,7 @@ import { DeleteListingButton } from "../listings/delete-listing-button";
 import { ListingStatusButton } from "../listings/listing-status-button";
 import { adminClient, RequestError } from "@/lib/admin-client";
 import { formatDateTime } from "@/lib/format";
+import { sitePath } from "@/lib/admin-links";
 
 const STATUS_LABEL: Record<ListingStatus, string> = { live: "Live", draft: "Draft", hidden: "Hidden" };
 type BulkAction = "publish" | "unpublish" | "delete";
@@ -153,7 +154,17 @@ export function WeddingListingsTable({
                   <td>
                     <span className={`a-pl ${listing.status}`}>{STATUS_LABEL[listing.status]}</span>
                   </td>
-                  <td>{listing.isFeatured ? <span className="a-pl new">Featured</span> : <span className="text-zinc-500">—</span>}</td>
+                  <td>
+                    {listing.isElite ? (
+                      <span className="a-pl new">Elite #{listing.topRank}</span>
+                    ) : listing.topRank ? (
+                      <span className="a-pl new">Top #{listing.topRank}</span>
+                    ) : listing.isFeatured ? (
+                      <span className="a-pl new">Featured</span>
+                    ) : (
+                      <span className="text-zinc-500">—</span>
+                    )}
+                  </td>
                   <td>
                     {listing.leadCount ? (
                       <Link
@@ -171,7 +182,7 @@ export function WeddingListingsTable({
                     <div className="a-ac">
                       {listing.status === "live" && listing.category.id !== weddingId && (
                         <a
-                          href={`/wedding/${listing.category.slug}/${listing.slug}`}
+                          href={sitePath(`/wedding/${listing.category.slug}/${listing.slug}`)}
                           target="_blank"
                           rel="noreferrer"
                           title="View on site"

@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, desc, eq, gte, ilike, inArray, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, isNull, lt, or, type SQL, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import {
   type AdminListing,
@@ -21,14 +21,16 @@ import {
   type ListingReview,
   type ListingSummary,
   type ListingUpdate,
+  MAX_TOP_LISTINGS,
   type Paginated,
   type QuickInfoItem,
+  type TopListingsInput,
 } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
 import { categories, enquiries, listingImages, listingReviews, listings } from '../../db/schema.js';
 import { rethrowDbError } from '../../common/db-errors.js';
 import { istDayStart } from '../../common/dates.js';
-import { likeTerm } from '../../common/like.js';
+import { searchMatch } from '../../common/like.js';
 import { pageWindow } from '../../common/pagination.js';
 import { MediaService } from '../media/media.service.js';
 
@@ -92,6 +94,8 @@ const toSummary = (l: Row, category: CategoryRef, parent: ParentRef, galleryPrev
   // Cards show a few services as chips: the plain list first, then the sectioned ones.
   services: [...l.services, ...l.serviceGroups.flatMap((g) => g.items)],
   isFeatured: l.isFeatured,
+  topRank: l.topRank,
+  isElite: l.isElite,
   category,
   createdAt: l.createdAt.toISOString(),
   status: l.status,
@@ -139,6 +143,15 @@ const locationFilters = ({ area, locality }: LocationFilter): SQL[] => [
   ...(locality ? [sql`${localityKey} = lower(${locality.trim()})`] : []),
 ];
 
+/** Top places belong to a sub-category, so a listing moved to another one gives its place up. */
+const leaveTopPlaces = (categoryId: string | undefined) =>
+  categoryId
+    ? {
+        topRank: sql<number | null>`case when ${listings.categoryId} = ${categoryId}::uuid then ${listings.topRank} end`,
+        isElite: sql<boolean>`${listings.categoryId} = ${categoryId}::uuid and ${listings.isElite}`,
+      }
+    : {};
+
 @Injectable()
 export class ListingsService {
   constructor(
@@ -168,6 +181,35 @@ export class ListingsService {
     const page = await this.page(query, filters, order);
     const leads = await this.leadCounts(page.items.map((l) => l.id));
     return { ...page, items: page.items.map((l) => ({ ...l, leadCount: leads.get(l.id) ?? 0 })) };
+  }
+
+  /** A sub-category's top places, first place first. */
+  async top(categoryId: string): Promise<ListingSummary[]> {
+    const { items } = await this.page(
+      { page: 1, pageSize: MAX_TOP_LISTINGS },
+      [eq(listings.categoryId, categoryId), isNotNull(listings.topRank)],
+      [asc(listings.topRank)],
+    );
+    return items;
+  }
+
+  /** Replaces a sub-category's top places. All or nothing: a listing from elsewhere changes nothing. */
+  async setTop({ categoryId, items }: TopListingsInput): Promise<ListingSummary[]> {
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(listings)
+        .set({ topRank: null, isElite: false })
+        .where(and(eq(listings.categoryId, categoryId), isNotNull(listings.topRank)));
+      for (const [i, { id, isElite }] of items.entries()) {
+        const [row] = await tx
+          .update(listings)
+          .set({ topRank: i + 1, isElite })
+          .where(and(eq(listings.id, id), eq(listings.categoryId, categoryId)))
+          .returning({ id: listings.id });
+        if (!row) throw new BadRequestException('Every listing must be in this sub-category');
+      }
+    });
+    return this.top(categoryId);
   }
 
   /** Leads per listing, for a page of admin rows. */
@@ -235,7 +277,7 @@ export class ListingsService {
     try {
       await this.db.transaction(async (tx) => {
         const [row] = Object.keys(fields).length
-          ? await tx.update(listings).set(fields).where(eq(listings.id, id)).returning({ id: listings.id })
+          ? await tx.update(listings).set({ ...fields, ...leaveTopPlaces(fields.categoryId) }).where(eq(listings.id, id)).returning({ id: listings.id })
           : await tx.select({ id: listings.id }).from(listings).where(eq(listings.id, id));
         if (!row) throw new NotFoundException('Listing not found');
         if (gallery) await this.replaceGallery(tx, id, gallery);
@@ -294,18 +336,13 @@ export class ListingsService {
     return Object.fromEntries(rows.map((r) => [r.slug, r.count]));
   }
 
-  private async page(query: ListingQuery, extra: SQL[], order: SQL[] = [desc(listings.isFeatured), desc(listings.createdAt)]): Promise<Paginated<ListingSummary>> {
+  private async page(query: ListingQuery, extra: SQL[], order: SQL[] = [sql`${listings.topRank} asc nulls last`, desc(listings.isFeatured), desc(listings.createdAt)]): Promise<Paginated<ListingSummary>> {
     const { page, pageSize, limit, offset } = pageWindow(query.page, query.pageSize);
     const filters = [...extra, ...locationFilters(query)];
     if (query.category) filters.push(eq(categories.slug, query.category));
     if (query.featured !== undefined) filters.push(eq(listings.isFeatured, query.featured));
     if (query.tag) filters.push(sql`exists (select 1 from unnest(${listings.tags}) as t(tag) where lower(t.tag) = lower(${query.tag}))`);
-    if (query.q) {
-      const term = likeTerm(query.q);
-      filters.push(
-        or(ilike(listings.name, term), ilike(listings.area, term), ilike(listings.locality, term), ilike(listings.shortDescription, term))!,
-      );
-    }
+    if (query.q) filters.push(searchMatch([listings.name, listings.area, listings.locality, listings.shortDescription], listings.tags, query.q));
     const where = filters.length ? and(...filters) : undefined;
 
     const [rows, [{ total }]] = await Promise.all([

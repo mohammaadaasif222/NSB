@@ -1035,6 +1035,38 @@ a.a-cell:hover {
 .a-hrow-4 {
   grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1.2fr) auto;
 }
+.a-hrow.a-elite-row {
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  margin-bottom: 0;
+  padding: 8px 12px;
+}
+.a-hrow.a-elite-add {
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: 0;
+  padding: 8px 12px;
+}
+.a-elite-n {
+  min-width: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .a-hrow.a-elite-row {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+  }
+  .a-elite-row .a-nm {
+    grid-column: 3 / -1;
+    min-width: 0;
+  }
+  .a-elite-row > :nth-child(4) {
+    grid-column: 1 / 4;
+    grid-row: 2;
+  }
+  .a-elite-row > :nth-child(5) {
+    grid-column: 4;
+    grid-row: 2;
+  }
+}
 .a-hct {
   display: flex;
   align-items: center;

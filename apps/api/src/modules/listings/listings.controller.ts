@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -28,6 +29,10 @@ import {
   listingUpdateSchema,
   type LocationOption,
   type Paginated,
+  type TopListingsInput,
+  topListingsInputSchema,
+  type TopListingsQuery,
+  topListingsQuerySchema,
 } from '@nsb/shared';
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { AdminGuard } from '../auth/admin.guard.js';
@@ -72,6 +77,16 @@ export class AdminListingsController {
   @Get()
   list(@Query(new ZodPipe(adminListingQuerySchema)) query: AdminListingQuery): Promise<Paginated<ListingSummary>> {
     return this.listings.listAdmin(query);
+  }
+
+  @Get('top')
+  top(@Query(new ZodPipe(topListingsQuerySchema)) query: TopListingsQuery): Promise<ListingSummary[]> {
+    return this.listings.top(query.categoryId);
+  }
+
+  @Put('top')
+  setTop(@Body(new ZodPipe(topListingsInputSchema)) body: TopListingsInput): Promise<ListingSummary[]> {
+    return this.listings.setTop(body);
   }
 
   @Get(':id')

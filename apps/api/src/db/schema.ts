@@ -11,6 +11,7 @@ import {
   real,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import type {
@@ -126,6 +127,10 @@ export const listings = pgTable(
     notifyVendor: boolean('notify_vendor').notNull().default(true),
     coverImageUrl: text('cover_image_url'),
     isFeatured: boolean('is_featured').notNull().default(false),
+    /** Place 1–10 at the top of its sub-category; null for every other listing. */
+    topRank: integer('top_rank'),
+    /** Blue premium card. Only a listing with a top place can be Elite. */
+    isElite: boolean('is_elite').notNull().default(false),
     /** live | draft | hidden; only live listings are public. Existing listings stay live. */
     status: text('status').$type<ListingStatus>().notNull().default('live'),
     /** Headed service sections, shown after the plain services list. */
@@ -137,7 +142,12 @@ export const listings = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index('listings_category_idx').on(t.categoryId)],
+  (t) => [
+    index('listings_category_idx').on(t.categoryId),
+    uniqueIndex('listings_category_top_rank_idx').on(t.categoryId, t.topRank),
+    // Trigrams let "contains" searches use an index. Same columns, in order, as ListingsService's search.
+    index('listings_search_idx').using('gin', sql`search_text(array[name, area, locality, short_description], tags) gin_trgm_ops`),
+  ],
 );
 
 /** Reviews the NSB team adds to a listing: copied from Google or given by customers. */
@@ -254,7 +264,11 @@ export const projects = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index('projects_status_area_idx').on(t.status, t.area)],
+  (t) => [
+    index('projects_status_area_idx').on(t.status, t.area),
+    // Same columns, in order, as ProjectsService's search.
+    index('projects_search_idx').using('gin', sql`search_text(array[name, builder, advertiser_name, locality], tags) gin_trgm_ops`),
+  ],
 );
 
 /**

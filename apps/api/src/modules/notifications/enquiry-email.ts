@@ -130,7 +130,7 @@ const servicesLine = (services: string[]) =>
  * Alert for the NSB team: the lead, the listing it came from (category, area, key details,
  * services) and the vendor's private contact, with links to reply and to follow up in the admin panel.
  */
-export function adminEnquiryEmail(e: Enquiry, listing: EnquiryListing | null, siteUrl?: string): EmailContent {
+export function adminEnquiryEmail(e: Enquiry, listing: EnquiryListing | null, siteUrl?: string, adminUrl = siteUrl): EmailContent {
   const listingRows: [string, string][] = [
     ['Listing', e.listingName],
     ['Category', listing?.parent ? `${listing.parent.name} › ${e.categoryName}` : e.categoryName],
@@ -161,7 +161,7 @@ export function adminEnquiryEmail(e: Enquiry, listing: EnquiryListing | null, si
   const links: Link[] = [
     ...contactLinks(e),
     ...(url ? [{ href: url, label: 'View listing' }] : []),
-    ...(siteUrl ? [{ href: new URL('/admin/enquiries?status=unread', siteUrl).toString(), label: 'Open in the admin panel' }] : []),
+    ...(adminUrl ? [{ href: new URL('/admin/enquiries?status=unread', adminUrl).toString(), label: 'Open in the admin panel' }] : []),
   ];
 
   const { text, html } = render(

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { AdminProject, AdminSettings } from "@nsb/shared";
-import { adminApi, ApiError, isUuid } from "@/lib/api";
+import { adminApi, isUuid } from "@/lib/admin-api";
+import { ApiError } from "@/lib/api";
 import { ProjectForm } from "../project-form";
 import { DeleteProjectButton } from "../projects-table";
 import { editorsOnly } from "@/components/admin/editors-only";

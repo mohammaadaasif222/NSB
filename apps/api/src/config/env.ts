@@ -25,6 +25,8 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
   /** Public address of the site, e.g. https://noidasuperbazaar.com. Used for links in emails. */
   SITE_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
+  /** The admin panel's address for email links, when it is not on SITE_URL. */
+  ADMIN_URL: z.preprocess((v) => (v === '' ? undefined : v), z.url().optional()),
   /** Local image storage: files are written here and served at /api/uploads/. */
   UPLOAD_DIR: z.string().min(1).default('uploads'),
   UPLOAD_MAX_MB: z.coerce.number().positive().max(50).default(DEFAULT_UPLOAD_MAX_MB),

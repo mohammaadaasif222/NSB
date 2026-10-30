@@ -1,5 +1,5 @@
 import { ADMIN_ROLE_LABELS, type AdminUser, canDo } from "@nsb/shared";
-import { adminApi } from "@/lib/api";
+import { adminApi } from "@/lib/admin-api";
 
 /**
  * For editing pages: null when the signed-in admin may edit, else the notice to show instead

@@ -236,6 +236,22 @@ export type ListingInput = z.infer<typeof listingInputSchema>;
 export const listingUpdateSchema = listingFields.partial();
 export type ListingUpdate = z.infer<typeof listingUpdateSchema>;
 
+/** Places at the top of a sub-category's page, set in Admin › Wedding › Elite 10. */
+export const MAX_TOP_LISTINGS = 10;
+
+export const topListingsQuerySchema = z.object({ categoryId: z.uuid() });
+export type TopListingsQuery = z.infer<typeof topListingsQuerySchema>;
+
+/** A sub-category's whole top 10, first place first. Listings left out go back to the normal order. */
+export const topListingsInputSchema = z.object({
+  categoryId: z.uuid(),
+  items: z
+    .array(z.object({ id: z.uuid(), isElite: z.boolean() }))
+    .max(MAX_TOP_LISTINGS, `Only ${MAX_TOP_LISTINGS} listings fit in the top places`)
+    .refine((items) => new Set(items.map((i) => i.id)).size === items.length, 'A listing can only hold one place'),
+});
+export type TopListingsInput = z.infer<typeof topListingsInputSchema>;
+
 /**
  * The site's location filter: one of LISTING_AREAS, optionally narrowed to a locality such as
  * "Sector 18". Localities are free text on listings, so they match case-insensitively.
@@ -625,6 +641,37 @@ export const pricingSchema = z.object({
 });
 export type Pricing = z.infer<typeof pricingSchema>;
 
+/** The black banner above the listings on a sub-category's first page. */
+export const eliteBannerSchema = z.object({
+  enabled: z.boolean(),
+  /** The small gold line, e.g. THE ELITE 10. */
+  eyebrow: z.string().trim().max(30),
+  title: trimmed(80),
+  text: z.string().trim().max(160),
+  /** Blank hides the button. */
+  buttonLabel: z.string().trim().max(24),
+  /** Blank scrolls to the listings. */
+  link: siteOrWebLink,
+});
+export type EliteBanner = z.infer<typeof eliteBannerSchema>;
+
+/** Saved banners by sub-category slug; the others use defaultEliteBanner. */
+export const eliteBannersSchema = z.record(slugSchema, eliteBannerSchema);
+export type EliteBanners = z.infer<typeof eliteBannersSchema>;
+
+/** What a sub-category's banner says until an admin saves its own. */
+export const defaultEliteBanner = (categoryName: string): EliteBanner => {
+  const noun = categoryName.toLowerCase();
+  return {
+    enabled: true,
+    eyebrow: 'THE ELITE 10',
+    title: `Noida’s finest ${noun}, hand-picked`,
+    text: `The most trusted ${noun}, physically visited and verified by our team.`,
+    buttonLabel: 'The Elite 10',
+    link: '',
+  };
+};
+
 export const settingsUpdateSchema = z.object({
   /** Where new uploads go. Existing images keep working from wherever they were stored. */
   imageStorage: z.enum(IMAGE_STORAGE_PROVIDERS).optional(),
@@ -647,6 +694,8 @@ export const settingsUpdateSchema = z.object({
   homeCards: homeCardsSchema.optional(),
   /** The site footer (Admin › Home page). */
   footer: footerSettingsSchema.optional(),
+  /** Elite banners by sub-category slug, all of them: slugs left out go back to the default. */
+  eliteBanners: eliteBannersSchema.optional(),
 });
 export type SettingsUpdate = z.infer<typeof settingsUpdateSchema>;
 /** What the browser sends (the Firebase key file as text). */
