@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { ROLLUCK_LOGO } from '@/constants/cdn';
 
 /**
  * Accessible modal shell: portal, dimmed backdrop, Esc / outside-click close,
@@ -39,8 +38,6 @@ interface ModalProps {
    * the screen under the bar, as a page of its own (the wallet).
    */
   phoneSheet?: boolean | 'fit' | 'page';
-  /** Desktop: the wordmark over the backdrop, where the bar's logo sits. */
-  brand?: boolean;
   children: ReactNode;
 }
 
@@ -57,7 +54,6 @@ const Modal: FC<ModalProps> = ({
   style,
   backdrop = 'dim',
   phoneSheet = false,
-  brand = false,
   children,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -70,19 +66,6 @@ const Modal: FC<ModalProps> = ({
   onCloseRef.current = onClose;
 
   useEffect(() => setMounted(true), []);
-
-  const [logoSpot, setLogoSpot] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
-
-  useEffect(() => {
-    if (!open || !brand) return undefined;
-    const place = (): void => {
-      const mark = document.querySelector('header a[aria-label="ROLLUCK"] img')?.getBoundingClientRect();
-      setLogoSpot(mark && mark.width ? { top: mark.top, left: mark.left, width: mark.width, height: mark.height } : null);
-    };
-    place();
-    window.addEventListener('resize', place);
-    return () => window.removeEventListener('resize', place);
-  }, [open, brand]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -144,15 +127,6 @@ const Modal: FC<ModalProps> = ({
           className={`${page ? 'max-sm:hidden sm:rl-modal-overlay' : 'rl-modal-overlay'} pointer-events-none fixed inset-0`}
         />
       )}
-      {brand && logoSpot && (
-        <img
-          src={ROLLUCK_LOGO.src}
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none fixed hidden lg:block"
-          style={logoSpot}
-        />
-      )}
       <div
         className={`flex min-h-full justify-center sm:items-center sm:p-6 ${
           page ? 'items-stretch' : phoneSheet ? 'items-end' : 'items-center px-4 py-6'
@@ -172,10 +146,10 @@ const Modal: FC<ModalProps> = ({
             page
               ? 'max-sm:max-w-none max-sm:!rounded-none max-sm:!border-0 max-sm:!bg-transparent max-sm:![box-shadow:none] max-sm:![backdrop-filter:none] max-sm:![animation:none]'
               : phoneSheet === 'fit'
-              ? 'max-sm:max-h-[calc(100dvh-24px)] max-sm:max-w-none max-sm:overflow-y-auto max-sm:!rounded-b-none'
-              : phoneSheet
-                ? 'max-sm:flex max-sm:h-[calc(100dvh-140px)] max-sm:max-w-none max-sm:flex-col max-sm:!rounded-b-none'
-                : ''
+                ? 'max-sm:max-h-[calc(100dvh-24px)] max-sm:max-w-none max-sm:overflow-y-auto max-sm:!rounded-b-none'
+                : phoneSheet
+                  ? 'max-sm:flex max-sm:h-[calc(100dvh-140px)] max-sm:max-w-none max-sm:flex-col max-sm:!rounded-b-none'
+                  : ''
           } ${className}`}
           style={style}
         >

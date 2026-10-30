@@ -8,6 +8,7 @@ import Pager from '@/components/player/Pager';
 import RecentWinners from '@/components/player/RecentWinners';
 import SiteFooter from '@/components/player/SiteFooter';
 import { CATEGORY_ICONS } from '@/components/icons';
+import { CHIP_ICON, CHIP_ROW, chipClass } from '@/components/player/BrowseControls';
 import { useTranslation } from '@/context/I18nContext';
 import {
   CASINO_LISTING_KEYS,
@@ -70,7 +71,7 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
       <div className="mx-auto max-w-[1600px] space-y-4 pb-2 sm:space-y-6">
         {/* Category tabs */}
         <nav
-          className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1"
+          className={CHIP_ROW}
           aria-label={t('dash.categories')}
         >
           {tabs.map(shelfFor).map((c) => {
@@ -81,13 +82,9 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
                 key={c.key}
                 href={categoryHref(c.key)}
                 aria-current={active ? 'page' : undefined}
-                className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
-                  active
-                    ? 'rl-glass-active text-white'
-                    : 'rl-glass rl-glass-hover text-white/55 hover:text-white'
-                }`}
+                className={`${chipClass(active)} whitespace-nowrap`}
               >
-                <Icon size={14} />
+                <Icon className={CHIP_ICON} />
                 {t(c.titleKey)}
               </Link>
             );

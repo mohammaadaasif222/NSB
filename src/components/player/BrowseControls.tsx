@@ -410,7 +410,11 @@ const CHIP =
 const CHIP_ON =
   'font-rubik font-medium text-[#ffe779] shadow-[0_0_12px_rgba(255,231,121,0.5)] lg:shadow-[0_0_calc(var(--u)*17.6)_rgba(255,231,121,0.2)]';
 
-const CHIP_ICON = 'h-[18px] w-[18px] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
+export const CHIP_ICON = 'h-[18px] w-[18px] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
+
+/** The lobby's chip, for any pill row elsewhere that should match it. */
+export const chipClass = (active: boolean): string =>
+  `${CHIP} ${GLASS} ${active ? CHIP_ON : 'text-[#9da2b4] hover:text-[#f0f1f5]'}`;
 
 /**
  * One selectable chip — the casino's category chips and the sportsbook's
@@ -427,7 +431,7 @@ export const ChipButton: FC<{
     type="button"
     onClick={onClick}
     aria-pressed={active}
-    className={`${CHIP} ${GLASS} ${active ? CHIP_ON : 'text-[#9da2b4] hover:text-[#f0f1f5]'}`}
+    className={chipClass(active)}
   >
     {icon && <Glyph src={icon.src} className={CHIP_ICON} />}
     {children}
