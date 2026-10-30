@@ -276,8 +276,9 @@ export class ProjectsService {
 
   async create(input: ProjectInput): Promise<AdminProject> {
     await this.assertUnique(input);
+    const slug = await this.freeSlug(input);
     try {
-      const [row] = await this.db.insert(projects).values(projectValues(input)).returning({ id: projects.id });
+      const [row] = await this.db.insert(projects).values({ ...projectValues(input), slug }).returning({ id: projects.id });
       return this.getAdmin(row.id);
     } catch (err) {
       rethrowDbError(err, 'Project');
@@ -289,8 +290,10 @@ export class ProjectsService {
     if (!current) throw new NotFoundException('Project not found');
     const next: ProjectInput = { ...toInput(current), ...input };
     if (next.name !== current.name || next.area !== current.area) await this.assertUnique(next, id);
+    // The slug stays as it was made on create, even when the name or area change, so links keep working.
+    const { slug: _, ...values } = projectValues(next);
     try {
-      await this.db.update(projects).set(projectValues(next)).where(eq(projects.id, id));
+      await this.db.update(projects).set(values).where(eq(projects.id, id));
     } catch (err) {
       rethrowDbError(err, 'Project');
     }
@@ -316,6 +319,27 @@ export class ProjectsService {
       ilike(projects.locality, term),
       sql`exists (select 1 from unnest(${projects.tags}) as t(tag) where t.tag ilike ${term})`,
     )!;
+  }
+
+  /**
+   * The new project's slug. The admin's own must be free; the one made from the name and area gets
+   * "-2", "-3"… if a project renamed since still has it (slugs never change).
+   */
+  private async freeSlug(input: ProjectInput): Promise<string> {
+    const base = projectValues(input).slug;
+    const taken = new Set(
+      (await this.db.select({ slug: projects.slug }).from(projects).where(or(eq(projects.slug, base), sql`${projects.slug} like ${`${base}-%`}`))).map(
+        (r) => r.slug,
+      ),
+    );
+    if (!taken.has(base)) return base;
+    if (input.slug) {
+      const message = `/real-estate/${base} is already used by another project. Choose another URL.`;
+      throw new ConflictException({ statusCode: 409, message, issues: [{ path: 'slug', message }] });
+    }
+    let n = 2;
+    while (taken.has(`${base}-${n}`)) n++;
+    return `${base}-${n}`;
   }
 
   /** One project, one listing: a second listing of the same project in the same area is refused. */

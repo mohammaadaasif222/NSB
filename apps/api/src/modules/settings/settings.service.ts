@@ -20,6 +20,8 @@ import {
   PROJECT_PLAN_PRICE,
   type ProjectSideAd,
   projectSideAdSchema,
+  type RealEstateAd,
+  realEstateAdSchema,
   type SettingsUpdate,
   type SiteSettings,
   SMTP_SECURITY,
@@ -61,6 +63,7 @@ const KEYS = {
   whatsapp: 'contact.whatsapp',
   listingSidebar: 'site.listingSidebar',
   projectSideAd: 'realEstate.projectSideAd',
+  realEstateAd: 'realEstate.adBanner',
   pricing: 'site.pricing',
   homeCards: 'home.cards',
   footer: 'home.footer',
@@ -74,6 +77,9 @@ export const FOOTER_KEY = KEYS.footer;
 
 /** Its imageUrl is an upload, so the media cleanup checks this key before deleting a file. */
 export const PROJECT_SIDE_AD_KEY = KEYS.projectSideAd;
+
+/** Its imageUrl and logoUrl are uploads, so the media cleanup checks this key too. */
+export const REAL_ESTATE_AD_KEY = KEYS.realEstateAd;
 
 /** Until an admin changes it, the listing page shows both side cards. */
 const DEFAULT_LISTING_SIDEBAR: ListingSidebarSettings = { enabled: true, budget: true, type: true };
@@ -122,6 +128,7 @@ interface Saved {
   whatsapp: WhatsappSettings | null;
   listingSidebar: ListingSidebarSettings | null;
   projectSideAd: ProjectSideAd | null;
+  realEstateAd: RealEstateAd | null;
   pricing: Pricing | null;
   homeCards: HomeCard[] | null;
   footer: FooterSettings | null;
@@ -194,6 +201,7 @@ export class SettingsService {
       whatsapp: saved.whatsapp,
       listingSidebar: saved.listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
       projectSideAd: saved.projectSideAd,
+      realEstateAd: saved.realEstateAd,
       pricing: saved.pricing ?? DEFAULT_PRICING,
       homeCards: saved.homeCards ?? DEFAULT_HOME_CARDS,
       footer: saved.footer ?? DEFAULT_FOOTER,
@@ -207,11 +215,13 @@ export class SettingsService {
 
   /** What the public website needs: the WhatsApp button and the project page ad only while switched on. */
   async siteSettings(): Promise<SiteSettings> {
-    const { whatsapp, listingSidebar, projectSideAd, homeCards, footer } = await this.load();
+    const { whatsapp, listingSidebar, projectSideAd, realEstateAd, homeCards, footer } = await this.load();
     return {
       whatsapp: whatsapp?.enabled ? { number: whatsapp.number, message: whatsapp.message } : null,
       listingSidebar: listingSidebar ?? DEFAULT_LISTING_SIDEBAR,
       projectSideAd: projectSideAd?.enabled ? projectSideAd : null,
+      // Sent switched off too: off hides the banner, while null (never saved) shows the demo one.
+      realEstateAd,
       homeCards: homeCards ?? DEFAULT_HOME_CARDS,
       footer: footer ?? DEFAULT_FOOTER,
     };
@@ -259,6 +269,7 @@ export class SettingsService {
       if (input.whatsapp !== undefined) next.whatsapp = input.whatsapp;
       if (input.listingSidebar) next.listingSidebar = input.listingSidebar;
       if (input.projectSideAd !== undefined) next.projectSideAd = input.projectSideAd;
+      if (input.realEstateAd !== undefined) next.realEstateAd = input.realEstateAd;
       if (input.pricing) next.pricing = input.pricing;
       if (input.homeCards) next.homeCards = input.homeCards;
       if (input.footer) next.footer = input.footer;
@@ -280,6 +291,7 @@ export class SettingsService {
       await this.write(tx, KEYS.whatsapp, next.whatsapp, input.whatsapp !== undefined);
       await this.write(tx, KEYS.listingSidebar, next.listingSidebar, !!input.listingSidebar);
       await this.write(tx, KEYS.projectSideAd, next.projectSideAd, input.projectSideAd !== undefined);
+      await this.write(tx, KEYS.realEstateAd, next.realEstateAd, input.realEstateAd !== undefined);
       await this.write(tx, KEYS.pricing, next.pricing, !!input.pricing);
       await this.write(tx, KEYS.homeCards, next.homeCards, !!input.homeCards);
       await this.write(tx, KEYS.footer, next.footer, !!input.footer);
@@ -392,6 +404,7 @@ export class SettingsService {
       whatsapp: parse(savedWhatsappSchema, value(KEYS.whatsapp)),
       listingSidebar: parse(listingSidebarSchema, value(KEYS.listingSidebar)),
       projectSideAd: parse(projectSideAdSchema, value(KEYS.projectSideAd)),
+      realEstateAd: parse(realEstateAdSchema, value(KEYS.realEstateAd)),
       pricing: parse(pricingSchema, value(KEYS.pricing)),
       homeCards: parse(homeCardsSchema, value(KEYS.homeCards)),
       footer: parse(footerSettingsSchema, value(KEYS.footer)),

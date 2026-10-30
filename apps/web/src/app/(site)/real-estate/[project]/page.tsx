@@ -86,7 +86,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProjectPage({ params }: Props) {
-  const [p, { projectSideAd: ad }] = await Promise.all([getProject((await params).project), getSiteSettings()]);
+  const [p, { projectSideAd: ad, realEstateAd }] = await Promise.all([getProject((await params).project), getSiteSettings()]);
   const { min, range, rate, emi } = pricing(p);
   const place = projectPlace(p);
   const lead = { projectId: p.id, advertiser: p.advertiserName, advertiserType: p.advertiserType };
@@ -236,7 +236,7 @@ export default async function ProjectPage({ params }: Props) {
                 </Section>
               )}
 
-              <AdStrip />
+              <AdStrip ad={realEstateAd} />
 
               {videos.length > 0 && (
                 <Section id="vd" title="Project Videos">

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ProjectSummary } from "@nsb/shared";
+import type { ProjectSummary, RealEstateAd } from "@nsb/shared";
 import { projectPath } from "@/lib/catalog";
 import { priceText, sqftText } from "./format";
 import { LeadButton } from "./lead-dialog";
@@ -69,9 +69,33 @@ export function ProjectCard({ project: p }: { project: ProjectSummary }) {
   );
 }
 
-// Static design content from the demo, between the cards. Not admin-managed yet.
-
-export function AdStrip() {
+/**
+ * The ad banner between the cards and on project pages (Admin › Real Estate › Sponsors & ads).
+ * Until an admin saves one, the demo banner shows; switched off, nothing does.
+ */
+export function AdStrip({ ad }: { ad: RealEstateAd | null }) {
+  if (ad && !ad.enabled) return null;
+  if (ad) {
+    const external = /^https?:///.test(ad.link);
+    return (
+      <a
+        className="re-ad"
+        href={ad.link || "#"}
+        aria-label={`Advertisement: ${ad.title}`}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer sponsored" } : {})}
+      >
+        {ad.imageUrl && <Image className="sk" src={ad.imageUrl} alt="" width={1200} height={300} />}
+        <div className="tx">
+          {ad.title}
+          {ad.text && <small>{ad.text}</small>}
+        </div>
+        {ad.logoUrl && <Image className="wl" src={ad.logoUrl} alt="" width={400} height={240} />}
+        {ad.buttonLabel && <span className="re-btn">{ad.buttonLabel}</span>}
+        <em>AD</em>
+      </a>
+    );
+  }
+  // The demo banner.
   return (
     <a className="re-ad" href="#" aria-label="Advertisement: properties in Noida">
       <Image className="sk" src="/images/real-estate/ad-skyline.jpg" alt="" width={720} height={350} />

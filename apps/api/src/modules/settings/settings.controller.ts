@@ -17,7 +17,7 @@ export class SiteSettingsController {
 }
 
 /** Home page and sponsor content that Admins (not only Super Admins) manage. */
-const EDITOR_SETTINGS = new Set(['projectSideAd', 'homeCards']);
+const EDITOR_SETTINGS = new Set(['projectSideAd', 'realEstateAd', 'homeCards']);
 
 @Controller('admin/settings')
 @UseGuards(AdminGuard)

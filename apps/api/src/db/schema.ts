@@ -207,7 +207,7 @@ export const projects = pgTable(
     /** Sector or address, e.g. Sector 150. */
     locality: text('locality').notNull(),
     name: text('name').notNull(),
-    /** From the name and area (projectSlug), so one project cannot be listed twice in an area. */
+    /** The page address, set on create (the admin's own, or projectSlug of the name and area) and never changed. */
     slug: text('slug').notNull().unique(),
     builder: text('builder').notNull(),
     reraId: text('rera_id').notNull().default(''),

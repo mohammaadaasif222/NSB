@@ -9,7 +9,8 @@ export function proxy(request: NextRequest) {
   // Site pages: tell server components which page they render, so the location applies only
   // to the page it was chosen on (lib/location-server.ts). Set here, it cannot be spoofed.
   const headers = new Headers(request.headers);
-  headers.set(PATH_HEADER, pathname);
+  // Encoded: a request header holding the bare path made Next.js 16 dev 404 every dynamic route.
+  headers.set(PATH_HEADER, encodeURIComponent(pathname));
   return NextResponse.next({ request: { headers } });
 }
 

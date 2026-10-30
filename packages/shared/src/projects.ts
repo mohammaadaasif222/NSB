@@ -133,14 +133,22 @@ export function parseChapters(text: string): VideoChapter[] {
   });
 }
 
-/** The project page address: /real-estate/<name and area>, e.g. /real-estate/skyline-heights-noida. */
-export const projectSlug = (name: string, area: string) =>
-  `${name} ${area}`
+/** Any text as a URL part: "Skyline Heights, Noida!" → "skyline-heights-noida". */
+export const toSlug = (text: string) =>
+  text
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 120);
+    .slice(0, 120)
+    .replace(/-+$/, '');
+
+/**
+ * The project page address made from the name and area, e.g. /real-estate/skyline-heights-noida,
+ * unless the admin types their own. It is set when the project is created and never changes after,
+ * so links to the page keep working.
+ */
+export const projectSlug = (name: string, area: string) => toSlug(`${name} ${area}`);
 
 /** The same project typed twice ("Skyline Heights" and "skyline-heights") has the same key. */
 export const projectNameKey = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -287,7 +295,17 @@ function checkProject(p: ProjectFieldsShape, ctx: z.RefinementCtx) {
 
 // Tags and Featured default on create only: a default on PATCH would clear them on every update that leaves them out.
 export const projectInputSchema = projectFields
-  .extend({ tags: projectFields.shape.tags.default([]), isFeatured: projectFields.shape.isFeatured.default(false) })
+  .extend({
+    tags: projectFields.shape.tags.default([]),
+    isFeatured: projectFields.shape.isFeatured.default(false),
+    /** Create only: the admin's own URL, cleaned up; blank for the one made from the name and area. Updates cannot change it. */
+    slug: z
+      .string()
+      .max(200)
+      .transform((v) => toSlug(v) || undefined)
+      .refine((v) => v === undefined || v.length >= 3, 'Use at least 3 letters or numbers')
+      .optional(),
+  })
   .superRefine(checkProject);
 export type ProjectInput = z.infer<typeof projectInputSchema>;
 /** What the admin form sends, before numbers are parsed. */

@@ -18,7 +18,7 @@ import {
 } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
 import { banners, categories, listingImages, listings, media, projects, settings } from '../../db/schema.js';
-import { FOOTER_KEY, HOME_CARDS_KEY, PROJECT_SIDE_AD_KEY, PROVIDER_LABELS, SettingsService } from '../settings/settings.service.js';
+import { FOOTER_KEY, HOME_CARDS_KEY, PROJECT_SIDE_AD_KEY, PROVIDER_LABELS, REAL_ESTATE_AD_KEY, SettingsService } from '../settings/settings.service.js';
 import { readImageInfo } from './image-info.js';
 import type { ImageStorage } from './storage/image-storage.js';
 import { CloudinaryImageStorage } from './storage/cloudinary.storage.js';
@@ -46,6 +46,10 @@ const inUse = sql`(
     where plan.c->>'plan2dUrl' = ${media.url} or plan.c->>'plan3dUrl' = ${media.url}
   )
   or exists (select 1 from ${settings} where ${settings.key} = ${PROJECT_SIDE_AD_KEY} and ${settings.value}->>'imageUrl' = ${media.url})
+  or exists (
+    select 1 from ${settings}
+    where ${settings.key} = ${REAL_ESTATE_AD_KEY} and (${settings.value}->>'imageUrl' = ${media.url} or ${settings.value}->>'logoUrl' = ${media.url})
+  )
   or exists (select 1 from ${settings} where ${settings.key} = ${FOOTER_KEY} and ${settings.value}->>'logoUrl' = ${media.url})
   or exists (
     select 1 from ${settings}

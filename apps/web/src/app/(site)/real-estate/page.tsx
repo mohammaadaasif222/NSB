@@ -13,6 +13,7 @@ import { getCategory } from "@/lib/catalog";
 import { COMING_SOON_METADATA, CATEGORY_PAGES_ENABLED } from "@/lib/flags";
 import { locationPlace, withLocation } from "@/lib/location";
 import { getSiteLocation } from "@/lib/location-server";
+import { getSiteSettings } from "@/lib/site-settings";
 
 /** Real estate listing page, as in the NSB Live Demo: filter chips, project cards and a sidebar. */
 
@@ -49,9 +50,10 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
   if (possession) params.set("possession", possession);
   if (sort !== "rel") params.set("sort", sort);
   if (q) params.set("q", q);
-  const [result, localities] = await Promise.all([
+  const [result, localities, { realEstateAd }] = await Promise.all([
     api.get<Paginated<ProjectSummary>>(`/projects?${params}`),
     api.get<ProjectLocality[]>(`/projects/localities${location ? `?${new URLSearchParams({ area: location.area })}` : ""}`),
+    getSiteSettings(),
   ]);
   const place = locationPlace(location);
   const pageCount = Math.max(1, Math.ceil(result.total / PAGE_SIZE));
@@ -70,7 +72,7 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
 
   const cards = result.items.flatMap((project, i) => {
     const card = <ProjectCard key={project.id} project={project} />;
-    if (i === 2) return [card, <AdStrip key="ad" />];
+    if (i === 2) return [card, <AdStrip key="ad" ad={realEstateAd} />];
     if (i === 5) return [card, <ShortsStrip key="shorts" />];
     if (i === 8) return [card, <PromoStrip key="promo" />];
     return [card];
@@ -136,7 +138,7 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
           <div className="re-grid">
             <section aria-label="Projects">
               {cards.length > 0 ? cards : <div className="re-empty">No projects match these filters yet.</div>}
-              {result.items.length > 0 && result.items.length <= 2 && <AdStrip />}
+              {result.items.length > 0 && result.items.length <= 2 && <AdStrip ad={realEstateAd} />}
               {pageCount > 1 && (
                 <nav className="re-pg" aria-label="Pagination">
                   {pageItems(page, pageCount).map((p, i) =>

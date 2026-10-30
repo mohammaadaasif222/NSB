@@ -453,6 +453,23 @@ export const projectSideAdSchema = z.object({
 });
 export type ProjectSideAd = z.infer<typeof projectSideAdSchema>;
 
+/**
+ * The real estate ad banner: between the project cards on the listing page, and on project pages
+ * after Floor Plans. Until an admin saves one, the demo banner shows.
+ */
+export const realEstateAdSchema = z.object({
+  enabled: z.boolean(),
+  title: trimmed(60),
+  text: z.string().trim().max(120),
+  buttonLabel: z.string().trim().max(24),
+  link: siteOrWebLink,
+  /** Background picture on the right, fading into the dark banner. */
+  imageUrl: imageUrlSchema.nullable(),
+  /** The sponsor's logo, beside the button. */
+  logoUrl: imageUrlSchema.nullable(),
+});
+export type RealEstateAd = z.infer<typeof realEstateAdSchema>;
+
 // ---------- Home page: the four cards beside the hero ----------
 
 /** Card colours from the demo (used when the card has no image of its own). */
@@ -622,6 +639,8 @@ export const settingsUpdateSchema = z.object({
   listingSidebar: listingSidebarSchema.optional(),
   /** Real estate project page sidebar ad; null removes it. */
   projectSideAd: projectSideAdSchema.nullable().optional(),
+  /** Real estate ad banner; null goes back to the demo banner. */
+  realEstateAd: realEstateAdSchema.nullable().optional(),
   /** Slot and plan prices (Settings › Slot pricing). */
   pricing: pricingSchema.optional(),
   /** The four cards beside the home hero (Admin › Home page). */

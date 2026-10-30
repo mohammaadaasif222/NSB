@@ -76,7 +76,8 @@ describe('Admin roles, users, profile and lead follow-up (e2e)', () => {
     const list = (await as(superCookie).get('/api/admin/users').expect(200)).body as AdminUserRow[];
     expect(list.filter((u) => u.email.startsWith(`e2e-${run}`)).map((u) => u.role).sort()).toEqual(['admin', 'analyst', 'view']);
     for (const role of ['admin', 'analyst', 'view'] as const) cookies[role] = await login(email(role), PASSWORD);
-  });
+    // Seven bcrypt hashes (cost 12), which take most of a second each on slower machines.
+  }, 20_000);
 
   it('keeps View only to reading, without lead numbers', async () => {
     const view = as(cookies.view!);

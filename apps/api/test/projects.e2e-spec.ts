@@ -27,7 +27,8 @@ import { NotificationsService } from '../src/modules/notifications/notifications
 loadEnvFile();
 
 const run = Date.now().toString(36);
-const AD_KEY = 'realEstate.projectSideAd';
+/** Settings the tests change, put back afterwards. */
+const AD_KEYS = ['realEstate.projectSideAd', 'realEstate.adBanner'];
 
 /** A complete project as the admin form sends it (numbers as typed text). */
 const projectBody = (overrides: Partial<ProjectFormInput> = {}): ProjectFormInput => ({
@@ -75,7 +76,7 @@ describe('Real estate projects (e2e)', () => {
   let app: NestExpressApplication;
   let pool: pg.Pool;
   let cookie: string;
-  let savedAd: unknown[];
+  let savedAd: { key: string; value: unknown }[];
   const notices: EnquiryNotice[] = [];
   let project: AdminProject;
 
@@ -102,12 +103,12 @@ describe('Real estate projects (e2e)', () => {
       .send({ email: process.env.SEED_ADMIN_EMAIL, password: process.env.SEED_ADMIN_PASSWORD })
       .expect(200);
     cookie = (res.headers['set-cookie'] as unknown as string[])[0].split(';')[0];
-    savedAd = (await pool.query('select value from settings where key = $1', [AD_KEY])).rows.map((r: { value: unknown }) => r.value);
+    savedAd = (await pool.query('select key, value from settings where key = any($1)', [AD_KEYS])).rows as { key: string; value: unknown }[];
   });
 
   afterAll(async () => {
-    await pool.query('delete from settings where key = $1', [AD_KEY]);
-    for (const value of savedAd) await pool.query('insert into settings (key, value) values ($1, $2)', [AD_KEY, JSON.stringify(value)]);
+    await pool.query('delete from settings where key = any($1)', [AD_KEYS]);
+    for (const { key, value } of savedAd) await pool.query('insert into settings (key, value) values ($1, $2)', [key, JSON.stringify(value)]);
     await pool.query('delete from enquiries where name like $1', [`%${run}%`]);
     await pool.query('delete from projects where slug like $1', [`e2e-${run}-%`]);
     await pool.end();
@@ -149,6 +150,23 @@ describe('Real estate projects (e2e)', () => {
     expect(none.body).toEqual({ duplicate: null });
     const res = await admin.post('/api/admin/projects').send(projectBody({ name: `e2e-${run} heights` })).expect(409);
     expect(res.body.issues[0].path).toBe('name');
+  });
+
+  it('keeps a project’s slug once it is made, whether typed in or from the name', async () => {
+    const create = (body: Partial<ProjectFormInput>) => admin.post('/api/admin/projects').send(projectBody(body));
+    // The admin's own slug is cleaned up, and a rename or a slug in an update changes nothing.
+    const custom = (await create({ name: `E2E ${run} Custom`, slug: ` E2E ${run} My Custom Page! ` }).expect(201)).body as AdminProject;
+    expect(custom.slug).toBe(`e2e-${run}-my-custom-page`);
+    const renamed = (await admin.patch(`/api/admin/projects/${custom.id}`).send({ name: `E2E ${run} Renamed`, slug: 'something-else' }).expect(200)).body as AdminProject;
+    expect(renamed).toMatchObject({ name: `E2E ${run} Renamed`, slug: `e2e-${run}-my-custom-page` });
+    const taken = await create({ name: `E2E ${run} Another`, slug: `e2e-${run}-my-custom-page` }).expect(409);
+    expect(taken.body.issues[0].path).toBe('slug');
+
+    // A renamed project keeps its old slug, so a new project with that name gets the next free one.
+    const old = (await create({ name: `E2E ${run} Old` }).expect(201)).body as AdminProject;
+    await admin.patch(`/api/admin/projects/${old.id}`).send({ name: `E2E ${run} Older` }).expect(200);
+    const again = (await create({ name: `E2E ${run} Old` }).expect(201)).body as AdminProject;
+    expect([old.slug, again.slug]).toEqual([`e2e-${run}-old-greater-noida`, `e2e-${run}-old-greater-noida-2`]);
   });
 
   it('checks configurations and the broker name', async () => {
@@ -257,5 +275,19 @@ describe('Real estate projects (e2e)', () => {
     await admin.patch('/api/admin/settings').send({ projectSideAd: { ...ad, enabled: false } }).expect(200);
     expect(((await http().get('/api/site-settings').expect(200)).body as SiteSettings).projectSideAd).toBeNull();
     await admin.patch('/api/admin/settings').send({ projectSideAd: { ...ad, link: 'javascript:alert(1)' } }).expect(400);
+  });
+
+  it('saves the ad banner, sent switched off too, and null brings back the demo banner', async () => {
+    const site = async () => ((await http().get('/api/site-settings').expect(200)).body as SiteSettings).realEstateAd;
+    const banner = { enabled: true, title: `E2E ${run} homes`, text: 'Smart investment', buttonLabel: 'Explore now', link: 'https://example.com', imageUrl: null, logoUrl: null };
+    const saved = (await admin.patch('/api/admin/settings').send({ realEstateAd: banner }).expect(200)).body as AdminSettings;
+    expect(saved.realEstateAd).toEqual(banner);
+    expect(await site()).toEqual(banner);
+    await admin.patch('/api/admin/settings').send({ realEstateAd: { ...banner, enabled: false } }).expect(200);
+    expect(await site()).toEqual({ ...banner, enabled: false });
+    await admin.patch('/api/admin/settings').send({ realEstateAd: null }).expect(200);
+    expect(await site()).toBeNull();
+    const bad = await admin.patch('/api/admin/settings').send({ realEstateAd: { ...banner, title: '', link: 'javascript:alert(1)' } }).expect(400);
+    expect(bad.body.issues.map((i: { path: string }) => i.path)).toEqual(expect.arrayContaining(['realEstateAd.title', 'realEstateAd.link']));
   });
 });

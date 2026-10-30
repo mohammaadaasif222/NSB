@@ -24,6 +24,7 @@ import {
   type ProjectDuplicate,
   type ProjectFormInput,
   projectSlug,
+  toSlug,
   textLines,
   youTubeId,
 } from "@nsb/shared";
@@ -48,7 +49,7 @@ function stepOfError(path: string): number {
   if (key === "configurations") return 3;
   if (key === "amenities" || key === "specifications") return 4;
   if (key === "nearby" || key === "advertiser") return 5;
-  if (["faqs", "metaTitle", "metaDescription"].includes(key)) return 6;
+  if (["faqs", "slug", "metaTitle", "metaDescription"].includes(key)) return 6;
   if (["phone", "brochureUrl", "termStart", "termMonths", "status"].includes(key)) return 7;
   return 0;
 }
@@ -121,6 +122,8 @@ function draftOf(p?: AdminProject) {
     status: p?.status ?? ("draft" as ListingStatus),
     metaTitle: p?.metaTitle ?? "",
     metaDescription: p?.metaDescription ?? "",
+    /** Only sent when creating; a saved project keeps its slug. */
+    slug: "",
   };
 }
 type Draft = ReturnType<typeof draftOf> & { nearby: NearbyDraft[]; videos: VideoDraft[]; faqs: FaqDraft[]; configurations: ConfigDraft[] };
@@ -194,6 +197,8 @@ export function ProjectForm({
   // A blank name has no duplicate, whatever the last check found.
   const duplicate = d.name.trim() ? found : null;
   const [saved, setSaved] = useState<AdminProject | null>(null);
+  // Set once the project exists; it never changes after.
+  const [savedSlug, setSavedSlug] = useState(project?.slug ?? null);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((v) => ({ ...v, [key]: value }));
   const setRow = <K extends "configurations" | "nearby" | "videos" | "faqs">(key: K, i: number, patch: Partial<Draft[K][number]>) =>
@@ -249,6 +254,7 @@ export function ProjectForm({
       setId(result.data.id);
       window.history.replaceState(null, "", `/admin/real-estate/${result.data.id}`);
     }
+    setSavedSlug(result.data.slug);
     setSaved(result.data);
   }
 
@@ -617,9 +623,26 @@ export function ProjectForm({
               </Button>
             )}
             <h4 className="mt-2 font-extrabold">SEO</h4>
-            <Field label="URL slug" hint="Made from the project name and location.">
-              <TextInput value={`/real-estate/${projectSlug(d.name, d.area)}`} readOnly />
-            </Field>
+            {savedSlug ? (
+              <Field label="URL slug" hint="Fixed when the project was created, so links to the page keep working.">
+                <TextInput value={`/real-estate/${savedSlug}`} readOnly />
+              </Field>
+            ) : (
+              <Field
+                label="URL slug"
+                hint="The page address after /real-estate/. Leave blank to make it from the name and area. It cannot be changed after the project is created."
+                error={errors.slug}
+              >
+                <TextInput
+                  value={d.slug}
+                  maxLength={120}
+                  placeholder={projectSlug(d.name, d.area) || "project-name-area"}
+                  invalid={!!errors.slug}
+                  onChange={(e) => set("slug", e.target.value)}
+                  onBlur={() => set("slug", toSlug(d.slug))}
+                />
+              </Field>
+            )}
             <Field label="Meta title" hint="Leave blank to use the project name and sector." error={errors.metaTitle}>
               <TextInput value={d.metaTitle} maxLength={70} placeholder="Auto-created from the project name" onChange={(e) => set("metaTitle", e.target.value)} />
             </Field>

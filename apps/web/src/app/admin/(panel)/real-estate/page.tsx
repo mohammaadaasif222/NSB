@@ -17,6 +17,7 @@ import { Kpi } from "@/components/admin/ui";
 import { adminApi } from "@/lib/api";
 import { ProjectFilters, type ProjectFilterValues } from "./project-filters";
 import { ProjectsTable } from "./projects-table";
+import { AdBannerForm } from "./ad-banner-form";
 import { SideAdForm } from "./side-ad-form";
 
 export const metadata: Metadata = { title: "Real Estate" };
@@ -100,14 +101,19 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/admin
         <Link href="/admin/real-estate" aria-current={tab === "all" ? "page" : undefined}>
           All listings
         </Link>
-        {canEdit && (
+        {/* {canEdit && (
           <Link href="/admin/real-estate?tab=sponsors" aria-current={tab === "sponsors" ? "page" : undefined}>
             Sponsors &amp; ads
           </Link>
-        )}
+        )} */}
       </nav>
 
-      {settings && <SideAdForm ad={settings.projectSideAd} maxUploadBytes={settings.maxUploadBytes} />}
+      {settings && (
+        <div className="flex flex-col gap-4">
+          <AdBannerForm ad={settings.realEstateAd} maxUploadBytes={settings.maxUploadBytes} />
+          <SideAdForm ad={settings.projectSideAd} maxUploadBytes={settings.maxUploadBytes} />
+        </div>
+      )}
 
       {projects && (
         <>

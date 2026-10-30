@@ -409,6 +409,10 @@
   margin-left: auto;
   display: block;
 }
+/* Without a logo, the button still sits on the right. */
+.re-ad .tx + .re-btn {
+  margin-left: auto;
+}
 .re-ad .re-btn {
   background: rgba(11, 10, 51, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.6);

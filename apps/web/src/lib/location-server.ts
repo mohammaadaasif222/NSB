@@ -11,7 +11,8 @@ import { decodeLocation, LOCATION_COOKIE, LOCATION_PATH_COOKIE, PATH_HEADER, typ
 export const getSiteLocation = cache(async (): Promise<SiteLocation | null> => {
   const [store, head] = await Promise.all([cookies(), headers()]);
   const chosenOn = store.get(LOCATION_PATH_COOKIE)?.value;
-  const current = head.get(PATH_HEADER);
+  const sent = head.get(PATH_HEADER);
+  const current = sent === null ? null : safeDecode(sent);
   // Cookies from before locations were per page have no path; they reset too.
   if (!chosenOn || (current !== null && safeDecode(chosenOn) !== current)) return null;
   return decodeLocation(store.get(LOCATION_COOKIE)?.value);

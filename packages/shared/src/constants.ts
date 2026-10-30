@@ -177,6 +177,21 @@ export const IMAGE_SLOTS = {
     min: { width: 300, height: 100 },
     folder: 'ads',
   },
+  /** Real estate ad banner picture: the right 60% of a 104px-tall banner, about 560×104. */
+  'ad-banner': {
+    label: 'Ad banner picture',
+    recommended: { width: 1200, height: 300, ratio: '4:1' },
+    min: { width: 600, height: 150 },
+    folder: 'ads',
+  },
+  /** Sponsor logo on the ad banner, shown 58px tall. */
+  'ad-logo': {
+    label: 'Ad logo',
+    recommended: { width: 400, height: 240, ratio: 'any; a wide logo on a light box reads best' },
+    min: { width: 120, height: 60 },
+    anyOrientation: true,
+    folder: 'ads',
+  },
 } as const satisfies Record<string, ImageSlot>;
 
 export type ImageSlotKey = keyof typeof IMAGE_SLOTS;

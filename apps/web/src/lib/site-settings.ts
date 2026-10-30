@@ -9,6 +9,7 @@ export function getSiteSettings(): Promise<SiteSettings> {
       whatsapp: null,
       listingSidebar: { enabled: true, budget: true, type: true },
       projectSideAd: null,
+      realEstateAd: null,
       homeCards: DEFAULT_HOME_CARDS,
       footer: DEFAULT_FOOTER,
     }));

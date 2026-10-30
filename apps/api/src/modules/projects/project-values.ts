@@ -19,7 +19,7 @@ export function projectValues(input: ProjectInput) {
   const bedrooms = [...new Set(input.configurations.map((c) => bedroomsOf(c.title)).filter((n): n is number => n !== null))];
   return {
     ...input,
-    slug: projectSlug(input.name, input.area),
+    slug: input.slug ?? projectSlug(input.name, input.area),
     advertiser,
     advertiserName: advertiser.name,
     advertiserType: advertiser.type,

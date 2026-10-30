@@ -1,7 +1,7 @@
 import type { AdminRole, ImageStorageProvider, LeadStatus, ListingStatus, ReviewSource, SmtpSecurity } from './constants.js';
 import type { ListingDetails } from './listing-forms.js';
 import type { ProjectType } from './projects.js';
-import type { FooterSettings, HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, ServiceGroup } from './schemas.js';
+import type { FooterSettings, HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, RealEstateAd, ServiceGroup } from './schemas.js';
 
 /** API response shapes shared by the API (producer) and web (consumer). Dates are ISO strings. */
 
@@ -228,6 +228,8 @@ export interface AdminSettings {
   listingSidebar: ListingSidebarSettings;
   /** Null until an admin saves the project page sidebar ad. */
   projectSideAd: ProjectSideAd | null;
+  /** Null until an admin saves the real estate ad banner (the demo banner shows until then). */
+  realEstateAd: RealEstateAd | null;
   /** Slot and plan prices; sub-categories without a saved price use DEFAULT_SLOT_PRICE. */
   pricing: Pricing;
   /** The four home page cards (DEFAULT_HOME_CARDS until saved). */
@@ -251,6 +253,8 @@ export interface SiteSettings {
   listingSidebar: ListingSidebarSettings;
   /** Present only while the ad is switched on. */
   projectSideAd: ProjectSideAd | null;
+  /** The saved ad banner, switched on or off; null until saved, when the demo banner shows. */
+  realEstateAd: RealEstateAd | null;
   /** The four cards beside the home hero, in order. */
   homeCards: HomeCard[];
   footer: FooterSettings;
