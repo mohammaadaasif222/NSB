@@ -9,6 +9,7 @@ import { useGameImpression } from '@/hooks/useGameImpression';
 import { trackGameOpen } from '@/utils/events';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
 import { useFavourites } from '@/context/FavouritesContext';
+import { useJackpots } from '@/hooks/useJackpots';
 import personIcon from '@/assets/lobby/person.svg';
 import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
 
@@ -354,6 +355,8 @@ const GameTile: FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const { isFavourite, toggle } = useFavourites();
+  // In a winnable provider jackpot, linked through our own game ids.
+  const jackpot = useJackpots().gameIds.has(game.id);
 
   const impressionRef = useGameImpression(game.slug, surface);
 
@@ -404,6 +407,16 @@ const GameTile: FC<Props> = ({
       {game.is_new && (
         <span className="absolute left-[5.05cqw] top-[5.05cqw] flex h-[12.12cqw] items-center rounded-full bg-[#f9d028] px-[5.05cqw] text-[max(8px,6.06cqw)] font-medium leading-none text-[#07080a]">
           {t('game.new')}
+        </span>
+      )}
+
+      {jackpot && (
+        <span
+          className={`absolute left-[5.05cqw] flex h-[12.12cqw] items-center rounded-full border border-[#f9d028]/70 bg-black/60 px-[5.05cqw] text-[max(8px,6.06cqw)] font-medium leading-none text-[#f9d028] backdrop-blur-sm ${
+            game.is_new ? 'top-[19.7cqw]' : 'top-[5.05cqw]'
+          }`}
+        >
+          {t('lobby.jackpots.badge')}
         </span>
       )}
 
