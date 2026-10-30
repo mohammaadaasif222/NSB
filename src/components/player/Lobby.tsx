@@ -7,13 +7,13 @@ import GameBrowser, { type ShelfInsert } from '@/components/player/GameBrowser';
 import LobbyBanner from '@/components/player/LobbyBanner';
 import CrashPreview from '@/components/player/CrashPreview';
 import ProviderRow from '@/components/player/ProviderRow';
-import SportsRow, { SportsShelf } from '@/components/player/SportsRow';
+import { SportsShelf } from '@/components/player/SportsRow';
 import FavouritesShelf from '@/components/player/FavouritesShelf';
 import RecentShelf from '@/components/player/RecentShelf';
 import ComingSoonShelf from '@/components/player/ComingSoonShelf';
 import JackpotShelf from '@/components/player/JackpotShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
-import { CASINO_SHELF_KEYS, LIVE_SHELF_KEYS, PLAYER_SHELF_KEYS } from '@/constants/games';
+import { CASINO_SHELF_KEYS, HOME_SHELF_KEYS, LIVE_SHELF_KEYS } from '@/constants/games';
 import StreamersRow from '@/components/player/StreamersRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import FaqAccordion from '@/components/player/FaqAccordion';
@@ -70,9 +70,14 @@ const faqJsonLd = (faqs: FaqItem[]): JsonLd => ({
   })),
 });
 
-/** The signed-in lobby's sports row, after Live Casino. */
-const PLAYER_INSERTS: readonly ShelfInsert[] = [
-  { id: 'sports', after: 'live', node: <SportsShelf viewAll="/sports" paged={false} /> },
+/** The home page's Sports row after Instant Wins, and Providers after High RTP. */
+const HOME_INSERTS = (providerRow: ReactNode): readonly ShelfInsert[] => [
+  {
+    id: 'sports',
+    after: 'instant-wins',
+    node: <SportsShelf viewAll="/sports" paged={false} />,
+  },
+  { id: 'providers', after: 'high-rtp', node: providerRow },
 ];
 
 /**
@@ -140,7 +145,6 @@ const Lobby: FC<Props> = ({
   const casino = variant === 'casino' || live;
   const jsonLd =
     !casino && faqs.length > 0 ? [...[seo.jsonLd ?? []].flat(), faqJsonLd(faqs)] : seo.jsonLd;
-  const controls = player || casino;
 
   const providerRow = <ProviderRow providers={providers} />;
 
@@ -154,7 +158,6 @@ const Lobby: FC<Props> = ({
     <GameBrowser
       shelves={shelves}
       basePath={basePath}
-      controls={controls}
       providers={providers.map((p) => p.name).sort((a, b) => a.localeCompare(b))}
       {...(live
         ? {
@@ -171,11 +174,12 @@ const Lobby: FC<Props> = ({
               chipsOnPhone: true,
               inserts: CASINO_INSERTS(providerRow, t),
             }
-          : player && {
-              // The signed-in design's shelves, with the sports row among them.
-              shelfKeys: PLAYER_SHELF_KEYS,
+          : {
+              // The sheet's home shelves, with Sports and Providers among them.
+              shelfKeys: HOME_SHELF_KEYS,
               titles: { originals: 'nav.originals' },
-              inserts: PLAYER_INSERTS,
+              chipsOnPhone: true,
+              inserts: HOME_INSERTS(providerRow),
             })}
     />
   );
@@ -223,10 +227,6 @@ const Lobby: FC<Props> = ({
         {/* Provider jackpots and their latest winners; on /casino they sit
             among the shelves instead. */}
         {!casino && <JackpotShelf />}
-        {/* Curated in the admin console's Providers screen; on /casino it
-            sits among the shelves instead. */}
-        {!casino && providerRow}
-        {!player && !casino && <SportsRow />}
         {!casino && <StreamersRow streams={streams} />}
         <RecentWinners games={winnerGames} tabs={player || casino ? 'player' : 'landing'} />
         <FaqAccordion items={faqs} />

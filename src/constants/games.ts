@@ -53,6 +53,7 @@ export const GAME_SHELVES = [
   { key: 'popular', titleKey: 'dash.mostPlayed', list: { sort: 'popular' } },
   { key: 'trending', titleKey: 'dash.trending', list: { sort: 'trending' } },
   { key: 'table', titleKey: 'dash.tableGames', list: { genre: 'table' } },
+  { key: 'high-rtp', titleKey: 'lobby.rail.highRtp', list: { sort: 'rtp' } },
   { key: 'bonus-buys', titleKey: 'dash.bonusBuys', list: { buy_feature: true } },
   {
     key: 'instant-wins',
@@ -116,21 +117,18 @@ export const CASINO_LISTING_KEYS: readonly GameShelfKey[] = SHELF_KEYS.filter(
 );
 
 /**
- * The shelves each lobby shows, in order.
+ * The home page's shelves, in the Casino Manager sheet's "Final" order, the
+ * same for visitors and signed-in players. Sports and Providers sit among
+ * these — Lobby's HOME_INSERTS.
  */
-export const LOBBY_SHELF_KEYS: readonly GameShelfKey[] = [
+export const HOME_SHELF_KEYS: readonly GameShelfKey[] = [
   'originals',
-  'slots',
-  'live',
+  'trending',
+  'instant-wins',
+  'live-popular',
+  'high-rtp',
+  'table',
   'new',
-  'featured',
-];
-export const PLAYER_SHELF_KEYS: readonly GameShelfKey[] = [
-  'originals',
-  'slots',
-  'live',
-  'new',
-  'popular',
 ];
 
 /**
@@ -163,11 +161,6 @@ export const LIVE_SHELF_KEYS: readonly GameShelfKey[] = [
   'live-game-shows',
   'live-baccarat',
   'live-lightning',
-];
-
-/** The home page draws one of two shelf sets, depending on who is signed in. */
-export const HOME_SHELF_KEYS: readonly GameShelfKey[] = [
-  ...new Set([...LOBBY_SHELF_KEYS, ...PLAYER_SHELF_KEYS]),
 ];
 
 /**
