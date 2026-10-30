@@ -175,9 +175,8 @@ const SocialDisc: FC<{
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`rl-glass-btn relative flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:-translate-y-0.5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] ${
-      first ? '' : '-ms-[calc(var(--u)*14.5)] lg:-ms-[calc(var(--u)*12)]'
-    }`}
+    className={`rl-glass-btn relative flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:-translate-y-0.5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] ${first ? '' : '-ms-[calc(var(--u)*14.5)] lg:-ms-[calc(var(--u)*12)]'
+      }`}
   >
     <img
       src={icon.src}
@@ -372,7 +371,7 @@ const placed = ([x, y, w]: [number, number, number]): CSSProperties => ({
 const SectionCard: FC<{
   href: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   art: CardArt;
 }> = ({ href, title, subtitle, art }) => (
   <Link
@@ -407,13 +406,19 @@ const SectionCard: FC<{
       />
     </span>
 
-    <span className="relative block px-[calc(var(--u)*16)] pt-[calc(var(--u)*10)] lg:px-[4.06cqw] lg:pt-[2.49cqw]">
+    <span className={`relative flex  px-[calc(var(--u)*16)]  lg:px-[4.06cqw] 
+    ${subtitle
+        ? "block pt-[calc(var(--u)*10)] lg:pt-[2.49cqw]"
+        : "h-full items-center"
+      }`}>
       <span className="block text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*24)] text-white lg:text-[max(20px,4.19cqw)] lg:font-bold lg:leading-[1.25] lg:tracking-[-0.02em] lg:text-[#f2f5f9]">
         {title}
       </span>
-      <span className="mt-[0.4cqw] hidden text-[max(12px,2.09cqw)] leading-[1.5] text-[#7c8799] lg:block">
-        {subtitle}
-      </span>
+      {subtitle && (
+        <span className="mt-[0.4cqw] hidden text-[max(12px,2.09cqw)] leading-[1.5] text-[#7c8799] lg:block">
+          {subtitle}
+        </span>
+      )}
     </span>
   </Link>
 );
@@ -495,13 +500,13 @@ const LandingHero: FC<{ registeredToday: number | null }> = ({ registeredToday }
           <SectionCard
             href="/casino"
             title={t('nav.casino')}
-            subtitle={t('lobby.hero.casinoSubtitle')}
+            // subtitle={t('lobby.hero.casinoSubtitle')}
             art={CASINO_ART}
           />
           <SectionCard
             href="/sports"
             title={t('nav.sports')}
-            subtitle={t('lobby.hero.sportsSubtitle')}
+            // subtitle={t('lobby.hero.sportsSubtitle')}
             art={SPORTS_ART}
           />
         </div>

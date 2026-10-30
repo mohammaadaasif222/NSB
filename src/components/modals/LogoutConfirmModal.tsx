@@ -28,7 +28,7 @@ const LogoutConfirmModal: FC<Props> = ({ onConfirm, onCancel }) => {
       onSubmit={onConfirm}
       loading={false}
       submitLabel={t('account.logoutConfirm')}
-      destructive
+      look="auth"
     >
       <p className="text-base leading-6 text-[#9da2b4]">{t('account.logoutMessage')}</p>
     </ProfileModalShell>

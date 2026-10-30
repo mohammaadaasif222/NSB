@@ -17,6 +17,7 @@ import AddressDisplay from '../shared/AddressDisplay';
 import KycGateNotice from '../KycGateNotice';
 import LocalCurrencyTab from './LocalCurrencyTab';
 import SegmentedTabs from '@/components/player/SegmentedTabs';
+import { WALLET_TRACK } from '@/components/wallet/shared/WalletTabBar';
 import { WALLET_NOTE } from '../shared/WalletField';
 
 type DepositType = 'crypto' | 'local';
@@ -234,6 +235,7 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
         active={depositType}
         onChange={setDepositType}
         label={t('acct.wallet.tabDeposit')}
+        className={WALLET_TRACK}
       />
 
       {/* CRYPTO DEPOSIT FLOW — Currency, Network and the address, 14 apart. */}

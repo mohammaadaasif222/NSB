@@ -4,7 +4,7 @@ import type { ReactElement, ReactNode } from 'react';
  * The account area's ledger.
  *
  * Referral and Transactions are the same table drawn twice in the design —
- * same 46px header band, same 42px rows, same hairline between them, same
+ * same 47px header band, same 42px rows, same hairline between them, same
  * right-aligned figure closing the row. Only the surface under it and the
  * columns differ, so those are the props and everything else lives here.
  */
@@ -41,15 +41,15 @@ interface Props<T> {
 
 /* No gap between the tracks — the design's column positions already carry
    their own spacing, so adding one steals it back and the last column is the
-   one that loses. 26 of inset at the opening edge, 55 at the closing one,
+   one that loses. 28 of inset at the opening edge, 55 at the closing one,
    which is where the design right-aligns the final figure. */
-/* The design's insets — 26 in, 55 out. They used to close up to 16/24 below
-   the `@panel` query, because at a fixed 26/55 they ate most of a column on a
+/* The design’s insets — 28 in, 55 out. They used to close up to 16/24 below
+   the `@panel` query, because at a fixed 28/55 they ate most of a column on a
    laptop's narrower panel. In `--u` they shrink with the panel by themselves,
    so the design's own numbers hold from `lg` up and the tighter pair is left
    to the phone, where the unit is 1px and 55 really would be too much. */
 const CELLS =
-  'grid items-center ps-[calc(var(--u)*16)] pe-[calc(var(--u)*24)] lg:ps-[calc(var(--u)*26)] lg:pe-[calc(var(--u)*55)]';
+  'grid items-center ps-[calc(var(--u)*16)] pe-[calc(var(--u)*24)] lg:ps-[calc(var(--u)*28)] lg:pe-[calc(var(--u)*55)]';
 
 /** Every status reads the same in the design — the word carries it, not a colour. */
 export const TableBadge = ({ children }: { children: ReactNode }): ReactElement => (
@@ -72,7 +72,7 @@ const DataTable = <T,>({
   return (
     <div className={`${surface} overflow-hidden`}>
       {title && (
-        <p className="px-[calc(var(--u)*26)] pt-[calc(var(--u)*14)] pb-[calc(var(--u)*15)] rl-h-card text-white">
+        <p className="px-[calc(var(--u)*28)] pt-[calc(var(--u)*14)] pb-[calc(var(--u)*15)] text-[length:max(min(11px,20px),calc(var(--u)*20))] leading-[calc(var(--u)*28)] font-medium text-white">
           {title}
         </p>
       )}
@@ -81,7 +81,7 @@ const DataTable = <T,>({
           pushing the page sideways or crushing the columns. */}
       <div className="thin-scrollbar overflow-x-auto">
         <div style={{ minWidth }}>
-          <div className={`${CELLS} h-[calc(var(--u)*46)] bg-white/10`} style={tracks}>
+          <div className={`${CELLS} h-[calc(var(--u)*47)] bg-white/10`} style={tracks}>
             {columns.map((c) => (
               <span
                 key={c.key}

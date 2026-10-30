@@ -126,7 +126,7 @@ const ChatDrawer: FC<Props> = ({ open, onClose, label, children }) => {
       data-chat-drawer={shown ? 'open' : 'closed'}
       // A phone keeps the bar in view, as its design draws chat: the
       // drawer starts where the bar ends, on the page's own black.
-      className={`fixed bottom-0 end-0 top-[var(--player-bar-h,0px)] z-[60] flex w-full flex-col bg-[#07080a] transition-transform duration-300 ease-out sm:top-0 sm:w-[var(--chat-drawer-w)] sm:border-s sm:border-white/10 sm:bg-[#0d0f14] sm:shadow-[0_0_40px_rgba(0,0,0,0.5)] ${
+      className={`fixed bottom-0 end-0 top-[var(--player-bar-h,0px)] z-[60] flex w-full flex-col bg-[#07080a] transition-transform duration-300 ease-out sm:top-0 sm:w-[var(--chat-drawer-w)] sm:rl-menu-panel-glass ${
         shown ? 'translate-x-0' : hidden
       }`}
     >

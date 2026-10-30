@@ -218,6 +218,23 @@ export const en = {
   'lobby.winners.sportsBets': 'Sports bets',
   'lobby.winners.cardTitle': '{user} won {payout} on {game}',
 
+  // Provider jackpots
+  'lobby.jackpots.title': 'Jackpots',
+  'lobby.jackpots.paused': 'Paused',
+  'lobby.jackpots.empty': 'No jackpots are running right now.',
+  'lobby.jackpots.noOpenTier': 'Every pot has just been won. New ones open shortly.',
+  'lobby.jackpots.games': 'Games in this jackpot',
+  'lobby.jackpots.winnersTitle': 'Recent jackpot winners',
+  'lobby.jackpots.winnersEmpty': 'No jackpot wins yet.',
+  'lobby.jackpots.won': '{player} won {amount}',
+  'lobby.jackpots.community': 'Community share',
+  'lobby.jackpots.badge': 'Jackpot',
+  'lobby.jackpots.tier.MINI': 'Mini',
+  'lobby.jackpots.tier.MINOR': 'Minor',
+  'lobby.jackpots.tier.MAJOR': 'Major',
+  'lobby.jackpots.tier.GRAND': 'Grand',
+  'lobby.jackpots.tierN': 'Tier {n}',
+
   // Rewards tray raffle card
   'lobby.raffle.title': '{amount} WEEKLY RAFFLE',
   'lobby.raffle.active': 'Raffle Entry Active',

@@ -165,7 +165,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
         ref={headerRef}
         className="sticky top-0 z-30 flex-shrink-0 lg:top-[calc(var(--u)*20)]"
       >
-        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-white/[0.01] lg:px-[calc(var(--u)*16)] lg:rl-glass-bar">
+        <div className="relative flex min-h-[66px] flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-white/[0.06] bg-black/40 px-4 py-3 backdrop-blur-xl lg:h-[calc(var(--u)*80)] lg:flex-nowrap lg:gap-[calc(var(--u)*20)] lg:py-0 lg:rounded-[calc(var(--u)*34)] lg:border-0 lg:bg-white/[0.01] lg:px-[calc(var(--u)*16)] lg:rl-glass-bar lg:rl-bar-rim">
           {/* --- Brand, search, language --------------------------------- */}
           {/* Collapses the rail to icons. The phone opens its drawer from the
               tab bar instead, so this is desktop only. */}
@@ -329,8 +329,9 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   tone="frost"
                   dim
                   phoneSheet
-                  // The design hangs the panel 41px past the bell's end.
-                  panelClassName="lg:-end-[calc(var(--u)*41)]"
+                  // The design hangs the panel 41px past the bell's end. The
+                  // modals' rim replaces the surface's even inset ring.
+                  panelClassName="rl-modal-rim !shadow-[0_8px_40px_rgba(0,0,0,0.12)] lg:-end-[calc(var(--u)*41)]"
                   trigger={
                     <IconButton
                       label={t('nav.notifications')}

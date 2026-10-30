@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties, type FC, type ReactNode } from
 import Link from 'next/link';
 import type { StaticImageData } from 'next/image';
 import { useRouter } from 'next/router';
-import { ICON } from '@/constants/cdn';
 import casinoArt from '@/assets/lobby/rail/rail-casino.webp';
 import sportsArt from '@/assets/lobby/rail/rail-sports.webp';
 import casinoCardArt from '@/assets/casino-roulette-mobile.webp';
@@ -318,50 +317,27 @@ const RailGroupRow: FC<{
   );
 };
 
-/** A footer pill — Join Telegram, Suggestion Box: the design's 228×44 dark pill. */
+/** The footer pill — Suggestion Box: the design's 228×44 dark pill. */
 const RAIL_BUTTON =
   'flex h-[calc(var(--u)*44)] w-full min-w-0 items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
 
-/** A contact pill at the rail's foot: a link out, or a button for a dialog. */
 const RailButton: FC<{
   icon: StaticImageData;
   label: string;
   collapsed: boolean;
-  href?: string;
-  onClick?: () => void;
-}> = ({ icon, label, collapsed, href, onClick }) => {
-  const body = (
-    <>
-      <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
-      <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
-    </>
-  );
-
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        title={label}
-        aria-haspopup="dialog"
-        className={RAIL_BUTTON}
-      >
-        {body}
-      </button>
-    );
-  }
-  return (
-    <a
-      href={href}
-      target={href?.startsWith('http') ? '_blank' : undefined}
-      rel={href?.startsWith('http') ? 'noreferrer' : undefined}
-      title={label}
-      className={RAIL_BUTTON}
-    >
-      {body}
-    </a>
-  );
-};
+  onClick: () => void;
+}> = ({ icon, label, collapsed, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    title={label}
+    aria-haspopup="dialog"
+    className={RAIL_BUTTON}
+  >
+    <img src={icon.src} alt="" className="h-[calc(var(--u)*24)] w-[calc(var(--u)*24)]" />
+    <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
+  </button>
+);
 
 /* ==================================================================== */
 /* The rail                                                              */
@@ -383,8 +359,6 @@ const RailButton: FC<{
 const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const { pathname, asPath, push } = useRouter();
   const socialLinks = useSocialLinks();
-  const telegramLink = socialLinks.find((link) => link.platform === 'telegram');
-  const railSocials = socialLinks.filter((link) => link.platform !== 'telegram');
   const { token } = useAuth();
   const openSupport = useOpenSupport();
   const { t } = useTranslation();
@@ -750,13 +724,13 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
           {/* --- Socials and contact pills --------------------------------- */}
           <div className="mt-[67px] flex-shrink-0 border-t border-white/[0.08] pt-4 lg:mt-0 lg:border-0 lg:pt-[calc(var(--u)*13)]">
-            {railSocials.length > 0 && (
+            {socialLinks.length > 0 && (
               <div
                 className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
                   collapsed ? 'lg:flex-col' : ''
                 }`}
               >
-                {railSocials.map(({ icon: mark, label, href }) => (
+                {socialLinks.map(({ icon: mark, label, href }) => (
                   <a
                     key={label}
                     href={href}
@@ -772,19 +746,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               </div>
             )}
 
-            <div
-              className={`mt-5 grid gap-2 lg:mt-[calc(var(--u)*11)] lg:block lg:space-y-[calc(var(--u)*7)] ${
-                telegramLink ? 'grid-cols-2' : 'grid-cols-1'
-              }`}
-            >
-              {telegramLink && (
-                <RailButton
-                  icon={ICON.telegram}
-                  label={t('lobby.rail.joinTelegram')}
-                  href={telegramLink.href}
-                  collapsed={collapsed}
-                />
-              )}
+            <div className="mt-5 lg:mt-[calc(var(--u)*11)]">
               <RailButton
                 icon={suggestionIcon}
                 label={t('lobby.rail.suggestionBox')}

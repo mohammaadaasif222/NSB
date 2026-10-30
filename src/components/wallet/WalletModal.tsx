@@ -67,7 +67,9 @@ const WalletModal: FC<Props> = ({ open, onClose, initialTab = 'deposit' }) => {
       titleVariant="title"
       phoneSheet="page"
       // The design's 28 / 20 / 36 insets, less the rim's pixel.
-      className="max-w-[581px] px-4 pb-28 pt-5 sm:min-h-[545px] sm:px-[27px] sm:pb-[35px] sm:pt-[19px]"
+      // The diagonal rim in place of the glass card's even one (none on a
+      // phone, where the wallet is a page).
+      className="rl-diag-rim max-sm:before:hidden [--dialog-rim:transparent] [--rim-radius:34px] [--rim-clear:60px] [--rim-fade:180px] max-w-[581px] px-4 pb-28 pt-5 sm:min-h-[545px] sm:px-[27px] sm:pb-[35px] sm:pt-[19px]"
     >
       <div className="mt-5 sm:mt-[17px]">
         <WalletTabBar

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type FC, type ReactNode } from 'react';
+import { useEffect, useState, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMe } from '@/context/UserContext';
@@ -91,19 +91,6 @@ const useDisplayName = (): string => {
 };
 
 /**
- * The Casino and Sports tiles' rim — this hero's only, overriding the shared
- * card polish (`--rl-tile-rim` in index.css) on these two tiles alone: a white
- * hairline lit on the diagonal. Change the two numbers to make it stronger or
- * fainter — the first is the top-start corner, the second the bottom-end
- * (0 = none, 1 = solid white). The rim's thickness is the `before:p-[1px]` on
- * the tile.
- */
-const TILE_RIM = {
-  '--rl-tile-rim':
-    'linear-gradient(to  bottom right, rgba(232,236,244,0.10) 10%, rgba(232,236,244,0.60) 30%, rgba(232,236,244,0) 60%, rgba(232,236,244,0.70) 100%) ',
-} as CSSProperties;
-
-/**
  * A section shortcut in the panel. Desktop: the design's 125×158 glass tile
  * with the section's 3D render and its glow. Phone: a 174×110 tile with the
  * render at 62px, 12 from the top — the design's own export of it, its glow
@@ -117,8 +104,7 @@ const SectionTile: FC<{
 }> = ({ href, label, art, mark }) => (
   <Link
     href={href}
-    style={TILE_RIM}
-    className={`rl-liquid before:p-[1px] group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0`}
+    className={`rl-liquid rl-diag-rim [--rim-radius:24px] lg:[--rim-radius:calc(var(--u)*24)] [--tw-inset-shadow:0_0_#0000]! group relative flex h-[110px] flex-1 flex-col items-center rounded-[24px] pt-[14px] transition-colors hover:bg-white/[0.11] lg:h-[calc(var(--u)*158)] lg:w-[calc(var(--u)*125)] lg:flex-none lg:rounded-[calc(var(--u)*24)] lg:pt-0`}
   >
     <img
       src={mark}
@@ -223,31 +209,31 @@ const JourneyPrompt: FC<{ onDeposit: () => void }> = ({ onDeposit }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col items-center text-center lg:pt-[calc(var(--u)*12)]">
-      <h2 className="text-[20px] font-semibold leading-7 text-white lg:text-[length:max(min(var(--tf,11px),26px),calc(var(--u)*26))] lg:leading-[calc(var(--u)*34)]">
+    <div className="flex flex-col items-center text-center lg:pt-[calc(var(--u)*4)]">
+      <h2 className="text-[20px] font-semibold leading-7 text-white lg:text-[length:max(min(var(--tf,11px),28px),calc(var(--u)*28))] lg:leading-[calc(var(--u)*36)] lg:text-[#f0f1f5]">
         {t('dash.journeyTitle')}
       </h2>
-      <p className="mt-2 max-w-[300px] text-[13px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*10)] lg:max-w-[max(240px,calc(var(--u)*300))] lg:text-[length:max(min(var(--tf,11px),13px),calc(var(--u)*13))] lg:leading-[1.5]">
+      <p className="mt-2 max-w-[300px] text-[13px] leading-5 text-[#9da2b4] lg:mt-[calc(var(--u)*12)] lg:max-w-[max(240px,calc(var(--u)*282))] lg:text-[length:max(min(var(--tf,11px),14px),calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
         {t('dash.journeyBody')}
       </p>
-      <div className="mt-5 flex items-center gap-3 lg:mt-[calc(var(--u)*22)] lg:gap-[calc(var(--u)*12)]">
+      <div className="mt-5 flex items-center gap-3 lg:mt-[calc(var(--u)*27)] lg:gap-[calc(var(--u)*12)]">
         <button
           type="button"
           onClick={onDeposit}
-          className="rl-btn-gold inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[15px] font-medium lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*8)] lg:px-[calc(var(--u)*20)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))]"
+          className="rl-btn-gold inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[15px] font-medium lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*5)] lg:px-[calc(var(--u)*18)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]"
         >
           <img
             src={walletGlyph.src}
             alt=""
-            className="h-5 w-5 lg:h-[calc(var(--u)*22)] lg:w-[calc(var(--u)*22)]"
+            className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
           />
-          {t('dash.depositNow')}
+          <span className="[text-box:trim-both_cap_alphabetic]">{t('dash.depositNow')}</span>
         </button>
         <Link
           href="/casino"
-          className="rl-btn-ghost [--tw-inset-shadow:0_0_#0000] inline-flex h-11 items-center gap-1 whitespace-nowrap rounded-full px-4 text-[13px] font-medium lg:h-[calc(var(--u)*48)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(min(var(--tf,11px),13px),calc(var(--u)*13))]"
+          className="rl-btn-ghost [--tw-inset-shadow:0_0_#0000] inline-flex h-11 items-center gap-1 whitespace-nowrap rounded-full px-4 text-[13px] font-medium lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*6)] lg:bg-white/10 lg:ps-[calc(var(--u)*18)] lg:pe-[calc(var(--u)*14)] lg:text-[length:max(min(var(--tf,11px),12px),calc(var(--u)*12))] lg:font-normal lg:leading-[calc(var(--u)*20)]"
         >
-          {t('dash.exploreGames')}
+          <span className="[text-box:trim-both_cap_alphabetic]">{t('dash.exploreGames')}</span>
           <ChevronRightIcon size={16} className="rtl:-scale-x-100" />
         </Link>
       </div>
@@ -279,7 +265,7 @@ const PlayerPanel: FC = () => {
   const percent = Math.round(rollover?.progress ?? 0);
 
   return (
-    <section className="rl-liquid relative overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*415)] lg:rounded-[calc(var(--u)*34)]">
+    <section className="rl-liquid before:hidden [--tw-inset-shadow:var(--hero-panel-rim)]! relative overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*415)] lg:rounded-[calc(var(--u)*34)]">
       {/* --- Identity and tiles ----------------------------------------- */}
       <div className="flex flex-col items-center px-[15px] pt-5 lg:h-[calc(var(--u)*212)] lg:flex-row lg:items-start lg:justify-between lg:px-[calc(var(--u)*20)] lg:pl-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*20)]">
         <div className="flex flex-col items-center gap-1.5 lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">

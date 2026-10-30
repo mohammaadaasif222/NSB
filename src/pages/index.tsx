@@ -58,6 +58,8 @@ const Home: FC<LobbyProps> = (props) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<LobbyProps> = lobbyProps(HOME_SHELF_KEYS);
+export const getServerSideProps: GetServerSideProps<LobbyProps> = lobbyProps(HOME_SHELF_KEYS, {
+  streams: true,
+});
 
 export default Home;

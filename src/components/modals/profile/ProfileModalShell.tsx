@@ -38,6 +38,7 @@ interface ProfileModalShellProps {
   submitDisabled?: boolean;
   /** Reds the primary — for the dialogs that take something away. */
   destructive?: boolean;
+  look?: 'glass' | 'auth';
   children: ReactNode;
 }
 
@@ -54,8 +55,10 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
   submitLabel,
   submitDisabled = false,
   destructive = false,
+  look = 'glass',
   children,
 }) => {
+  const auth = look === 'auth';
   const { t } = useTranslation();
   const titleId = useId();
   const dialogRef = useModalA11y(onClose);
@@ -68,10 +71,11 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+      className={`fixed inset-0 z-[70] flex items-end justify-center p-0 sm:items-center sm:p-4 ${auth ? '' : 'bg-black/60'}`}
       onClick={onClose}
       role="presentation"
     >
+      {auth && <div aria-hidden className="rl-modal-overlay pointer-events-none fixed inset-0" />}
       <div
         ref={dialogRef}
         role="dialog"
@@ -79,7 +83,7 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="rl-modal-glass flex max-h-[96vh] w-full max-w-[480px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7"
+        className={`${auth ? 'rl-modal-card rl-modal-rim' : 'rl-modal-glass'} flex max-h-[96vh] w-full max-w-[480px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7`}
       >
         <div className="flex shrink-0 items-start">
           <h2
@@ -121,7 +125,7 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className={`${BUTTON} mt-2.5 bg-white/10 text-[#f0f1f5] hover:bg-white/15`}
+          className={`${BUTTON} mt-2.5 ${auth ? 'rl-option' : 'bg-white/10 text-[#f0f1f5] hover:bg-white/15'}`}
         >
           {t('common.cancel')}
         </button>

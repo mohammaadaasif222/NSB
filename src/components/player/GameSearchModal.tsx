@@ -191,7 +191,9 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-4 py-16 sm:py-24"
+      // On a phone, a sheet from the screen's foot like the auth modals':
+      // full width, 24 clear of the top, its top corners at 34.
+      className="rl-modal-overlay fixed inset-0 z-50 flex items-end justify-center pt-6 sm:items-start sm:px-4 sm:py-24"
       onClick={onClose}
       role="presentation"
     >
@@ -200,7 +202,8 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
         aria-modal="true"
         aria-label={t('search.title')}
         onClick={(e) => e.stopPropagation()}
-        className="rl-menu flex max-h-full w-full max-w-lg flex-col overflow-hidden rounded-2xl"
+        // The modals' smoked glass and rim.
+        className="rl-modal-card rl-modal-rim flex max-h-full w-full flex-col overflow-hidden max-sm:!rounded-t-[34px] max-sm:!rounded-b-none sm:max-w-lg"
       >
         <div className="flex flex-shrink-0 items-center gap-2 border-b border-white/[0.08] p-3">
           <span className="flex-shrink-0 ps-1 text-white/40" aria-hidden="true">
