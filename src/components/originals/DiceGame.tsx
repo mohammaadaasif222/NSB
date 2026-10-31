@@ -40,6 +40,7 @@ const SplitImg = "/assets/img/split.png";
 // import state from '../../../../../../proxy/proxy'
 import { Tooltip } from 'react-tooltip';
 import { useAuth } from '@/lib/originalsAuthBridge';
+import { useRouter as useNextRouter } from 'next/router';
 // `useParams` from react-router-dom is unused in this port — rlk-frontend
 // uses Next.js. Removed to drop the hard dep on react-router.
 // import { useParams } from 'react-router-dom';
@@ -176,8 +177,17 @@ const DiceGame = () => {
     }
   }
 
+  // Demo mode flag — URL `?mode=demo` means "free play": bet amount is
+  // pinned to 0 and the amount input + mutation buttons are disabled.
+  const _rlkRouter = useNextRouter();
+  const isDemoMode = _rlkRouter?.query?.mode === 'demo';
   const [mode, setMode] = useState("manual");
   const [betAmount, setBetAmount] = useState("0.00");
+  useEffect(() => {
+    if (isDemoMode && betAmount !== "0" && betAmount !== "0.00") {
+      setBetAmount("0");
+    }
+  }, [isDemoMode, betAmount]);
   const [profitOnWin, setProfitOnWin] = useState("0.00");
   const [onWinIncrease, setOnWinIncrease] = useState(0);
   const [onLossIncrease, setOnLossIncrease] = useState(0);
@@ -1801,9 +1811,11 @@ const DiceGame = () => {
                                 data-tooltip-float={false}
                                 inputMode="decimal"
                                 type="text"
-                                disabled={IsBtnClick || isAutoBetting}
-                                value={(betAmount ?? "0").toString()}
+                                disabled={isDemoMode || IsBtnClick || isAutoBetting}
+                                readOnly={isDemoMode}
+                                value={isDemoMode ? "0" : (betAmount ?? "0").toString()}
                                 onFocus={(e) => {
+                                  if (isDemoMode) return;
                                   setIsFocused(true);
                                   if (["0", "0.0", "0.00", "0.000"].includes(e.target.value)) {
                                     setBetAmount(""); // clear when it's zero
@@ -1821,6 +1833,7 @@ const DiceGame = () => {
                                   setIsFocused(false)
                                 }}
                                 onChange={(e) => {
+                                  if (isDemoMode) return;
                                   const raw = e.target.value;
                                   let numeric = raw.replace(/[^0-9.]/g, ""); // keep only 0-9 and .
 
@@ -1855,7 +1868,9 @@ const DiceGame = () => {
                               </Tooltip>
                               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-[2px]">
                                 <button
+                                  disabled={isDemoMode}
                                   onClick={() => {
+                                    if (isDemoMode) return;
                                     if (isAutoBetting || IsBtnClick) return;
                                     buttonClickSoundFn();
                                     setBetAmount((prev) => {
@@ -1866,24 +1881,28 @@ const DiceGame = () => {
                                       return newVal.toFixed(2);
                                     });
                                   }}
-                                  className="pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-l-md text-gray-200"
+                                  className={`pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-l-md text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 >
                                   1/2
                                 </button>
                                 <button
+                                  disabled={isDemoMode}
                                   onClick={() => {
+                                    if (isDemoMode) return;
                                     if (isAutoBetting || IsBtnClick) return;
                                     buttonClickSoundFn();
                                     setBetAmount((prev) =>
                                       Math.min(parseFloat(prev || "0") * 2).toFixed(2)
                                     )
                                   }}
-                                  className={`pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] ${!ShowMAxBetBTN ? "rounded-r-md" : ""} text-gray-200`}
+                                  className={`pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] ${!ShowMAxBetBTN ? "rounded-r-md" : ""} text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 >
                                   2X
                                 </button>
                                 {ShowMAxBetBTN && <button
+                                  disabled={isDemoMode}
                                   onClick={() => {
+                                    if (isDemoMode) return;
                                     if (isAutoBetting || IsBtnClick) return;
                                     buttonClickSoundFn();
 

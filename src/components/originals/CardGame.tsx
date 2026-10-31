@@ -116,6 +116,7 @@ import toast from "react-hot-toast";
 // import useUser from '@/shared/query/user.query';
 // import { useApiClient } from '@/shared/apiClient'
 import { useAuth } from '@/lib/originalsAuthBridge';
+import { useRouter as useNextRouter } from 'next/router';
 import { Tooltip } from 'react-tooltip';
 // import { useCurrency } from "../../../../../contexts/CurrencyContext";
 
@@ -247,7 +248,17 @@ export default function CardGame() {
   const [gameData, setGameData] = useState(null);
   const [Slug, setSlug] = useState(null);
   const [gameLoadError, setgameLoadError] = useState(false);
+  // Demo mode flag — URL `?mode=demo` locks the main bet amount to 0 and
+  // disables the amount input + 1/2 / 2X / Max buttons. Side bets
+  // (Perfect Pair, 21+3) are driven by the same demo flag below.
+  const _rlkRouter = useNextRouter();
+  const isDemoMode = _rlkRouter?.query?.mode === 'demo';
   const [betAmount, setBetAmount] = useState("0.00");
+  useEffect(() => {
+    if (isDemoMode && betAmount !== "0" && betAmount !== "0.00") {
+      setBetAmount("0");
+    }
+  }, [isDemoMode, betAmount]);
   const [playerDisplayPoints, setplayerDisplayPoints] = useState();
   const [playerDisplayPoints2, setplayerDisplayPoints2] = useState();
   const [dealerDisplayPoints, setdealerDisplayPoints] = useState();
@@ -2855,12 +2866,15 @@ export default function CardGame() {
                                   data-tooltip-float={false}
                                   inputMode="decimal"
                                   type="text"
-                                  value={(betAmount ?? "0").toString()}
+                                  readOnly={isDemoMode}
+                                  value={isDemoMode ? "0" : (betAmount ?? "0").toString()}
                                   onFocus={(e) => {
+                                    if (isDemoMode) return;
                                     setIsFocused(true)
                                     e.target.select()
                                   }}
                                   onBlur={() => {
+                                    if (isDemoMode) return;
                                     let val = betAmount;
                                     setIsFocused(false)
                                     // If empty or invalid → set to 0.00
@@ -2875,6 +2889,7 @@ export default function CardGame() {
                                     setBetAmount(formatted);
                                   }}
                                   onChange={(e) => {
+                                    if (isDemoMode) return;
                                     let raw = e.target.value;
 
                                     // Keep only digits and decimal point
@@ -2898,7 +2913,7 @@ export default function CardGame() {
 
                                     setBetAmount(numeric);
                                   }}
-                                  disabled={(gameObject.current && !gameObject.current?.handOver) || btnClickRef}
+                                  disabled={isDemoMode || (gameObject.current && !gameObject.current?.handOver) || btnClickRef}
                                   className={`w-full  text-[#94a59e] focus:text-white bg-[#090C1D]  rounded-lg pl-8 pr-32 py-2 outline-none
        
       ${errorMsg
@@ -2938,6 +2953,7 @@ export default function CardGame() {
                                       });
                                     }}
                                     disabled={
+                                      isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
                                     className="px-2 py-1 text-xs bg-[#19183a]  rounded-l-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
@@ -2953,6 +2969,7 @@ export default function CardGame() {
                                     }
                                     }
                                     disabled={
+                                      isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
                                     className={`px-2 py-1 text-xs bg-[#19183a]  ${ShowMAxBetBTN ? "" : "rounded-r-md"}  text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed`}
@@ -3122,6 +3139,7 @@ export default function CardGame() {
                                       });
                                     }}
                                     disabled={
+                                      isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
                                     className="px-2 py-1 text-xs bg-[#19183a]  rounded-l-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
@@ -3137,6 +3155,7 @@ export default function CardGame() {
                                     }
                                     }
                                     disabled={
+                                      isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
                                     className={`px-2 py-1 text-xs bg-[#19183a]  ${ShowMAxBetBTN ? "" : "rounded-r-md"}  text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed`}
@@ -3305,6 +3324,7 @@ export default function CardGame() {
                                       });
                                     }}
                                     disabled={
+                                      isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
                                     className="px-2 py-1 text-xs bg-[#19183a]  rounded-l-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
@@ -3320,6 +3340,7 @@ export default function CardGame() {
                                     }
                                     }
                                     disabled={
+                                      isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
                                     className={`px-2 py-1 text-xs bg-[#19183a]  ${ShowMAxBetBTN ? "" : "rounded-r-md"}  text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed`}

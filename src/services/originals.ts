@@ -100,10 +100,20 @@ export const getOriginalsGame = async (
  * Returns the Win-Win envelope `{ code: 200, data: { balance } }` so the
  * ported game code can read it without edits.
  */
+/** Fixed virtual pot for anonymous demo users. Not persisted anywhere. */
+const DEMO_BALANCE_USD = 1000;
+
 export const getPlayerBalanceApi = async (
   payload: Record<string, unknown>
 ): Promise<{ code: number; data: { balance: number } } | unknown> => {
   if (payload?.action === 'balance') {
+    const session = readSession();
+    const authed = session && Date.now() < session.expiresAt;
+    if (!authed) {
+      // Anonymous demo player — hand back a fixed pot so the game UI can
+      // boot and gate bets locally. The real wallet is never touched.
+      return { code: 200, data: { balance: DEMO_BALANCE_USD } };
+    }
     try {
       const res = await apiService.get<WalletSummary>('/wallet/summary');
       // apiService unwraps the `{ success, data }` envelope on success —

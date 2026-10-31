@@ -558,6 +558,11 @@ const PlayRoute: FC<Props> = (props) => {
     getOriginalsComponent(g.slug) !== null;
 
   if (isNativeOriginals && g) {
+    // Anonymous users enter demo mode — `originalsAuthBridge.useAuth`
+    // synthesizes a per-tab demo UUID, `originalsSocket` connects via
+    // the ALLOW_UNAUTH_SOCKET legacy-query path, and `OriginalAPI.js`
+    // on the socket side short-circuits every placeBet/payout into
+    // local demo-pot simulations. No real wallet is ever touched.
     const OriginalsComponent = getOriginalsComponent(g.slug)!;
     return (
       <PlayerLayout>

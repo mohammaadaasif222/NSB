@@ -33,6 +33,7 @@ import toast from "react-hot-toast";
 import { buttonClickSoundFn, mineDiamond1, mineDiamond2, mineDiamond3, mineDiamond4, mineDiamond5, mineDiamond6, mineHoverHiddenBlockHover, GridSizeChangeMin, mineMineBomb, preloadSoundsMines, GridSizeChangeMin2 } from "@/lib/originalsSound";
 // import state from '../../../../../../proxy/proxy'
 import { useAuth } from '@/lib/originalsAuthBridge';
+import { useRouter as useNextRouter } from 'next/router';
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 const waitingGif = "/assets/common/waiting01.gif";
@@ -125,10 +126,24 @@ const MineGame = () => {
 
   let socket = initSocket(user?._id);
   // console.log('user info', user)
+  // Demo mode flag — URL `?mode=demo` means "free play": no real money
+  // moves, bet amount is pinned to 0, and the amount input + mutation
+  // buttons (1/2, 2X, Max) are disabled. The ported game socket already
+  // supports allowZero bets for the free-play preview flow.
+  const _rlkRouter = useNextRouter();
+  const isDemoMode = _rlkRouter?.query?.mode === 'demo';
   const [mode, setMode] = useState("manual");
   const [loadingGame, setLoadingGame] = useState(true);
   const [gameLoadError, setgameLoadError] = useState(false);
   const [betAmount, setBetAmount] = useState("0.00");
+  // Keep betAmount at 0 while demo mode is active. Runs on mount + any
+  // mode toggle; also catches an aggregator-sent betAmount that would
+  // otherwise clobber the pinned 0.
+  useEffect(() => {
+    if (isDemoMode && betAmount !== "0" && betAmount !== "0.00") {
+      setBetAmount("0");
+    }
+  }, [isDemoMode, betAmount]);
   const [mineCount, setMineCount] = useState(3);
   const [gridSize, setGridSize] = useState(25); // 5x5 default
   const [seed, setSeed] = useState(0); // change to re-roll bombs
@@ -1446,8 +1461,11 @@ const MineGame = () => {
                                   data-tooltip-float={false}
                                   inputMode="decimal"
                                   type="text"
-                                  value={(betAmount ?? "0").toString()}
+                                  disabled={isDemoMode}
+                                  readOnly={isDemoMode}
+                                  value={isDemoMode ? "0" : (betAmount ?? "0").toString()}
                                   onFocus={(e) => {
+                                    if (isDemoMode) return;
                                     setIsFocused(true);
                                     if (["0", "0.0", "0.00", "0.000"].includes(e.target.value)) {
                                       setBetAmount(""); // clear when it's zero
@@ -1457,6 +1475,7 @@ const MineGame = () => {
 
                                   }}
                                   onChange={(e) => {
+                                    if (isDemoMode) return;
                                     if (gameStarted || isAutoPlayOn) return;
                                     // Allow only digits and decimal point
                                     setPlayedBombGif({})
@@ -1501,7 +1520,9 @@ const MineGame = () => {
                                 </Tooltip>
                                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-[2px]">
                                   <button
+                                    disabled={isDemoMode}
                                     onClick={() => {
+                                      if (isDemoMode) return;
                                       if (gameStarted) return;
                                       buttonClickSoundFn()
                                       setBetAmount((prev) => {
@@ -1516,12 +1537,14 @@ const MineGame = () => {
                                       });
                                     }
                                     }
-                                    className="px-2 py-1 text-xs bg-[#19183a] hover:bg-[#2c2852] rounded-l-md text-gray-200 "
+                                    className={`px-2 py-1 text-xs bg-[#19183a] hover:bg-[#2c2852] rounded-l-md text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                   >
                                     1/2
                                   </button>
                                   <button
+                                    disabled={isDemoMode}
                                     onClick={() => {
+                                      if (isDemoMode) return;
                                       if (gameStarted) return;
                                       buttonClickSoundFn()
                                       setBetAmount((prev) =>
@@ -1529,12 +1552,14 @@ const MineGame = () => {
                                       )
                                     }
                                     }
-                                    className={`px-2 py-1 text-xs bg-[#19183a] hover:bg-[#2c2852]  text-gray-200 ${!ShowMAxBetBTN ? "rounded-r-md" : ""} `}
+                                    className={`px-2 py-1 text-xs bg-[#19183a] hover:bg-[#2c2852]  text-gray-200 ${!ShowMAxBetBTN ? "rounded-r-md" : ""} ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                   >
                                     2X
                                   </button>
                                   {ShowMAxBetBTN && <button
+                                    disabled={isDemoMode}
                                     onClick={() => {
+                                      if (isDemoMode) return;
                                       if (gameStarted) return;
                                       buttonClickSoundFn()
                                       // setBetAmount(MAX_BET)

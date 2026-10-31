@@ -11,6 +11,7 @@
 import { io, type Socket } from 'socket.io-client';
 
 import { readSession } from '@/lib/session';
+import { getOrCreateDemoPlayerId } from '@/lib/originalsAuthBridge';
 
 const ORIGINALS_URL =
   (process.env.NEXT_PUBLIC_ORIGINALS_SOCKET_URL as string | undefined) ||
@@ -38,8 +39,15 @@ export const initSocket = (_playerId?: string): Socket => {
 
   if (!socket) {
     const token = getAccessToken();
+    // No token → anonymous demo player. The originals-backend socketAuth
+    // middleware accepts this when ALLOW_UNAUTH_SOCKET=true via the legacy
+    // query.playerId path, binding socket.data.playerId to the id we send
+    // AND marking authSource="legacy_query" (which OriginalAPI.js reads
+    // to short-circuit real-wallet calls into local demo-pot sims).
+    const demoPlayerId = token ? null : getOrCreateDemoPlayerId();
     socket = io(ORIGINALS_URL, {
       auth: { token },
+      ...(demoPlayerId ? { query: { playerId: demoPlayerId } } : {}),
       transports: ['websocket', 'polling'],
       reconnection: true,
     });
