@@ -41,7 +41,8 @@ export const ORIGINALS_PROVIDER_NAME = 'Rolluck';
  */
 export const ORIGINALS_SLUGS = [
   'mines',
-  'dice',
+  'dice-originals',
+  'blackjack',
   'plinko',
   'crash',
   'hilo',
@@ -59,6 +60,16 @@ const Mines = dynamic(() => import('@/components/originals/MineGame'), {
   loading: Loading,
 });
 
+const DiceOriginals = dynamic(() => import('@/components/originals/DiceGame'), {
+  ssr: false,
+  loading: Loading,
+});
+
+const Blackjack = dynamic(() => import('@/components/originals/CardGame'), {
+  ssr: false,
+  loading: Loading,
+});
+
 /**
  * Returns the React component that renders the given slug's native game,
  * or null if the slug is in the catalogue but no component has been ported
@@ -71,6 +82,10 @@ export const getOriginalsComponent = (
   switch (slug) {
     case 'mines':
       return Mines;
+    case 'dice-originals':
+      return DiceOriginals;
+    case 'blackjack':
+      return Blackjack;
     // Other Originals games are catalogued in the DB and listed above,
     // but the component ports are not here yet. Returning null makes
     // /game/<slug> render the marketing card as a graceful placeholder
