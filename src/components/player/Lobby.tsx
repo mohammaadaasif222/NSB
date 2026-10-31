@@ -206,7 +206,7 @@ const Lobby: FC<Props> = ({
           <div className="space-y-[30px] pt-1 lg:space-y-[calc(var(--u)*26)] lg:pt-0">
             <h1 className="sr-only">{t('dash.casinoHeading')}</h1>
             {player && <WinnersStrip />}
-            <LobbyBanner />
+            <LobbyBanner placement={live ? 'live_casino' : 'casino'} />
             {unavailable}
             {browser}
           </div>

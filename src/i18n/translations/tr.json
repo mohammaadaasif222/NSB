@@ -1013,6 +1013,7 @@
   "lobby.faq.a5": "Çoğu para çekme talebi, yapıldıktan sonraki birkaç saat içinde incelenip onaylanır. Onaydan sonra paranın size ne kadar hızlı ulaşacağı yönteme bağlıdır: kripto genellikle işlem yayınlandıktan birkaç dakika sonra, e-cüzdanlar aynı gün, kart iadeleri ise kartı veren kuruluşa bağlı olarak birkaç iş günü içinde ulaşır. Kimlik doğrulaması henüz tamamlanmadıysa ilk çekim daha uzun sürebilir; bunu bir kez tamamlamak sonraki tüm ödemelerin hızlı ilerlemesini sağlar.",
   "lobby.faq.q6": "Oyunlarınız kanıtlanabilir şekilde adil ve bağımsız olarak denetleniyor mu?",
   "lobby.faq.a6": "Rolluck Originals kanıtlanabilir şekilde adildir: her tur bir sunucu seed'i, size ait bir istemci seed'i ve bir nonce kullanılarak üretilir; istemci seed'inizi değiştirebilir ve geçmiş herhangi bir turu oyun ekranından kendiniz doğrulayabilirsiniz. Üçüncü taraf oyunlar, stüdyonun bağımsız laboratuvarlarca test edilen sertifikalı rastgele sayı üreteçlerini kullanır ve her sağlayıcının oyuncuya geri dönüş (RTP) oranı oyunun ayrıntı sayfasında yayımlanır.",
+  "lobby.banner.slide": "Banner {n} / {total}",
   "lobby.rail.welcomeTitle": "Hoş geldin paketi — {amount} + {count} bedava dönüş",
   "lobby.rail.welcomePackage": "Hoş geldin paketi",
   "lobby.rail.freeSpins": "+ {count} bedava dönüş",

@@ -1013,6 +1013,7 @@
   "lobby.faq.a5": "A maioria dos levantamentos é analisada e aprovada poucas horas depois do pedido. Após a aprovação, a rapidez com que o dinheiro chega depende do método: a cripto chega normalmente poucos minutos depois de a transação ser transmitida, as carteiras eletrónicas no mesmo dia e os reembolsos em cartão em poucos dias úteis, consoante o emissor. O primeiro levantamento pode demorar mais se a verificação de identidade ainda não estiver concluída — concluí-la uma vez mantém todos os pagamentos seguintes no caminho rápido.",
   "lobby.faq.q6": "Os vossos jogos são comprovadamente justos e auditados de forma independente?",
   "lobby.faq.a6": "Os Rolluck Originals são comprovadamente justos: cada ronda é gerada a partir de uma seed do servidor, da sua própria seed de cliente e de um nonce, e pode alterar a sua seed de cliente e verificar qualquer ronda anterior a partir do ecrã do jogo. Os títulos de terceiros usam os geradores de números aleatórios certificados do próprio estúdio, testados por laboratórios independentes, e a taxa de retorno ao jogador de cada fornecedor é publicada na página de detalhes do jogo.",
+  "lobby.banner.slide": "Banner {n} de {total}",
   "lobby.rail.welcomeTitle": "Pacote de boas-vindas — {amount} + {count} rodadas grátis",
   "lobby.rail.welcomePackage": "Pacote de boas-vindas",
   "lobby.rail.freeSpins": "+ {count} rodadas grátis",

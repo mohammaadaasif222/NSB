@@ -7,6 +7,7 @@ import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useWallet } from '@/context/WalletContext';
 import { getRolloverSummary } from '@/services/rollover';
 import WalletModal from '@/components/wallet/WalletModal';
+import LobbyBanner from '@/components/player/LobbyBanner';
 import { ChevronRightIcon } from '@/components/icons';
 import { fullNameOf } from '@/types/profile';
 import type { RolloverSummary } from '@/types';
@@ -415,7 +416,9 @@ const HomeHero: FC = () => {
   return (
     <div className="flex flex-col gap-[15px] lg:grid lg:grid-cols-[calc(var(--u)*558)_minmax(0,1fr)] lg:gap-[calc(var(--u)*24)]">
       <PlayerPanel />
-      {promotionsOn && <PromoBanner />}
+      {/* Staff's banners from the console; the promotion artwork stands in
+          for them, and goes when promotions are off. */}
+      <LobbyBanner placement="home" fallback={promotionsOn ? <PromoBanner /> : null} />
     </div>
   );
 };
