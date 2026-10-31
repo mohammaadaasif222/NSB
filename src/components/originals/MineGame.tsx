@@ -3024,11 +3024,11 @@ const MineGame = () => {
                   </div>
                   <div className="px-2 lg:px-0 pb-2 lg:pb-0">
                     <Footer setisFavorite={setisFavorite} isFavorite={isFavorite} setStats={setStats} stats={stats} gameData={gameData} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setplayFast={setplayFast} playFast={playFast} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} socket={socket} showInBigScreen={showInBigScreen} setshowInBigScreen={setshowInBigScreen} gameHotKeys={HOtKeys} />
-                    <Description gameData={gameData} setisFavorite={setisFavorite} isFavorite={isFavorite} />
+                    {/* <Description gameData={gameData} setisFavorite={setisFavorite} isFavorite={isFavorite} /> */}
                     {/* <BetDashboard /> */}
-                    <div className="mt-[10px]">
+                    {/* <div className="mt-[10px]">
                       <LatestBetTable />
-                    </div>
+                    </div> */}
                  
                   </div>
                 </div>

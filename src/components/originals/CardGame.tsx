@@ -4292,11 +4292,11 @@ export default function CardGame() {
                   </div>
 
                   <Footer setisFavorite={setisFavorite} isFavorite={isFavorite} stats={stats} setStats={setStats} gameData={gameData} gameHotKeys={HOtKeys} showInBigScreen={showInBigScreen} setshowInBigScreen={setshowInBigScreen} setplayFast={setplayFast} playFast={playFast} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} endGameData={endGameData} socket={socket} isAnyModalOpen={isAnyModalOpen} setIsAnyModalOpen={setIsAnyModalOpen} />
-                  <Description gameData={gameData} setisFavorite={setisFavorite} isFavorite={isFavorite} />
+                  {/* <Description gameData={gameData} setisFavorite={setisFavorite} isFavorite={isFavorite} /> */}
                   {/* <BetDashboard /> */}
-                  <div className="mt-[10px]">
+                  {/* <div className="mt-[10px]">
                     <LatestBetTable />
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
