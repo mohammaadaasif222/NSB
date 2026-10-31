@@ -8,6 +8,7 @@ import GameRow from '@/components/player/GameRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import SiteFooter from '@/components/player/SiteFooter';
 import DiceGame from '@/components/dice/DiceGame';
+import { getOriginalsComponent, ORIGINALS_PROVIDER_NAME } from '@/components/originals/registry';
 import { CATEGORY_ICONS } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
@@ -357,9 +358,24 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
   ]);
   const related = shelf ? shelf.data.filter((g) => g.slug !== lookup.game.slug).slice(0, 10) : [];
 
+  // Native Rolluck Originals (Mines, Dice-native, Plinko, …) are served by
+  // our own component in /play/[slug] — not by any aggregator link. The
+  // backend's `launchable` flag is wired to aggregator_games count, so a
+  // pure originals row (no aggregator link) comes back as launchable=false
+  // which would grey out the Play for real button. Force it true here so
+  // the player can actually press the button and reach /play/<slug> where
+  // the native component mounts.
+  const isNativeOriginals =
+    lookup.game.provider === ORIGINALS_PROVIDER_NAME &&
+    lookup.game.category === 'ORIGINALS' &&
+    getOriginalsComponent(lookup.game.slug) !== null;
+  const game = isNativeOriginals
+    ? { ...lookup.game, launchable: true, demo_available: lookup.game.demo_available ?? true }
+    : lookup.game;
+
   return {
     props: {
-      game: lookup.game,
+      game,
       related,
       failed: false,
       dice,

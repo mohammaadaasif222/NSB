@@ -8,6 +8,8 @@
 import axios, { type AxiosInstance } from 'axios';
 
 import { readSession } from '@/lib/session';
+import apiService from '@/services/api';
+import type { WalletSummary } from '@/types';
 
 const BASE =
   (process.env.NEXT_PUBLIC_ORIGINALS_API_URL as string | undefined) ||
@@ -54,27 +56,72 @@ export interface OriginalsGameConfig {
  * Fetch a game's config by its slug (e.g. "mines", "dice", "plinko").
  * The originals service exposes this at GET /v1/originals/game/:slug.
  */
+/**
+ * MineGame (and every other ported Win-Win game) reads
+ * `response.code === 200 && response.data` — the Win-Win reference service
+ * wrapped its results in that envelope. Mirror the shape so the ported
+ * components work without edits. The actual rlk-originals-backend returns
+ * `{ status: true, data: { ... } }` — we lift its `data` into the
+ * envelope and re-attach a `code: 200` for the UI's check.
+ */
 export const getOriginalsGame = async (
   gameSlug: string
-): Promise<OriginalsGameConfig | null> => {
+): Promise<{ code: number; data: OriginalsGameConfig } | null> => {
   const key = `originals:${gameSlug}`;
-  if (cache.has(key)) return cache.get(key) as OriginalsGameConfig;
+  if (cache.has(key))
+    return cache.get(key) as { code: number; data: OriginalsGameConfig };
 
   try {
     const res = await client.get(`/v1/originals/game/${gameSlug}`);
-    const data: OriginalsGameConfig | null = res?.data ?? null;
-    if (data) setCache(key, data);
-    return data;
+    // axios: res.data is the raw body → { status: true, data: {...} }
+    const config = (res?.data?.data ?? res?.data ?? null) as
+      | OriginalsGameConfig
+      | null;
+    if (!config) return null;
+    const wrapped = { code: 200, data: config };
+    setCache(key, wrapped);
+    return wrapped;
   } catch {
     return null;
   }
 };
 
 /**
- * Submit a lightweight event (balance request / resume etc.) to the
- * originals REST shim. Matches the Win-Win reference client.
+ * Lobby pre-flight / wallet-query shim.
+ *
+ * The Win-Win reference client sent every lobby event through
+ * POST /v1/originals/event — the games service there proxied balance
+ * requests on to the main-backend wallet. In rlk we skip the proxy and
+ * read from rlk-backend's /wallet/summary endpoint directly for balance
+ * queries, so there is one source of truth for a player's funds. Non-
+ * balance events still POST to the originals-backend for its ACK (the
+ * ported MineGame fires one on first mount).
+ *
+ * Returns the Win-Win envelope `{ code: 200, data: { balance } }` so the
+ * ported game code can read it without edits.
  */
-export const getPlayerBalanceApi = async (payload: Record<string, unknown>) => {
+export const getPlayerBalanceApi = async (
+  payload: Record<string, unknown>
+): Promise<{ code: number; data: { balance: number } } | unknown> => {
+  if (payload?.action === 'balance') {
+    try {
+      const res = await apiService.get<WalletSummary>('/wallet/summary');
+      // apiService unwraps the `{ success, data }` envelope on success —
+      // but keep both paths defensive in case a caller swaps it out.
+      const summary = (res as { data?: WalletSummary })?.data ?? (res as unknown as WalletSummary);
+      const b = summary?.balance;
+      const raw = b?.display_amount ?? b?.real_amount ?? '0';
+      const balance = Number(raw);
+      return {
+        code: 200,
+        data: { balance: Number.isFinite(balance) ? balance : 0 },
+      };
+    } catch {
+      return { code: 500, data: { balance: 0 } };
+    }
+  }
+
+  // Non-balance events — fall back to the originals-backend's ACK stub.
   try {
     const res = await client.post(`/v1/originals/event`, payload);
     if (res?.data?.code === 200) return res.data;
