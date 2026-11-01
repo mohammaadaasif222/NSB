@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Ip, Param, ParseUUIDPipe, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
-import type { CookieOptions, Response } from 'express';
+import type { CookieOptions, Request, Response } from 'express';
 import {
   type AdminUser,
   type AdminUserInput,
@@ -44,9 +44,10 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   async login(
     @Body(new ZodPipe(loginSchema)) body: LoginInput,
+    @Ip() ip: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AdminUser> {
-    const { token, user } = await this.auth.login(body);
+    const { token, user } = await this.auth.login(body, ip);
     this.setSession(res, token);
     return user;
   }
@@ -58,7 +59,9 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(204)
-  logout(@Res({ passthrough: true }) res: Response): void {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
+    const token: unknown = req.cookies?.[SESSION_COOKIE];
+    if (typeof token === 'string') await this.auth.endSessions(token);
     res.clearCookie(SESSION_COOKIE, this.cookieOptions());
   }
 

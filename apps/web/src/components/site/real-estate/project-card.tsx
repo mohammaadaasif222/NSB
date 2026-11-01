@@ -8,13 +8,13 @@ import { BuildingArt } from "./project-art";
 import { SaveButton, ShortsRow } from "./listing-widgets";
 
 /** A project on the listing page, as in the NSB Live Demo. */
-export function ProjectCard({ project: p }: { project: ProjectSummary }) {
+export function ProjectCard({ project: p, eager = false }: { project: ProjectSummary; eager?: boolean }) {
   const href = projectPath(p.slug);
   return (
     <article className="re-card">
       <div className="re-img">
         <Link href={href} className="re-cover" aria-label={p.name} tabIndex={-1}>
-          {p.coverImageUrl ? <Image src={p.coverImageUrl} alt={p.name} fill sizes="(max-width: 640px) 100vw, 310px" /> : <BuildingArt />}
+          {p.coverImageUrl ? <Image src={p.coverImageUrl} alt={p.name} fill sizes="(max-width: 640px) 100vw, 310px" loading={eager ? "eager" : "lazy"} /> : <BuildingArt />}
         </Link>
         {/* Only the badges the admin sets; the possession status is shown under the name. */}
         {(p.isPremium || p.isFeatured) && (

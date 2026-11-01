@@ -12,6 +12,26 @@ export interface EnquiryNotice {
   listing: EnquiryListing | null;
 }
 
+/** Who a lead alert goes to. */
+export const ALERT_TARGETS = ['nsb', 'vendor'] as const;
+export type AlertTarget = (typeof ALERT_TARGETS)[number];
+
+/** What a saved lead needs for its alert to be sent later. */
+export interface PendingAlert {
+  listing: EnquiryListing | null;
+  targets: AlertTarget[];
+}
+
+/** Some alerts could not be sent; `left` says whose, so a retry does not email the others again. */
+export class AlertFailed extends Error {
+  constructor(
+    message: string,
+    readonly left: AlertTarget[],
+  ) {
+    super(message);
+  }
+}
+
 /**
  * Lead alerts by email, over the SMTP server configured in Admin > Settings. Callers must not
  * fail the request if a notification fails — the lead is already saved.
@@ -31,24 +51,26 @@ export class NotificationsService {
     this.adminUrl = config.get('ADMIN_URL', { infer: true }) ?? this.siteUrl;
   }
 
-  /** Emails the NSB recipients and, if enabled, the vendor. Rejects if any email failed. */
-  async enquiryReceived({ enquiry, listing }: EnquiryNotice): Promise<void> {
+  /** Emails the NSB recipients and, if enabled, the vendor. Rejects with AlertFailed if any email failed. */
+  async enquiryReceived({ enquiry, listing }: EnquiryNotice, targets: readonly AlertTarget[] = ALERT_TARGETS): Promise<void> {
     const vendorEmail = listing?.vendorEmail;
     const config = await this.settings.smtpConfig();
     if (!config?.enabled) {
       this.logger.log(`Enquiry ${enquiry.id} saved; email alerts are off`);
       return;
     }
-    const sends = [
-      { label: 'NSB recipients', send: () => this.mail.send(config, config.adminRecipients, adminEnquiryEmail(enquiry, listing, this.siteUrl, this.adminUrl)) },
+    const all = [
+      { target: 'nsb' as const, label: 'NSB recipients', send: () => this.mail.send(config, config.adminRecipients, adminEnquiryEmail(enquiry, listing, this.siteUrl, this.adminUrl)) },
       // The site-wide switch (Settings) and the listing's own switch must both allow it.
       ...(config.notifyVendor && listing?.notifyVendor && vendorEmail
-        ? [{ label: 'vendor', send: () => this.mail.send(config, [vendorEmail], vendorEnquiryEmail(enquiry)) }]
+        ? [{ target: 'vendor' as const, label: 'vendor', send: () => this.mail.send(config, [vendorEmail], vendorEnquiryEmail(enquiry)) }]
         : []),
     ];
+    const sends = all.filter((s) => targets.includes(s.target));
     const results = await Promise.allSettled(sends.map((s) => s.send()));
     const failed = results.flatMap((r, i) => (r.status === 'rejected' ? [`${sends[i].label}: ${(r.reason as Error).message}`] : []));
-    if (failed.length) throw new Error(`Enquiry ${enquiry.id} alert failed (${failed.join('; ')})`);
+    const left = sends.filter((_, i) => results[i].status === 'rejected').map((s) => s.target);
+    if (failed.length) throw new AlertFailed(`Enquiry ${enquiry.id} alert failed (${failed.join('; ')})`, left);
   }
 
   /** Sends a test email with the saved settings, even while alerts are switched off. */

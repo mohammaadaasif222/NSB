@@ -1,4 +1,5 @@
 import type { Category } from "@nsb/shared";
+import { Analytics } from "@/components/site/analytics";
 import { CookieBar } from "@/components/site/cookie-bar";
 import { SiteFooter } from "@/components/site/site-footer";
 import { MobileTabBar } from "@/components/site/mobile-tab-bar";
@@ -7,12 +8,10 @@ import { api } from "@/lib/api";
 import { getSiteLocation } from "@/lib/location-server";
 import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
 
-// Public pages read live data from the API on each request (caching is tuned in Milestone 6).
-export const dynamic = "force-dynamic";
-
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
   const [categories, { whatsapp, footer }, location] = await Promise.all([
-    api.get<Category[]>("/categories"),
+    // Only the footer's links use these, so a failure must not take the page down with it.
+    api.get<Category[]>("/categories").catch((): Category[] => []),
     getSiteSettings(),
     getSiteLocation(),
   ]);
@@ -23,6 +22,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
       <main className="flex-1">{children}</main>
       <SiteFooter categories={categories} footer={footer} />
       <CookieBar />
+      <Analytics />
       <MobileTabBar whatsappHref={whatsapp ? whatsappHref(whatsapp) : null} />
     </div>
   );

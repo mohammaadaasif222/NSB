@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { count, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
+import { newPasswordSchema } from '@nsb/shared';
 import { loadEnvFile } from '../config/env.js';
 import { adminUsers, banners, categories } from './schema.js';
 
@@ -111,6 +112,9 @@ try {
   const password = process.env.SEED_ADMIN_PASSWORD;
   if (email && password) {
     if (password.length < 10) throw new Error('SEED_ADMIN_PASSWORD must be at least 10 characters');
+    if (process.env.NODE_ENV === 'production' && (/change-me/i.test(password) || !newPasswordSchema.safeParse(password).success)) {
+      throw new Error('SEED_ADMIN_PASSWORD is too weak: replace the example value and use at least 12 characters');
+    }
     await db
       .insert(adminUsers)
       .values({

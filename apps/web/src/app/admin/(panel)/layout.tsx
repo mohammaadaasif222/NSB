@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { jakarta } from "@/lib/fonts";
 import { redirect } from "next/navigation";
 import type { AdminUser, ProjectStats, UnreadCount } from "@nsb/shared";
 import { AdminProvider } from "@/components/admin/admin-role";
@@ -10,7 +10,6 @@ import { adminApi } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api";
 import "./admin.css";
 
-const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: { template: "%s · NSB Admin", default: "NSB Admin" },

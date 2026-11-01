@@ -18,7 +18,8 @@
     "db:migrate": "npm run db:migrate -w @nsb/api",
     "db:seed": "npm run db:seed -w @nsb/api",
     "typecheck": "npm run build -w @nsb/shared && tsc -p apps/api/tsconfig.json --noEmit && tsc -p apps/web/tsconfig.json --noEmit",
-    "test": "npm run test -w @nsb/api",
+    "lint": "npm run lint -w @nsb/api && npm run lint -w @nsb/web",
+    "test": "npm run test -w @nsb/api && npm run test -w @nsb/web",
     "db:seed:demo": "npm run db:seed:demo -w @nsb/api --"
   },
   "devDependencies": {

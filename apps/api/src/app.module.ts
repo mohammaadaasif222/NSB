@@ -17,7 +17,8 @@ import { SettingsModule } from './modules/settings/settings.module.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv, envFilePath: '.env' }),
-    // Limits are set per route with @Throttle; this is only the fallback.
+    // Limits are set per route with ThrottlerGuard and @Throttle. It is not a global guard: page
+    // renders reach the API from one address, so a site-wide limit would count every visitor as one.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
     DbModule,
     AuthModule,

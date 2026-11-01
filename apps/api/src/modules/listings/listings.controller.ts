@@ -29,6 +29,7 @@ import {
   listingUpdateSchema,
   type LocationOption,
   type Paginated,
+  type SitemapListing,
   type TopListingsInput,
   topListingsInputSchema,
   type TopListingsQuery,
@@ -36,6 +37,8 @@ import {
 } from '@nsb/shared';
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { AdminGuard } from '../auth/admin.guard.js';
+import { ElitePlacesService } from './elite-places.service.js';
+import { ListingLocationsService } from './listing-locations.service.js';
 import { ListingsService } from './listings.service.js';
 
 @Controller('listings')
@@ -47,6 +50,12 @@ export class ListingsController {
     return this.listings.list(query);
   }
 
+  /** Every public listing's address, for /sitemap.xml. Declared before ':slug'. */
+  @Get('sitemap')
+  sitemap(): Promise<SitemapListing[]> {
+    return this.listings.sitemap();
+  }
+
   @Get(':slug')
   get(@Param('slug') slug: string): Promise<ListingDetail> {
     return this.listings.getBySlug(slug);
@@ -56,23 +65,26 @@ export class ListingsController {
 /** The site's location filter: the areas and localities it offers, and listings per category in one. */
 @Controller('locations')
 export class LocationsController {
-  constructor(private readonly listings: ListingsService) {}
+  constructor(private readonly locations: ListingLocationsService) {}
 
   @Get()
   list(): Promise<LocationOption[]> {
-    return this.listings.locations();
+    return this.locations.locations();
   }
 
   @Get('counts')
   counts(@Query(new ZodPipe(listingCountsQuerySchema)) query: ListingCountsQuery): Promise<ListingCounts> {
-    return this.listings.counts(query);
+    return this.locations.counts(query);
   }
 }
 
 @Controller('admin/listings')
 @UseGuards(AdminGuard)
 export class AdminListingsController {
-  constructor(private readonly listings: ListingsService) {}
+  constructor(
+    private readonly listings: ListingsService,
+    private readonly elite: ElitePlacesService,
+  ) {}
 
   @Get()
   list(@Query(new ZodPipe(adminListingQuerySchema)) query: AdminListingQuery): Promise<Paginated<ListingSummary>> {
@@ -81,12 +93,12 @@ export class AdminListingsController {
 
   @Get('top')
   top(@Query(new ZodPipe(topListingsQuerySchema)) query: TopListingsQuery): Promise<ListingSummary[]> {
-    return this.listings.top(query.categoryId);
+    return this.elite.top(query.categoryId);
   }
 
   @Put('top')
   setTop(@Body(new ZodPipe(topListingsInputSchema)) body: TopListingsInput): Promise<ListingSummary[]> {
-    return this.listings.setTop(body);
+    return this.elite.setTop(body);
   }
 
   @Get(':id')

@@ -1,0 +1,1 @@
+CREATE INDEX "enquiries_new_idx" ON "enquiries" USING btree ("created_at") WHERE "enquiries"."lead_status" = 'new';

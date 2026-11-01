@@ -1,6 +1,7 @@
 "use client";
 
-import { type CSSProperties, useRef, useState } from "react";
+import { getImageProps } from "next/image";
+import { useRef, useState } from "react";
 import { HomeLink, Icon } from "./bits";
 import { ICON } from "./content";
 
@@ -16,6 +17,22 @@ export interface HeroSlide {
   text: string | null;
   cta: string | null;
   link: string;
+}
+
+/** The slider's width at each screen size, so the browser picks a file that fits. */
+const SLIDE_SIZES = "(max-width: 960px) 100vw, 800px";
+
+/** An optimized slide photo. <picture> downloads only the one for this screen; the first loads first. */
+function SlideImage({ desktop, mobile, first }: { desktop: string; mobile: string | null; first: boolean }) {
+  const common = { alt: "", fill: true, loading: first ? "eager" : "lazy", fetchPriority: first ? "high" : "auto", className: "object-cover" } as const;
+  const { props } = getImageProps({ ...common, src: desktop, sizes: SLIDE_SIZES });
+  const phone = mobile && mobile !== desktop ? getImageProps({ ...common, src: mobile, sizes: "100vw" }).props.srcSet : null;
+  return (
+    <picture>
+      {phone && <source media="(max-width: 600px)" srcSet={phone} sizes="100vw" />}
+      <img {...props} alt="" />
+    </picture>
+  );
 }
 
 /** Scroll-snap slider from the demo: swipe or use the arrows and dots. */
@@ -38,15 +55,11 @@ export function HeroSlides({ slides }: { slides: HeroSlide[] }) {
         ref={track}
         onScroll={(e) => setCurrent(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
       >
-        {slides.map((s) =>
+        {slides.map((s, i) =>
           s.image ? (
-            <HomeLink
-              key={s.key}
-              className="slide img"
-              href={s.link}
-              aria-label={s.heading}
-              style={{ "--img": `url("${s.image}")`, ...(s.mobileImage && { "--img-m": `url("${s.mobileImage}")` }) } as CSSProperties}
-            />
+            <HomeLink key={s.key} className="slide img" href={s.link} aria-label={s.heading}>
+              <SlideImage desktop={s.image} mobile={s.mobileImage} first={i === 0} />
+            </HomeLink>
           ) : (
             <div key={s.key} className={`slide ${s.cls}`}>
               {s.tag && <small>{s.tag}</small>}
@@ -63,7 +76,20 @@ export function HeroSlides({ slides }: { slides: HeroSlide[] }) {
       </div>
       <div className="dots">
         {slides.map((s, i) => (
-          <i key={s.key} className={i === current ? "on" : undefined} onClick={() => go(i)} />
+          <i
+            key={s.key}
+            role="button"
+            tabIndex={0}
+            aria-label={`Slide ${i + 1}`}
+            className={i === current ? "on" : undefined}
+            onClick={() => go(i)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                go(i);
+              }
+            }}
+          />
         ))}
       </div>
       <div className="nv">

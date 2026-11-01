@@ -1,4 +1,9 @@
+import { sql } from 'drizzle-orm';
 import { type Advertiser, bedroomsOf, type ProjectConfiguration, type ProjectInput, projectSlug } from '@nsb/shared';
+import { projects } from '../../db/schema.js';
+
+/** The day the advertiser's term ends. */
+export const termEnd = sql`(${projects.termStart} + make_interval(months => ${projects.termMonths}))::date`;
 
 /** A builder advertises as itself; each type keeps only its own "Listed by" fields. */
 function advertiserOf(input: ProjectInput): Advertiser {

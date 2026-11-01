@@ -1,8 +1,9 @@
-import { sql } from 'drizzle-orm';
+import { type AnyColumn, sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
   bigint,
   boolean,
+  check,
   date,
   index,
   integer,
@@ -34,6 +35,11 @@ import type {
   ReviewSource,
   ServiceGroup,
 } from '@nsb/shared';
+import { ADMIN_ROLES, LEAD_STATUSES, LISTING_STATUSES, PROJECT_TYPES, REVIEW_SOURCES } from '@nsb/shared';
+import type { PendingAlert } from '../modules/notifications/notifications.service.js';
+
+/** The database's own guard on a text column; it follows the list in @nsb/shared through `db:generate`. */
+const oneOf = (column: AnyColumn, values: readonly string[]) => sql`${column} in (${sql.raw(values.map((v) => `'${v}'`).join(', '))})`;
 
 const id = () => uuid('id').primaryKey().defaultRandom();
 const createdAt = () =>
@@ -44,22 +50,27 @@ const updatedAt = () =>
     .defaultNow()
     .$onUpdate(() => new Date());
 
-export const adminUsers = pgTable('admin_users', {
-  id: id(),
-  email: text('email').notNull().unique(),
-  name: text('name').notNull(),
-  passwordHash: text('password_hash').notNull(),
-  /** What this admin may do (ADMIN_PERMISSIONS). Admins from before roles are Super Admins. */
-  role: text('role').$type<AdminRole>().notNull().default('super'),
-  /** In every session token; raising it (on a password change) signs out the other sessions. */
-  sessionVersion: integer('session_version').notNull().default(0),
-  /** Wrong passwords in a row, counted while they come less than LOCK_WINDOW apart. */
-  failedLogins: integer('failed_logins').notNull().default(0),
-  lastFailedAt: timestamp('last_failed_at', { withTimezone: true }),
-  /** Sign-in refused until then, after too many wrong passwords. */
-  lockedUntil: timestamp('locked_until', { withTimezone: true }),
-  createdAt: createdAt(),
-});
+export const adminUsers = pgTable(
+  'admin_users',
+  {
+    id: id(),
+    email: text('email').notNull().unique(),
+    name: text('name').notNull(),
+    passwordHash: text('password_hash').notNull(),
+    /** What this admin may do (ADMIN_PERMISSIONS). Admins from before roles are Super Admins. */
+    role: text('role').$type<AdminRole>().notNull().default('super'),
+    /** In every session token; raising it (on a password change) signs out the other sessions. */
+    sessionVersion: integer('session_version').notNull().default(0),
+    /** Wrong passwords in a row, counted while they come less than LOCK_WINDOW apart. */
+    failedLogins: integer('failed_logins').notNull().default(0),
+    lastFailedAt: timestamp('last_failed_at', { withTimezone: true }),
+    lastFailedIp: text('last_failed_ip'),
+    /** Sign-in refused until then, after too many wrong passwords. */
+    lockedUntil: timestamp('locked_until', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [check('admin_users_role_check', oneOf(t.role, ADMIN_ROLES))],
+);
 
 export const categories = pgTable(
   'categories',
@@ -145,8 +156,13 @@ export const listings = pgTable(
   (t) => [
     index('listings_category_idx').on(t.categoryId),
     uniqueIndex('listings_category_top_rank_idx').on(t.categoryId, t.topRank),
+    // The order of ListingCardsService's public list, so a category page need not sort all its listings.
+    index('listings_browse_idx')
+      .on(t.categoryId, t.topRank.asc().nullsLast(), t.isFeatured.desc().nullsFirst(), t.createdAt.desc().nullsFirst(), t.id.desc().nullsFirst())
+      .where(sql`${t.status} = 'live'`),
     // Trigrams let "contains" searches use an index. Same columns, in order, as ListingsService's search.
     index('listings_search_idx').using('gin', sql`search_text(array[name, area, locality, short_description], tags) gin_trgm_ops`),
+    check('listings_status_check', oneOf(t.status, LISTING_STATUSES)),
   ],
 );
 
@@ -166,7 +182,7 @@ export const listingReviews = pgTable(
     isVerified: boolean('is_verified').notNull().default(true),
     createdAt: createdAt(),
   },
-  (t) => [index('listing_reviews_listing_idx').on(t.listingId)],
+  (t) => [index('listing_reviews_listing_idx').on(t.listingId), check('listing_reviews_source_check', oneOf(t.source, REVIEW_SOURCES))],
 );
 
 export const listingImages = pgTable(
@@ -268,6 +284,8 @@ export const projects = pgTable(
     index('projects_status_area_idx').on(t.status, t.area),
     // Same columns, in order, as ProjectsService's search.
     index('projects_search_idx').using('gin', sql`search_text(array[name, builder, advertiser_name, locality], tags) gin_trgm_ops`),
+    check('projects_type_check', oneOf(t.type, PROJECT_TYPES)),
+    check('projects_status_check', oneOf(t.status, LISTING_STATUSES)),
   ],
 );
 
@@ -336,12 +354,19 @@ export const enquiries = pgTable(
     readAt: timestamp('read_at', { withTimezone: true }),
     /** Follow-up stage: new, contacted, won or lost. */
     leadStatus: text('lead_status').$type<LeadStatus>().notNull().default('new'),
+    /** An alert still to be sent, kept here so a restart or mail outage does not lose it. Null once sent. */
+    pendingAlert: jsonb('pending_alert').$type<PendingAlert>(),
+    alertAttempts: integer('alert_attempts').notNull().default(0),
+    nextAlertAt: timestamp('next_alert_at', { withTimezone: true }),
   },
   (t) => [
     index('enquiries_created_idx').on(t.createdAt),
     index('enquiries_unread_idx').on(t.createdAt).where(sql`${t.readAt} is null`),
+    index('enquiries_new_idx').on(t.createdAt).where(sql`${t.leadStatus} = 'new'`),
     index('enquiries_category_idx').on(t.categoryId),
     index('enquiries_listing_idx').on(t.listingId),
     index('enquiries_project_idx').on(t.projectId),
+    index('enquiries_alert_idx').on(t.nextAlertAt).where(sql`${t.nextAlertAt} is not null`),
+    check('enquiries_lead_status_check', oneOf(t.leadStatus, LEAD_STATUSES)),
   ],
 );

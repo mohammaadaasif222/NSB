@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { jakarta } from "@/lib/fonts";
 import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
@@ -9,7 +9,6 @@ import { sitePath } from "@/lib/admin-links";
 export const metadata: Metadata = { title: "Admin Login" };
 
 /** The login design's typeface; scoped to this page, the panel keeps Inter. */
-const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
 /** Only allow redirects back into the admin panel. */
 function safeNext(next: string | string[] | undefined): string {

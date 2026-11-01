@@ -3,7 +3,6 @@
 import { type FormEvent, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Loader2, RotateCcw } from "lucide-react";
 import {
-  type AdminSettings,
   DEFAULT_HOME_CARDS,
   HOME_CARD_COLOR_LABELS,
   HOME_CARD_COLORS,
@@ -17,7 +16,7 @@ import {
 } from "@nsb/shared";
 import { Button, Field, IconButton, Select, TextInput, Toggle } from "@/components/admin/form";
 import { useSessionUploads, useUploader } from "@/components/admin/image-upload";
-import { useAdminAction } from "@/components/admin/use-admin-action";
+import { useSettingsSection } from "@/components/admin/use-settings-section";
 import { Icon } from "@/components/shared/icon";
 import { HOME_CARD_ICON_PATHS } from "@/components/shared/home-card-icons";
 import { adminClient } from "@/lib/admin-client";
@@ -147,10 +146,9 @@ function CardImage({ url, onChange, onUploaded, maxBytes }: { url: string | null
  * where it goes, its tags, and its position. Saved together with one button.
  */
 export function HomeCardsManager({ cards: saved, maxUploadBytes }: { cards: HomeCard[]; maxUploadBytes: number }) {
-  const { run, pending } = useAdminAction();
+  const { save, pending, errors } = useSettingsSection("homeCards");
   const trackUpload = useSessionUploads();
   const [cards, setCards] = useState<HomeCard[]>(saved);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const changed = JSON.stringify(cards) !== JSON.stringify(saved);
 
   const set = (i: number, patch: Partial<HomeCard>) => setCards((all) => all.map((c, j) => (j === i ? { ...c, ...patch } : c)));
@@ -163,15 +161,10 @@ export function HomeCardsManager({ cards: saved, maxUploadBytes }: { cards: Home
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const result = await run(() => adminClient.patch<AdminSettings>("/admin/settings", { homeCards: cards }), { success: "Cards saved. The homepage shows them now." });
-    if (result.ok) {
-      setErrors({});
-      // Images no card uses any more are deleted (files still in use are kept).
-      const kept = new Set(cards.map((c) => c.imageUrl));
-      adminClient.discardUploads(saved.map((c) => c.imageUrl).filter((u): u is string => !!u && !kept.has(u)));
-    } else {
-      setErrors(Object.fromEntries(Object.entries(result.error.fieldErrors).map(([path, m]) => [path.replace(/^homeCards\./, ""), m])));
-    }
+    if (!(await save(cards, "Cards saved. The homepage shows them now."))) return;
+    // Images no card uses any more are deleted (files still in use are kept).
+    const kept = new Set(cards.map((c) => c.imageUrl));
+    adminClient.discardUploads(saved.map((c) => c.imageUrl).filter((u): u is string => !!u && !kept.has(u)));
   };
 
   return (

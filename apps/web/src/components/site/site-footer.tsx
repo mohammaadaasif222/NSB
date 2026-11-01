@@ -1,4 +1,4 @@
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { jakarta } from "@/lib/fonts";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
@@ -7,7 +7,6 @@ import { Icon } from "./nsb-home/bits";
 import { CATEGORY_LOOK, DEFAULT_LOOK, ICON, LOGO } from "./nsb-home/content";
 import "./site-footer.css";
 
-const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"], weight: ["400", "500", "700", "800"] });
 
 /** "+91 98115 90088" → "tel:+919811590088". */
 const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
@@ -42,7 +41,7 @@ export function SiteFooter({ categories, footer }: { categories: Category[]; foo
           <div>
             {footer.showLogo && (
               <Link href="/" aria-label="Noida Super Bazaar">
-                <Image className="flg" src={footer.logoUrl ?? LOGO} alt="Noida Super Bazaar" width={560} height={283} />
+                <Image className="flg" src={footer.logoUrl ?? LOGO} alt="Noida Super Bazaar" width={99} height={50} />
               </Link>
             )}
             {footer.showAbout && footer.about && <p>{footer.about}</p>}

@@ -1,4 +1,4 @@
-import { formatPrice } from "@nsb/shared";
+import { formatPrice } from "@nsb/shared/client";
 
 /** "₹1.25 Cr". */
 export const priceText = (rupees: number) => `₹${formatPrice(rupees)}`;

@@ -98,7 +98,7 @@ nano .env
 | `SITE_ADDRESS` | No domain yet: `<ip-with-dashes>.sslip.io`, e.g. `140-238-1-2.sslip.io`. It resolves to the IP, and Caddy gets a real HTTPS certificate for it. With a domain: `staging.noidasuperbazaar.com`, with an A record pointing to the IP. |
 | `SITE_URL` | `https://` + the same address |
 | `POSTGRES_PASSWORD`, `JWT_SECRET`, `SETTINGS_ENCRYPTION_KEY` | The generated values. **Save them somewhere safe.** The encrypted settings (Cloudinary, Firebase and SMTP secrets) can only be read with the same key, so the move to Hostinger must reuse it. |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | The first admin login. The password needs at least 10 characters. |
+| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | The first admin login. The password needs at least 12 characters and cannot be the example value. |
 | `COOKIE_SECURE` | Keep `true`. |
 
 ## 6. Start
@@ -132,7 +132,7 @@ ssh -i $HOME\.ssh\oracle.key root@200.234.37.125
 tar -xzOf ~/nsb.tgz ./deploy/update.sh > ~/update.sh && bash ~/update.sh
 ```
 
-[deploy/update.sh](../deploy/update.sh) backs up the database to `~/backups/`, unpacks the code into a fresh folder (so files deleted on the PC disappear on the server too), keeps `deploy/.env`, moves the old code to `~/nsb.prev`, rebuilds, and waits for the API's health check. The old containers keep serving until the new images are built. The API applies new database migrations when it starts, so run `npm run db:generate` before packing if `schema.ts` changed.
+[deploy/update.sh](../deploy/update.sh) backs up the database to `~/backups/`, unpacks the code into a fresh folder (so files deleted on the PC disappear on the server too), keeps `deploy/.env`, builds, applies database migrations, moves the old code to `~/nsb.prev`, restarts, and waits for the API's health check. The old code and containers stay in place until then, so a failed build or migration leaves the site running as it was. The script exits with an error if any step fails, and prints Done only on success. The API is down for a few seconds during the restart. Run `npm run db:generate` before packing if `schema.ts` changed. Migrations run in one transaction, so an index on a large table blocks writes while it builds: once a table has hundreds of thousands of rows, create the index by hand first with `CREATE INDEX CONCURRENTLY`, and write the migration with `IF NOT EXISTS`.
 
 ### Rollback
 
@@ -153,13 +153,33 @@ docker compose start api web
 
 ## Backups
 
-The database and locally stored images live in Docker volumes (`nsb_pgdata`, `nsb_uploads`). To dump the database every night at 03:00 and keep 14 days, run `crontab -e` and add:
+The database and locally stored images live in Docker volumes (`nsb_pgdata`, `nsb_uploads`). [deploy/backup.sh](../deploy/backup.sh) saves both to `~/backups` and keeps 14 days.
+
+**Off-server copies are what protect you if the server is lost.** Install [rclone](https://rclone.org/install/), run `rclone config` to add object storage such as Cloudflare R2 or Backblaze B2, then set `BACKUP_REMOTE` in `deploy/.env`, e.g. `BACKUP_REMOTE=r2:nsb-backups`. Without it the script warns that the backup exists only on the server.
+
+To run it every night at 03:00, run `crontab -e` and add:
 
 ```cron
-0 3 * * * mkdir -p ~/backups && cd ~/nsb/deploy && docker compose exec -T postgres pg_dump -U nsb -Fc nsb > ~/backups/nsb-$(date +\%F).dump && find ~/backups -name 'nsb-*.dump' -mtime +14 -delete
+0 3 * * * bash ~/nsb/deploy/backup.sh >> ~/backups/backup.log 2>&1
 ```
 
-Copies on the same VM don't survive losing the VM. Download one now and then with `scp`.
+Keep `deploy/.env` somewhere safe as well. Without the same `JWT_SECRET` or `SETTINGS_ENCRYPTION_KEY`, a restored database cannot read its saved secrets.
+
+Test a restore once a month, so you know the files work. This restores the database into a separate scratch database, leaving the live one alone:
+
+```bash
+cd ~/nsb/deploy
+docker compose exec -T postgres createdb -U nsb restore_test
+docker compose exec -T postgres pg_restore -U nsb -d restore_test --no-owner < ~/backups/nsb-<date>.dump
+docker compose exec -T postgres psql -U nsb -d restore_test -c 'select count(*) from enquiries'
+docker compose exec -T postgres dropdb -U nsb restore_test
+```
+
+## Monitoring
+
+Add a free external uptime check, such as UptimeRobot or Better Stack, on both `https://<SITE_ADDRESS>/api/health` and the home page, with alerts to your phone. Nothing on the server can warn you when the server itself is down.
+
+Docker restarts a container that crashes, but not one that is running and unhealthy. `docker compose ps` shows which is which.
 
 ## Moving servers
 

@@ -6,6 +6,8 @@ export class ZodPipe<T extends z.ZodType> implements PipeTransform<unknown, z.ou
   constructor(private readonly schema: T) {}
 
   transform(value: unknown): z.output<T> {
+    // Postgres refuses NUL in text, which would otherwise surface as a 500.
+    if (JSON.stringify(value)?.includes('\\u0000')) throw new BadRequestException('Validation failed');
     const result = this.schema.safeParse(value);
     if (!result.success) {
       throw new BadRequestException({

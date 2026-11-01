@@ -7,6 +7,7 @@ import type { AdminSettings, CategoryDetail, Enquiry, Paginated, UnreadCount } f
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { loadEnvFile } from '../src/config/env.js';
+import { EnquiriesService } from '../src/modules/enquiries/enquiries.service.js';
 import { startFakeSmtp } from './helpers/fake-smtp.js';
 
 // Runs against the dev database (npm run db:up && npm run db:migrate && npm run db:seed).
@@ -138,6 +139,39 @@ describe('Enquiries and email alerts (e2e)', () => {
     expect(team.data).toContain('&lt;b&gt;300&lt;/b&gt;');
     expect(vendor.data).toContain('+91 9876543210');
     created.push({ id: res.body.id } as Enquiry);
+  });
+
+  it('keeps an alert that could not be sent and sends it when mail works again', async () => {
+    smtp.mails.length = 0;
+    await admin.patch('/api/admin/settings').send(smtpSettings({ port: 1 })).expect(200);
+    const res = await http()
+      .post('/api/enquiries')
+      .send({ listingId, name: `Mina ${run}`, mobile: '9012345678', message: 'Hello', preferredDate: '2027-04-01' })
+      .expect(201);
+    const row = async () => (await pool.query('select pending_alert, alert_attempts, next_alert_at from enquiries where id = $1', [res.body.id])).rows[0];
+    await expect.poll(async () => (await row()).next_alert_at).not.toBeNull();
+    await new Promise((r) => setTimeout(r, 500));
+    expect((await row()).pending_alert.targets).toEqual(['nsb', 'vendor']);
+
+    // Not due yet: nothing is sent early.
+    const service = app.get(EnquiriesService);
+    await admin.patch('/api/admin/settings').send(smtpSettings()).expect(200);
+    await service.retryAlerts();
+    expect(smtp.mails).toHaveLength(0);
+
+    await pool.query('update enquiries set next_alert_at = now() where id = $1', [res.body.id]);
+    await service.retryAlerts();
+    expect((await smtp.waitFor(2)).map((m) => m.to[0]).sort()).toEqual(['team@nsb.test', 'vendor@nsb.test']);
+    expect(await row()).toMatchObject({ pending_alert: null, alert_attempts: 1, next_alert_at: null });
+
+    // Once sent it is not sent again, and the retry state never reaches the admin panel.
+    await pool.query('update enquiries set next_alert_at = null where id = $1', [res.body.id]);
+    await service.retryAlerts();
+    expect(smtp.mails).toHaveLength(2);
+    const [lead] = await list(`q=Mina ${run}`);
+    expect(Object.keys(lead)).not.toEqual(expect.arrayContaining(['pendingAlert']));
+    expect(Object.keys(lead)).not.toEqual(expect.arrayContaining(['nextAlertAt']));
+    await pool.query('delete from enquiries where id = $1', [res.body.id]);
   });
 
   it('does not email when alerts are switched off, but still saves the lead', async () => {

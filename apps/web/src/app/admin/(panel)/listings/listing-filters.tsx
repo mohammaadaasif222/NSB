@@ -1,10 +1,9 @@
 "use client";
 
-import Form from "next/form";
 import Link from "next/link";
-import { useRef } from "react";
 import { Search } from "lucide-react";
 import type { AdminCategory, ListingStatus } from "@nsb/shared";
+import { FilterForm, submitFilters } from "@/components/admin/filters";
 import { Button, Field, Select, TextInput } from "@/components/admin/form";
 
 export interface ListingFilterValues {
@@ -31,16 +30,12 @@ export function ListingFilters({
   pageSize: number;
   pageSizes: readonly number[];
 }) {
-  const form = useRef<HTMLFormElement>(null);
-  const submit = () => form.current?.requestSubmit();
   const tops = categories.filter((c) => !c.parentId);
   const active = Object.values(values).some(Boolean);
 
   return (
-    // key: reset the inputs when the URL changes (e.g. "Clear").
-    <Form
-      key={JSON.stringify({ values, pageSize })}
-      ref={form}
+    <FilterForm
+      values={{ values, pageSize }}
       action="/admin/listings"
       className="mb-4 grid grid-cols-2 gap-3 rounded-lg border border-zinc-200 bg-white p-4 lg:grid-cols-3 xl:grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_auto]"
     >
@@ -48,7 +43,7 @@ export function ListingFilters({
         <TextInput name="q" type="search" defaultValue={values.q} placeholder="Business name, area or locality" maxLength={100} />
       </Field>
       <Field label="Category">
-        <Select name="category" defaultValue={values.category} onChange={submit}>
+        <Select name="category" defaultValue={values.category} onChange={submitFilters}>
           <option value="">All categories</option>
           {tops.map((top) => (
             <optgroup key={top.id} label={top.name}>
@@ -65,7 +60,7 @@ export function ListingFilters({
         </Select>
       </Field>
       <Field label="Status">
-        <Select name="status" defaultValue={values.status} onChange={submit}>
+        <Select name="status" defaultValue={values.status} onChange={submitFilters}>
           <option value="">All</option>
           <option value="live">Live</option>
           <option value="draft">Draft</option>
@@ -73,13 +68,13 @@ export function ListingFilters({
         </Select>
       </Field>
       <Field label="Added from">
-        <TextInput name="from" type="date" defaultValue={values.from} max={values.to || undefined} onChange={submit} />
+        <TextInput name="from" type="date" defaultValue={values.from} max={values.to || undefined} onChange={submitFilters} />
       </Field>
       <Field label="Added to">
-        <TextInput name="to" type="date" defaultValue={values.to} min={values.from || undefined} onChange={submit} />
+        <TextInput name="to" type="date" defaultValue={values.to} min={values.from || undefined} onChange={submitFilters} />
       </Field>
       <Field label="Per page">
-        <Select name="pageSize" defaultValue={String(pageSize)} onChange={submit}>
+        <Select name="pageSize" defaultValue={String(pageSize)} onChange={submitFilters}>
           {pageSizes.map((size) => (
             <option key={size} value={size}>
               {size}
@@ -97,6 +92,6 @@ export function ListingFilters({
           </Link>
         )}
       </div>
-    </Form>
+    </FilterForm>
   );
 }

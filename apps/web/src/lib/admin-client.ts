@@ -6,6 +6,9 @@ import type { ApiErrorBody, ImageSlotKey, UploadedImage } from "@nsb/shared";
  * Server components use lib/api.ts instead.
  */
 
+/** After a save: the public site shows it on its next request instead of within a minute. */
+export const refreshPublicSite = () => void fetch("/admin/revalidate", { method: "POST" }).catch(() => undefined);
+
 export class RequestError extends Error {
   constructor(
     readonly status: number,
@@ -23,11 +26,11 @@ export class RequestError extends Error {
 
 interface RequestOptions {
   signal?: AbortSignal;
-  /** "throw" leaves a 401 to the caller instead of ending the session: a wrong password, a background poll. */
+  /** "throw" leaves a 401 to the caller instead of ending the session: a wrong password, a background poll. Saves always do, so a form is not lost. */
   on401?: "signOut" | "throw";
 }
 
-async function request<T>(method: string, path: string, body?: unknown, { signal, on401 = "signOut" }: RequestOptions = {}): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, { signal, on401 = method === "GET" ? "signOut" : "throw" }: RequestOptions = {}): Promise<T> {
   const isForm = body instanceof FormData;
   let res: Response;
   try {

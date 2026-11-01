@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, GripVertical } from "lucide-react";
 import { IconButton } from "./form";
 
@@ -15,6 +15,7 @@ export function useOptimisticOrder<T>(
   save: (ids: string[]) => Promise<boolean>,
   disabled?: boolean,
 ) {
+  const saves = useRef(Promise.resolve());
   const [source, setSource] = useState(items);
   const [order, setOrder] = useState(items);
   if (items !== source) {
@@ -29,7 +30,11 @@ export function useOptimisticOrder<T>(
     const [item] = next.splice(from, 1);
     next.splice(to, 0, item);
     setOrder(next);
-    if (!(await save(next.map(getId)))) setOrder(previous);
+    // Saves run one at a time, so a quick second move waits for the first instead of being dropped.
+    saves.current = saves.current.then(async () => {
+      if (!(await save(next.map(getId)))) setOrder(previous);
+    });
+    await saves.current;
   };
 
   return { order, move };

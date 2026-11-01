@@ -1,8 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,
@@ -12,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { and, asc, count, eq, ne, sql } from 'drizzle-orm';
 import type { AdminUser, AdminUserInput, AdminUserRow, AdminUserUpdate, ChangePasswordInput, LoginInput, ProfileInput } from '@nsb/shared';
-import { DB, type Database } from '../../db/db.module.js';
+import { DB, type Database, type Tx } from '../../db/db.module.js';
 import { adminUsers } from '../../db/schema.js';
 import { pgCode } from '../../common/db-errors.js';
 
@@ -26,12 +24,14 @@ export interface SessionPayload {
 /** The signed-in admin as AdminGuard loads it on each request. */
 export type CurrentAdminInfo = AdminUser & { sub: string };
 
-type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
-
 // Compared against when the email is unknown, so response time doesn't reveal which emails exist.
 const DUMMY_HASH = bcrypt.hashSync('nsb-timing-guard', 12);
 
-/** After LOCK_AFTER wrong passwords, each within LOCK_MINUTES of the last, sign-in is refused for LOCK_MINUTES. */
+/**
+ * After LOCK_AFTER wrong passwords from one address, each within LOCK_MINUTES of the last, that
+ * address is refused for LOCK_MINUTES. Only that address: otherwise anyone who knows an admin's
+ * email could keep them out.
+ */
 const LOCK_AFTER = 10;
 const LOCK_MINUTES = 15;
 
@@ -51,20 +51,18 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  async login({ email, password }: LoginInput): Promise<{ token: string; user: AdminUser }> {
+  async login({ email, password }: LoginInput, ip = ''): Promise<{ token: string; user: AdminUser }> {
     const [row] = await this.db.select().from(adminUsers).where(eq(adminUsers.email, email));
-    if (row?.lockedUntil && row.lockedUntil > new Date()) {
-      const minutes = Math.ceil((row.lockedUntil.getTime() - Date.now()) / 60_000);
-      throw new HttpException(`Too many wrong passwords. Try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`, HttpStatus.TOO_MANY_REQUESTS);
-    }
     const ok = await bcrypt.compare(password, row?.passwordHash ?? DUMMY_HASH);
-    if (!row) throw new UnauthorizedException('Invalid email or password');
+    // The same reply as a wrong password, so a lock does not reveal that the account exists.
+    const locked = row?.lockedUntil && row.lockedUntil > new Date() && row.lastFailedIp === ip;
+    if (!row || locked) throw new UnauthorizedException('Invalid email or password');
     if (!ok) {
-      await this.recordFailure(row.id);
+      await this.recordFailure(row.id, ip);
       throw new UnauthorizedException('Invalid email or password');
     }
     if (row.failedLogins || row.lockedUntil) {
-      await this.db.update(adminUsers).set({ failedLogins: 0, lastFailedAt: null, lockedUntil: null }).where(eq(adminUsers.id, row.id));
+      await this.db.update(adminUsers).set({ failedLogins: 0, lastFailedAt: null, lastFailedIp: null, lockedUntil: null }).where(eq(adminUsers.id, row.id));
     }
     return { token: await this.sign(row), user: { id: row.id, email: row.email, name: row.name, role: row.role } };
   }
@@ -76,16 +74,17 @@ export class AuthService {
 
   /**
    * Counts a wrong password in one statement (so parallel guesses all count); the LOCK_AFTER-th
-   * in a row locks the account. Postgres reads the old row in every SET expression.
+   * in a row from one address locks it out. Postgres reads the old row in every SET expression.
    */
-  private async recordFailure(id: string) {
-    const streak = sql`case when ${adminUsers.lastFailedAt} > now() - make_interval(mins => ${LOCK_MINUTES}) then ${adminUsers.failedLogins} + 1 else 1 end`;
+  private async recordFailure(id: string, ip: string) {
+    const streak = sql`case when ${adminUsers.lastFailedAt} > now() - make_interval(mins => ${LOCK_MINUTES}) and ${adminUsers.lastFailedIp} = ${ip} then ${adminUsers.failedLogins} + 1 else 1 end`;
     await this.db
       .update(adminUsers)
       .set({
         failedLogins: sql`case when ${streak} >= ${LOCK_AFTER} then 0 else ${streak} end`,
         lockedUntil: sql`case when ${streak} >= ${LOCK_AFTER} then now() + make_interval(mins => ${LOCK_MINUTES}) else ${adminUsers.lockedUntil} end`,
         lastFailedAt: sql`now()`,
+        lastFailedIp: ip,
       })
       .where(eq(adminUsers.id, id));
   }
@@ -123,6 +122,12 @@ export class AuthService {
       if (pgCode(err) === '23505') throw emailTaken();
       throw err;
     }
+  }
+
+  /** Signing out ends all of this admin's sessions, so a copied cookie stops working too. A dead token has none to end. */
+  async endSessions(token: string): Promise<void> {
+    const session = await this.verify(token).catch(() => null);
+    if (session) await this.db.update(adminUsers).set({ sessionVersion: sql`${adminUsers.sessionVersion} + 1` }).where(eq(adminUsers.id, session.sub));
   }
 
   async verify(token: string): Promise<SessionPayload> {

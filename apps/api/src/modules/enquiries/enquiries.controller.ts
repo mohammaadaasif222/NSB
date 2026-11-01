@@ -1,4 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res, StreamableFile, UseGuards } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { Response } from 'express';
 import {
   canDo,
@@ -14,13 +16,18 @@ import {
   type ProjectEnquiryInput,
   projectEnquiryInputSchema,
   type ProjectEnquiryResult,
+  todayInIndia,
   type UnreadCount,
 } from '@nsb/shared';
 import { ZodPipe } from '../../common/zod.pipe.js';
 import { AdminGuard, Allow, CurrentAdmin } from '../auth/admin.guard.js';
 import type { CurrentAdminInfo } from '../auth/auth.service.js';
+import { forRole } from './enquiry-mapper.js';
 import { enquiriesWorkbook } from './enquiry-sheet.js';
 import { EnquiriesService } from './enquiries.service.js';
+
+/** Leads a minute from one visitor. */
+const LEAD_LIMIT = { default: { limit: 10, ttl: 60_000 } };
 
 @Controller('enquiries')
 export class EnquiriesController {
@@ -28,7 +35,11 @@ export class EnquiriesController {
 
   /** Public enquiry form submission. Returns only the id — lead data stays private. */
   @Post()
-  async create(@Body(new ZodPipe(enquiryInputSchema)) body: EnquiryInput): Promise<{ id: string }> {
+  @UseGuards(ThrottlerGuard)
+  @Throttle(LEAD_LIMIT)
+  async create(@Body(new ZodPipe(enquiryInputSchema)) { website, ...body }: EnquiryInput): Promise<{ id: string }> {
+    // A filled honeypot gets a normal reply, so the bot learns nothing, and nothing is saved.
+    if (website) return { id: randomUUID() };
     const { id } = await this.enquiries.create(body);
     return { id };
   }
@@ -38,22 +49,13 @@ export class EnquiriesController {
    * project page shows them only to visitors who leave their details.
    */
   @Post('project')
-  createForProject(@Body(new ZodPipe(projectEnquiryInputSchema)) body: ProjectEnquiryInput): Promise<ProjectEnquiryResult> {
+  @UseGuards(ThrottlerGuard)
+  @Throttle(LEAD_LIMIT)
+  async createForProject(@Body(new ZodPipe(projectEnquiryInputSchema)) { website, ...body }: ProjectEnquiryInput): Promise<ProjectEnquiryResult> {
+    if (website) return { id: randomUUID(), advertiserName: null, phone: null, brochureUrl: null };
     return this.enquiries.createForProject(body);
   }
 }
-
-/** "9876543210" → "98XXXXXX10", for roles that may not see lead numbers. */
-const maskMobile = (mobile: string) => `${mobile.slice(0, 2)}XXXXXX${mobile.slice(-2)}`;
-
-/** Phone numbers a visitor typed into a message ("call me on 98765 43210"). */
-const NUMBER_IN_TEXT = /(?:\+?91[\s-]?)?[6-9](?:[\s-]?\d){9}/g;
-
-/** View only accounts see leads without their numbers or email addresses, in the fields or the message. */
-const forRole = (admin: CurrentAdminInfo, e: Enquiry): Enquiry =>
-  canDo(admin.role, 'leadContacts')
-    ? e
-    : { ...e, mobile: maskMobile(e.mobile), email: null, message: e.message.replace(NUMBER_IN_TEXT, (n) => maskMobile(n.replace(/\D/g, '').slice(-10))) };
 
 @Controller('admin/enquiries')
 @UseGuards(AdminGuard)
@@ -70,7 +72,7 @@ export class AdminEnquiriesController {
   @Get('export')
   @Allow('leadContacts')
   async export(@Query(new ZodPipe(enquiryQuerySchema)) query: EnquiryQuery, @Res({ passthrough: true }) res: Response): Promise<StreamableFile> {
-    const day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    const day = todayInIndia();
     const file = await enquiriesWorkbook(await this.enquiries.exportRows(query), query.section);
     res.setHeader('Cache-Control', 'no-store');
     return new StreamableFile(file, {

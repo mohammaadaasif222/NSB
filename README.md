@@ -21,6 +21,8 @@ npm run dev          # shared (watch) + API :4000 + web :3000
 - Admin: http://localhost:3000/admin (sign in with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`)
 - API: http://localhost:4000/api/health
 
+The web app runs without its own env file; `apps/web/.env.example` lists what it reads.
+
 ## Scripts (repo root)
 
 | Script | Does |
@@ -28,6 +30,7 @@ npm run dev          # shared (watch) + API :4000 + web :3000
 | `npm run dev` | Builds `@nsb/shared`, then runs the shared watcher, API and web together |
 | `npm run build` | Production build of all three packages |
 | `npm run typecheck` | Type-checks the API and web |
+| `npm run lint` | Lints the API and web |
 | `npm test` | API unit tests |
 | `npm run test:e2e -w @nsb/api` | API end-to-end tests against the dev database |
 | `npm run db:generate` | Generates a SQL migration after editing `apps/api/src/db/schema.ts` |

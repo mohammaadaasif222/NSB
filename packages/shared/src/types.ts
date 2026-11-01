@@ -5,6 +5,18 @@ import type { EliteBanners, FooterSettings, HomeCard, ListingSidebarSettings, Li
 
 /** API response shapes shared by the API (producer) and web (consumer). Dates are ISO strings. */
 
+/** A public page for /sitemap.xml. */
+export interface SitemapEntry {
+  slug: string;
+  updatedAt: string;
+}
+
+export interface SitemapListing extends SitemapEntry {
+  /** The sub-category and its vertical, which make up the listing's URL. */
+  category: string;
+  vertical: string;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

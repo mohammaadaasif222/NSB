@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight, Maximize2, Play, X } from "lucide-react";
-import { type ListingVideo, youTubeId } from "@nsb/shared";
+import type { ListingVideo } from "@nsb/shared";
+import { youTubeId } from "@nsb/shared/client";
+import { useModalBehaviour } from "../use-modal-behaviour";
 
 interface Clip {
   id: string;
@@ -76,25 +78,17 @@ function Tile({ clip, playing, onPlay, onExpand }: { clip: Clip; playing: boolea
 function Viewer({ clips, index, onChange, onClose, name }: { clips: Clip[]; index: number; onChange: (i: number) => void; onClose: () => void; name: string }) {
   const count = clips.length;
   const clip = clips[index];
-  const step = useCallback((d: number) => onChange((index + d + count) % count), [index, count, onChange]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+  const step = (d: number) => onChange((index + d + count) % count);
+  const dialog = useModalBehaviour(onClose, {
+    onKey: (e) => {
       if (e.key === "ArrowRight") step(1);
       if (e.key === "ArrowLeft") step(-1);
-    };
-    document.addEventListener("keydown", onKey);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-    };
-  }, [step, onClose]);
+    },
+  });
 
   return (
     <div
+      ref={dialog}
       role="dialog"
       aria-modal="true"
       aria-label={`${name} videos`}

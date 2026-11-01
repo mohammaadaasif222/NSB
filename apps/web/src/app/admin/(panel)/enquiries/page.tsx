@@ -5,6 +5,7 @@ import { type AdminCategory, type Enquiry, LEAD_STATUSES, type LeadSectionCounts
 import { Can } from "@/components/admin/admin-role";
 import { Pagination } from "@/components/admin/ui";
 import { adminApi, isUuid } from "@/lib/admin-api";
+import { isDate, oneTrimmed, pageCountOf, pick } from "@/lib/search-params";
 import { type LeadFilterValues, LeadFilters } from "./lead-filters";
 import { LeadsTable } from "./leads-table";
 import { MarkAllReadButton } from "./mark-all-read-button";
@@ -17,25 +18,22 @@ const SECTIONS = [
   { key: "wedding", label: "Wedding", count: "wedding" },
 ] as const;
 const STATUS_LABEL: Record<LeadStatus, string> = { new: "New", contacted: "Contacted", won: "Won", lost: "Lost" };
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
-const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
-const pick = <T extends string>(list: readonly T[], value: string): T | "" => ((list as readonly string[]).includes(value) ? (value as T) : "");
 
 /** Reads the filters from the URL, dropping anything malformed instead of failing the page. */
 function readFilters(query: Record<string, string | string[] | undefined>, counts: LeadSectionCounts): LeadFilterValues {
-  const [from, to] = [one(query.from), one(query.to)];
-  const asked = one(query.section);
+  const [from, to] = [oneTrimmed(query.from), oneTrimmed(query.to)];
+  const asked = oneTrimmed(query.section);
   // Without a section (the bell, alert emails): the one with unread leads, Real Estate first.
   const section =
     asked === "wedding" || asked === "real-estate" ? asked : !counts.realEstate.unread && counts.wedding.unread ? "wedding" : "real-estate";
   return {
     section,
-    q: one(query.q).slice(0, 100),
-    category: section === "wedding" && isUuid(one(query.category)) ? one(query.category) : "",
-    type: section === "real-estate" ? pick(PROJECT_TYPES, one(query.type)) : "",
-    source: section === "real-estate" ? pick(PROJECT_LEAD_SOURCES, one(query.source)) : "",
-    leadStatus: pick(LEAD_STATUSES, one(query.leadStatus)),
-    status: one(query.status) === "unread" ? "unread" : "",
+    q: oneTrimmed(query.q).slice(0, 100),
+    category: section === "wedding" && isUuid(oneTrimmed(query.category)) ? oneTrimmed(query.category) : "",
+    type: section === "real-estate" ? pick(PROJECT_TYPES, oneTrimmed(query.type)) : "",
+    source: section === "real-estate" ? pick(PROJECT_LEAD_SOURCES, oneTrimmed(query.source)) : "",
+    leadStatus: pick(LEAD_STATUSES, oneTrimmed(query.leadStatus)),
+    status: oneTrimmed(query.status) === "unread" ? "unread" : "",
     from: isDate(from) ? from : "",
     to: isDate(to) ? to : "",
   };
@@ -46,10 +44,10 @@ export default async function LeadsPage({ searchParams }: PageProps<"/admin/enqu
   const query = await searchParams;
   const counts = await adminApi.get<LeadSectionCounts>("/admin/enquiries/sections");
   // The lead counts in Real Estate and Wedding link here with one project or listing.
-  const projectId = isUuid(one(query.project)) ? one(query.project) : "";
-  const listingId = isUuid(one(query.listing)) ? one(query.listing) : "";
+  const projectId = isUuid(oneTrimmed(query.project)) ? oneTrimmed(query.project) : "";
+  const listingId = isUuid(oneTrimmed(query.listing)) ? oneTrimmed(query.listing) : "";
   const filters = readFilters({ ...query, ...(projectId && { section: "real-estate" }), ...(listingId && { section: "wedding" }) }, counts);
-  const page = Math.max(1, Number.parseInt(one(query.page), 10) || 1);
+  const page = Math.max(1, Number.parseInt(oneTrimmed(query.page), 10) || 1);
 
   // The API's parameter names.
   const params = new URLSearchParams({ section: filters.section, page: String(page), pageSize: String(PAGE_SIZE) });
@@ -85,7 +83,7 @@ export default async function LeadsPage({ searchParams }: PageProps<"/admin/enqu
 
   const filtered = Object.entries(filters).some(([k, v]) => k !== "section" && v) || !!projectId || !!listingId;
   const exportQuery = new URLSearchParams([...params].filter(([k]) => k !== "page" && k !== "pageSize")).toString();
-  const pageCount = Math.max(1, Math.ceil(leads.total / PAGE_SIZE));
+  const pageCount = pageCountOf(leads.total, PAGE_SIZE);
 
   return (
     <>

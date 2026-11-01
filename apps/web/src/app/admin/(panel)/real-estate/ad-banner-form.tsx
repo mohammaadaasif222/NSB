@@ -1,10 +1,10 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import type { AdminSettings, RealEstateAd } from "@nsb/shared";
+import type { RealEstateAd } from "@nsb/shared";
 import { Button, Field, TextInput, Toggle } from "@/components/admin/form";
 import { ImageUpload, useSessionUploads } from "@/components/admin/image-upload";
-import { useAdminAction } from "@/components/admin/use-admin-action";
+import { useSettingsSection } from "@/components/admin/use-settings-section";
 import { adminClient } from "@/lib/admin-client";
 
 const BLANK: RealEstateAd = { enabled: true, title: "", text: "", buttonLabel: "Explore now ›", link: "", imageUrl: null, logoUrl: null };
@@ -15,25 +15,20 @@ const ROUTES = ["/real-estate", "/schools", "/wedding", "/brand-stores"];
  * (Real Estate › Sponsors & ads). Until it is saved, the demo banner shows; switched off, none.
  */
 export function AdBannerForm({ ad, maxUploadBytes }: { ad: RealEstateAd | null; maxUploadBytes: number }) {
-  const { run, pending } = useAdminAction();
+  const { save: saveSection, pending, errors } = useSettingsSection("realEstateAd");
   const trackUpload = useSessionUploads();
   const [saved, setSaved] = useState(ad);
   const [values, setValues] = useState<RealEstateAd>(ad ?? BLANK);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof RealEstateAd>(key: K, value: RealEstateAd[K]) => setValues((v) => ({ ...v, [key]: value }));
 
   const save = async (next: RealEstateAd | null, success: string) => {
-    const result = await run(() => adminClient.patch<AdminSettings>("/admin/settings", { realEstateAd: next }), { success });
-    if (result.ok) {
-      setErrors({});
-      // Replaced or removed images are deleted once nothing uses them.
-      const dropped = [saved?.imageUrl, saved?.logoUrl].filter((url): url is string => !!url && url !== next?.imageUrl && url !== next?.logoUrl);
-      if (dropped.length) adminClient.discardUploads(dropped);
-      setSaved(result.data.realEstateAd);
-      if (!next) setValues(BLANK);
-    } else {
-      setErrors(Object.fromEntries(Object.entries(result.error.fieldErrors).map(([path, message]) => [path.replace(/^realEstateAd\./, ""), message])));
-    }
+    const settings = await saveSection(next, success);
+    if (!settings) return;
+    // Replaced or removed images are deleted once nothing uses them.
+    const dropped = [saved?.imageUrl, saved?.logoUrl].filter((url): url is string => !!url && url !== next?.imageUrl && url !== next?.logoUrl);
+    if (dropped.length) adminClient.discardUploads(dropped);
+    setSaved(settings.realEstateAd);
+    if (!next) setValues(BLANK);
   };
 
   const onSubmit = (e: FormEvent) => {

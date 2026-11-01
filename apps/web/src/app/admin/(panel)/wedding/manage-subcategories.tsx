@@ -7,7 +7,7 @@ import { useCan } from "@/components/admin/admin-role";
 import { Modal } from "@/components/admin/dialog";
 import { Button, slugify } from "@/components/admin/form";
 import { useToast } from "@/components/admin/toast";
-import { adminClient, RequestError } from "@/lib/admin-client";
+import { adminClient, RequestError, refreshPublicSite } from "@/lib/admin-client";
 
 /** A typed price; ₹0 is a real price, only a blank box falls back to the default. */
 const priceOf = (typed: string) => (typed.trim() === "" ? DEFAULT_SLOT_PRICE : Number(typed));
@@ -55,10 +55,12 @@ export function ManageSubcategories({ weddingId, subs, pricing }: { weddingId: s
       toast.success("Sub-categories saved");
       setOpen(false);
       setAdded({ name: "", price: "" });
-      router.refresh();
     } catch (err) {
-      toast.error(err instanceof RequestError ? err.message : "Could not save. Please try again.");
+      toast.error(err instanceof RequestError ? `${err.message} Some changes may already be saved.` : "Could not save. Some changes may already be saved.");
     } finally {
+      // After a failure too: the rows saved before it should show.
+      refreshPublicSite();
+      router.refresh();
       setPending(false);
     }
   };

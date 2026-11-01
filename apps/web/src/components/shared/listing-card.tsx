@@ -19,7 +19,7 @@ export interface CardContact {
  * as chips; phones swap the chips for a short summary and add call buttons. Elite listings get
  * the blue card, which spans the row in grid view.
  */
-export function ListingCard({ listing, href, view, contact }: { listing: ListingSummary; href: string; view: ListingView; contact?: CardContact }) {
+export function ListingCard({ listing, href, view, contact, eager }: { listing: ListingSummary; href: string; view: ListingView; contact?: CardContact; eager?: boolean }) {
   const primary = listing.keyInfo.slice(0, 2);
   const chips = [...listing.keyInfo.slice(2).map((item) => `${item.label}: ${item.value}`), ...listing.services.map(serviceTitle)];
   const shownChips = chips.slice(0, 2);
@@ -29,6 +29,7 @@ export function ListingCard({ listing, href, view, contact }: { listing: Listing
   return (
     <article className={`lp-card ${view === "grid" ? "is-grid" : ""} ${listing.isElite ? "is-elite" : ""}`}>
       <CardPhotos
+        eager={eager}
         name={listing.name}
         cover={listing.coverImageUrl}
         gallery={listing.galleryPreview}

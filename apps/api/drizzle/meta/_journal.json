@@ -134,6 +134,27 @@
       "when": 1793371697996,
       "tag": "0018_ambitious_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793424530619,
+      "tag": "0019_fast_surge",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793428270469,
+      "tag": "0020_tricky_starhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793434081928,
+      "tag": "0021_amused_kinsey_walden",
+      "breakpoints": true
     }
   ]
 }

@@ -1,24 +1,20 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { type AdminCategory, type AdminSettings, defaultEliteBanner, type EliteBanner as Banner, type EliteBanners } from "@nsb/shared";
+import { type AdminCategory, defaultEliteBanner, type EliteBanner as Banner, type EliteBanners } from "@nsb/shared";
 import { Button, Field, TextArea, TextInput, Toggle } from "@/components/admin/form";
-import { useAdminAction } from "@/components/admin/use-admin-action";
+import { lastSegment, useSettingsSection } from "@/components/admin/use-settings-section";
 import { EliteBanner } from "@/components/shared/elite-banner";
-import { adminClient } from "@/lib/admin-client";
 
 /** One sub-category's black banner, with a live preview. */
 export function EliteBannerForm({ category, banners }: { category: AdminCategory; banners: EliteBanners }) {
-  const { run, pending } = useAdminAction();
+  const { save, pending, errors } = useSettingsSection("eliteBanners", lastSegment);
   const [values, setValues] = useState<Banner>(banners[category.slug] ?? defaultEliteBanner(category.name));
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof Banner>(key: K, value: Banner[K]) => setValues((v) => ({ ...v, [key]: value }));
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const eliteBanners = { ...banners, [category.slug]: values };
-    const result = await run(() => adminClient.patch<AdminSettings>("/admin/settings", { eliteBanners }), { success: "Banner saved" });
-    setErrors(result.ok ? {} : Object.fromEntries(Object.entries(result.error.fieldErrors).map(([path, message]) => [path.split(".").pop()!, message])));
+    await save({ ...banners, [category.slug]: values }, "Banner saved");
   };
 
   return (

@@ -116,7 +116,8 @@ describe('Admin roles, users, profile and lead follow-up (e2e)', () => {
     expect(((await admin.get(`/api/admin/enquiries?section=wedding&q=${run}`).expect(200)).body as Paginated<Enquiry>).items).toEqual([]);
     const sections = (await admin.get('/api/admin/enquiries/sections').expect(200)).body as LeadSectionCounts;
     expect(sections.realEstate.new).toBeGreaterThanOrEqual(0);
-    await admin.get('/api/admin/settings').expect(200);
+    const { realEstateAd } = (await admin.get('/api/admin/settings').expect(200)).body as AdminSettings;
+    await admin.patch('/api/admin/settings').send({ realEstateAd }).expect(200);
     await admin.patch('/api/admin/settings').send({ pricing: { categories: {}, realEstate: 1 } }).expect(403);
     await admin.get('/api/admin/users').expect(403);
     await admin.post('/api/admin/notifications/test-email').send({}).expect(403);

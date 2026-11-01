@@ -4,9 +4,11 @@ import { useSyncExternalStore } from "react";
 
 const KEY = "nsb-cookies";
 const listeners = new Set<() => void>();
-let dismissedThisView = false;
+/** Holds the choice for this page view when storage is blocked. */
+let viewChoice: string | null = null;
 
 function readChoice(): string | null {
+  if (viewChoice) return viewChoice;
   try {
     return localStorage.getItem(KEY);
   } catch {
@@ -20,20 +22,23 @@ function subscribe(listener: () => void) {
 }
 
 function choose(choice: "allow" | "deny" | "close") {
+  viewChoice = choice;
   try {
     localStorage.setItem(KEY, choice);
   } catch {
     // Storage blocked: the bar just closes for this page view.
   }
-  dismissedThisView = true;
   listeners.forEach((l) => l());
 }
+
+/** The visitor's choice; null until they make one, and on the server. */
+export const useCookieChoice = () => useSyncExternalStore(subscribe, readChoice, () => null);
 
 export function CookieBar() {
   // Server render assumes "dismissed" so the bar never flashes for returning visitors.
   const dismissed = useSyncExternalStore(
     subscribe,
-    () => dismissedThisView || readChoice() !== null,
+    () => readChoice() !== null,
     () => true,
   );
   if (dismissed) return null;

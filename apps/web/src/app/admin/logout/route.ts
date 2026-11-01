@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { SESSION_COOKIE } from "@nsb/shared";
+import { endSession } from "@/lib/admin-api";
 
 /** Clears the session cookie. POST from the logout button; GET when a session has expired. */
 function logout() {
@@ -11,5 +12,9 @@ function logout() {
   return response;
 }
 
+// Only POST ends the session on the API: a GET can come from a plain link on another site.
 export const GET = logout;
-export const POST = logout;
+export async function POST() {
+  await endSession();
+  return logout();
+}

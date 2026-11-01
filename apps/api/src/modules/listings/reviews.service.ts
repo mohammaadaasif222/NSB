@@ -3,7 +3,7 @@ import { desc, eq, sql } from 'drizzle-orm';
 import type { ListingReview, ReviewInput, ReviewUpdate } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
 import { listingReviews, listings } from '../../db/schema.js';
-import { toReview } from './listings.service.js';
+import { toReview } from './listing-mappers.js';
 
 /** Reviews the NSB team adds to a listing by hand (copied from Google, or from customers). */
 @Injectable()

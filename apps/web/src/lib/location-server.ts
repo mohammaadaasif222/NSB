@@ -30,5 +30,6 @@ function safeDecode(value: string) {
 export const getListingCounts = cache((location: SiteLocation | null, parent?: string) => {
   const params = withLocation(new URLSearchParams(), location);
   if (parent) params.set("parent", parent);
-  return api.get<ListingCounts>(`/locations/counts${params.size ? `?${params}` : ""}`);
+  // Counts are extras on a card; without them the page still works.
+  return api.get<ListingCounts>(`/locations/counts${params.size ? `?${params}` : ""}`).catch((): ListingCounts => ({}));
 });

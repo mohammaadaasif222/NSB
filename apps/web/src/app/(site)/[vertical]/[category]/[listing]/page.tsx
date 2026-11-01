@@ -33,10 +33,11 @@ async function load(params: Props["params"]) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!CATEGORY_PAGES_ENABLED) return COMING_SOON_METADATA;
-  const { listing, category } = await load(params);
+  const [{ listing, category }, route] = await Promise.all([load(params), params]);
   return {
     title: `${listing.name}, ${listingPlace(listing)}`,
     description: `${listing.shortDescription} ${category.name} in ${listingPlace(listing)}. Send an enquiry on Noida Super Bazaar.`,
+    alternates: { canonical: `/${route.vertical}/${route.category}/${listing.slug}` },
     openGraph: listing.coverImageUrl ? { images: [listing.coverImageUrl] } : undefined,
   };
 }

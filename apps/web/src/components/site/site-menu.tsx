@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { Building2, Heart, Home, LogIn, Menu, X } from "lucide-react";
+import { useModalBehaviour } from "./use-modal-behaviour";
 
 const LINKS = [
   { label: "Home", href: "/", Icon: Home },
@@ -28,17 +29,7 @@ export function SiteMenu() {
     setOpen(false);
   }
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = overflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
+  const dialog = useModalBehaviour(() => setOpen(false), { open });
 
   return (
     <>
@@ -47,7 +38,7 @@ export function SiteMenu() {
       </button>
       {open &&
         createPortal(
-          <div className="nsb-mn" onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
+          <div ref={dialog} className="nsb-mn" onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
             <nav id={panelId} className="pn" aria-label="Menu">
               <button type="button" className="x" aria-label="Close menu" onClick={() => setOpen(false)}>
                 <X size={20} aria-hidden />

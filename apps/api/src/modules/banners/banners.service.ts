@@ -52,7 +52,7 @@ export class BannersService {
     if (Object.keys(input).length === 0) return before;
     const [row] = await this.db.update(banners).set(input).where(eq(banners.id, id)).returning(columns);
     if (!row) throw new NotFoundException('Banner not found');
-    await this.media.release(images(before));
+    await this.media.release(images(before), images(row));
     return row;
   }
 

@@ -81,6 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description:
       p.metaDescription ||
       `${p.name} by ${p.builder} in ${projectPlace(p)}: ${p.configurations.map((c) => c.title).join(", ")}. ${range}. ${p.possessionStatus}. Floor plans, photos and the builder's number.`,
+    alternates: { canonical: `/real-estate/${p.slug}` },
     openGraph: p.photos[0] ? { images: [p.photos[0]] } : undefined,
   };
 }
@@ -202,8 +203,8 @@ export default async function ProjectPage({ params }: Props) {
                   <MoreGrid
                     className="re-hl2"
                     noun="highlights"
-                    items={p.highlights.slice(0, 8).map((h) => (
-                      <div key={h}>
+                    items={p.highlights.slice(0, 8).map((h, i) => (
+                      <div key={`${h}-${i}`}>
                         <Check />
                         {h}
                       </div>
@@ -327,8 +328,8 @@ export default async function ProjectPage({ params }: Props) {
                 </div>
               </Section>
               <Section id="fq" title={`FAQs about ${p.name}`}>
-                {faqs.map(([q, answer]) => (
-                  <details key={q}>
+                {faqs.map(([q, answer], i) => (
+                  <details key={`${q}-${i}`}>
                     <summary>{q}</summary>
                     <p>{answer}</p>
                   </details>

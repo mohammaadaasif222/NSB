@@ -2,10 +2,13 @@
 
 import { CalendarDays, CheckCircle2, ChevronDown, MessageCircle } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
-import type { ApiErrorBody, QuickInfoItem } from "@nsb/shared";
+import type { QuickInfoItem } from "@nsb/shared";
+import { postJson } from "@/lib/site-client";
+import { Honeypot } from "../honeypot";
 import { ServiceIcon } from "./service-icon";
 
-type Field = "name" | "mobile" | "email" | "preferredDate" | "budget" | "message" | "eventType";
+const FIELDS = ["name", "mobile", "email", "preferredDate", "budget", "message", "eventType"] as const;
+type Field = (typeof FIELDS)[number];
 type Errors = Partial<Record<Field | "form", string>>;
 
 const todayInIndia = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -63,21 +66,19 @@ export function EnquiryCard({
     setErrors({});
     setPending(true);
     try {
-      const res = await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...data, budget: data.budget || undefined, email: data.email || undefined, eventType: data.eventType || undefined, listingId }),
-      });
+      const { res, error } = await postJson("/api/enquiries", { ...data, budget: data.budget || undefined, email: data.email || undefined, eventType: data.eventType || undefined, listingId });
       if (res.ok) {
         formEl.reset();
         setSent(true);
         setOpen(false);
         return;
       }
-      const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
       const fieldErrors: Errors = {};
-      for (const issue of body?.issues ?? []) fieldErrors[issue.path as Field] ??= issue.message;
-      if (!body?.issues?.length) {
+      for (const issue of error?.issues ?? []) {
+        if (FIELDS.includes(issue.path as Field)) fieldErrors[issue.path as Field] ??= issue.message;
+      }
+      // Nothing to show beside a field (a 429, a 404, or an issue on the listing itself).
+      if (!Object.keys(fieldErrors).length) {
         fieldErrors.form = res.status === 429 ? "Too many enquiries. Please try again shortly." : "Something went wrong. Please try again.";
       }
       setErrors(fieldErrors);
@@ -151,6 +152,7 @@ export function EnquiryCard({
         </div>
       ) : (
         <form onSubmit={onSubmit} noValidate className="mt-5 flex flex-col gap-4">
+          <Honeypot />
           {eventTypes.length > 0 && (
             <div>
               {label("eventType", "Event type")}

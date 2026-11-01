@@ -61,7 +61,7 @@ export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = { super: 'Super Admi
 export const ADMIN_PERMISSIONS = {
   /** Dashboard, listings and leads (read). */
   view: ['super', 'admin', 'analyst', 'view'],
-  /** Lead phone numbers and email addresses, and the CSV export. */
+  /** Lead phone numbers and email addresses, and the Excel export. */
   leadContacts: ['super', 'admin', 'analyst'],
   /** Create, edit, publish and delete listings; the home page and sponsor slots; lead follow-up. */
   edit: ['super', 'admin'],
@@ -71,6 +71,9 @@ export const ADMIN_PERMISSIONS = {
 export type AdminPermission = keyof typeof ADMIN_PERMISSIONS;
 
 export const canDo = (role: AdminRole, permission: AdminPermission) => (ADMIN_PERMISSIONS[permission] as readonly AdminRole[]).includes(role);
+
+/** Home page and sponsor content that Admins (not only Super Admins) manage; every other setting needs "manage". */
+export const EDITOR_SETTINGS = ['projectSideAd', 'realEstateAd', 'homeCards', 'eliteBanners'] as const;
 
 /** The permission table shown in Settings › Users and roles. */
 export const ROLE_TABLE: [label: string, permission: AdminPermission][] = [

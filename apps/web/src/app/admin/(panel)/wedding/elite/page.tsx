@@ -4,12 +4,11 @@ import { ArrowLeft } from "lucide-react";
 import type { AdminCategory, AdminSettings, ListingSummary } from "@nsb/shared";
 import { editorsOnly } from "@/components/admin/editors-only";
 import { adminApi, isUuid } from "@/lib/admin-api";
+import { oneTrimmed } from "@/lib/search-params";
 import { EliteBannerForm } from "./elite-banner-form";
 import { EliteManager } from "./elite-manager";
 
 export const metadata: Metadata = { title: "Elite 10" };
-
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
 
 /** Per sub-category: which listings hold the top 10 places, which of them are Elite, and the black banner. */
 export default async function ElitePage({ searchParams }: PageProps<"/admin/wedding/elite">) {
@@ -20,7 +19,7 @@ export default async function ElitePage({ searchParams }: PageProps<"/admin/wedd
   const [categories, settings] = await Promise.all([adminApi.get<AdminCategory[]>("/admin/categories"), adminApi.get<AdminSettings>("/admin/settings")]);
   const wedding = categories.find((c) => !c.parentId && c.slug === "wedding");
   const subs = wedding ? categories.filter((c) => c.parentId === wedding.id) : [];
-  const sub = (isUuid(one(query.sub)) ? subs.find((c) => c.id === one(query.sub)) : undefined) ?? subs[0];
+  const sub = (isUuid(oneTrimmed(query.sub)) ? subs.find((c) => c.id === oneTrimmed(query.sub)) : undefined) ?? subs[0];
 
   if (!sub) {
     return (

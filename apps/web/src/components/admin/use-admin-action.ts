@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
-import { RequestError } from "@/lib/admin-client";
+import { refreshPublicSite, RequestError } from "@/lib/admin-client";
 import { useToast } from "./toast";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: RequestError };
 
 /**
- * Runs one admin mutation at a time: ignores repeat clicks while pending, shows a toast,
- * and refreshes the server-rendered data on success (no full page reload).
+ * Runs one admin mutation at a time: ignores repeat clicks while pending, shows a toast, and
+ * refreshes the server-rendered data on success (no full page reload), including the public site's cache.
  */
 export function useAdminAction() {
   const router = useRouter();
@@ -24,12 +24,13 @@ export function useAdminAction() {
       setPending(true);
       try {
         const data = await action();
+        refreshPublicSite();
         if (success) toast.success(success);
         if (refresh) router.refresh();
         return { ok: true, data };
       } catch (err) {
         const error = err instanceof RequestError ? err : new RequestError(0, "Something went wrong. Please try again.");
-        if (error.status !== 401) toast.error(error.message);
+        toast.error(error.status === 401 ? "Your session has expired. Sign in again in a new tab, then save. Your work here is kept." : error.message);
         return { ok: false, error };
       } finally {
         busy.current = false;

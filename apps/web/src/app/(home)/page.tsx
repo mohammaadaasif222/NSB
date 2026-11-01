@@ -1,5 +1,7 @@
-import { Plus_Jakarta_Sans } from "next/font/google";
+import type { Metadata } from "next";
+import { jakarta } from "@/lib/fonts";
 import type { Banner, Category } from "@nsb/shared";
+import { Analytics } from "@/components/site/analytics";
 import { CookieBar } from "@/components/site/cookie-bar";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -22,10 +24,8 @@ import { getListingCounts, getSiteLocation } from "@/lib/location-server";
 import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
 import "./home.css";
 
-// Banners are edited in the admin panel, so read them on each request like the other public pages.
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"], weight: ["400", "500", "700", "800"] });
 
 /** Gradients for banners without an image, in the demo's order. */
 const SLIDE_COLORS = ["s1", "s2", "s3"];
@@ -51,11 +51,13 @@ function heroSlides(banners: Banner[]): HeroSlide[] {
 export default async function HomePage() {
   const location = await getSiteLocation();
   const [banners, categories, { whatsapp, homeCards, footer }, counts] = await Promise.all([
-    api.get<Banner[]>("/banners"),
+    // Without these the page still works, on its default slides and sections.
+    api.get<Banner[]>("/banners").catch((): Banner[] => []),
     // Active top-level categories, in the order set in Admin › Home page.
-    api.get<Category[]>("/categories"),
+    api.get<Category[]>("/categories").catch((): Category[] => []),
     getSiteSettings(),
-    getListingCounts(location),
+    // Shown only with a location.
+    location ? getListingCounts(location) : {},
   ]);
 
   return (
@@ -75,6 +77,7 @@ export default async function HomePage() {
       <SiteFooter categories={categories} footer={footer} />
       <BottomNav whatsappHref={whatsapp ? whatsappHref(whatsapp) : null} />
       <CookieBar />
+      <Analytics />
     </div>
   );
 }

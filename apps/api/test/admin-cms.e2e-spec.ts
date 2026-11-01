@@ -17,6 +17,7 @@ import type {
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { loadEnvFile } from '../src/config/env.js';
+import { MediaService } from '../src/modules/media/media.service.js';
 
 // Runs against the dev database (npm run db:up && npm run db:migrate && npm run db:seed).
 loadEnvFile();
@@ -271,6 +272,57 @@ describe('Admin CMS (e2e)', () => {
       await admin.delete(`/api/admin/banners/${banner.id}`).expect(204);
       await http().get(second.url).expect(404);
       await admin.delete(`/api/admin/banners/${banner.id}`).expect(404);
+    });
+  });
+
+  describe('unused uploads', () => {
+    const create = async (body: Record<string, unknown>) => (await admin.post('/api/admin/banners').send(body).expect(201)).body as Banner;
+    const age = (urls: string[]) => pool.query(`update media set created_at = now() - interval '8 days' where url = any($1)`, [urls]);
+
+    it('removes old uploads nothing uses, and keeps new ones and any a record uses', async () => {
+      const [stale, recent, onBanner, inSettings] = [await upload('banner'), await upload('banner'), await upload('banner'), await upload('ad')];
+      const banner = await create({ heading: `E2E ${run} swept`, imageUrl: onBanner.url });
+      await pool.query(`insert into settings (key, value) values ($1, $2)`, [`e2e.${run}`, JSON.stringify({ deep: [{ picture: inSettings.url }] })]);
+      await age([stale.url, onBanner.url, inSettings.url]);
+
+      await app.get(MediaService).sweep();
+
+      await http().get(stale.url).expect(404);
+      expect((await pool.query('select 1 from media where url = $1', [stale.url])).rows).toHaveLength(0);
+      await http().get(recent.url).expect(200);
+      await http().get(onBanner.url).expect(200);
+      await http().get(inSettings.url).expect(200);
+
+      await pool.query('delete from settings where key = $1', [`e2e.${run}`]);
+      await admin.delete(`/api/admin/banners/${banner.id}`).expect(204);
+      await admin.post('/api/admin/uploads/discard').send({ urls: [recent.url, inSettings.url] }).expect(204);
+      await http().get(inSettings.url).expect(404);
+    });
+
+    it('keeps an unchanged image when a record is saved', async () => {
+      const image = await upload('banner');
+      const banner = await create({ heading: `E2E ${run} kept`, imageUrl: image.url });
+      await admin.patch(`/api/admin/banners/${banner.id}`).send({ heading: `E2E ${run} kept again` }).expect(200);
+      await http().get(image.url).expect(200);
+      await admin.delete(`/api/admin/banners/${banner.id}`).expect(204);
+    });
+  });
+
+  describe('database checks', () => {
+    it.each([
+      ['admin_users', 'role'],
+      ['listings', 'status'],
+      ['projects', 'status'],
+      ['projects', 'type'],
+      ['enquiries', 'lead_status'],
+      ['listing_reviews', 'source'],
+    ])('guards %s.%s', async (table, column) => {
+      const { rows } = await pool.query('select conname from pg_constraint where conname = $1 and convalidated', [`${table}_${column}_check`]);
+      expect(rows).toHaveLength(1);
+    });
+
+    it('refuses a value outside the list', async () => {
+      await expect(pool.query(`update admin_users set role = 'nope'`)).rejects.toThrow(/violates check constraint/);
     });
   });
 

@@ -7,7 +7,7 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first. Key rules:
 - **API:** NestJS 12, ESM, so relative imports need `.js`. Admin routes go under `/api/admin/*` with `AdminGuard`. Never return a vendor's email or phone from public routes.
 - **DB:** after editing `apps/api/src/db/schema.ts`, run `npm run db:generate` and commit the SQL in `apps/api/drizzle/`.
 - **Web:** Next.js 16. See the block below.
-- **Verify:** run `npm run typecheck`, `npm test`, and `npm run test:e2e -w @nsb/api` (needs `npm run db:up`).
+- **Verify:** run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run test:e2e -w @nsb/api` (needs `npm run db:up`).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

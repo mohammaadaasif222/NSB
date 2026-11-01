@@ -53,20 +53,21 @@ common/                  ZodPipe, Postgres error mapping (23505→409, 23503→4
 modules/
   auth/                  login/logout/me, AdminGuard, @CurrentAdmin (global module)
   categories/            public read + admin create/update/reorder
-  listings/              public list/detail + admin CRUD, gallery
+  listings/              public list/detail, location filter + admin CRUD, gallery, stats, Elite 10, reviews
   projects/              real estate projects: public list/detail/localities + admin CRUD, stats, duplicate check
   banners/               public active banners + admin CRUD and reorder
   media/                 image uploads: validation, storage providers (Cloudinary | Firebase | local), cleanup
-  settings/              admin-editable settings: storage provider and its credentials (encrypted)
+  settings/              admin-editable settings; storage provider credentials and other secrets are encrypted
   enquiries/             public submit + admin list (filter by category/listing)
   notifications/         enquiry alert emails over the SMTP server set in Admin › Settings (nodemailer)
+  dashboard/             admin dashboard figures (GET /api/admin/dashboard)
   health/                GET /api/health (checks the DB)
 ```
 
 **Conventions**
 
 - Public routes live under `/api/<resource>`. Admin routes live under `/api/admin/<resource>` and use `@UseGuards(AdminGuard)`. Each module has a public controller and an admin controller over one service.
-- **Roles** (`admin_users.role`: super | admin | analyst | view; `ADMIN_PERMISSIONS` in `@nsb/shared`). AdminGuard reloads the admin on every request, so a role change or removal applies at once. By default reads need `view` and writes need `edit` (Super Admin, Admin); `@Allow(permission)` overrides it. `manage` (Super Admin): users, pricing, site settings, storage and email tests. `leadContacts` (not View only): lead numbers and the CSV export; View only gets masked numbers. Every role may mark leads read and edit its own profile and password; changing a lead's status needs `edit`. Admins may PATCH settings only for `projectSideAd`, `homeCards` and `eliteBanners`. Nobody changes their own role or removes themselves, and one Super Admin always remains. The admin panel hides what a role can't use (`useCan`, `editorsOnly`).
+- **Roles** (`admin_users.role`: super | admin | analyst | view; `ADMIN_PERMISSIONS` in `@nsb/shared`). AdminGuard reloads the admin on every request, so a role change or removal applies at once. By default reads need `view` and writes need `edit` (Super Admin, Admin); `@Allow(permission)` overrides it. `manage` (Super Admin): users, pricing, site settings, storage and email tests. `leadContacts` (not View only): lead numbers and the Excel export; View only gets masked numbers. Every role may mark leads read and edit its own profile and password; changing a lead's status needs `edit`. Admins may PATCH settings only for `projectSideAd`, `realEstateAd`, `homeCards` and `eliteBanners`. Nobody changes their own role or removes themselves, and one Super Admin always remains. The admin panel hides what a role can't use (`useCan`, `editorsOnly`).
 - Validate every body and query with `new ZodPipe(schemaFromShared)`. Return types come from `@nsb/shared`.
 - Public responses never include a vendor's email or phone (`ListingDetail`). Admin responses do (`AdminListing`).
 - One deliberate exception, from the demo's View Number flow: `POST /api/enquiries/project` saves the lead first and then returns the project advertiser's phone (and brochure link). `ProjectDetail` itself never carries them.
@@ -74,9 +75,9 @@ modules/
 - A failed notification must never fail the enquiry request or lose the lead. The lead is saved first.
 - A listing's vendor email is optional, and each listing has `notify_vendor` (default on). The vendor is emailed only when Settings › "Also email the vendor" is on, the listing's switch is on, and it has an email; otherwise the lead reaches NSB only.
 - Listings have a `status` (live | draft | hidden, default live); public routes show live listings only, and admin lists filter by `status`.
-- Ratings are never invented: a card shows the Google rating the admin typed in (`google_rating`, `google_review_count`, `google_maps_url`; not synced from Google), else the average of the listing's `listing_reviews` (added by hand in admin: author, 1–5 stars, text, date, source google|customer, verified). Admin routes: `GET/POST /api/admin/listings/:id/reviews`, `PATCH/DELETE /api/admin/reviews/:id`.
+- Ratings are never invented: a card shows the Google rating the admin typed in (`google_rating`, `google_review_count`, `google_maps_url`; not synced from Google), else the average of the listing's `listing_reviews` (added by hand: author, 1–5 stars, text, date, source google|customer, verified). Admin routes: `GET/POST /api/admin/listings/:id/reviews`, `PATCH/DELETE /api/admin/reviews/:id`. The panel does not show the reviews screen at present: `components/admin/reviews-manager.tsx` exists but no page uses it, so reviews can be added only through the API.
 - `service_groups` jsonb holds headed service sections, shown after the plain `services` on the listing page; cards' chips use both.
-- Admin › Settings › Listing page sidebar (`site.listingSidebar`: enabled, budget, type) controls the category page's side cards; the site reads it from `GET /api/site-settings`.
+- `site.listingSidebar` (enabled, budget, type) controls the category page's side cards; the site reads it from `GET /api/site-settings`. The setting works through `PATCH /api/admin/settings`, but `listing-sidebar-form.tsx` is not shown on the Settings page.
 - The cover photo upload opens a cropper (16:9, 4:3, square, 3:4, free crop, or "Use whole photo") and uploads the cropped JPEG. Real estate project gallery photos are cropped before upload, with a live preview.
 - Admin listings support `q`, `categoryId` and `from`/`to` (date added, India time). Listing photos accept any orientation (min 480×320 either way round, `imageTooSmall` in `@nsb/shared`). Numbers in listing details are not comma-grouped below 10,000, and a calendar year typed into "Years in business" shows as "Since 2005".
 - The NSB alert email carries the listing context (category path, area, quick info, services, the vendor's private phone and email) plus Call, WhatsApp, View listing and admin links. The vendor email carries only the lead and Call/WhatsApp links.
@@ -92,6 +93,9 @@ modules/
 | POST | `/api/auth/password` `{ currentPassword, newPassword, confirmPassword }` (wrong current password → 400 on `currentPassword`, not 401) | admin |
 | GET | `/api/categories` (top-level) · `?parent=<slug>` (sub-categories) · `/api/categories/:slug` (with parent + children) | – |
 | GET | `/api/listings?category=&q=&featured=&page=&pageSize=` (`q` matches any part of the name, area, locality, short description or tags) · `/api/listings/:slug` | – |
+| GET | `/api/listings/sitemap` · `/api/projects/sitemap` (public addresses, for `/sitemap.xml`) | – |
+| GET | `/api/locations` (areas and localities with live listings) · `/api/locations/counts?area=&locality=&parent=` (live listings per category) | – |
+| GET | `/api/site-settings` (what the public site needs; never secrets) | – |
 | GET | `/api/banners` (active only) | – |
 | POST | `/api/enquiries` | – |
 | GET, POST | `/api/admin/categories` | admin |
@@ -99,6 +103,9 @@ modules/
 | PUT | `/api/admin/categories/order` `{ ids: [...] }` | admin |
 | GET, POST | `/api/admin/listings?categoryId=` (a top-level id includes its sub-categories) | admin |
 | GET, PATCH, DELETE | `/api/admin/listings/:id` (PATCH with `gallery` replaces the gallery) | admin |
+| GET | `/api/admin/listings/stats` → `{ total, live, draft, hidden }` | admin |
+| GET, POST | `/api/admin/listings/:id/reviews` | admin |
+| PATCH, DELETE | `/api/admin/reviews/:id` | admin |
 | GET, PUT | `/api/admin/listings/top?categoryId=` · PUT `{ categoryId, items: [{ id, isElite }] }` (replaces the sub-category's top 10) | admin |
 | DELETE | `/api/admin/categories/:id` (empty categories only, else 409) | admin |
 | GET, POST | `/api/admin/banners` | admin |
@@ -110,7 +117,7 @@ modules/
 | POST | `/api/admin/uploads/test` `{ provider }` (uploads and deletes a 1×1 image) | admin |
 | GET | `/api/uploads/*` (locally stored images) | – |
 | GET | `/api/admin/enquiries?q=&categoryId=&listingId=&status=unread\|read&from=&to=&page=&pageSize=` | admin |
-| GET | `/api/admin/enquiries/export` with the same filters (CSV download; Name, Mobile and Email in separate columns) | admin |
+| GET | `/api/admin/enquiries/export` with the same filters (.xlsx download; Name, Mobile and Email in separate columns) | admin |
 | GET | `/api/admin/enquiries/unread-count` (polled by the admin bell) | admin |
 | PATCH | `/api/admin/enquiries/:id` `{ read }` · POST `/api/admin/enquiries/read-all` | admin |
 | POST | `/api/admin/notifications/test-email` `{ to? }` | super |
@@ -155,9 +162,9 @@ projects      id, type (apartments|villas|plots), area (LISTING_AREAS), locality
               bedrooms[] (derived on save), term_start, term_months, status, meta_title/description
 ```
 
-**Images.** Admins upload through `POST /api/admin/uploads`, then save the returned URL on the record (records keep plain URL columns). The API checks the file's bytes (JPEG, PNG or WebP only), size (`UPLOAD_MAX_MB`, default 5) and dimensions per slot (`IMAGE_SLOTS` in `@nsb/shared`, which also holds the recommended sizes shown in the admin). The provider for new uploads is an admin setting: Cloudinary (signed REST API), Firebase Storage (Google Cloud Storage JSON API with a service-account JWT; files get a Firebase download-token URL) or local disk (`UPLOAD_DIR`, served at `/api/uploads/`, a Docker volume in production). No SDKs are used. Cloudinary and Firebase credentials are entered in Admin › Settings and stored in `settings` with the secret parts encrypted (AES-256-GCM, key from `SETTINGS_ENCRYPTION_KEY` or else `JWT_SECRET`); the API never returns them. `CLOUDINARY_*` env vars still work as a fallback. Each upload gets a `media` row recording its provider and account (cloud name or bucket), so existing images keep working after the setting changes, and a file is never deleted with a different account's credentials (it is kept and logged instead). When a record drops an image (replaced, removed or deleted), `MediaService.release()` deletes the file only if no banner, category, listing or gallery row still uses that URL. URLs without a `media` row (seeded `/images/...`, demo Unsplash photos) are never deleted. A new image column must be added to the `inUse` check in `media.service.ts`.
+**Images.** Admins upload through `POST /api/admin/uploads`, then save the returned URL on the record (records keep plain URL columns). The API checks the file's bytes (JPEG, PNG or WebP only), size (`UPLOAD_MAX_MB`, default 5) and dimensions per slot (`IMAGE_SLOTS` in `@nsb/shared`, which also holds the recommended sizes shown in the admin). The provider for new uploads is an admin setting: Cloudinary (signed REST API), Firebase Storage (Google Cloud Storage JSON API with a service-account JWT; files get a Firebase download-token URL) or local disk (`UPLOAD_DIR`, served at `/api/uploads/`, a Docker volume in production). No SDKs are used. Cloudinary and Firebase credentials are saved through `PATCH /api/admin/settings` and stored in `settings` with the secret parts encrypted. The Settings page offers the provider choice, but it does not show `cloudinary-form.tsx` or `firebase-form.tsx` at present, so credentials cannot be entered in the panel. Secrets are encrypted (AES-256-GCM, key from `SETTINGS_ENCRYPTION_KEY` or else `JWT_SECRET`); the API never returns them. `CLOUDINARY_*` env vars still work as a fallback. Each upload gets a `media` row recording its provider and account (cloud name or bucket), so existing images keep working after the setting changes, and a file is never deleted with a different account's credentials (it is kept and logged instead). When a record drops an image (replaced, removed or deleted), `MediaService.release()` deletes the file only if no banner, category, listing or gallery row still uses that URL. URLs without a `media` row (seeded `/images/...`, demo Unsplash photos) are never deleted. Once a day `MediaService.sweep()` removes uploads no record uses after 7 days, such as those from forms that were closed without saving. A new image column must be added to the `inUse` check in `media.service.ts`, or the sweep will delete its files; anything in `settings` counts as a use without this.
 
-**Enquiry alerts.** When an enquiry is saved, `NotificationsService` emails the NSB recipients and, if enabled, the vendor, using the SMTP settings saved in Admin › Settings (password encrypted like the storage secrets). Sending happens after the response; a failed email is logged and never loses the lead. `SITE_URL` adds an "Open in the admin panel" link. The admin panel shows the unread count in a bell and the nav, polling `unread-count` every 30 seconds while visible; opening an enquiry marks it read.
+**Enquiry alerts.** When an enquiry is saved, `NotificationsService` emails the NSB recipients and, if enabled, the vendor, using the SMTP settings saved in Admin › Settings (password encrypted like the storage secrets). Sending happens after the response; a failed email is logged and never loses the lead. The alert is saved with the lead (`pending_alert`, which `toEnquiry` keeps out of API responses), so one that fails, or is cut off by a restart, is retried every 5 minutes at first, then less often, for about 21 hours, and only to the recipients it did not reach. `SITE_URL` adds an "Open in the admin panel" link. The admin panel shows the unread count in a bell and the nav, polling `unread-count` every 30 seconds while visible; opening an enquiry marks it read.
 
 **Real estate.** Builder projects, not vendors: one listing and one advertiser (the builder, or one broker) per project. The admin form's eight steps (`/admin/real-estate`) are the sections of the project page, as in `nsb-live-demo.html`. A project in the same area under the same name (ignoring case and punctuation) is refused with 409. Public pages show Live projects only, and only while the `real-estate` category is active. Leads are enquiries filed under the Real Estate category with `project_id` and `source`; the NSB alert email links the project page, and advertisers are never emailed. Admin › Real Estate › Sponsors & ads edits the project page sidebar ad (`realEstate.projectSideAd` setting, in `GET /api/site-settings` while switched on); its image is covered by the media in-use check, as are project photos and floor plans. Demo projects: `npm run db:seed:demo` (removed with `-- --remove` while slug and RERA ID still match). Not built: the demo's location-sponsor slot booking; the list page's ad strip, Shorts row, promo strip and location-sponsor card are static design content.
 
@@ -173,9 +180,12 @@ Migrations are SQL files generated into `apps/api/drizzle/` and committed. The A
 
 ```
 proxy.ts                    optimistic /admin gate (cookie present?), formerly "middleware"
+lib/                        helpers; the next two are the API clients
 lib/api.ts                  server-only fetch helper: api (public)
 lib/admin-api.ts            server-only adminApi (forwards the cookie); lib/admin-client.ts is the browser client
 components/shared/          UI both sides use: the vendor card, Elite banner, icons
+components/site/            public site UI: header, footer, listing and real estate parts, home sections
+app/(home)/                 home page
 app/(site)/                 public site (M2 adds /wedding, M3 adds /wedding/[category]/[slug])
 app/admin/login/            sign-in page (client form → POST /api/auth/login)
 app/admin/logout/route.ts   clears the cookie (POST from the button; GET when a session expires)
@@ -205,7 +215,7 @@ Next 16 rules apply: `params`, `searchParams` and `cookies()` are async, `fetch`
 
 **Footer:** one `SiteFooter` (`components/site/site-footer.tsx` + `site-footer.css`, from the demo) on the home page and every other page.
 
-**Home page:** hero slides show the banner image only (no text or button), with rounded corners, at 200px tall on phones up to 370px on wide desktops (the side tiles match). The whole slide links to the banner's link, and a banner without an image shows its name on a teal backdrop. The slide dots fill over the 6-second autoplay interval, which pauses on hover or focus and is off with reduced motion; phones can swipe between slides. The hero slider (admin banners), the four cards beside it and the category grid are dynamic. The four cards (setting `home.cards`, Admin › Home page, editable by Admins) each have a title, link, colour and icon or their own image, up to 3 tags (e.g. "New", "Top") and a position; `DEFAULT_HOME_CARDS` until saved. The other sections (markets, highlights, top picks, brand stores, promo strip, deals) and the header's search, location, cart and login are static design content. Design source: `index.html` at the repo root; images live in `apps/web/public/images`.
+**Home page:** hero slides show the banner image only (no text or button), with rounded corners, at 200px tall on phones up to 370px on wide desktops (the side tiles match). The whole slide links to the banner's link, and a banner without an image shows its name on a teal backdrop. The slide dots fill over the 6-second autoplay interval, which pauses on hover or focus and is off with reduced motion; phones can swipe between slides. The hero slider (admin banners), the four cards beside it and the category grid are dynamic. The four cards (setting `home.cards`, Admin › Home page, editable by Admins) each have a title, link, colour and icon or their own image, up to 3 tags (e.g. "New", "Top") and a position; `DEFAULT_HOME_CARDS` until saved. The other sections (markets, highlights, top picks, brand stores, promo strip, deals) and the header's search, location and login are static design content. Images live in `apps/web/public/images`.
 
 ## Environments
 
@@ -218,7 +228,11 @@ Next 16 rules apply: `params`, `searchParams` and `cookies()` are async, `fetch`
 
 ## Phase-1 scope guard
 
-Build only what the roadmap lists. Vendor and customer logins, OTP, CRM, WhatsApp, filters (a simple name/area search box was added on request), reviews, a "list your business" form, a blog, and category-specific layouts are all **Phase-2**. Flag them as change requests and do not build them. Each module is self-contained, so Phase-2 can add, for example, a `vendors` auth module or a CRM module without rewriting existing ones.
+Build only what the roadmap lists. Anything else is a change request: flag it and do not build it.
+
+Built so far, beyond the original wedding roadmap: real estate projects with their leads and sponsor ads; hand-entered reviews and typed-in Google ratings; the WhatsApp button; lead follow-up (status and masked numbers in Admin › Leads); admin roles; and filters (location, tag and search on listings; area, locality, bedrooms, possession and sort on projects).
+
+Still **Phase-2**: vendor and customer logins, OTP, a full CRM, a "list your business" form, a blog, and category-specific layouts. Each module is self-contained, so Phase-2 can add, for example, a `vendors` auth module or a CRM module without rewriting existing ones.
 
 ## Milestones
 

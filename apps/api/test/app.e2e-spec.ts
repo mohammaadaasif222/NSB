@@ -255,6 +255,12 @@ describe('NSB API (e2e)', () => {
         .send({ details: { ...created.details, venueType: 'Castle' } })
         .expect(400);
       expect(wrong.body.issues.map((i: { path: string }) => i.path)).toEqual(['details.venueType']);
+
+      // Answers belong to the category's form, so they stay on a save in place and go on a move.
+      const move = (categoryId: string) => http().patch(`/api/admin/listings/${created.id}`).set('Cookie', cookie).send({ categoryId }).expect(200);
+      expect(((await move(venues.id)).body as AdminListing).details).toEqual(created.details);
+      const noForm = (await http().get('/api/categories/tattoo-studios').expect(200)).body as Category;
+      expect(((await move(noForm.id)).body as AdminListing).details).toEqual({});
     } finally {
       await pool.query(`delete from listings where slug = $1`, [formSlug]);
     }

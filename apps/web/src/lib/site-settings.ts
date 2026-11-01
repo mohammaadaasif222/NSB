@@ -1,9 +1,10 @@
+import { cache } from "react";
 import { DEFAULT_FOOTER, DEFAULT_HOME_CARDS, type SiteSettings } from "@nsb/shared";
 import { api } from "@/lib/api";
 
-/** Public site settings. A failure only hides optional extras (the WhatsApp button, the project page ad) and shows the default footer, never breaks the page. */
-export function getSiteSettings(): Promise<SiteSettings> {
-  return api
+/** Public site settings, once per render. A failure only hides optional extras (the WhatsApp button, the project page ad) and shows the default footer, never breaks the page. */
+export const getSiteSettings = cache((): Promise<SiteSettings> =>
+  api
     .get<SiteSettings>("/site-settings")
     .catch(() => ({
       whatsapp: null,
@@ -13,8 +14,8 @@ export function getSiteSettings(): Promise<SiteSettings> {
       homeCards: DEFAULT_HOME_CARDS,
       footer: DEFAULT_FOOTER,
       eliteBanners: {},
-    }));
-}
+    })),
+);
 
 /** wa.me chat link to the NSB number, with the admin's message; {listing} becomes the vendor's name. */
 export function whatsappHref(whatsapp: NonNullable<SiteSettings["whatsapp"]>, listingName?: string) {

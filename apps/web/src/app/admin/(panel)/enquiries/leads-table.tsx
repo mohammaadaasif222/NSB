@@ -114,7 +114,7 @@ export function LeadsTable({ leads, section, empty }: { leads: Enquiry[]; sectio
                       <small className="block whitespace-nowrap text-zinc-500">Visit: {formatDate(e.preferredDate)}</small>
                     )}
                   </td>
-                  <td className="whitespace-nowrap" title={formatDateTime(e.createdAt)}>
+                  <td className="whitespace-nowrap" title={formatDateTime(e.createdAt)} suppressHydrationWarning>
                     {ago(e.createdAt)}
                   </td>
                   <td onClick={(ev) => ev.stopPropagation()}>

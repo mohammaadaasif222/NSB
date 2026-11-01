@@ -44,7 +44,7 @@ export function Gallery({ name, images }: { name: string; images: string[] }) {
               className="relative aspect-4/3 w-full shrink-0 snap-center bg-[#e5e7eb]"
               aria-label={`Open photo ${i + 1} of ${name}`}
             >
-              <Image src={src} alt={i === 0 ? name : ""} fill priority={i === 0} sizes="100vw" className="object-cover" />
+              <Image src={src} alt={i === 0 ? name : ""} fill fetchPriority={i === 0 ? "high" : "auto"} sizes="100vw" className="object-cover" />
             </button>
           ))}
         </div>
@@ -62,7 +62,8 @@ export function Gallery({ name, images }: { name: string; images: string[] }) {
           className="group relative overflow-hidden rounded-2xl bg-[#e5e7eb] sm:row-span-2"
           aria-label={`Open photos of ${name}`}
         >
-          <Image src={main} alt={name} fill priority sizes="(min-width: 1024px) 560px, (min-width: 640px) 66vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+          {/* Lazy, not preloaded: this and the phone slider are both in the page, and only the one on screen should load. */}
+          <Image src={main} alt={name} fill fetchPriority="high" sizes="(min-width: 1024px) 560px, (min-width: 640px) 66vw, 100vw" className="object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
           <span className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full bg-black/55 px-3 py-1.5 text-xs font-medium text-white">
             <Expand className="size-3.5" aria-hidden /> Click to expand
           </span>
@@ -72,7 +73,7 @@ export function Gallery({ name, images }: { name: string; images: string[] }) {
         </button>
         {side.map((src, i) => (
           <button
-            key={src}
+            key={`${src}-${i}`}
             type="button"
             onClick={() => show(i + 1)}
             className="group relative hidden overflow-hidden rounded-2xl bg-[#e5e7eb] sm:block"

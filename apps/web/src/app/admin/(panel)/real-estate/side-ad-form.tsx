@@ -1,10 +1,10 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import type { AdminSettings, ProjectSideAd } from "@nsb/shared";
+import type { ProjectSideAd } from "@nsb/shared";
 import { Button, Field, TextArea, TextInput, Toggle } from "@/components/admin/form";
 import { ImageUpload, useSessionUploads } from "@/components/admin/image-upload";
-import { useAdminAction } from "@/components/admin/use-admin-action";
+import { useSettingsSection } from "@/components/admin/use-settings-section";
 import { adminClient } from "@/lib/admin-client";
 
 const BLANK: ProjectSideAd = { enabled: true, title: "", text: "", buttonLabel: "Know more", link: "", imageUrl: null };
@@ -15,24 +15,19 @@ const ROUTES = ["/schools", "/real-estate", "/wedding", "/brand-stores"];
  * does not cross-sell real estate, so it is for sponsors that do not compete with the listing.
  */
 export function SideAdForm({ ad, maxUploadBytes }: { ad: ProjectSideAd | null; maxUploadBytes: number }) {
-  const { run, pending } = useAdminAction();
+  const { save: saveSection, pending, errors } = useSettingsSection("projectSideAd");
   const trackUpload = useSessionUploads();
   const [saved, setSaved] = useState(ad);
   const [values, setValues] = useState<ProjectSideAd>(ad ?? BLANK);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const set = <K extends keyof ProjectSideAd>(key: K, value: ProjectSideAd[K]) => setValues((v) => ({ ...v, [key]: value }));
 
   const save = async (next: ProjectSideAd | null, success: string) => {
-    const result = await run(() => adminClient.patch<AdminSettings>("/admin/settings", { projectSideAd: next }), { success });
-    if (result.ok) {
-      setErrors({});
-      // A replaced or removed image is deleted once nothing uses it.
-      if (saved?.imageUrl && saved.imageUrl !== next?.imageUrl) adminClient.discardUploads([saved.imageUrl]);
-      setSaved(result.data.projectSideAd);
-      if (!next) setValues(BLANK);
-    } else {
-      setErrors(Object.fromEntries(Object.entries(result.error.fieldErrors).map(([path, message]) => [path.replace(/^projectSideAd\./, ""), message])));
-    }
+    const settings = await saveSection(next, success);
+    if (!settings) return;
+    // A replaced or removed image is deleted once nothing uses it.
+    if (saved?.imageUrl && saved.imageUrl !== next?.imageUrl) adminClient.discardUploads([saved.imageUrl]);
+    setSaved(settings.projectSideAd);
+    if (!next) setValues(BLANK);
   };
 
   const onSubmit = (e: FormEvent) => {

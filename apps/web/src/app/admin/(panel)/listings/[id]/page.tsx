@@ -4,7 +4,7 @@ import type { AdminCategory, AdminListing, AdminSettings } from "@nsb/shared";
 import { PageHeader } from "@/components/admin/ui";
 import { adminApi, isUuid } from "@/lib/admin-api";
 import { ApiError } from "@/lib/api";
-import { DeleteListingButton } from "../delete-listing-button";
+import { DeleteListingButton } from "@/components/admin/delete-listing-button";
 import { ListingForm } from "../listing-form";
 import { editorsOnly } from "@/components/admin/editors-only";
 

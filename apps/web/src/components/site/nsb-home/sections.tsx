@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import type { Category, HomeCard, ListingCounts } from "@nsb/shared";
 import { locationPlace, type SiteLocation } from "@/lib/location";
@@ -29,6 +29,9 @@ const PHONE_CATEGORIES = 6;
 const lookOf = (c: Category) => CATEGORY_LOOK[c.slug] ?? DEFAULT_LOOK;
 
 /** The hero slider and, beside it, the four cards set in Admin › Home page (with their tags, e.g. "New"). */
+/** A resized copy of a card's photo: cards show it as a CSS background, about 320 by 150 wide. */
+const cardImage = (url: string) => getImageProps({ src: url, alt: "", width: 640, height: 300 }).props.src;
+
 export function HeroBanners({ slides, cards }: { slides: HeroSlide[]; cards: HomeCard[] }) {
   return (
     <div className="hb">
@@ -41,7 +44,7 @@ export function HeroBanners({ slides, cards }: { slides: HeroSlide[]; cards: Hom
                 key={`${i}-${c.title}`}
                 className={`q ${c.color}`}
                 href={c.link || "#"}
-                style={c.imageUrl ? { backgroundImage: `url(${JSON.stringify(c.imageUrl)})` } : undefined}
+                style={c.imageUrl ? { backgroundImage: `url(${JSON.stringify(cardImage(c.imageUrl))})` } : undefined}
               >
                 {c.tags.length > 0 && (
                   <span className="qt">

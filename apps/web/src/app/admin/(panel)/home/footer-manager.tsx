@@ -3,7 +3,6 @@
 import { type FormEvent, type ReactNode, useState } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import {
-  type AdminSettings,
   DEFAULT_FOOTER,
   FOOTER_MAX_LINKS,
   FOOTER_SOCIAL_LABELS,
@@ -13,7 +12,7 @@ import {
 } from "@nsb/shared";
 import { Button, Field, IconButton, TextArea, TextInput, Toggle } from "@/components/admin/form";
 import { ImageUpload, useSessionUploads } from "@/components/admin/image-upload";
-import { useAdminAction } from "@/components/admin/use-admin-action";
+import { useSettingsSection } from "@/components/admin/use-settings-section";
 import { adminClient } from "@/lib/admin-client";
 
 type LinkList = "quickLinks" | "bottomLinks";
@@ -123,23 +122,17 @@ function LinksEditor({
  * switch. The footer shows on every page.
  */
 export function FooterManager({ footer: saved, maxUploadBytes }: { footer: FooterSettings; maxUploadBytes: number }) {
-  const { run, pending } = useAdminAction();
+  const { save, pending, errors } = useSettingsSection("footer");
   const trackUpload = useSessionUploads();
   const [footer, setFooter] = useState<FooterSettings>(saved);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const changed = JSON.stringify(footer) !== JSON.stringify(saved);
   const set = (patch: Partial<FooterSettings>) => setFooter((f) => ({ ...f, ...patch }));
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const result = await run(() => adminClient.patch<AdminSettings>("/admin/settings", { footer }), { success: "Footer saved. Every page shows it now." });
-    if (result.ok) {
-      setErrors({});
-      // The old logo is deleted once nothing uses it.
-      if (saved.logoUrl && saved.logoUrl !== footer.logoUrl) adminClient.discardUploads([saved.logoUrl]);
-    } else {
-      setErrors(Object.fromEntries(Object.entries(result.error.fieldErrors).map(([path, m]) => [path.replace(/^footer\./, ""), m])));
-    }
+    if (!(await save(footer, "Footer saved. Every page shows it now."))) return;
+    // The old logo is deleted once nothing uses it.
+    if (saved.logoUrl && saved.logoUrl !== footer.logoUrl) adminClient.discardUploads([saved.logoUrl]);
   };
 
   return (

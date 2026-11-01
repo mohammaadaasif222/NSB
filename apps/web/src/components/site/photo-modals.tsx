@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useModalBehaviour } from "./use-modal-behaviour";
 
 /**
  * The two photo popups shared by the wedding and real estate pages: desktops get the viewer (one
@@ -13,37 +14,21 @@ import { useEffect, useRef, useState } from "react";
 /** Phones open the list; wider screens the viewer. Matches Tailwind's `sm` breakpoint. */
 export const opensPhotoList = () => window.matchMedia("(max-width: 639.98px)").matches;
 
-/** Escape closes, the page behind stops scrolling, and any other keys go to `onKey`. */
-function useModalKeys(onClose: () => void, onKey?: (e: KeyboardEvent) => void) {
-  // The latest handlers, so the listener and scroll lock are set up once per opening.
-  const handlers = useRef({ onClose, onKey });
-  useEffect(() => {
-    handlers.current = { onClose, onKey };
-  });
-  useEffect(() => {
-    const handle = (e: KeyboardEvent) => (e.key === "Escape" ? handlers.current.onClose() : handlers.current.onKey?.(e));
-    document.addEventListener("keydown", handle);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handle);
-      document.body.style.overflow = overflow;
-    };
-  }, []);
-}
-
 /** A centred dark panel over the dimmed page, as on ezweddingz; arrows, arrow keys and swipes step through. */
 export function PhotoViewer({ name, images, index, onIndex, onClose }: { name: string; images: string[]; index: number; onIndex: (i: number) => void; onClose: () => void }) {
   const [touchX, setTouchX] = useState<number | null>(null);
   const count = images.length;
   const step = (d: number) => onIndex((index + d + count) % count);
-  useModalKeys(onClose, (e) => {
-    if (e.key === "ArrowRight") step(1);
-    if (e.key === "ArrowLeft") step(-1);
+  const dialog = useModalBehaviour(onClose, {
+    onKey: (e) => {
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    },
   });
 
   return (
     <div
+      ref={dialog}
       role="dialog"
       aria-modal="true"
       aria-label={`${name} photos`}
@@ -99,9 +84,9 @@ export function PhotoViewer({ name, images, index, onIndex, onClose }: { name: s
 
 /** Every photo at its own shape, one under another on phones, over a dark backdrop. */
 export function PhotoList({ name, images, onClose }: { name: string; images: string[]; onClose: () => void }) {
-  useModalKeys(onClose);
+  const dialog = useModalBehaviour(onClose);
   return (
-    <div role="dialog" aria-modal="true" aria-label={`${name} photos`} className="fixed inset-0 z-110 overflow-auto bg-[rgba(11,10,51,0.88)] p-6" onClick={onClose}>
+    <div ref={dialog} role="dialog" aria-modal="true" aria-label={`${name} photos`} className="fixed inset-0 z-110 overflow-auto bg-[rgba(11,10,51,0.88)] p-6" onClick={onClose}>
       <button
         type="button"
         onClick={onClose}
@@ -112,9 +97,8 @@ export function PhotoList({ name, images, onClose }: { name: string; images: str
       </button>
       <div className="mx-auto my-7.5 grid max-w-250 grid-cols-1 gap-2.5 sm:grid-cols-2">
         {images.map((url, i) => (
-          // Full-size photos at their own shape; plain img so any upload host works.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={`${url}-${i}`} src={url} alt={`${name}, photo ${i + 1}`} loading="lazy" className="block h-auto w-full rounded-xl" />
+          // Each photo at its own shape: the height follows the file, so width and height only set its size.
+          <Image key={`${url}-${i}`} src={url} alt={`${name}, photo ${i + 1}`} width={1000} height={750} sizes="(min-width: 640px) 500px, 100vw" className="block h-auto w-full rounded-xl" />
         ))}
       </div>
     </div>

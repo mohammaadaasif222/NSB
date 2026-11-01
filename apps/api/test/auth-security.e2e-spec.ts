@@ -92,11 +92,15 @@ describe('Admin sign-in security (e2e)', () => {
 
   it('locks the account after ten wrong passwords in a row', async () => {
     const password = `e2e-${run}-second-pass`;
-    // Nine misses straight in the database; the tenth through the route locks the account.
-    await pool.query('update admin_users set failed_logins = 9, last_failed_at = now() where id = $1', [userId]);
-    await http().post('/api/auth/login').send({ email, password: 'wrong-password' }).expect(401);
-    const locked = await http().post('/api/auth/login').send({ email, password }).expect(429);
-    expect(locked.body.message).toMatch(/^Too many wrong passwords\. Try again in 1[45] minutes\.$/);
+    // Nine misses straight in the database; the tenth from that address locks it out.
+    const attacker = '203.0.113.1';
+    const auth = app.get(AuthService);
+    await pool.query('update admin_users set failed_logins = 9, last_failed_at = now(), last_failed_ip = $2 where id = $1', [userId, attacker]);
+    await expect(auth.login({ email, password: 'wrong-password' }, attacker)).rejects.toThrow('Invalid email or password');
+    // Locked: even the right password gets the usual reply, which does not reveal the lock.
+    await expect(auth.login({ email, password }, attacker)).rejects.toThrow('Invalid email or password');
+    // The admin on another address still gets in, which clears the lock.
+    await auth.login({ email, password }, '203.0.113.2');
 
     // Old misses do not add up: a streak resets after a quiet spell.
     await pool.query(`update admin_users set locked_until = null, failed_logins = 9, last_failed_at = now() - interval '1 hour' where id = $1`, [userId]);
@@ -108,5 +112,22 @@ describe('Admin sign-in security (e2e)', () => {
     await app.get(AuthService).login({ email, password });
     ({ rows } = await pool.query('select failed_logins, locked_until from admin_users where id = $1', [userId]));
     expect(rows[0]).toEqual({ failed_logins: 0, locked_until: null });
+  });
+
+  it('ends the session on sign out, so a copied cookie stops working', async () => {
+    const password = `e2e-${run}-second-pass`;
+    const { token } = await app.get(AuthService).login({ email, password });
+    const session = `${SESSION_COOKIE}=${token}`;
+    await http().get('/api/auth/me').set('Cookie', session).expect(200);
+    await http().post('/api/auth/logout').set('Cookie', session).expect(204);
+    await http().get('/api/auth/me').set('Cookie', session).expect(401);
+    await http().post('/api/auth/logout').expect(204);
+  });
+
+  it('limits leads from one visitor, and drops what a bot fills in', async () => {
+    const lead = { listingId: '00000000-0000-4000-8000-000000000000', name: 'Bot', mobile: '9876543210', message: 'Hi', preferredDate: '2027-02-14' };
+    await http().post('/api/enquiries').send({ ...lead, website: 'https://spam.example' }).expect(201);
+    for (let i = 0; i < 9; i++) await http().post('/api/enquiries').send({}).expect(400);
+    await http().post('/api/enquiries').send({}).expect(429);
   });
 });

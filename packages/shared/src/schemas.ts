@@ -16,6 +16,9 @@ import {
 import { LISTING_AREAS, listingDetailsInputSchema } from './listing-forms.js';
 import { youTubeId } from './youtube.js';
 
+/** Spaces are removed before the format check, so a pasted address with a stray space is accepted. */
+const emailAddress = (message?: string) => z.string().trim().toLowerCase().pipe(z.email(message));
+
 export const trimmed = (max: number) =>
   z.string().trim().min(1, 'This field is required').max(max, `Keep it under ${max} characters`);
 const optionalText = (max: number) => z.string().trim().max(max).optional();
@@ -34,9 +37,13 @@ export const mobileSchema = z
   .transform((v) => v.replace(/[\s-]/g, '').replace(/^(\+91|91|0)(?=\d{10}$)/, ''))
   .pipe(z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number'));
 
+/** False for links that run code when opened. React blocks them today; this keeps them out of the data too. */
+export const notScript = (link: string) => !/^\s*(javascript|data|vbscript):/i.test(link);
+export const NO_SCRIPT = 'Use a normal web link';
+
 /** An absolute URL (e.g. Cloudinary) or a path on this site such as /images/x.png. */
 export const imageUrlSchema = z.union([
-  z.url(),
+  z.url().refine(notScript, NO_SCRIPT),
   z.string().regex(/^\/(?!\/)\S*$/, 'Use a full URL or a site path starting with /'),
 ]);
 
@@ -60,7 +67,7 @@ export const paginationSchema = z.object({
 // ---------- Auth ----------
 
 export const loginSchema = z.object({
-  email: z.email().trim().toLowerCase(),
+  email: emailAddress(),
   password: z.string().min(1).max(200),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -98,7 +105,7 @@ export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 /** The signed-in admin's own name and email (Settings › Admin account). */
 export const profileSchema = z.object({
   name: trimmed(80),
-  email: z.email('Enter a valid email address').trim().toLowerCase(),
+  email: emailAddress('Enter a valid email address'),
 });
 export type ProfileInput = z.infer<typeof profileSchema>;
 
@@ -191,7 +198,7 @@ const listingFields = z.object({
     .transform((tags) => tags.filter((t, i) => tags.findIndex((u) => u.toLowerCase() === t.toLowerCase()) === i)),
   quickInfo: z.array(quickInfoItemSchema).max(12),
   /** Receives this vendor's enquiry alerts. Optional: blank means the vendor gets no email. */
-  email: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? null : v), z.email().trim().toLowerCase().nullable()),
+  email: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? null : v), emailAddress().nullable()),
   phone: optionalText(20),
   /** Off: enquiries for this listing go to NSB only, never to the vendor. */
   notifyVendor: z.boolean(),
@@ -202,7 +209,7 @@ const listingFields = z.object({
   /** The vendor's Google rating as shown on Google Maps, typed in by the admin (e.g. 4.7). */
   googleRating: blankAsNull(z.coerce.number().min(1, 'Ratings run from 1 to 5').max(5, 'Ratings run from 1 to 5')),
   googleReviewCount: blankAsNull(z.coerce.number().int().min(0).max(10_000_000)),
-  googleMapsUrl: blankAsNull(z.url('Paste the full Google Maps link').max(500)),
+  googleMapsUrl: blankAsNull(z.url('Paste the full Google Maps link').max(500).refine(notScript, NO_SCRIPT)),
   coverImageUrl: optionalImage,
   gallery: z.array(imageUrlSchema).max(30),
   videos: z.array(listingVideoSchema).max(MAX_LISTING_VIDEOS),
@@ -327,7 +334,7 @@ const bannerFields = z.object({
   heading: trimmed(120),
   subheading: optionalText(160),
   ctaLabel: optionalText(40),
-  ctaLink: optionalText(300),
+  ctaLink: z.string().trim().max(300).refine(notScript, NO_SCRIPT).optional(),
   isActive: z.boolean(),
   /** Omit to add the banner at the end. */
   sortOrder: z.number().int().min(0).optional(),
@@ -417,10 +424,10 @@ export const emailSettingsSchema = z.object({
   username: z.string().trim().max(200).default(''),
   /** Omit to keep the saved password. */
   password: z.string().max(500).optional(),
-  fromEmail: z.email('Enter the address emails are sent from').trim(),
+  fromEmail: z.string().trim().pipe(z.email('Enter the address emails are sent from')),
   fromName: z.string().trim().max(80).default('Noida Super Bazaar'),
   /** The NSB inbox(es) that get every enquiry. */
-  adminRecipients: z.array(z.email('Enter valid email addresses').trim().toLowerCase()).min(1, 'Add at least one recipient').max(10),
+  adminRecipients: z.array(emailAddress('Enter valid email addresses')).min(1, 'Add at least one recipient').max(10),
   /** Also email the vendor whose listing received the enquiry. */
   notifyVendor: z.boolean(),
 });
@@ -428,7 +435,7 @@ export type EmailSettingsInput = z.input<typeof emailSettingsSchema>;
 
 export const emailTestSchema = z.object({
   /** Defaults to the signed-in admin's address. */
-  to: z.email().trim().optional(),
+  to: z.string().trim().pipe(z.email()).optional(),
 });
 export type EmailTestInput = z.infer<typeof emailTestSchema>;
 
@@ -713,12 +720,14 @@ export const enquiryInputSchema = z.object({
   name: trimmed(80),
   mobile: mobileSchema,
   message: trimmed(1000),
-  preferredDate: z.iso.date({ error: 'Pick a date' }),
+  preferredDate: z.iso.date({ error: 'Pick a date' }).refine((d) => d >= '1900-01-01', 'Pick a date'),
   budget: optionalText(60),
   /** e.g. Wedding, Engagement. Optional. */
   eventType: optionalText(60),
   /** Optional, so the lead can also be reached by email. */
-  email: blankAsUndefined(z.email('Enter a valid email address').trim().toLowerCase().max(200)),
+  email: blankAsUndefined(emailAddress('Enter a valid email address').pipe(z.string().max(200))),
+  /** Honeypot: hidden from people, so only bots fill it in. */
+  website: z.string().max(200).optional(),
 });
 export type EnquiryInput = z.infer<typeof enquiryInputSchema>;
 

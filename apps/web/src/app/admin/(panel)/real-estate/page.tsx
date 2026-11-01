@@ -15,6 +15,7 @@ import {
 } from "@nsb/shared";
 import { Kpi } from "@/components/admin/ui";
 import { adminApi } from "@/lib/admin-api";
+import { oneTrimmed, pageCountOf, pick } from "@/lib/search-params";
 import { ProjectFilters, type ProjectFilterValues } from "./project-filters";
 import { ProjectsTable } from "./projects-table";
 import { AdBannerForm } from "./ad-banner-form";
@@ -27,8 +28,6 @@ const DAY = 86_400_000;
 const FILTER_STATUSES = [...LISTING_STATUSES, "expired"] as const;
 const STATUSES = ["", ...FILTER_STATUSES] as const;
 const STATUS_LABEL: Record<(typeof STATUSES)[number], string> = { "": "All", live: "Live", draft: "Draft", hidden: "Hidden", expired: "Expired" };
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
-const pick = <T extends string>(list: readonly T[], value: string): T | "" => ((list as readonly string[]).includes(value) ? (value as T) : "");
 
 /** Days until a term ends (negative once it has ended). */
 function daysLeft(termStart: string, months: number) {
@@ -43,15 +42,15 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/admin
   const admin = await adminApi.get<AdminUser>("/auth/me");
   const canEdit = canDo(admin.role, "edit");
   // Sponsors & ads is editing work.
-  const tab = one(query.tab) === "sponsors" && canEdit ? "sponsors" : "all";
+  const tab = oneTrimmed(query.tab) === "sponsors" && canEdit ? "sponsors" : "all";
   const values: ProjectFilterValues = {
-    q: one(query.q).slice(0, 100),
-    type: pick(PROJECT_TYPES, one(query.type)),
-    area: pick(LISTING_AREAS, one(query.area)),
-    status: pick(FILTER_STATUSES, one(query.status)),
-    sort: pick(ADMIN_PROJECT_SORTS, one(query.sort)) || "new",
+    q: oneTrimmed(query.q).slice(0, 100),
+    type: pick(PROJECT_TYPES, oneTrimmed(query.type)),
+    area: pick(LISTING_AREAS, oneTrimmed(query.area)),
+    status: pick(FILTER_STATUSES, oneTrimmed(query.status)),
+    sort: pick(ADMIN_PROJECT_SORTS, oneTrimmed(query.sort)) || "new",
   };
-  const page = Math.max(1, Number.parseInt(one(query.page), 10) || 1);
+  const page = Math.max(1, Number.parseInt(oneTrimmed(query.page), 10) || 1);
 
   const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE), sort: values.sort });
   for (const key of ["q", "type", "area", "status"] as const) if (values[key]) params.set(key, values[key]);
@@ -72,7 +71,7 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/admin
   };
 
   const total = projects?.total ?? 0;
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageCount = pageCountOf(total, PAGE_SIZE);
   const first = total ? (page - 1) * PAGE_SIZE + 1 : 0;
   const last = Math.min(page * PAGE_SIZE, total);
 

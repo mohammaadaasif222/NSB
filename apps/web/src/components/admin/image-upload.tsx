@@ -1,12 +1,15 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { type DragEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { IMAGE_MIME_TYPES, IMAGE_SLOTS, type ImageSlot, type ImageSlotKey, imageTooSmall } from "@nsb/shared";
 import { adminClient, RequestError } from "@/lib/admin-client";
-import { CropDialog } from "./crop-dialog";
 import { IconButton } from "./form";
+
+/** The cropper and its library load the first time a photo needs cropping. */
+const CropDialog = dynamic(() => import("./crop-dialog").then((mod) => mod.CropDialog), { ssr: false });
 
 const ACCEPT = IMAGE_MIME_TYPES.join(",");
 const mb = (bytes: number) => `${Math.round((bytes / 1024 / 1024) * 10) / 10} MB`;
@@ -128,7 +131,7 @@ export function ImageUpload({
 
   return (
     <div className="flex flex-col gap-1 text-sm font-medium text-zinc-700">
-      {crop && (
+      {toCrop && (
         <CropDialog
           file={toCrop}
           onCancel={() => setToCrop(null)}
@@ -219,6 +222,11 @@ export function ImageListUpload({
   const inputId = useId();
   const { upload, pending, error } = useUploader(slot, maxBytes, onUploaded);
   const [cropQueue, setCropQueue] = useState<File[]>([]);
+  // The list as it is now: an upload can finish after the admin has changed it.
+  const latest = useRef(value);
+  useEffect(() => {
+    latest.current = value;
+  }, [value]);
   // Uploads finish one by one; each is appended and shown as soon as it is stored.
   const addFiles = async (files: File[]) => {
     const available = Math.max(0, max - value.length - (crop ? cropQueue.length : 0));
@@ -227,12 +235,11 @@ export function ImageListUpload({
       setCropQueue((queue) => [...queue, ...selected]);
       return;
     }
-    let next = value;
     for (const file of selected) {
       const url = await upload(file);
       if (url) {
-        next = [...next, url];
-        onChange(next);
+        latest.current = [...latest.current, url];
+        onChange(latest.current);
       }
     }
   };
@@ -245,9 +252,9 @@ export function ImageListUpload({
 
   return (
     <div className="flex flex-col gap-2 text-sm font-medium text-zinc-700">
-      {crop && (
+      {cropQueue.length > 0 && (
         <CropDialog
-          file={cropQueue[0] ?? null}
+          file={cropQueue[0]}
           allowOriginal={false}
           onCancel={() => setCropQueue([])}
           onDone={async (file) => {

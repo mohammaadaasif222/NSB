@@ -3,7 +3,7 @@
 import { type ReactNode, useEffect, useId, useOptimistic, useRef, useState, useTransition } from "react";
 import { usePathname } from "next/navigation";
 import { Check, ChevronDown, MapPin } from "lucide-react";
-import { LISTING_AREAS } from "@nsb/shared";
+import { LISTING_AREAS } from "@nsb/shared/client";
 import { setSiteLocation } from "@/app/actions/location";
 import { LOCATION_COOKIE, LOCATION_PATH_COOKIE, locationLabel, sameLocation, type SiteLocation } from "@/lib/location";
 

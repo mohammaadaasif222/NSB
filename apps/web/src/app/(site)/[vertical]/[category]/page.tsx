@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { LayoutGrid, List, X } from "lucide-react";
-import { type Category, defaultEliteBanner, type ListingSummary, type Paginated } from "@nsb/shared";
+import { type Category, defaultEliteBanner, type ListingCounts, type ListingSummary, type Paginated } from "@nsb/shared";
 import { BackButton } from "@/components/site/back-button";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { BrowsePanel } from "@/components/site/listing/browse-panel";
@@ -17,6 +17,8 @@ import { browsePanels } from "@/lib/browse-panels";
 import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
 import { getCategory, listingPath } from "@/lib/catalog";
 import { CATEGORY_PAGES_ENABLED, COMING_SOON_METADATA } from "@/lib/flags";
+import { pageParam } from "@/lib/paging";
+import { one, pageCountOf } from "@/lib/search-params";
 import { locationLabel, locationPlace, withLocation } from "@/lib/location";
 import { getListingCounts, getSiteLocation } from "@/lib/location-server";
 
@@ -33,25 +35,29 @@ async function load(params: Props["params"]) {
   return { vertical: category.parent, category };
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   if (!CATEGORY_PAGES_ENABLED) return COMING_SOON_METADATA;
-  const [{ category }, location] = await Promise.all([load(params), getSiteLocation()]);
+  const [{ vertical, category }, location, query] = await Promise.all([load(params), getSiteLocation(), searchParams]);
+  const page = pageParam(one(query.page));
   return {
     title: `${category.name} in ${locationPlace(location)}`,
     description: category.description ?? `Compare ${category.name.toLowerCase()} in Noida, Greater Noida and Greater Noida West.`,
+    // Views and filters show the same listings as this address; each further page stands alone.
+    alternates: { canonical: `/${vertical.slug}/${category.slug}${page > 1 ? `?page=${page}` : ""}` },
   };
 }
 
 /** Listings per page: the admin's top places, then featured, then newest; the rest move to page 2, 3… */
 const PAGE_SIZE = 10;
 
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+/** Cards above the fold on most screens, whose photos should not wait to be scrolled to. */
+const EAGER_CARDS = 2;
 
 export default async function CategoryListingPage({ params, searchParams }: Props) {
   const { vertical, category } = await load(params);
   const query = await searchParams;
   const view: ListingView = one(query.view) === "grid" ? "grid" : "list";
-  const page = Math.max(1, Number.parseInt(one(query.page) ?? "1", 10) || 1);
+  const page = pageParam(one(query.page));
   const q = one(query.q)?.trim().slice(0, 100) || undefined;
   /** A browse-panel tag, e.g. "Luxury" or "Banquet Halls". */
   const tag = one(query.tag)?.trim().slice(0, 40) || undefined;
@@ -63,7 +69,8 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
   const [listings, siblings, counts, { listingSidebar, eliteBanners, whatsapp, footer }] = await Promise.all([
     api.get<Paginated<ListingSummary>>(`/listings?${listingQuery}`),
     api.get<Category[]>(`/categories?parent=${encodeURIComponent(vertical.slug)}`),
-    getListingCounts(location, vertical.slug),
+    // Shown only with a location.
+    location ? getListingCounts(location, vertical.slug) : ({} as ListingCounts),
     getSiteSettings(),
   ]);
   const place = locationPlace(location);
@@ -78,7 +85,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
   const nsbPhone = footer.showPhone && footer.phone ? footer.phone.replace(/[^\d+]/g, "") : whatsapp && `+91${whatsapp.number}`;
 
   const basePath = `/${vertical.slug}/${category.slug}`;
-  const pageCount = Math.max(1, Math.ceil(listings.total / listings.pageSize));
+  const pageCount = pageCountOf(listings.total, listings.pageSize);
   const firstShown = listings.total ? (page - 1) * listings.pageSize + 1 : 0;
   const lastShown = Math.min(page * listings.pageSize, listings.total);
   const href = (next: { view?: ListingView; page?: number; q?: string | null; tag?: string | null }) => {
@@ -243,11 +250,12 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
               </p>
             ) : (
               <ul id="listings" className={`lp-list scroll-mt-24 ${view === "grid" ? "is-grid" : ""}`}>
-                {listings.items.map((listing) => (
+                {listings.items.map((listing, i) => (
                   <li key={listing.id} className={listing.isElite ? "lp-wide" : undefined}>
                     <ListingCard
                       listing={listing}
                       view={view}
+                      eager={i < EAGER_CARDS}
                       href={listingPath(vertical.slug, category.slug, listing.slug)}
                       contact={{ whatsapp: whatsapp ? whatsappHref(whatsapp, listing.name) : undefined, phone: nsbPhone ? `tel:${nsbPhone}` : undefined }}
                     />

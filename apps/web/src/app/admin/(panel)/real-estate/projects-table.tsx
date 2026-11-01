@@ -7,80 +7,24 @@ import { ExternalLink, Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
 import { type AdminProjectRow, type ListingStatus, PROJECT_TYPE_LABELS } from "@nsb/shared";
 import { useCan } from "@/components/admin/admin-role";
 import { ConfirmDialog } from "@/components/admin/dialog";
+import { BulkBar, BulkDeleteDialog } from "@/components/admin/bulk-bar";
 import { ListingThumb } from "@/components/admin/listing-thumb";
-import { useToast } from "@/components/admin/toast";
 import { useAdminAction } from "@/components/admin/use-admin-action";
-import { adminClient, RequestError } from "@/lib/admin-client";
+import { useBulkActions } from "@/components/admin/use-bulk-actions";
+import { adminClient } from "@/lib/admin-client";
 import { formatDate } from "@/lib/format";
 import { sitePath } from "@/lib/admin-links";
 
 const STATUS_LABEL: Record<ListingStatus, string> = { live: "Live", draft: "Draft", hidden: "Hidden" };
-type BulkAction = "publish" | "unpublish" | "delete";
 type Row = AdminProjectRow & { daysLeft: number };
 
 export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: string }) {
-  const router = useRouter();
-  const toast = useToast();
   const canEdit = useCan("edit");
-  const [selected, setSelected] = useState<Set<string>>(() => new Set());
-  const [pending, setPending] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const allSelected = projects.length > 0 && selected.size === projects.length;
-
-  const selectOne = (id: string, checked: boolean) =>
-    setSelected((current) => {
-      const next = new Set(current);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-
-  const performBulkAction = async (action: BulkAction) => {
-    const ids = [...selected];
-    if (!ids.length || pending) return;
-    setPending(true);
-    const results = await Promise.allSettled(
-      ids.map((id) =>
-        action === "delete"
-          ? adminClient.delete(`/admin/projects/${id}`)
-          : adminClient.patch(`/admin/projects/${id}`, { status: (action === "publish" ? "live" : "draft") satisfies ListingStatus }),
-      ),
-    );
-    const failedIds = ids.filter((_, i) => results[i].status === "rejected");
-    const succeeded = ids.length - failedIds.length;
-    setSelected(new Set(failedIds));
-    setConfirmDelete(false);
-    setPending(false);
-    if (succeeded > 0) router.refresh();
-    const done = action === "publish" ? "published" : action === "unpublish" ? "moved to draft" : "deleted";
-    const plural = (n: number) => `${n} listing${n === 1 ? "" : "s"}`;
-    if (failedIds.length) {
-      const failure = results.find((r) => r.status === "rejected");
-      const reason = failure?.status === "rejected" && failure.reason instanceof RequestError ? ` ${failure.reason.message}` : "";
-      toast.error(`${plural(succeeded)} ${done}; ${failedIds.length} failed and remain selected.${reason}`);
-    } else {
-      toast.success(`${plural(succeeded)} ${done}`);
-    }
-  };
+  const bulk = useBulkActions(projects, "/admin/projects");
 
   return (
     <>
-      {canEdit && selected.size > 0 && (
-        <div className="a-bulk">
-          <span className="a-bulk-count">{selected.size} selected</span>
-          <div className="a-bulk-actions">
-            <button type="button" onClick={() => void performBulkAction("publish")} disabled={pending}>
-              Publish
-            </button>
-            <button type="button" onClick={() => void performBulkAction("unpublish")} disabled={pending}>
-              Unpublish
-            </button>
-            <button type="button" className="danger" onClick={() => setConfirmDelete(true)} disabled={pending}>
-              Delete
-            </button>
-          </div>
-        </div>
-      )}
+      {canEdit && <BulkBar bulk={bulk} />}
       <div className="a-tw">
         <table className="a-t">
           <thead>
@@ -90,9 +34,9 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
                   type="checkbox"
                   className="a-listing-select"
                   hidden={!canEdit}
-                  checked={allSelected}
-                  disabled={pending}
-                  onChange={(e) => setSelected(e.currentTarget.checked ? new Set(projects.map((p) => p.id)) : new Set())}
+                  checked={bulk.allSelected}
+                  disabled={bulk.pending}
+                  onChange={(e) => bulk.selectAll(e.currentTarget.checked)}
                   aria-label="Select all listings on this page"
                 />
               </th>
@@ -116,9 +60,9 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
                       type="checkbox"
                       className="a-listing-select"
                   hidden={!canEdit}
-                      checked={selected.has(p.id)}
-                      disabled={pending}
-                      onChange={(e) => selectOne(p.id, e.currentTarget.checked)}
+                      checked={bulk.selected.has(p.id)}
+                      disabled={bulk.pending}
+                      onChange={(e) => bulk.selectOne(p.id, e.currentTarget.checked)}
                       aria-label={`Select ${p.name}`}
                     />
                   </td>
@@ -185,14 +129,9 @@ export function ProjectsTable({ projects, empty }: { projects: Row[]; empty: str
           </tbody>
         </table>
       </div>
-      <ConfirmDialog
-        open={confirmDelete}
-        title="Delete selected listings?"
-        message={`This will permanently delete ${selected.size} selected project${selected.size === 1 ? "" : "s"} and their photos. Their leads are kept.`}
-        confirmLabel={`Delete ${selected.size} listing${selected.size === 1 ? "" : "s"}`}
-        pending={pending}
-        onConfirm={() => void performBulkAction("delete")}
-        onClose={() => setConfirmDelete(false)}
+      <BulkDeleteDialog
+        bulk={bulk}
+        message={`This will permanently delete ${bulk.selected.size} selected project${bulk.selected.size === 1 ? "" : "s"} and their photos. Their leads are kept.`}
       />
     </>
   );

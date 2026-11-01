@@ -15,9 +15,9 @@ import { ListingThumb, hueOf } from "@/components/admin/listing-thumb";
 import { Kpi } from "@/components/admin/ui";
 import { adminApi } from "@/lib/admin-api";
 import { ago, formatDate } from "@/lib/format";
+import { oneOrEmpty } from "@/lib/search-params";
 
 const AMBER = "#F59E0B";
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const shortDate = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
 
@@ -99,7 +99,7 @@ function LeadsChart({ series, days }: { series: DashboardStats["series"]; days: 
 
 /** The demo's dashboard (KPIs, leads chart, sections, latest leads) with more panels below it. */
 export default async function DashboardPage({ searchParams }: PageProps<"/admin">) {
-  const requested = Number(one((await searchParams).days));
+  const requested = Number(oneOrEmpty((await searchParams).days));
   const days = (DASHBOARD_RANGES as readonly number[]).includes(requested) ? requested : 7;
 
   const [stats, categories, banners, latest, draftListings, draftProjects] = await Promise.all([

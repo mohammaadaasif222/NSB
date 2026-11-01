@@ -1,0 +1,9 @@
+{
+  "printWidth": 140,
+  "trailingComma": "all",
+  "endOfLine": "auto",
+  "overrides": [
+    { "files": ["apps/api/**", "packages/shared/**"], "options": { "singleQuote": true } },
+    { "files": ["apps/web/**"], "options": { "singleQuote": false } }
+  ]
+}

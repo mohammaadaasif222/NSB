@@ -4,7 +4,7 @@ import type { Env } from '../../config/env.js';
 import type { SettingsService, SmtpConfig } from '../settings/settings.service.js';
 import { adminEnquiryEmail, type EnquiryListing, vendorEnquiryEmail } from './enquiry-email.js';
 import type { MailService } from './mail.service.js';
-import { NotificationsService } from './notifications.service.js';
+import { AlertFailed, NotificationsService } from './notifications.service.js';
 
 const enquiry: Enquiry = {
   id: '7f9c2c1e-3b4a-4c5d-9e8f-0a1b2c3d4e5f',
@@ -148,6 +148,19 @@ describe('NotificationsService', () => {
     const { service, sent } = setup(smtp, ['vendor@example.com']);
     await expect(service.enquiryReceived({ enquiry, listing })).rejects.toThrow(/vendor: 550/);
     expect(sent).toHaveLength(1);
+  });
+
+  it('says who an alert did not reach', async () => {
+    const { service } = setup(smtp, ['vendor@example.com']);
+    const failed = await service.enquiryReceived({ enquiry, listing }).catch((err: unknown) => err);
+    expect(failed).toBeInstanceOf(AlertFailed);
+    expect((failed as AlertFailed).left).toEqual(['vendor']);
+  });
+
+  it('retries only the people an alert did not reach', async () => {
+    const { service, sent } = setup(smtp);
+    await service.enquiryReceived({ enquiry, listing }, ['vendor']);
+    expect(sent.map((m) => m.to)).toEqual([['vendor@example.com']]);
   });
 
   it('reports test email results', async () => {

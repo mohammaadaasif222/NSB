@@ -4,10 +4,29 @@
 #   docker compose exec api node dist/db/seed.js     (first deploy only)
 name: nsb
 
+# Log files stop growing at 50 MB per service, so logs cannot fill the disk.
+x-logging: &logging
+  options:
+    max-size: 10m
+    max-file: "5"
+
+# Memory limits suit the 8 GB KVM 2: one service cannot take the others down with it.
 services:
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
+    logging: *logging
+    mem_limit: 3g
+    command:
+      - postgres
+      - -c
+      - shared_buffers=1GB
+      - -c
+      - effective_cache_size=4GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - random_page_cost=1.1
     environment:
       POSTGRES_USER: nsb
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
@@ -25,6 +44,8 @@ services:
       context: ..
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
+    logging: *logging
+    mem_limit: 1g
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,6 +81,8 @@ services:
       context: ..
       dockerfile: apps/web/Dockerfile
     restart: unless-stopped
+    logging: *logging
+    mem_limit: 1536m
     depends_on:
       api:
         condition: service_healthy
@@ -67,10 +90,21 @@ services:
       API_INTERNAL_URL: http://api:4000/api
       # Absolute URLs in robots.txt and sitemap.xml.
       SITE_URL: ${SITE_URL:-}
+    volumes:
+      # Resized images and cached API data, so a deploy does not start them from nothing.
+      - webcache:/app/apps/web/.next/cache
+    healthcheck:
+      # robots.txt is static, so a slow API does not mark the site unhealthy.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/robots.txt').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
 
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    logging: *logging
+    mem_limit: 256m
     depends_on:
       - web
       - api
@@ -87,5 +121,6 @@ services:
 volumes:
   pgdata:
   uploads:
+  webcache:
   caddy_data:
   caddy_config:

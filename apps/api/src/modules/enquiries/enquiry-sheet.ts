@@ -1,3 +1,4 @@
+import { PassThrough } from 'node:stream';
 import ExcelJS from 'exceljs';
 import { type Enquiry, type LeadStatus, PROJECT_TYPE_LABELS } from '@nsb/shared';
 import { type ProjectLeadAnswers, projectLeadAnswers } from './project-lead-message.js';
@@ -73,6 +74,9 @@ const ALL: Column[] = [
   ...END,
 ];
 
+/** Rows written before other requests get a turn, so a long export does not hold up the API. */
+const ROWS_PER_TURN = 200;
+
 const SHEETS = {
   'real-estate': { name: 'Real estate leads', columns: REAL_ESTATE },
   wedding: { name: 'Wedding leads', columns: WEDDING },
@@ -85,16 +89,17 @@ const SHEETS = {
  */
 export async function enquiriesWorkbook(rows: Enquiry[], section: LeadSection): Promise<Buffer> {
   const { name, columns } = SHEETS[section ?? 'all'];
-  const book = new ExcelJS.Workbook();
+  const stream = new PassThrough();
+  const chunks: Buffer[] = [];
+  stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+
+  const book = new ExcelJS.stream.xlsx.WorkbookWriter({ stream, useStyles: true, useSharedStrings: true });
   book.creator = 'Noida Super Bazaar';
   const sheet = book.addWorksheet(name, { views: [{ state: 'frozen', ySplit: 1 }] });
+  sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: columns.length } };
   sheet.columns = columns.map((c) => ({ header: c.header, width: c.width }));
 
-  for (const e of rows) {
-    const answers = projectLeadAnswers(e.message);
-    sheet.addRow(columns.map((c) => c.value(e, answers) ?? ''));
-  }
-
+  // Rows take these when they are written, so they go first.
   columns.forEach((c, i) => {
     const column = sheet.getColumn(i + 1);
     if (c.format) column.numFmt = c.format;
@@ -108,7 +113,15 @@ export async function enquiriesWorkbook(rows: Enquiry[], section: LeadSection): 
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
     cell.alignment = { vertical: 'middle', wrapText: true };
   });
-  sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: columns.length } };
+  header.commit();
 
-  return Buffer.from(await book.xlsx.writeBuffer());
+  for (const [i, e] of rows.entries()) {
+    const answers = projectLeadAnswers(e.message);
+    sheet.addRow(columns.map((c) => c.value(e, answers) ?? '')).commit();
+    if ((i + 1) % ROWS_PER_TURN === 0) await new Promise(setImmediate);
+  }
+
+  sheet.commit();
+  await book.commit();
+  return Buffer.concat(chunks);
 }

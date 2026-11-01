@@ -113,8 +113,6 @@
 /* Undo Tailwind preflight where the demo relied on browser defaults. */
 .nsb-home section{scroll-margin-top:90px}.nsb-home h1,.nsb-home h2,.nsb-home h3,.nsb-home h4{font-weight:700}
 /* Banner images: phones show the mobile image when the admin set one (see Admin › Banners). */
-.nsb-home .slide.img{background:var(--img) center/cover no-repeat}
-@media(max-width:600px){.nsb-home .slide.img{background-image:var(--img-m,var(--img))}}
 /* ---------- app feel on phones and tablets ---------- */
 /* Bottom tab bar below desktop width, as in the site's other pages. The current tab's icon sits in a pill. */
 @media(max-width:1023px){
@@ -141,6 +139,8 @@
 .nsb-home .hs{height:auto;aspect-ratio:16/9;border-radius:16px}.nsb-home .hs:has(.slide:not(.img)){aspect-ratio:auto;height:230px}
 .nsb-home .slide{padding:20px 22px}.nsb-home .slide h2{font-size:22px}.nsb-home .slide p{font-size:14px;margin:6px 0 12px}.nsb-home .slide small{margin-bottom:10px;font-size:12px}.nsb-home .slide .btn{padding:9px 16px;font-size:14px;border-radius:10px}
 .nsb-home .dots{left:50%;transform:translateX(-50%);bottom:10px}
+/* The four hero cards are for tablets and desktops only. */
+.nsb-home .hq{display:none}
 .nsb-home .hq{gap:8px;grid-auto-rows:84px}.nsb-home .q{border-radius:12px;padding:6px}.nsb-home .qb{gap:6px;padding:4px 4px 4px 8px;border-radius:7px}.nsb-home .qb b{font-size:11px}.nsb-home .qb i{width:18px;height:18px}.nsb-home .qb i svg{width:11px;height:11px}
 .nsb-home .tr,.nsb-home .pks,.nsb-home .dls,.nsb-home .prods,.nsb-home .hls,.nsb-home .brs{display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;gap:12px}
 .nsb-home .tr::-webkit-scrollbar,.nsb-home .pks::-webkit-scrollbar,.nsb-home .dls::-webkit-scrollbar,.nsb-home .prods::-webkit-scrollbar,.nsb-home .hls::-webkit-scrollbar,.nsb-home .brs::-webkit-scrollbar{display:none}

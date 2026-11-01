@@ -13,6 +13,7 @@ import {
   type Paginated,
 } from "@nsb/shared";
 import { adminApi, isUuid } from "@/lib/admin-api";
+import { oneTrimmed, pageCountOf } from "@/lib/search-params";
 import { WeddingListingsTable } from "./listings-table";
 import { ManageSubcategories } from "./manage-subcategories";
 import { WeddingFilters, type WeddingFilterValues } from "./wedding-filters";
@@ -21,16 +22,14 @@ export const metadata: Metadata = { title: "Wedding" };
 
 const PAGE_SIZE = 10;
 const STATUS_LABEL: Record<ListingStatus, string> = { live: "Live", draft: "Draft", hidden: "Hidden" };
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
-
 /** Wedding sub-categories and their listings, laid out as in the NSB Live Demo admin. */
 export default async function WeddingPage({ searchParams }: PageProps<"/admin/wedding">) {
   const query = await searchParams;
-  const q = one(query.q).slice(0, 100);
-  const status = (LISTING_STATUSES as readonly string[]).includes(one(query.status)) ? (one(query.status) as ListingStatus) : "";
-  const page = Math.max(1, Number.parseInt(one(query.page), 10) || 1);
-  const area = (LISTING_AREAS as readonly string[]).includes(one(query.area)) ? one(query.area) : "";
-  const sort = (["az", "lead"] as const).find((s) => s === one(query.sort)) ?? "new";
+  const q = oneTrimmed(query.q).slice(0, 100);
+  const status = (LISTING_STATUSES as readonly string[]).includes(oneTrimmed(query.status)) ? (oneTrimmed(query.status) as ListingStatus) : "";
+  const page = Math.max(1, Number.parseInt(oneTrimmed(query.page), 10) || 1);
+  const area = (LISTING_AREAS as readonly string[]).includes(oneTrimmed(query.area)) ? oneTrimmed(query.area) : "";
+  const sort = (["az", "lead"] as const).find((s) => s === oneTrimmed(query.sort)) ?? "new";
 
   const [categories, admin] = await Promise.all([adminApi.get<AdminCategory[]>("/admin/categories"), adminApi.get<AdminUser>("/auth/me")]);
   const canEdit = canDo(admin.role, "edit");
@@ -38,7 +37,7 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
   const pricing = canEdit ? (await adminApi.get<AdminSettings>("/admin/settings")).pricing : null;
   const wedding = categories.find((c) => !c.parentId && c.slug === "wedding");
   const subs = wedding ? categories.filter((c) => c.parentId === wedding.id) : [];
-  const sub = isUuid(one(query.sub)) ? subs.find((c) => c.id === one(query.sub)) : undefined;
+  const sub = isUuid(oneTrimmed(query.sub)) ? subs.find((c) => c.id === oneTrimmed(query.sub)) : undefined;
   const scopeId = sub?.id ?? wedding?.id;
 
   if (!scopeId) {
@@ -84,7 +83,7 @@ export default async function WeddingPage({ searchParams }: PageProps<"/admin/we
     return `/admin/wedding${sp.size ? `?${sp}` : ""}`;
   };
 
-  const pageCount = Math.max(1, Math.ceil(listings.total / PAGE_SIZE));
+  const pageCount = pageCountOf(listings.total, PAGE_SIZE);
   const first = listings.total ? (page - 1) * PAGE_SIZE + 1 : 0;
   const last = Math.min(page * PAGE_SIZE, listings.total);
   const weddingTotal = subs.reduce((n, c) => n + c.listingCount, 0) + (wedding?.listingCount ?? 0);

@@ -1,7 +1,11 @@
 "use client";
 
 import { createContext, type FormEvent, type ReactNode, useContext, useEffect, useId, useRef, useState } from "react";
-import { type ApiErrorBody, BUY_WITHIN, type ProjectEnquiryResult, type ProjectLeadSource, todayInIndia } from "@nsb/shared";
+import type { ProjectEnquiryResult, ProjectLeadSource } from "@nsb/shared";
+import { BUY_WITHIN, todayInIndia } from "@nsb/shared/client";
+import { postJson } from "@/lib/site-client";
+import { Honeypot } from "../honeypot";
+import { useModalBehaviour } from "../use-modal-behaviour";
 
 /** Who the visitor wants to reach, and which button they pressed. */
 export interface LeadTarget {
@@ -50,21 +54,11 @@ const spaced = (phone: string) => `${phone.slice(0, 5)} ${phone.slice(5)}`;
 
 function LeadDialog({ target, onClose }: { target: LeadTarget; onClose: () => void }) {
   const id = useId();
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = overflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [onClose]);
+  const dialog = useModalBehaviour(onClose);
 
   return (
     <div className="re-mo" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="re-md" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
+      <div ref={dialog} className="re-md" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
         <button type="button" className="re-x" onClick={onClose} aria-label="Close">
           ×
         </button>
@@ -109,7 +103,8 @@ function LeadForm({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") ?? "").trim();
-    const mobile = String(form.get("mobile") ?? "").replace(/\D/g, "");
+    // Autofill can bring the country code.
+    const mobile = String(form.get("mobile") ?? "").replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
     setInvalid(null);
     if (!name) {
       setInvalid("name");
@@ -128,30 +123,26 @@ function LeadForm({
     setError("");
     setPending(true);
     try {
-      const res = await fetch("/api/enquiries/project", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          projectId: target.projectId,
-          source: target.source,
-          name,
-          mobile,
-          isDealer: form.get("dealer") === "yes",
-          buyWithin: form.get("buyWithin") || undefined,
-          homeLoan: form.has("homeLoan"),
-          siteVisit: visit || form.has("siteVisit"),
-          visitDate: visit ? visitDate : undefined,
-          altVisitDate: visit ? String(form.get("altVisitDate") ?? "") || undefined : undefined,
-          agreed: true,
-        }),
+      const { res, error: refused } = await postJson("/api/enquiries/project", {
+        projectId: target.projectId,
+        source: target.source,
+        name,
+        mobile,
+        isDealer: form.get("dealer") === "yes",
+        buyWithin: form.get("buyWithin") || undefined,
+        homeLoan: form.has("homeLoan"),
+        siteVisit: visit || form.has("siteVisit"),
+        visitDate: visit ? visitDate : undefined,
+        altVisitDate: visit ? String(form.get("altVisitDate") ?? "") || undefined : undefined,
+        agreed: true,
+        website: form.get("website") || undefined,
       });
       if (res.ok) {
         setResult((await res.json()) as ProjectEnquiryResult);
         return;
       }
-      const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
       setError(
-        body?.issues?.[0]?.message ??
+        refused?.issues?.[0]?.message ??
           (res.status === 404
             ? "This project is no longer listed."
             : res.status === 429
@@ -190,6 +181,7 @@ function LeadForm({
     </div>
   ) : (
     <form onSubmit={onSubmit} noValidate>
+      <Honeypot />
       <h3 id={titleId}>{TITLES[target.source]}</h3>
       <p className="ps">
         {visit
@@ -236,7 +228,6 @@ function LeadForm({
             className="re-in"
             type="tel"
             inputMode="numeric"
-            maxLength={10}
             autoComplete="tel-national"
             placeholder="10-digit mobile number"
             aria-invalid={invalid === "mobile" || undefined}

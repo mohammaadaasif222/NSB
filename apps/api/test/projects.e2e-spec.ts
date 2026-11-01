@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import pg from 'pg';
 import request from 'supertest';
@@ -94,6 +95,8 @@ describe('Real estate projects (e2e)', () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(NotificationsService)
       .useValue({ enquiryReceived: async (notice: EnquiryNotice) => void notices.push(notice) })
+      .overrideGuard(ThrottlerGuard)
+      .useValue({ canActivate: () => true })
       .compile();
     app = configureApp(moduleRef.createNestApplication<NestExpressApplication>());
     await app.init();
@@ -258,6 +261,20 @@ describe('Real estate projects (e2e)', () => {
     expect(bad.body.issues.map((i: { path: string }) => i.path)).toEqual(expect.arrayContaining(['agreed', 'mobile']));
     await admin.patch(`/api/admin/projects/${project.id}`).send({ status: 'draft' }).expect(200);
     await lead({ projectId: project.id }).expect(404);
+  });
+
+  it('saves a repeat lead without a second alert', async () => {
+    const callback = { source: 'Callback', mobile: '9812345670' };
+    const first = (await lead(callback).expect(201)).body as ProjectEnquiryResult;
+    const second = (await lead(callback).expect(201)).body as ProjectEnquiryResult;
+    expect(notices.some((n) => n.enquiry.id === first.id)).toBe(true);
+    expect(notices.some((n) => n.enquiry.id === second.id)).toBe(false);
+  });
+
+  it('lets only one of two saves at once list the same project', async () => {
+    const save = () => admin.post('/api/admin/projects').send(projectBody({ name: `E2E ${run} Twin` }));
+    const statuses = (await Promise.all([save(), save()])).map((r) => r.status);
+    expect(statuses.sort()).toEqual([201, 409]);
   });
 
   it('keeps the leads when a project is deleted', async () => {

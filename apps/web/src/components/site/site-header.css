@@ -99,30 +99,6 @@
 .nsb-hd .lb svg:first-child {
   color: var(--hd-red);
 }
-.nsb-hd .ct {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid var(--hd-line);
-  border-radius: 12px;
-}
-.nsb-hd .ct i {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: var(--hd-red);
-  color: #fff;
-  font-style: normal;
-  font-size: 11px;
-  font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-}
 .nsb-hd .lg {
   padding: 6px 16px;
   border-radius: 10px;
@@ -249,7 +225,7 @@
   }
   .nsb-hd .bar {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-rows: 38px 42px;
     gap: 10px 8px;
     padding-block: 8px 10px;
@@ -285,11 +261,6 @@
   }
   .nsb-hd .logo img {
     height: 36px;
-  }
-  .nsb-hd .ct {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
   }
   /* Login lives in the menu on phones. */
   .nsb-hd .lg {

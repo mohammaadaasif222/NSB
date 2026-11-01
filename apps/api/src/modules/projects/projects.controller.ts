@@ -5,6 +5,7 @@ import {
   adminProjectQuerySchema,
   type AdminProjectRow,
   type Paginated,
+  type SitemapEntry,
   type ProjectDetail,
   type ProjectDuplicate,
   type ProjectDuplicateQuery,
@@ -38,6 +39,12 @@ export class ProjectsController {
   @Get('localities')
   localities(@Query(new ZodPipe(localitiesQuerySchema)) query: Pick<ProjectQuery, 'area'>): Promise<ProjectLocality[]> {
     return this.projects.localities(query.area);
+  }
+
+  /** Every public project's address, for /sitemap.xml. Declared before ':slug'. */
+  @Get('sitemap')
+  sitemap(): Promise<SitemapEntry[]> {
+    return this.projects.sitemap();
   }
 
   @Get(':slug')

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { redirect } from "next/navigation";
+import { pageParam } from "@/lib/paging";
+import { oneTrimmed, pageCountOf } from "@/lib/search-params";
 import { POSSESSION_STATUSES, type Paginated, type ProjectLocality, type ProjectSummary, REAL_ESTATE_SLUG } from "@nsb/shared";
 import { BackButton } from "@/components/site/back-button";
 import { pageItems } from "@/components/site/pagination";
@@ -18,18 +21,22 @@ import { getSiteSettings } from "@/lib/site-settings";
 /** Real estate listing page, as in the NSB Live Demo: filter chips, project cards and a sidebar. */
 
 const PAGE_SIZE = 12;
+
+/** Cards above the fold on most screens, whose photos should not wait to be scrolled to. */
+const EAGER_CARDS = 2;
 const BHK = [
   { value: "2", label: "2 BHK" },
   { value: "3", label: "3 BHK" },
   { value: "4", label: "4 BHK+" },
 ] as const;
 
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)?.trim() ?? "";
-
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: Pick<PageProps<"/real-estate">, "searchParams">): Promise<Metadata> {
   if (!CATEGORY_PAGES_ENABLED) return COMING_SOON_METADATA;
-  const place = locationPlace(await getSiteLocation());
+  const [location, query] = await Promise.all([getSiteLocation(), searchParams]);
+  const place = locationPlace(location);
+  const page = pageParam(oneTrimmed(query.page));
   return {
+    alternates: { canonical: `/real-estate${page > 1 ? `?page=${page}` : ""}` },
     title: `New Projects in ${place}`,
     description: `Verified builder projects in ${place}: apartments, villas and plots with prices, floor plans, photos and videos. View the builder's number on Noida Super Bazaar.`,
   };
@@ -37,11 +44,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RealEstatePage({ searchParams }: PageProps<"/real-estate">) {
   const query = await searchParams;
-  const bhk = BHK.some((b) => b.value === one(query.bhk)) ? one(query.bhk) : "";
-  const possession = (POSSESSION_STATUSES as readonly string[]).includes(one(query.possession)) ? one(query.possession) : "";
-  const sort = ["lo", "hi"].includes(one(query.sort)) ? one(query.sort) : "rel";
-  const q = one(query.q).slice(0, 100);
-  const page = Math.max(1, Number.parseInt(one(query.page), 10) || 1);
+  const bhk = BHK.some((b) => b.value === oneTrimmed(query.bhk)) ? oneTrimmed(query.bhk) : "";
+  const possession = (POSSESSION_STATUSES as readonly string[]).includes(oneTrimmed(query.possession)) ? oneTrimmed(query.possession) : "";
+  const sort = ["lo", "hi"].includes(oneTrimmed(query.sort)) ? oneTrimmed(query.sort) : "rel";
+  const q = oneTrimmed(query.q).slice(0, 100);
+  const page = pageParam(oneTrimmed(query.page));
 
   // 404 while Real Estate is switched off in the admin.
   const [, location] = await Promise.all([getCategory(REAL_ESTATE_SLUG), getSiteLocation()]);
@@ -56,7 +63,7 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
     getSiteSettings(),
   ]);
   const place = locationPlace(location);
-  const pageCount = Math.max(1, Math.ceil(result.total / PAGE_SIZE));
+  const pageCount = pageCountOf(result.total, PAGE_SIZE);
 
   /** This page with some filters changed; changing a filter goes back to page 1. */
   const href = (change: { bhk?: string; possession?: string; q?: string; page?: number }) => {
@@ -70,8 +77,11 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
     return `/real-estate${sp.size ? `?${sp}` : ""}`;
   };
 
+  // A narrower location or filter can leave this page number past the end: start again at page 1.
+  if (page > pageCount && result.total > 0) redirect(href({ page: 1 }));
+
   const cards = result.items.flatMap((project, i) => {
-    const card = <ProjectCard key={project.id} project={project} />;
+    const card = <ProjectCard key={project.id} project={project} eager={i < EAGER_CARDS} />;
     if (i === 2) return [card, <AdStrip key="ad" ad={realEstateAd} />];
     if (i === 5) return [card, <ShortsStrip key="shorts" />];
     if (i === 8) return [card, <PromoStrip key="promo" />];

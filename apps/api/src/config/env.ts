@@ -35,6 +35,10 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: optionalSecret,
   CLOUDINARY_API_SECRET: optionalSecret,
   CLOUDINARY_FOLDER: z.string().min(1).default('nsb'),
+}).superRefine(({ NODE_ENV, JWT_SECRET }, ctx) => {
+  if (NODE_ENV === 'production' && /change-me/i.test(JWT_SECRET)) {
+    ctx.addIssue({ code: 'custom', path: ['JWT_SECRET'], message: 'Replace the example value from .env.example' });
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;

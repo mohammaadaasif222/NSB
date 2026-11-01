@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { LISTING_STATUSES, type ListingStatus } from './constants.js';
-import { LISTING_AREAS } from './listing-forms.js';
-import { blankAsNull, blankAsUndefined, imageUrlSchema, mobileSchema, paginationSchema, trimmed } from './schemas.js';
+import { BUY_WITHIN, formatPrice, LISTING_AREAS, todayInIndia } from './client.js';
+import { blankAsNull, blankAsUndefined, imageUrlSchema, mobileSchema, NO_SCRIPT, notScript, paginationSchema, trimmed } from './schemas.js';
 import { youTubeId } from './youtube.js';
 
 /**
@@ -65,11 +65,7 @@ export const PROJECT_TERM_MONTHS = [12, 6] as const;
 /** Real estate plan: one project, one advertiser, one year. Shown in the admin form. */
 export const PROJECT_PLAN_PRICE = 25_000;
 
-/** "Planning to buy in?" on the View Number form. */
-export const BUY_WITHIN = ['3 months', '6 months', '6+ months'] as const;
-
-/** Today's date in India as YYYY-MM-DD, the earliest site visit date. */
-export const todayInIndia = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+export { BUY_WITHIN, formatPrice, todayInIndia };
 
 /** The button a project lead came from; "Enquiry" was the project page's former inline form, kept for its leads. */
 export const PROJECT_LEAD_SOURCES = ['View Number', 'Site visit', 'Callback', 'Price sheet', 'Brochure', 'Enquiry'] as const;
@@ -82,12 +78,6 @@ export const GENERAL_PROPERTY_LEAD = 'Real estate: help choosing';
 export const REAL_ESTATE_SLUG = 'real-estate';
 
 // ---------- Helpers (site, admin and alert emails) ----------
-
-const trimZeros = (s: string) => s.replace(/\.?0+$/, '');
-
-/** ₹ amount in crore or lakh, as Indian property sites write it: 12500000 → "1.25 Cr", 8500000 → "85 L". */
-export const formatPrice = (rupees: number) =>
-  rupees >= 1e7 ? `${trimZeros((rupees / 1e7).toFixed(2))} Cr` : `${trimZeros((rupees / 1e5).toFixed(2))} L`;
 
 /** Monthly EMI on 80% of the price at 8.5% for 20 years (the figure the project page shows). */
 export function monthlyEmi(price: number): number {
@@ -271,7 +261,7 @@ const projectFields = z.object({
   videoChapters: lines(2000),
   videos: z.array(projectVideoSchema).max(PROJECT_LIMITS.videos, `Up to ${PROJECT_LIMITS.videos} more videos`),
   /** PDF link, given to visitors after they share their number. */
-  brochureUrl: blankAsNull(z.url('Paste the full link to the PDF').max(500)),
+  brochureUrl: blankAsNull(z.url('Paste the full link to the PDF').max(500).refine(notScript, NO_SCRIPT)),
   /** The advertiser's number, shown to a visitor after View Number. Private otherwise. */
   phone: blankAsNull(mobileSchema),
   termStart: z.iso.date(),
@@ -362,6 +352,8 @@ export const projectEnquiryInputSchema = z
     projectId: z.uuid().optional(),
     name: trimmed(80),
     mobile: mobileSchema,
+    /** Honeypot: hidden from people, so only bots fill it in. */
+    website: z.string().max(200).optional(),
     isDealer: z.boolean().default(false),
     buyWithin: blankAsUndefined(z.enum(BUY_WITHIN)),
     homeLoan: z.boolean().default(false),

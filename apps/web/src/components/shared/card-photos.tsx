@@ -17,12 +17,15 @@ export function CardPhotos({
   gallery,
   badge,
   sizes,
+  eager = false,
 }: {
   name: string;
   cover: string | null;
   gallery: string[];
   badge: "elite" | "featured" | null;
   sizes: string;
+  /** For cards above the fold. */
+  eager?: boolean;
 }) {
   const photos = [...new Set([...(cover ? [cover] : []), ...gallery])].slice(0, MAX_PHOTOS);
   const thumbs = photos.slice(1);
@@ -34,7 +37,7 @@ export function CardPhotos({
     <div className="lp-media">
       <div className="lp-big">
         {shown ? (
-          <Image src={shown} alt="" fill sizes={sizes} />
+          <Image src={shown} alt="" fill sizes={sizes} loading={eager ? "eager" : "lazy"} />
         ) : (
           <span className="lp-noimg">
             <ImageOff className="size-8" aria-hidden />

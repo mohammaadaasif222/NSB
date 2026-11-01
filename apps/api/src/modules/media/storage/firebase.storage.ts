@@ -1,6 +1,7 @@
 import { createHash, createSign, randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import { type FirebaseCredentials, SettingsService } from '../../settings/settings.service.js';
+import { SettingsService } from '../../settings/settings.service.js';
+import type { FirebaseCredentials } from '../../settings/storage-credentials.service.js';
 import { AccountChangedError, type ImageStorage, type StoreInput, type StoredImage } from './image-storage.js';
 
 const TIMEOUT_MS = 30_000;

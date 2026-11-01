@@ -1,10 +1,11 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, asc, count, desc, eq, ne, type SQL, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, getTableColumns, ne, or, type SQL, sql } from 'drizzle-orm';
 import {
   type AdminProject,
   type AdminProjectQuery,
   type AdminProjectRow,
   type Paginated,
+  type SitemapEntry,
   type ProjectDetail,
   type ProjectDuplicate,
   type ProjectInput,
@@ -16,16 +17,40 @@ import {
   type ProjectUpdate,
   REAL_ESTATE_SLUG,
 } from '@nsb/shared';
-import { DB, type Database } from '../../db/db.module.js';
+import { DB, type Database, type Tx } from '../../db/db.module.js';
 import { categories, enquiries, projects } from '../../db/schema.js';
+import { without } from '../../common/columns.js';
 import { rethrowDbError } from '../../common/db-errors.js';
 import { istToday } from '../../common/dates.js';
 import { searchMatch } from '../../common/like.js';
 import { pageWindow } from '../../common/pagination.js';
 import { MediaService } from '../media/media.service.js';
-import { projectImages, projectValues } from './project-values.js';
+import { projectImages, projectValues, termEnd } from './project-values.js';
 
 type Row = typeof projects.$inferSelect;
+
+/** Columns a card has no use for: long text, and the advertiser's private contacts. */
+const NOT_ON_CARDS = [
+  'about',
+  'highlights',
+  'amenities',
+  'specifications',
+  'nearby',
+  'advertiser',
+  'faqs',
+  'videoUrl',
+  'videoChapters',
+  'videos',
+  'phone',
+  'brochureUrl',
+  'metaTitle',
+  'metaDescription',
+] as const;
+const cardColumns = without(getTableColumns(projects), NOT_ON_CARDS);
+type CardRow = Omit<Row, (typeof NOT_ON_CARDS)[number]>;
+
+/** A sitemap file holds at most 50,000 addresses; listings take most of them. */
+const SITEMAP_LIMIT = 4_000;
 
 /** Priced configurations shown on a card. */
 const CARD_CONFIGURATIONS = 3;
@@ -38,16 +63,13 @@ const visible = and(
   sql`exists (select 1 from ${categories} where ${categories.slug} = ${REAL_ESTATE_SLUG} and ${categories.isActive})`,
 )!;
 
-/** The day the advertiser's term ends. */
-const termEnd = sql`(${projects.termStart} + make_interval(months => ${projects.termMonths}))::date`;
-
 // Qualified by hand: in a select list Drizzle writes columns unqualified, and "id" would mean enquiries.id here.
 const leadCount = sql<number>`(select count(*) from ${enquiries} where ${enquiries}.project_id = ${projects}.id)`.mapWith(Number);
 
 /** Sectors are typed by hand, so "Sector 150" and " sector 150" are the same place. */
 const localityKey = sql<string>`lower(btrim(${projects.locality}))`;
 
-const toSummary = (p: Row): ProjectSummary => ({
+const toSummary = (p: CardRow): ProjectSummary => ({
   id: p.id,
   slug: p.slug,
   name: p.name,
@@ -162,17 +184,27 @@ export class ProjectsService {
           : [desc(projects.isPremium), desc(projects.createdAt)];
 
     const [rows, [{ total }]] = await Promise.all([
-      this.db.select().from(projects).where(where).orderBy(...order).limit(limit).offset(offset),
+      this.db.select(cardColumns).from(projects).where(where).orderBy(...order, desc(projects.id)).limit(limit).offset(offset),
       this.db.select({ total: count() }).from(projects).where(where),
     ]);
     return { items: rows.map(toSummary), total, page, pageSize };
+  }
+
+  async sitemap(): Promise<SitemapEntry[]> {
+    const rows = await this.db
+      .select({ slug: projects.slug, updatedAt: projects.updatedAt })
+      .from(projects)
+      .where(visible)
+      .orderBy(desc(projects.updatedAt))
+      .limit(SITEMAP_LIMIT);
+    return rows.map((r) => ({ ...r, updatedAt: r.updatedAt.toISOString() }));
   }
 
   async getBySlug(slug: string): Promise<ProjectDetail> {
     const [row] = await this.db.select().from(projects).where(and(eq(projects.slug, slug), visible));
     if (!row) throw new NotFoundException('Project not found');
     const similar = await this.db
-      .select()
+      .select(cardColumns)
       .from(projects)
       .where(and(visible, eq(projects.area, row.area), ne(projects.id, row.id)))
       .orderBy(desc(projects.isPremium), desc(projects.createdAt))
@@ -223,7 +255,7 @@ export class ProjectsService {
         .select({ project: projects, leadCount })
         .from(projects)
         .where(where)
-        .orderBy(...order)
+        .orderBy(...order, desc(projects.id))
         .limit(limit)
         .offset(offset),
       this.db.select({ total: count() }).from(projects).where(where),
@@ -261,12 +293,12 @@ export class ProjectsService {
   }
 
   /** The project already listed under this name in this area, if any. */
-  async findDuplicate(name: string, area: string, excludeId?: string): Promise<ProjectDuplicate | null> {
+  async findDuplicate(name: string, area: string, excludeId?: string, db: Database | Tx = this.db): Promise<ProjectDuplicate | null> {
     const key = projectNameKey(name);
     if (!key) return null;
     const filters = [eq(projects.area, area), sql`regexp_replace(lower(${projects.name}), '[^a-z0-9]', '', 'g') = ${key}`];
     if (excludeId) filters.push(ne(projects.id, excludeId));
-    const [row] = await this.db
+    const [row] = await db
       .select({ id: projects.id, name: projects.name, area: projects.area, advertiserName: projects.advertiserName, status: projects.status })
       .from(projects)
       .where(and(...filters))
@@ -275,29 +307,36 @@ export class ProjectsService {
   }
 
   async create(input: ProjectInput): Promise<AdminProject> {
-    await this.assertUnique(input);
-    const slug = await this.freeSlug(input);
-    try {
-      const [row] = await this.db.insert(projects).values({ ...projectValues(input), slug }).returning({ id: projects.id });
-      return this.getAdmin(row.id);
-    } catch (err) {
-      rethrowDbError(err, 'Project');
-    }
+    const id = await this.db.transaction(async (tx) => {
+      await this.assertUnique(input, undefined, tx);
+      const slug = await this.freeSlug(input, tx);
+      try {
+        const [row] = await tx.insert(projects).values({ ...projectValues(input), slug }).returning({ id: projects.id });
+        return row.id;
+      } catch (err) {
+        rethrowDbError(err, 'Project');
+      }
+    });
+    return this.getAdmin(id);
   }
 
   async update(id: string, input: ProjectUpdate): Promise<AdminProject> {
-    const [current] = await this.db.select().from(projects).where(eq(projects.id, id));
-    if (!current) throw new NotFoundException('Project not found');
-    const next: ProjectInput = { ...toInput(current), ...input };
-    if (next.name !== current.name || next.area !== current.area) await this.assertUnique(next, id);
-    // The slug stays as it was made on create, even when the name or area change, so links keep working.
-    const { slug: _, ...values } = projectValues(next);
-    try {
-      await this.db.update(projects).set(values).where(eq(projects.id, id));
-    } catch (err) {
-      rethrowDbError(err, 'Project');
-    }
-    await this.media.release(projectImages(current));
+    // Locks the row: a save at the same moment merges onto this one instead of undoing it.
+    const { current, next } = await this.db.transaction(async (tx) => {
+      const [row] = await tx.select().from(projects).where(eq(projects.id, id)).for('update');
+      if (!row) throw new NotFoundException('Project not found');
+      const next: ProjectInput = { ...toInput(row), ...input };
+      if (next.name !== row.name || next.area !== row.area) await this.assertUnique(next, id, tx);
+      // The slug stays as it was made on create, even when the name or area change, so links keep working.
+      const { slug: _, ...values } = projectValues(next);
+      try {
+        await tx.update(projects).set(values).where(eq(projects.id, id));
+      } catch (err) {
+        rethrowDbError(err, 'Project');
+      }
+      return { current: row, next };
+    });
+    await this.media.release(projectImages(current), projectImages(next));
     return this.getAdmin(id);
   }
 
@@ -318,10 +357,10 @@ export class ProjectsService {
    * The new project's slug. The admin's own must be free; the one made from the name and area gets
    * "-2", "-3"… if a project renamed since still has it (slugs never change).
    */
-  private async freeSlug(input: ProjectInput): Promise<string> {
+  private async freeSlug(input: ProjectInput, tx: Tx): Promise<string> {
     const base = projectValues(input).slug;
     const taken = new Set(
-      (await this.db.select({ slug: projects.slug }).from(projects).where(or(eq(projects.slug, base), sql`${projects.slug} like ${`${base}-%`}`))).map(
+      (await tx.select({ slug: projects.slug }).from(projects).where(or(eq(projects.slug, base), sql`${projects.slug} like ${`${base}-%`}`))).map(
         (r) => r.slug,
       ),
     );
@@ -335,9 +374,13 @@ export class ProjectsService {
     return `${base}-${n}`;
   }
 
-  /** One project, one listing: a second listing of the same project in the same area is refused. */
-  private async assertUnique(input: Pick<ProjectInput, 'name' | 'area'>, excludeId?: string) {
-    const dup = await this.findDuplicate(input.name, input.area, excludeId);
+  /**
+   * One project, one listing: a second listing of the same project in the same area is refused.
+   * Holds a lock on that name until the transaction ends, so two saves at once cannot both pass.
+   */
+  private async assertUnique(input: Pick<ProjectInput, 'name' | 'area'>, excludeId: string | undefined, tx: Tx) {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`nsb:project:${input.area}:${projectNameKey(input.name)}`}))`);
+    const dup = await this.findDuplicate(input.name, input.area, excludeId, tx);
     if (!dup) return;
     const message = `${dup.name} in ${dup.area} is already listed by ${dup.advertiserName}. One project can have only one listing.`;
     throw new ConflictException({ statusCode: 409, message, issues: [{ path: 'name', message }] });

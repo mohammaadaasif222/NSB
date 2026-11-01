@@ -1,27 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
-import { type ProjectConfiguration, type VideoChapter, youTubeId } from "@nsb/shared";
+import { type CSSProperties, type ReactNode, useState } from "react";
+import type { ProjectConfiguration, VideoChapter } from "@nsb/shared";
+import { youTubeId } from "@nsb/shared/client";
 import { opensPhotoList, PhotoList, PhotoViewer } from "@/components/site/photo-modals";
+import { useModalBehaviour } from "@/components/site/use-modal-behaviour";
 import { priceText, sqftText } from "./format";
 import { BuildingArt } from "./project-art";
 import { type LeadTarget, LeadButton } from "./lead-dialog";
-
-/** Escape closes an overlay and the page behind it stops scrolling. */
-function useOverlay(open: boolean, onClose: () => void) {
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = overflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, onClose]);
-}
 
 /** Grid placement for 1–4 photos; five or more use the default 2×2 + 4 layout. */
 const PLACES: Record<number, [col: string, row: string][]> = {
@@ -72,7 +59,7 @@ export function ProjectGallery({ name, photos, tags }: { name: string; photos: s
       <div className="re-galw">
         <div className="re-gal">
           {shown.map((url, i) => (
-            <figure key={url} style={places ? ({ "--gc": places[i]![0], "--gr": places[i]![1] } as CSSProperties) : undefined}>
+            <figure key={`${url}-${i}`} style={places ? ({ "--gc": places[i]![0], "--gr": places[i]![1] } as CSSProperties) : undefined}>
               <Image src={url} alt={i === 0 ? name : ""} fill priority={i === 0} sizes={i === 0 ? "(max-width: 640px) 100vw, 50vw" : "(max-width: 640px) 100vw, 25vw"} />
               <button type="button" className="open" onClick={() => show(i)} aria-label={`Open photo ${i + 1} of ${photos.length}`} />
               {i === 0 && tags}
@@ -151,8 +138,8 @@ export function Amenities({ items, icon }: { items: string[]; icon: ReactNode })
       className="re-amg"
       noun="amenities"
       desktop={9}
-      items={items.map((a) => (
-        <div key={a} className="re-am">
+      items={items.map((a, i) => (
+        <div key={`${a}-${i}`} className="re-am">
           {icon}
           {a}
         </div>
@@ -184,7 +171,7 @@ export function FloorPlans({ configurations, lead }: { configurations: ProjectCo
   const [mode, setMode] = useState<"2d" | "3d">(() => (configurations[0]?.plan3dUrl && !configurations[0].plan2dUrl ? "3d" : "2d"));
   const [zoom, setZoom] = useState(false);
   const closeZoom = () => setZoom(false);
-  useOverlay(zoom, closeZoom);
+  const zoomDialog = useModalBehaviour(closeZoom, { open: zoom });
 
   const current = configurations[index]!;
   const plan = mode === "3d" ? current.plan3dUrl : current.plan2dUrl;
@@ -279,7 +266,7 @@ export function FloorPlans({ configurations, lead }: { configurations: ProjectCo
       </div>
 
       {zoom && plan && (
-        <div className="re-zm2" role="dialog" aria-modal="true" aria-label={`${current.title} floor plan`} onClick={closeZoom}>
+        <div ref={zoomDialog} className="re-zm2" role="dialog" aria-modal="true" aria-label={`${current.title} floor plan`} onClick={closeZoom}>
           <button type="button" className="re-x" onClick={closeZoom} aria-label="Close">
             ×
           </button>

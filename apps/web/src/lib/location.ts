@@ -1,4 +1,4 @@
-import { LISTING_AREAS } from "@nsb/shared";
+import { LISTING_AREAS } from "@nsb/shared/client";
 
 export type SiteArea = (typeof LISTING_AREAS)[number];
 

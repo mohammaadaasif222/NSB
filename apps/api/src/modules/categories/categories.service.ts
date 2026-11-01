@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, asc, count, eq, inArray, isNull, type SQL, sql } from 'drizzle-orm';
-import type { AdminCategory, Category, CategoryDetail, CategoryInput, CategoryUpdate } from '@nsb/shared';
+import { type AdminCategory, type Category, type CategoryDetail, type CategoryInput, type CategoryUpdate, LISTING_FORMS, REAL_ESTATE_SLUG } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
 import { categories, listings } from '../../db/schema.js';
 import { pgCode, rethrowDbError } from '../../common/db-errors.js';
@@ -82,9 +82,19 @@ export class CategoriesService {
     }
   }
 
+  /** Forms and Real Estate's pages find these categories by slug, so moving one would orphan them. */
+  private async isFixed({ slug, parentId }: Category): Promise<boolean> {
+    if (slug === REAL_ESTATE_SLUG) return true;
+    if (!parentId) return !!LISTING_FORMS[slug];
+    const parent = await this.findOne(eq(categories.id, parentId));
+    return !!LISTING_FORMS[parent.slug]?.subcategories[slug];
+  }
+
   async update(id: string, input: CategoryUpdate): Promise<Category> {
     const before = await this.findOne(eq(categories.id, id));
     if (Object.keys(input).length === 0) return before;
+    const moves = (input.slug !== undefined && input.slug !== before.slug) || (input.parentId !== undefined && input.parentId !== before.parentId);
+    if (moves && (await this.isFixed(before))) throw new BadRequestException('This category has a listing form linked to its URL, so its URL and parent cannot change');
     if (input.parentId) {
       if (input.parentId === id) throw new BadRequestException('A category cannot be its own parent');
       await this.assertValidParent(input.parentId);
@@ -98,7 +108,7 @@ export class CategoriesService {
       rethrowDbError(err, 'Category');
     }
     if (!row) throw new NotFoundException('Category not found');
-    await this.media.release([before.imageUrl]);
+    await this.media.release([before.imageUrl], [row.imageUrl]);
     return row;
   }
 

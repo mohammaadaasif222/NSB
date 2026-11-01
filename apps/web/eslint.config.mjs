@@ -4,12 +4,15 @@ import nextTs from "eslint-config-next/typescript";
 
 const ADMIN_CODE = ["@/app/admin/*", "@/components/admin/*", "@/lib/admin-*"];
 const SITE_CODE = [
+  "@/app/(home)/*",
   "@/app/(site)/*",
+  "@/app/actions/*",
   "@/components/site/*",
   "@/lib/catalog",
   "@/lib/flags",
   "@/lib/location",
   "@/lib/location-server",
+  "@/lib/site-client",
   "@/lib/site-settings",
   "@/lib/site-url",
 ];
@@ -28,9 +31,12 @@ const boundary = (files, group) => ({
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  boundary(["src/app/\\(site\\)/**", "src/components/site/**"], ADMIN_CODE),
+  boundary(["src/app/\\(home\\)/**", "src/app/\\(site\\)/**", "src/app/actions/**", "src/components/site/**"], ADMIN_CODE),
   boundary(["src/app/admin/**", "src/components/admin/**", "src/lib/admin-*"], SITE_CODE),
-  boundary(["src/components/shared/**", "src/lib/api.ts", "src/lib/format.ts"], [...ADMIN_CODE, ...SITE_CODE]),
+  boundary(
+    ["src/components/shared/**", "src/lib/api.ts", "src/lib/browse-panels.ts", "src/lib/format.ts", "src/lib/search-params.ts"],
+    [...ADMIN_CODE, ...SITE_CODE],
+  ),
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

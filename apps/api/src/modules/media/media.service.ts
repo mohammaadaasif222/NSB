@@ -4,9 +4,11 @@ import {
   Inject,
   Injectable,
   Logger,
+  type OnModuleDestroy,
+  type OnModuleInit,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, lt, type SQL, sql } from 'drizzle-orm';
 import {
   IMAGE_MAX_SIDE,
   IMAGE_SLOTS,
@@ -18,7 +20,7 @@ import {
 } from '@nsb/shared';
 import { DB, type Database } from '../../db/db.module.js';
 import { banners, categories, listingImages, listings, media, projects, settings } from '../../db/schema.js';
-import { FOOTER_KEY, HOME_CARDS_KEY, PROJECT_SIDE_AD_KEY, PROVIDER_LABELS, REAL_ESTATE_AD_KEY, SettingsService } from '../settings/settings.service.js';
+import { PROVIDER_LABELS, SettingsService } from '../settings/settings.service.js';
 import { readImageInfo } from './image-info.js';
 import type { ImageStorage } from './storage/image-storage.js';
 import { CloudinaryImageStorage } from './storage/cloudinary.storage.js';
@@ -45,18 +47,14 @@ const inUse = sql`(
     select 1 from ${projects}, jsonb_array_elements(${projects.configurations}) as plan(c)
     where plan.c->>'plan2dUrl' = ${media.url} or plan.c->>'plan3dUrl' = ${media.url}
   )
-  or exists (select 1 from ${settings} where ${settings.key} = ${PROJECT_SIDE_AD_KEY} and ${settings.value}->>'imageUrl' = ${media.url})
-  or exists (
-    select 1 from ${settings}
-    where ${settings.key} = ${REAL_ESTATE_AD_KEY} and (${settings.value}->>'imageUrl' = ${media.url} or ${settings.value}->>'logoUrl' = ${media.url})
-  )
-  or exists (select 1 from ${settings} where ${settings.key} = ${FOOTER_KEY} and ${settings.value}->>'logoUrl' = ${media.url})
-  or exists (
-    select 1 from ${settings}
-    cross join lateral jsonb_array_elements(case when ${settings.key} = ${HOME_CARDS_KEY} then ${settings.value} else '[]'::jsonb end) as card(c)
-    where card.c->>'imageUrl' = ${media.url}
-  )
+  or exists (select 1 from ${settings} where position(${media.url} in ${settings.value}::text) > 0)
 )`;
+
+/** A file no record uses is kept this long: an admin may upload one and save the form days later. */
+const UNUSED_DAYS = 7;
+const SWEEP_MS = 86_400_000;
+/** Files one sweep removes; any more go in the next one. */
+const SWEEP_LIMIT = 500;
 
 /** 1×1 transparent PNG for connection tests. */
 const TEST_PNG = Buffer.from(
@@ -65,9 +63,10 @@ const TEST_PNG = Buffer.from(
 );
 
 @Injectable()
-export class MediaService {
+export class MediaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MediaService.name);
   private readonly storages: Record<ImageStorageProvider, ImageStorage>;
+  private sweeps?: NodeJS.Timeout;
 
   constructor(
     @Inject(DB) private readonly db: Database,
@@ -77,6 +76,15 @@ export class MediaService {
     firebase: FirebaseImageStorage,
   ) {
     this.storages = { local, cloudinary, firebase };
+  }
+
+  onModuleInit() {
+    this.sweeps = setInterval(() => void this.sweep(), SWEEP_MS);
+    this.sweeps.unref();
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.sweeps);
   }
 
   /** Validates the image, stores it with the provider chosen in Settings and records where it went. */
@@ -128,22 +136,41 @@ export class MediaService {
 
   /**
    * Deletes uploaded files that no record uses any more, from whichever provider holds each
-   * one. Call it after the change that dropped the URLs has been saved. It never throws: a
+   * one. Call it after the change that dropped the URLs has been saved, with the URLs the
+   * record still has as `kept`, so an unchanged image costs nothing. It never throws: a
    * failed cleanup is logged and must not fail the request that triggered it.
    */
-  async release(urls: Array<string | null | undefined>): Promise<void> {
-    const candidates = [...new Set(urls.filter((u): u is string => !!u))];
-    if (!candidates.length) return;
+  async release(urls: Array<string | null | undefined>, kept: Array<string | null | undefined> = []): Promise<void> {
+    const candidates = [...new Set(urls.filter((u): u is string => !!u && !kept.includes(u)))];
+    if (candidates.length) await this.removeUnused(inArray(media.url, candidates));
+  }
+
+  /** Removes uploads from forms that were never saved. It never throws, like `release`. */
+  async sweep(): Promise<void> {
+    await this.removeUnused(lt(media.createdAt, sql`now() - make_interval(days => ${UNUSED_DAYS})`));
+  }
+
+  private async removeUnused(which: SQL) {
     try {
       const unused = await this.db
-        .select({ id: media.id, provider: media.provider, storageKey: media.storageKey, account: media.account })
+        .select({ id: media.id })
         .from(media)
-        .where(and(inArray(media.url, candidates), sql`not ${inUse}`));
-      for (const file of unused) {
-        // File first: if that fails, the row stays and the file can still be found later.
-        if (await this.removeFile(file.provider, file.storageKey, file.account)) {
-          await this.db.delete(media).where(eq(media.id, file.id));
-        }
+        .where(and(which, sql`not ${inUse}`))
+        .orderBy(asc(media.createdAt))
+        .limit(SWEEP_LIMIT);
+      for (const { id } of unused) {
+        await this.db.transaction(async (tx) => {
+          // Locked and checked again, so two cleanups never act on one file, and one picked up since stays.
+          const [file] = await tx
+            .select({ provider: media.provider, storageKey: media.storageKey, account: media.account })
+            .from(media)
+            .where(and(eq(media.id, id), sql`not ${inUse}`))
+            .for('update', { of: media, skipLocked: true });
+          // File first: if that fails, the row stays and the file can still be found later.
+          if (file && (await this.removeFile(file.provider, file.storageKey, file.account))) {
+            await tx.delete(media).where(eq(media.id, id));
+          }
+        });
       }
     } catch (err) {
       this.logger.error('Image cleanup failed', err);
