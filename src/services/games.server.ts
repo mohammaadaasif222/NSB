@@ -8,7 +8,7 @@ import type {
   HomeShelvesResponse,
   LobbyProvider,
 } from '@/types';
-import { SHELF_KEYS, shelfFor, type ShelfListQuery } from '@/constants/games';
+import { SHELF_KEYS, shelfFor, type LobbyLayouts, type ShelfListQuery } from '@/constants/games';
 
 /**
  * Server-side catalogue fetching, for getServerSideProps.
@@ -155,6 +155,15 @@ export async function fetchTagFilters(): Promise<TagFilterGroup[] | null> {
   } catch (error) {
     logFailure('Tag filters fetch', error);
     return null;
+  }
+}
+
+export async function fetchLobbyLayouts(): Promise<LobbyLayouts> {
+  try {
+    return (await getJson<LobbyLayouts>('/lobby-layouts')) ?? {};
+  } catch (error) {
+    logFailure('Lobby layouts fetch', error);
+    return {};
   }
 }
 

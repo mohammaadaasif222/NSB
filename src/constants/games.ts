@@ -10,6 +10,7 @@ import type { TranslationKey } from '@/i18n/locales';
 
 /** What a shelf's "View all" page asks the list endpoint for. */
 export interface ShelfListQuery {
+  shelf?: GameShelfKey;
   category?: GameCategory;
   type?: GameType;
   /**
@@ -165,6 +166,21 @@ export const LIVE_SHELF_KEYS: readonly GameShelfKey[] = [
   'live-lightning',
 ];
 
+export type LobbyLayouts = Partial<
+  Record<
+    'home_guest' | 'home_player' | 'casino' | 'live',
+    { shelves: GameShelfKey[]; hidden: GameShelfKey[] }
+  >
+>;
+
+export const orderedShelfKeys = (
+  defaults: readonly GameShelfKey[],
+  saved: readonly GameShelfKey[] = []
+): GameShelfKey[] => [
+  ...saved.filter((key) => defaults.includes(key)),
+  ...defaults.filter((key) => !saved.includes(key)),
+];
+
 /** The home page draws one of two shelf sets, depending on who is signed in. */
 export const HOME_SHELF_KEYS: readonly GameShelfKey[] = [
   ...new Set([...LOBBY_SHELF_KEYS, ...PLAYER_SHELF_KEYS]),
@@ -191,6 +207,11 @@ const isShelfKey = (value: string): value is GameShelfKey =>
 /** A shelf's definition. */
 export const shelfFor = (key: GameShelfKey): GameShelfDef =>
   GAME_SHELVES.find((s) => s.key === key) ?? GAME_SHELVES[0];
+
+export const lobbyOrderQuery = (key: GameShelfKey): ShelfListQuery => ({
+  ...shelfFor(key).list,
+  shelf: key,
+});
 
 /** Shelf definition for a URL segment, or null for anything unknown. */
 export const categoryForKey = (value: string | string[] | undefined): GameShelfDef | null => {

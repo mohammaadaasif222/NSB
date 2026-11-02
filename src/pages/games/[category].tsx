@@ -15,6 +15,7 @@ import {
   LIVE_SHELF_KEYS,
   categoryForKey,
   categoryHref,
+  lobbyOrderQuery,
   shelfFor,
 } from '@/constants/games';
 import { fetchShelfList, parsePageParam } from '@/services/games.server';
@@ -149,7 +150,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
   }
 
   const page = parsePageParam(query.page);
-  const result = await fetchShelfList(def.list, page, CATEGORY_PAGE_SIZE);
+  const result = await fetchShelfList(lobbyOrderQuery(def.key), page, CATEGORY_PAGE_SIZE);
   if (result.failed) {
     markUnavailable({ req, res });
   }

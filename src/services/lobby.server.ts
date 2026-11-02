@@ -1,6 +1,8 @@
 import type { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
+import type { LobbyLayouts } from '@/constants/games';
 import {
   fetchHomeShelves,
+  fetchLobbyLayouts,
   fetchLobbyProviders,
   fetchRegisteredTodayCount,
   parsePageParam,
@@ -14,6 +16,7 @@ import type { GameShelf, GameShelfKey, LobbyProvider } from '@/types';
 /** What every lobby-style page (home, casino, live casino) is rendered from. */
 export interface LobbyProps {
   shelves: GameShelf[];
+  layouts: LobbyLayouts;
   /** The Providers row, curated in the admin console. Empty hides the row. */
   providers: LobbyProvider[];
   catalogueFailed: boolean;
@@ -51,8 +54,9 @@ export const lobbyProps =
     ) as Record<GameShelfKey, number>;
 
     // In parallel: independent public reads, and the page waits on all of them.
-    const [{ shelves, failed }, providers, faqs, streams, registeredToday] = await Promise.all([
+    const [{ shelves, failed }, layouts, providers, faqs, streams, registeredToday] = await Promise.all([
       fetchHomeShelves(keys, pages),
+      fetchLobbyLayouts(),
       fetchLobbyProviders(),
       fetchFaqsServer(),
       options.streams ? fetchLiveStreamsServer() : Promise.resolve([]),
@@ -62,6 +66,7 @@ export const lobbyProps =
     return {
       props: {
         shelves,
+        layouts,
         providers,
         catalogueFailed: failed,
         faqs,

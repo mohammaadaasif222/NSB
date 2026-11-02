@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, type FC } from 'react';
 import type { Game, GameShelfKey } from '@/types';
-import { LIVE_CASINO_HREF, categoryHref, shelfFor } from '@/constants/games';
+import { LIVE_CASINO_HREF, categoryHref, lobbyOrderQuery } from '@/constants/games';
 import { useTranslation } from '@/context/I18nContext';
 import { fetchShelfPage } from '@/services/games';
 import ScrollShelf from './ScrollShelf';
@@ -78,7 +78,7 @@ const GameRow: FC<Props> = ({
     loading.current = true;
     const startedFor = generation.current;
 
-    fetchShelfPage(shelfFor(shelfKey).list, loaded + 1, limit)
+    fetchShelfPage(lobbyOrderQuery(shelfKey), loaded + 1, limit)
       .then(({ data, pagination }) => {
         if (generation.current !== startedFor) {
           return;

@@ -13,7 +13,13 @@ import RecentShelf from '@/components/player/RecentShelf';
 import ComingSoonShelf from '@/components/player/ComingSoonShelf';
 import JackpotShelf from '@/components/player/JackpotShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
-import { CASINO_SHELF_KEYS, LIVE_SHELF_KEYS, PLAYER_SHELF_KEYS } from '@/constants/games';
+import {
+  CASINO_SHELF_KEYS,
+  LIVE_SHELF_KEYS,
+  LOBBY_SHELF_KEYS,
+  PLAYER_SHELF_KEYS,
+  orderedShelfKeys,
+} from '@/constants/games';
 import StreamersRow from '@/components/player/StreamersRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import FaqAccordion from '@/components/player/FaqAccordion';
@@ -118,6 +124,7 @@ const CASINO_INSERTS = (
  */
 const Lobby: FC<Props> = ({
   shelves,
+  layouts,
   providers,
   catalogueFailed,
   faqs,
@@ -141,8 +148,15 @@ const Lobby: FC<Props> = ({
   const jsonLd =
     !casino && faqs.length > 0 ? [...[seo.jsonLd ?? []].flat(), faqJsonLd(faqs)] : seo.jsonLd;
   const controls = player || casino;
+  const pageLayout = live
+    ? layouts.live
+    : casino
+      ? layouts.casino
+      : player
+        ? layouts.home_player
+        : layouts.home_guest;
 
-  const providerRow = <ProviderRow providers={providers} />;
+  const providerRow =<ProviderRow providers={providers} />;
 
   const unavailable = catalogueFailed && (
     <p role="status" className="rl-glass rounded-2xl px-4 py-3 text-sm text-white/55">
@@ -156,9 +170,11 @@ const Lobby: FC<Props> = ({
       basePath={basePath}
       controls={controls}
       providers={providers.map((p) => p.name).sort((a, b) => a.localeCompare(b))}
+      shelfKeys={orderedShelfKeys(LOBBY_SHELF_KEYS, layouts.home_guest?.shelves)}
+      hiddenShelfKeys={pageLayout?.hidden}
       {...(live
         ? {
-            shelfKeys: LIVE_SHELF_KEYS,
+            shelfKeys: orderedShelfKeys(LIVE_SHELF_KEYS, layouts.live?.shelves),
             chipsOnPhone: true,
             live: true,
           }
@@ -166,14 +182,14 @@ const Lobby: FC<Props> = ({
           ? {
               // The sheet's casino rows, with the player's own, Providers and
               // the not-yet-available ones among them.
-              shelfKeys: CASINO_SHELF_KEYS,
+              shelfKeys: orderedShelfKeys(CASINO_SHELF_KEYS, layouts.casino?.shelves),
               titles: { originals: 'nav.originals', featured: 'lobby.casino.recommended' },
               chipsOnPhone: true,
               inserts: CASINO_INSERTS(providerRow, t),
             }
           : player && {
               // The signed-in design's shelves, with the sports row among them.
-              shelfKeys: PLAYER_SHELF_KEYS,
+              shelfKeys: orderedShelfKeys(PLAYER_SHELF_KEYS, layouts.home_player?.shelves),
               titles: { originals: 'nav.originals' },
               inserts: PLAYER_INSERTS,
             })}

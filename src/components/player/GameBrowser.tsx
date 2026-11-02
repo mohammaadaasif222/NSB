@@ -51,6 +51,7 @@ interface Props {
   chipsOnPhone?: boolean;
   /** Which shelves to show when idle, in order. */
   shelfKeys?: readonly GameShelfKey[];
+  hiddenShelfKeys?: readonly GameShelfKey[];
   /** A heading to use instead of a shelf's default one. */
   titles?: Partial<Record<GameShelfKey, TranslationKey>>;
   /**
@@ -90,6 +91,7 @@ const GameBrowser: FC<Props> = ({
   basePath = '/',
   controls = true,
   shelfKeys = LOBBY_SHELF_KEYS,
+  hiddenShelfKeys,
   titles = {},
   chipsOnPhone = false,
   inserts = [],
@@ -190,8 +192,14 @@ const GameBrowser: FC<Props> = ({
     if (!browsing || settling || category === 'favourites') {
       return null;
     }
+    const untouched =
+      browse.sort === BROWSE_DEFAULTS.sort &&
+      browse.filter === BROWSE_DEFAULTS.filter &&
+      !term &&
+      !provider;
     return {
       ...(category === 'lobby' ? {} : shelfFor(category).list),
+      ...(category !== 'lobby' && untouched ? { shelf: category } : {}),
       sort: browse.sort,
       ...(term ? { search: term } : {}),
       ...(provider ? { provider } : {}),
@@ -261,11 +269,12 @@ const GameBrowser: FC<Props> = ({
   // the empty states are the honest thing to show.
   const lobbyShelves = useMemo(() => {
     const listed = shelfKeys
+      .filter((key) => !hiddenShelfKeys?.includes(key))
       .map((key) => shelves.find((s) => s.key === key))
       .filter((s): s is GameShelf => s !== undefined);
     const stocked = listed.filter((s) => s.games.length > 0);
     return live || stocked.length === 0 ? listed : stocked;
-  }, [shelves, shelfKeys, live]);
+  }, [shelves, shelfKeys, hiddenShelfKeys, live]);
 
   // Each insert follows its shelf, or — if that shelf was left out — the
   // nearest shown shelf before it, so the row keeps its place in the order.
