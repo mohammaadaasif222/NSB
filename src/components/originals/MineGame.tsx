@@ -815,7 +815,7 @@ const MineGame = () => {
   //             {!user?._id && (
   //                 <div className="absolute  top-0 left-0 flex items-center justify-center w-full h-full">
   //                     <button
-  //                         className="bg-royalGreen-50 text-royalPurple-50 py-2 px-6 rounded-lg font-bold text-[18px]"
+  //                         className="bg-royalGreen-50 text-royalPurple-50 py-2 px-6 rounded-full font-bold text-[18px]"
   //                         onClick={() => {
   //                             if (user?._id) {
   //                                 setHasLoaded(true)
@@ -1506,7 +1506,7 @@ const MineGame = () => {
                                     setIsFocused(false)
                                   }}
                                   placeholder="0.00"
-                                  className={`w-full bg-[#18181A]   rounded-lg pl-8 pr-32 py-2 outline-none    ${errorMsg ? "ring-2 ring-red-500" : "focus:ring-2 focus:ring-[#F9D028] "} text-[#94a59e]  focus:text-white`}
+                                  className={`w-full bg-[#18181A]   rounded-full pl-8 pr-32 py-2 outline-none    ${errorMsg ? "ring-2 ring-red-500" : "focus:ring-2 focus:ring-[#F9D028] "} text-[#94a59e]  focus:text-white`}
                                 />
                                 <Tooltip
                                   id="betError1"
@@ -1514,7 +1514,7 @@ const MineGame = () => {
                                   clickable={false}
                                   place="top"
                                   className="!bg-black  !text-white
-        !px-3 !py-2 !rounded-md 
+        !px-3 !py-2 !rounded-full 
         !backdrop-blur-sm !text-xs !font-medium
         !z-[9999]"
                                 >
@@ -1539,7 +1539,7 @@ const MineGame = () => {
                                       });
                                     }
                                     }
-                                    className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-l-md text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                    className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-l-full text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                   >
                                     1/2
                                   </button>
@@ -1554,7 +1554,7 @@ const MineGame = () => {
                                       )
                                     }
                                     }
-                                    className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333]  text-gray-200 ${!ShowMAxBetBTN ? "rounded-r-md" : ""} ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                    className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333]  text-gray-200 ${!ShowMAxBetBTN ? "rounded-r-full" : ""} ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                   >
                                     2X
                                   </button>
@@ -1577,14 +1577,14 @@ const MineGame = () => {
                                       }
                                     }
                                     }
-                                    className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-r-md text-gray-200 "
+                                    className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-r-full text-gray-200 "
                                   >
                                     Max
                                   </button>}
                                 </div>
                               </div>
                               {/* {gameOver && (
-                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-semibold border border-[#333333] bg-[#1a1a1a]/80">
+                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-sm font-semibold border border-[#333333] bg-[#1a1a1a]/80">
                                                             {result === "win" ? "You win" : "You lost"}
                                                         </div>
                                                     )} */}
@@ -1598,7 +1598,7 @@ const MineGame = () => {
                                     Grid Size
                                   </div>
 
-                                  <div className="grid grid-cols-4 gap-[2px] bg-[#18181A] p-1 rounded-lg">
+                                  <div className="grid grid-cols-4 gap-[2px] bg-[#18181A] p-1 rounded-full">
                                     {sizes.map((size) => {
                                       const isSizeDisabled = [0].includes(size);
                                       const isDisabled = gameStarted || isSizeDisabled;
@@ -1622,7 +1622,7 @@ const MineGame = () => {
                                             setremainingPositions([]);
                                           }}
                                           className={`
-            py-2 ${size == 64 ? 'rounded-r-lg' : size == 25 ? "rounded-l-lg" : ''} text-sm transition-all
+            py-2 ${size == 64 ? 'rounded-r-full' : size == 25 ? "rounded-l-full" : ''} text-sm transition-all
             ${gridSize === size
                                               ? "bg-[#F9D028] text-black font-semibold"
                                               : "bg-[#262628] hover:bg-[#333333] text-gray-200 hover:opacity-80"
@@ -1646,8 +1646,8 @@ const MineGame = () => {
                                   <div className="text-gray-300 text-sm font-medium mb-1 px-1">
                                     Number of Mines
                                   </div>
-                                  <div className="w-full  bg-[#18181A] px-1 py-1 rounded-lg flex items-center justify-between gap-2">
-                                    <div className=" w-[18%] flex justify-center items-center  bg-[#262628] p-1 rounded-lg text-sm text-white">
+                                  <div className="w-full  bg-[#18181A] px-1 py-1 rounded-full flex items-center justify-between gap-2">
+                                    <div className=" w-[18%] flex justify-center items-center  bg-[#262628] p-1 rounded-full text-sm text-white">
                                       <img src={bomb_static} alt="BombaImg" className="w-8 h-8 p-1" /> <span className="inline-block w-6 text-left tabular-nums"> {mineCount}</span>
                                     </div>
                                     {/* Slider */}
@@ -1662,7 +1662,7 @@ const MineGame = () => {
                                       />
 
                                       {/* Track background */}
-                                      <div className="absolute top-1/2 left-0 w-full h-2 -translate-y-1/2 rounded-full bg-gradient-to-r from-[#F9D028] to-[#F9D028]  " />
+                                      <div className="absolute top-1/2 left-0 w-full h-2 -translate-y-1/2 rounded-full bg-white/10 border border-white/[0.06]" />
 
                                       {/* Thumb styling */}
                                       <style jsx>{`
@@ -1671,8 +1671,8 @@ const MineGame = () => {
             height: 20px;
             width: 40px;
             border-radius: 6px;
-            background: #2ec5ff;
-            // box-shadow: 0 0 10px #2ec5ff;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
             cursor: pointer;
             position: relative;
             margin-top: 4px; /* Center the thumb on the track */
@@ -1683,13 +1683,13 @@ const MineGame = () => {
             height: 20px;
             width: 40px;
             border-radius: 999px;
-            background: #2ec5ff;
-            // box-shadow: 0 0 10px #2ec5ff;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
             cursor: pointer;
           }
         `}</style>
                                     </div>
-                                    <div className="w-[18%] flex justify-center items-center bg-[#262628] p-1 rounded-lg text-sm text-white gap-1">
+                                    <div className="w-[18%] flex justify-center items-center bg-[#262628] p-1 rounded-full text-sm text-white gap-1">
                                       <img src={gemImg} alt="gemsaImg" className="w-6 h-6 flex-shrink-0" />
 
                                       <span className="inline-block w-6 text-left tabular-nums">
@@ -1701,7 +1701,7 @@ const MineGame = () => {
 
                                 {/* Current and last game profit */}
                                 {(gameStarted) &&
-                                  <div className="mt-2   rounded-lg  p-2 bg-[#18181A] w-full transition-all duration-500 ease-in-out
+                                  <div className="mt-2   rounded-full  p-2 bg-[#18181A] w-full transition-all duration-500 ease-in-out
             opacity-100 translate-y-0
 ">
                                     <div className="flex items-center justify-between text-sm p-3 text-white">
@@ -1752,7 +1752,7 @@ const MineGame = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="h-10 rounded-lg w-full  bg-[#262628] flex items-center justify-around">
+                                    <div className="h-10 rounded-full w-full  bg-[#262628] flex items-center justify-around">
                                       <div className="flex flex-col items-center justify-between w-1/2">
 
                                         <span className="text-[#F9D028] text-[14px] font-medium  ">{currentMultiplier.toFixed(2)}x</span>
@@ -1779,7 +1779,7 @@ const MineGame = () => {
                                                                 <input
                                                                     disabled
                                                                     value={(profit || 0).toFixed(9)}
-                                                                    className="w-full bg-[#1a1a1a] border border-[#333333] rounded-lg px-3 py-3 text-gray-100"
+                                                                    className="w-full bg-[#1a1a1a] border border-[#333333] rounded-full px-3 py-3 text-gray-100"
                                                                 />
                                                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-400">
                                                                     ⛃
@@ -1897,7 +1897,7 @@ const MineGame = () => {
                                         setIsFocused(false)
                                       }}
                                       placeholder="0.00"
-                                      className={`w-full bg-[#18181A]   rounded-lg pl-8 pr-32 py-2 outline-none    ${errorMsg ? "ring-2 ring-red-500" : "focus:ring-2 focus:ring-[#F9D028] "} text-[#94a59e]  focus:text-white`}
+                                      className={`w-full bg-[#18181A]   rounded-full pl-8 pr-32 py-2 outline-none    ${errorMsg ? "ring-2 ring-red-500" : "focus:ring-2 focus:ring-[#F9D028] "} text-[#94a59e]  focus:text-white`}
                                     />
                                     <Tooltip
                                       id="betError2"
@@ -1905,7 +1905,7 @@ const MineGame = () => {
                                       clickable={false}
                                       place="top"
                                       className="!bg-black  !text-white
-        !px-3 !py-2 !rounded-md 
+        !px-3 !py-2 !rounded-full 
         !backdrop-blur-sm !text-xs !font-medium
         !z-[9999]"
                                     >
@@ -1928,7 +1928,7 @@ const MineGame = () => {
                                           });
                                         }
                                         }
-                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-l-md text-gray-200 "
+                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-l-full text-gray-200 "
                                       >
                                         1/2
                                       </button>
@@ -1941,7 +1941,7 @@ const MineGame = () => {
                                           )
                                         }
                                         }
-                                        className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] ${!ShowMAxBetBTN ? "rounded-r-md" : ""} text-gray-200 `}
+                                        className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] ${!ShowMAxBetBTN ? "rounded-r-full" : ""} text-gray-200 `}
                                       >
                                         2X
                                       </button>
@@ -1962,14 +1962,14 @@ const MineGame = () => {
                                           }
                                         }
                                         }
-                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333]  rounded-r-md text-gray-200 "
+                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333]  rounded-r-full text-gray-200 "
                                       >
                                         Max
                                       </button>}
                                     </div>
                                   </div>
                                   {/* {gameOver && (
-                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-semibold border border-[#333333] bg-[#1a1a1a]/80">
+                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-sm font-semibold border border-[#333333] bg-[#1a1a1a]/80">
                                                             {result === "win" ? "You win" : "You lost"}
                                                         </div>
                                                     )} */}
@@ -1980,14 +1980,14 @@ const MineGame = () => {
                                   <button
                                     onClick={pickRandomTile}
                                     disabled={!gameStarted || IsBtnClick}
-                                    className={` w-full    font-medium  py-3 rounded-lg ${!gameStarted || IsBtnClick ? "cursor-not-allowed bg-[#262628] border-2 border-[#000000] text-gray-300" : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-[#F9D028] hover:ring-[#F9D028] text-black"}`}
+                                    className={` w-full    font-medium  py-3 rounded-full ${!gameStarted || IsBtnClick ? "cursor-not-allowed bg-[#262628] border-2 border-[#000000] text-gray-300" : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-[#F9D028] hover:ring-[#F9D028] text-black"}`}
                                   >
                                     Pick Random
                                   </button>
                                   <button
                                     onClick={() => cashOut()}
                                     disabled={(!gameStarted || safeReveals === 0) || IsBtnClick}
-                                    className={`w-full font-medium py-3 rounded-lg  transition-colors    ${(!gameStarted || safeReveals === 0) || IsBtnClick
+                                    className={`w-full font-medium py-3 rounded-full  transition-colors    ${(!gameStarted || safeReveals === 0) || IsBtnClick
                                       ? "bg-[#262628] border-2 border-[#000000]  cursor-not-allowed text-gray-300"
                                       : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-[#F9D028] hover:ring-[#F9D028] text-black"
                                       }`}
@@ -2000,7 +2000,7 @@ const MineGame = () => {
                                 <button
                                   disabled={(gameStarted || IsBtnClick) || errorMsg}
                                   onClick={onBet}
-                                  className={`w-full mb-2 mt-2 font-medium flex items-center justify-center  ring-2 text-black disabled:cursor-not-allowed  py-3 rounded-lg transition-colors ${gameStarted || IsBtnClick ? " bg-[#262628]  ring-[#000000] cursor-not-allowed" : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-[#F9D028] hover:ring-[#F9D028]   "}`}
+                                  className={`w-full mb-2 mt-2 font-medium flex items-center justify-center  ring-2 text-black disabled:cursor-not-allowed  py-3 rounded-full transition-colors ${gameStarted || IsBtnClick ? " bg-[#262628]  ring-[#000000] cursor-not-allowed" : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-[#F9D028] hover:ring-[#F9D028]   "}`}
                                 >
                                   {BetLoading ? (
                                     <img
@@ -2026,7 +2026,7 @@ const MineGame = () => {
                                     Grid Size
                                   </div>
 
-                                  <div className="grid grid-cols-4 gap-[2px] rounded-lg bg-[#18181A] p-1">
+                                  <div className="grid grid-cols-4 gap-[2px] rounded-full bg-[#18181A] p-1">
                                     {sizes.map((size) => {
                                       const isSizeDisabled = [0].includes(size);
                                       const isDisabled = isAutoPlayOn || isSizeDisabled;
@@ -2051,7 +2051,7 @@ const MineGame = () => {
                                             setremainingPositions([]);
                                           }}
                                           className={`
-            py-2 ${size == 64 ? 'rounded-r-lg' : size == 25 ? "rounded-l-lg" : ''}   text-sm transition-all
+            py-2 ${size == 64 ? 'rounded-r-full' : size == 25 ? "rounded-l-full" : ''}   text-sm transition-all
             ${gridSize === size
                                               ? "bg-[#F9D028] text-black font-semibold"
                                               : "bg-[#262628] hover:bg-[#333333] text-white hover:opacity-80"
@@ -2075,8 +2075,8 @@ const MineGame = () => {
                                   <div className="text-gray-300 text-sm font-medium mb-1 px-1">
                                     Number of Mines
                                   </div>
-                                  <div className="w-full  bg-[#18181A] px-1 py-1 rounded-lg flex items-center justify-between gap-2">
-                                    <div className=" w-[18%] flex justify-center items-center  bg-[#262628] p-1 rounded-lg text-sm text-white">
+                                  <div className="w-full  bg-[#18181A] px-1 py-1 rounded-full flex items-center justify-between gap-2">
+                                    <div className=" w-[18%] flex justify-center items-center  bg-[#262628] p-1 rounded-full text-sm text-white">
                                       <img src={bomb_static} alt="BombaImg" className="w-8 h-8 p-1" /> <span className="inline-block w-6 text-left tabular-nums"> {mineCount}</span>
                                     </div>
                                     {/* Slider */}
@@ -2091,7 +2091,7 @@ const MineGame = () => {
                                       />
 
                                       {/* Track background */}
-                                      <div className="absolute top-1/2 left-0 w-full h-2 -translate-y-1/2 rounded-full bg-gradient-to-r from-[#F9D028] to-[#F9D028]  " />
+                                      <div className="absolute top-1/2 left-0 w-full h-2 -translate-y-1/2 rounded-full bg-white/10 border border-white/[0.06]" />
 
                                       {/* Thumb styling */}
                                       <style jsx>{`
@@ -2100,8 +2100,8 @@ const MineGame = () => {
             height: 20px;
             width: 40px;
             border-radius: 6px;
-            background: #2ec5ff;
-            // box-shadow: 0 0 10px #2ec5ff;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
             cursor: pointer;
             position: relative;
             margin-top: 4px; /* Center the thumb on the track */
@@ -2112,13 +2112,13 @@ const MineGame = () => {
             height: 20px;
             width: 40px;
             border-radius: 999px;
-            background: #2ec5ff;
-            // box-shadow: 0 0 10px #2ec5ff;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
             cursor: pointer;
           }
         `}</style>
                                     </div>
-                                    <div className="w-[18%] flex justify-center items-center bg-[#262628] p-1 rounded-lg text-sm text-white gap-1">
+                                    <div className="w-[18%] flex justify-center items-center bg-[#262628] p-1 rounded-full text-sm text-white gap-1">
                                       <img src={gemImg} alt="gemsaImg" className="w-6 h-6 flex-shrink-0" />
 
                                       <span className="inline-block w-6 text-left tabular-nums">
@@ -2164,7 +2164,7 @@ const MineGame = () => {
                                       type="text"
                                       inputMode="numeric"
 
-                                      className="w-full bg-[#18181A]   rounded-lg outline-none   focus:ring-2 focus:ring-[#F9D028] px-3 py-2 text-gray-200"
+                                      className="w-full bg-[#18181A]   rounded-full outline-none   focus:ring-2 focus:ring-[#F9D028] px-3 py-2 text-gray-200"
                                     />
                                     <button
                                       type="button"
@@ -2202,7 +2202,7 @@ const MineGame = () => {
                                   (<>
                                     <div className="mt-1">
                                       <div className="text-gray-300 font-medium text-sm mb-1 px-1">On Win</div>
-                                      <div className="flex items-center justify-between bg-[#18181A] p-1 rounded-lg outline-none focus-within:ring-2 focus-within:ring-[#F9D028] ">
+                                      <div className="flex items-center justify-between bg-[#18181A] p-1 rounded-full outline-none focus-within:ring-2 focus-within:ring-[#F9D028] ">
                                         <div className="flex items-center">
                                           {/* ✅ Reset button fades when value <= 0 */}
                                           <button
@@ -2212,7 +2212,7 @@ const MineGame = () => {
                                               buttonClickSoundFn();
                                               setOnWinIncrease("0.00");
                                             }}
-                                            className={`px-2 font-medium py-[8px] rounded-md text-sm text-white transition   
+                                            className={`px-2 font-medium py-[8px] rounded-full text-sm text-white transition   
           ${parseFloat(onWinIncrease || "0") > 0
                                                 ? "bg-[#262628]  hover:bg-[#333333] cursor-pointer"
                                                 : "bg-[#262628]  cursor-not-allowed "
@@ -2221,7 +2221,7 @@ const MineGame = () => {
                                             Reset
                                           </button>
 
-                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-md text-[#FFFFFFB2] text-sm">
+                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-full text-[#FFFFFFB2] text-sm">
                                             Increase by:
                                           </button>
 
@@ -2255,18 +2255,18 @@ const MineGame = () => {
                                               if (["0", "0.0", "0.00"].includes(e.target.value)) setOnWinIncrease("");
                                               else e.target.select();
                                             }}
-                                            className="w-1/3 bg-[#18181A] font-medium outline-none rounded-lg px-2 py-2 text-gray-200"
+                                            className="w-1/3 bg-[#18181A] font-medium outline-none rounded-full px-2 py-2 text-gray-200"
                                           />
                                         </div>
 
-                                        <span className="px-2 py-2 font-medium rounded-md text-gray-200">%</span>
+                                        <span className="px-2 py-2 font-medium rounded-full text-gray-200">%</span>
                                       </div>
                                     </div>
 
                                     {/* On Loss */}
                                     <div className="mt-1">
                                       <div className="text-gray-300 text-sm font-medium mb-1 px-1">On Loss</div>
-                                      <div className="flex items-center justify-between bg-[#18181A] p-1 rounded-lg outline-none focus-within:ring-2 focus-within:ring-[#F9D028] ">
+                                      <div className="flex items-center justify-between bg-[#18181A] p-1 rounded-full outline-none focus-within:ring-2 focus-within:ring-[#F9D028] ">
                                         <div className="flex items-center">
                                           {/* ✅ Reset button fades when value <= 0 */}
                                           <button
@@ -2277,7 +2277,7 @@ const MineGame = () => {
                                               buttonClickSoundFn();
                                               setOnLoseIncrease("0.00");
                                             }}
-                                            className={`px-2 font-medium py-[7px] rounded-md text-sm text-white transition 
+                                            className={`px-2 font-medium py-[7px] rounded-full text-sm text-white transition 
           ${parseFloat(onLoseIncrease || "0") > 0
                                                 ? "bg-[#262628]  hover:bg-[#333333] cursor-pointer"
                                                 : "bg-[#262628]  cursor-not-allowed "
@@ -2286,7 +2286,7 @@ const MineGame = () => {
                                             Reset
                                           </button>
 
-                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-md text-[#FFFFFFB2] text-sm ">
+                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-full text-[#FFFFFFB2] text-sm ">
                                             Increase by:
                                           </button>
 
@@ -2320,11 +2320,11 @@ const MineGame = () => {
                                               if (["0", "0.0", "0.00"].includes(e.target.value)) setOnLoseIncrease("");
                                               else e.target.select();
                                             }}
-                                            className="w-1/3 font-medium bg-[#18181A] outline-none rounded-lg px-2 py-2 text-gray-200"
+                                            className="w-1/3 font-medium bg-[#18181A] outline-none rounded-full px-2 py-2 text-gray-200"
                                           />
                                         </div>
 
-                                        <span className="px-2 py-2 font-medium rounded-md text-gray-200">%</span>
+                                        <span className="px-2 py-2 font-medium rounded-full text-gray-200">%</span>
                                       </div>
                                     </div>
 
@@ -2388,7 +2388,7 @@ const MineGame = () => {
                                               else e.target.select();
                                             }}
 
-                                            className="w-full  bg-[#18181A] outline-none focus:ring-2 focus:ring-[#F9D028]   rounded-lg pl-10 pr-8 py-2 text-gray-200"
+                                            className="w-full  bg-[#18181A] outline-none focus:ring-2 focus:ring-[#F9D028]   rounded-full pl-10 pr-8 py-2 text-gray-200"
                                           />
                                         </div>
                                       </div>
@@ -2452,7 +2452,7 @@ const MineGame = () => {
                                               else e.target.select();
                                             }}
 
-                                            className="w-full bg-[#18181A]  outline-none focus:ring-2 focus:ring-[#F9D028]   rounded-lg pl-10 pr-8 py-2 text-gray-200"
+                                            className="w-full bg-[#18181A]  outline-none focus:ring-2 focus:ring-[#F9D028]   rounded-full pl-10 pr-8 py-2 text-gray-200"
                                           />
                                         </div>
                                       </div>
@@ -2571,7 +2571,7 @@ const MineGame = () => {
                                         setIsFocused(false)
                                       }}
                                       placeholder="0.00"
-                                      className={`w-full bg-[#18181A]   rounded-lg pl-8 pr-32 py-2 outline-none    ${errorMsg ? "ring-2 ring-red-500" : "focus:ring-2 focus:ring-[#F9D028] "} text-[#94a59e]  focus:text-white`}
+                                      className={`w-full bg-[#18181A]   rounded-full pl-8 pr-32 py-2 outline-none    ${errorMsg ? "ring-2 ring-red-500" : "focus:ring-2 focus:ring-[#F9D028] "} text-[#94a59e]  focus:text-white`}
                                     />
                                     <Tooltip
                                       id="betError3"
@@ -2579,7 +2579,7 @@ const MineGame = () => {
                                       clickable={false}
                                       place="top"
                                       className="!bg-black  !text-white
-        !px-3 !py-2 !rounded-md 
+        !px-3 !py-2 !rounded-full 
         !backdrop-blur-sm !text-xs !font-medium
         !z-[9999]"
                                     >
@@ -2602,7 +2602,7 @@ const MineGame = () => {
                                           });
                                         }
                                         }
-                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-l-md text-gray-200 "
+                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] rounded-l-full text-gray-200 "
                                       >
                                         1/2
                                       </button>
@@ -2615,7 +2615,7 @@ const MineGame = () => {
                                           )
                                         }
                                         }
-                                        className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] ${!ShowMAxBetBTN ? "rounded-r-md" : ""} text-gray-200 `}
+                                        className={`px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333] ${!ShowMAxBetBTN ? "rounded-r-full" : ""} text-gray-200 `}
                                       >
                                         2X
                                       </button>
@@ -2636,14 +2636,14 @@ const MineGame = () => {
                                           }
                                         }
                                         }
-                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333]  rounded-r-md text-gray-200 "
+                                        className="px-2 py-1 text-xs bg-[#262628] hover:bg-[#333333]  rounded-r-full text-gray-200 "
                                       >
                                         Max
                                       </button>}
                                     </div>
                                   </div>
                                   {/* {gameOver && (
-                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-semibold border border-[#333333] bg-[#1a1a1a]/80">
+                                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-sm font-semibold border border-[#333333] bg-[#1a1a1a]/80">
                                                             {result === "win" ? "You win" : "You lost"}
                                                         </div>
                                                     )} */}
@@ -2655,7 +2655,7 @@ const MineGame = () => {
                                       <button
                                         disabled={selectedAutoPlayCards.length === 0 || isbetStopeing}
                                         onClick={StopeAutoPlay}
-                                        className={`mt-2 w-full   text-black bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] font-medium py-3 rounded-lg transition-colors ${selectedAutoPlayCards.length === 0 ? " bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-2 ring-[#F9D028] cursor-not-allowed" : "bg-[#linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-2 ring-[#F9D028] hover:ring-[#F9D028]    "}`}
+                                        className={`mt-2 w-full   text-black bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] font-medium py-3 rounded-full transition-colors ${selectedAutoPlayCards.length === 0 ? " bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-2 ring-[#F9D028] cursor-not-allowed" : "bg-[#linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-2 ring-[#F9D028] hover:ring-[#F9D028]    "}`}
                                       >
                                         {isbetStopeing ? 'Stopping...' : 'Stop Bet'}
                                       </button>
@@ -2664,7 +2664,7 @@ const MineGame = () => {
                                       <button
                                         disabled={(mode !== "auto" || isAutoPlayOn) || selectedAutoPlayCards.length === 0 || errorMsg}
                                         onClick={onBet}
-                                        className={`mt-2 w-full flex items-center justify-center disabled:bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] disabled:ring-2 disabled:ring-[#F9D028]  disabled:cursor-not-allowed  text-black font-medium py-3 rounded-lg transition-colors ${(mode !== "auto" || isAutoPlayOn) || selectedAutoPlayCards.length === 0 ? " bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)]  ring-2 ring-[#F9D028]  cursor-not-allowed" : " ring-2 ring-[#F9D028] hover:ring-[#F9D028]   bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)]"}`}
+                                        className={`mt-2 w-full flex items-center justify-center disabled:bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] disabled:ring-2 disabled:ring-[#F9D028]  disabled:cursor-not-allowed  text-black font-medium py-3 rounded-full transition-colors ${(mode !== "auto" || isAutoPlayOn) || selectedAutoPlayCards.length === 0 ? " bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)]  ring-2 ring-[#F9D028]  cursor-not-allowed" : " ring-2 ring-[#F9D028] hover:ring-[#F9D028]   bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)]"}`}
                                       >
                                         {BetLoading ? (
                                           <img
@@ -2685,7 +2685,7 @@ const MineGame = () => {
                                     <button
                                       disabled={(isAutoPlayOn) || errorMsg || gameStarted}
                                       onClick={pickRandomTileAuto}
-                                      className={`mt-2 w-full flex items-center justify-center  text-black font-medium py-3 rounded-lg transition-colors ${(isAutoPlayOn) ? " bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-2 ring-[#F9D028]  cursor-not-allowed" : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)]  ring-2 ring-[#F9D028] hover:ring-[#F9D028] "}`}
+                                      className={`mt-2 w-full flex items-center justify-center  text-black font-medium py-3 rounded-full transition-colors ${(isAutoPlayOn) ? " bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] ring-2 ring-[#F9D028]  cursor-not-allowed" : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)]  ring-2 ring-[#F9D028] hover:ring-[#F9D028] "}`}
                                     >
                                       Random Pick
                                     </button>
@@ -2935,7 +2935,7 @@ const MineGame = () => {
 
                                         {/* highlight ring */}
                                         {/* <div
-                                                                                className={`absolute inset-0 rounded-md ${isBomb ? "ring-2 ring-red-600/30" : "ring-2 ring-emerald-500/30"
+                                                                                className={`absolute inset-0 rounded-full ${isBomb ? "ring-2 ring-red-600/30" : "ring-2 ring-emerald-500/30"
                                                                                     }`}
                                                                             /> */}
                                       </div>
