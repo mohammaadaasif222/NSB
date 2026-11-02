@@ -765,6 +765,7 @@ export const CATEGORY_ICONS: Record<GameShelfKey, FC<IconProps>> = {
   table: LayersIcon,
   'high-rtp': StarIcon,
   'bonus-buys': GiftIcon,
+  'hold-and-win': LockIcon,
   'instant-wins': ZapIcon,
   blackjack: LayersIcon,
   roulette: ActivityIcon,
