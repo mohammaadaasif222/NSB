@@ -2467,7 +2467,7 @@ const DiceGame = () => {
                                     onClick={() => setChecked(!checked)}
                                     className={`relative inline-flex h-5 w-12 border-[1px] border-[#333333] items-center rounded-full transition-colors duration-200 ${checked ? "bg-[#F9D028]" : "bg-[#18181A]"}`}
                                   >
-                                    <span className={`inline-block h-4 w-5 transform rounded-full transition-transform duration-200 ${checked ? "translate-x-6 bg-gradient-to-b from-[#F9D028] to-[#F9D028]" : "translate-x-1 bg-gradient-to-b from-[#333333] to-[#333333]"}`} />
+                                    <span className={`inline-block h-4 w-5 transform rounded-full shadow transition-transform duration-200 ${checked ? "translate-x-6 bg-[#000000]" : "translate-x-1 bg-[#333333]"}`} />
                                   </button>
                                 </div>
 
