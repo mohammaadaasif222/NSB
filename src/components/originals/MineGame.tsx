@@ -8,16 +8,18 @@ import LatestBetTable from "./partials/LatestBetTable";
 import { getOriginalsGame, getPlayerBalanceApi } from "@/services/originals";
 // import { useSearchParams } from "next/navigation";
 import { Button, IconButton } from "@mui/material";
-const bomb_static = "/assets/mine/bomb.png";
-const gemImg3 = "/assets/mine/daimond gif 3.gif";
-const gemImg2 = "/assets/mine/daimond gif 2.gif";
-const gemImg1 = "/assets/mine/daimond gif.gif";
-const gemImg = "/assets/mine/gem.png";
-const gemsaImg = "/assets/mine/Gemsa.png";
-const bombaImg = "/assets/mine/Bomba.png";
+// TEMPORARY: Rolluck logo mobile used as gem+bomb placeholders for visual check.
+// Revert these back to /assets/mine/bomb.png + gem.png + related GIFs once done.
+const bomb_static = "/assets/mine/temp-bomb.png";
+const gemImg3 = "/assets/mine/temp-gem.png";
+const gemImg2 = "/assets/mine/temp-gem.png";
+const gemImg1 = "/assets/mine/temp-gem.png";
+const gemImg = "/assets/mine/temp-gem.png";
+const gemsaImg = "/assets/mine/temp-gem.png";
+const bombaImg = "/assets/mine/temp-bomb.png";
 const chipsign = "/assets/img/chipsign.png";
 const dimondsign = "/assets/img/walletDimondIcon.png";
-const bombImg = "/assets/mine/bomb.gif";
+const bombImg = "/assets/mine/temp-bomb.png";
 const BlackjackImg = "/assets/img/MineImg.png";
 const FairplayImg = "/assets/img/Fairplay.png";
 
@@ -2893,7 +2895,7 @@ const MineGame = () => {
                                             alt={isBomb ? "bomb" : "gem"}
                                             width={100}
                                             height={95}
-                                            className={`object-contain w-full h-[92%] ${isAnimating ? "animate-zoom-in-center" : ""}`}
+                                            className={`object-contain w-[80%] h-[74%] ${isAnimating ? "animate-zoom-in-center" : ""}`}
                                           />
 
                                           {/* ✨ Shiny sparkles for gems only */}
