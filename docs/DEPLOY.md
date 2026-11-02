@@ -97,6 +97,7 @@ nano .env
 |---|---|
 | `SITE_ADDRESS` | No domain yet: `<ip-with-dashes>.sslip.io`, e.g. `140-238-1-2.sslip.io`. It resolves to the IP, and Caddy gets a real HTTPS certificate for it. With a domain: `staging.noidasuperbazaar.com`, with an A record pointing to the IP. |
 | `SITE_URL` | `https://` + the same address |
+| `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | `G-M038E5ZW18` (public Google Analytics 4 measurement ID; passed into the web Docker build) |
 | `POSTGRES_PASSWORD`, `JWT_SECRET`, `SETTINGS_ENCRYPTION_KEY` | The generated values. **Save them somewhere safe.** The encrypted settings (Cloudinary, Firebase and SMTP secrets) can only be read with the same key, so the move to Hostinger must reuse it. |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | The first admin login. The password needs at least 12 characters and cannot be the example value. |
 | `COOKIE_SECURE` | Keep `true`. |
@@ -115,7 +116,7 @@ Optional demo vendors for staging: `docker compose exec api node dist/db/seed-de
 
 - Open `https://<SITE_ADDRESS>/api/health`. It should return `{"status":"ok"}`, which means the API can reach the database.
 - Open `https://<SITE_ADDRESS>/admin` and sign in.
-- In **Admin › Settings**, choose image storage. Local disk works on a VPS. Cloudinary's free tier keeps images off the server. Then enter the SMTP details and send a test email.
+- In **Admin › Settings**, choose image storage. Local disk works on a VPS. Cloudinary's free tier keeps images off the server. Then enter the SMTP details and send a test email. Forgot password on the admin login sends its link this way, so without working SMTP and `SITE_URL` an admin who forgets their password cannot reset it.
 - Logs: `docker compose logs -f api` (or `web`, `caddy`). If HTTPS fails, the Caddy log usually shows a port 80/443 that is still blocked.
 
 ## Updating
@@ -133,6 +134,8 @@ tar -xzOf ~/nsb.tgz ./deploy/update.sh > ~/update.sh && bash ~/update.sh
 ```
 
 [deploy/update.sh](../deploy/update.sh) backs up the database to `~/backups/`, unpacks the code into a fresh folder (so files deleted on the PC disappear on the server too), keeps `deploy/.env`, builds, applies database migrations, moves the old code to `~/nsb.prev`, restarts, and waits for the API's health check. The old code and containers stay in place until then, so a failed build or migration leaves the site running as it was. The script exits with an error if any step fails, and prints Done only on success. The API is down for a few seconds during the restart. Run `npm run db:generate` before packing if `schema.ts` changed. Migrations run in one transaction, so an index on a large table blocks writes while it builds: once a table has hundreds of thousands of rows, create the index by hand first with `CREATE INDEX CONCURRENTLY`, and write the migration with `IF NOT EXISTS`.
+
+The GA4 measurement ID is public and is compiled into the web bundle during the Docker build. Set `NEXT_PUBLIC_GA4_MEASUREMENT_ID` in `deploy/.env` before rebuilding the web image. Locally, set it in `apps/web/.env`. Analytics scripts load only after a visitor allows cookies.
 
 ### Rollback
 

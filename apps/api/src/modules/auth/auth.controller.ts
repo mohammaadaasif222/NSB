@@ -11,10 +11,14 @@ import {
   adminUserUpdateSchema,
   type ChangePasswordInput,
   changePasswordSchema,
+  type ForgotPasswordInput,
+  forgotPasswordSchema,
   type LoginInput,
   loginSchema,
   type ProfileInput,
   profileSchema,
+  type ResetPasswordInput,
+  resetPasswordSchema,
   SESSION_COOKIE,
 } from '@nsb/shared';
 import type { Env } from '../../config/env.js';
@@ -80,6 +84,24 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     this.setSession(res, await this.auth.changePassword(admin.sub, body));
+  }
+
+  /** Always a 204: the link is emailed after the reply, and only to an admin's address. */
+  @Post('forgot-password')
+  @HttpCode(204)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  forgotPassword(@Body(new ZodPipe(forgotPasswordSchema)) { email }: ForgotPasswordInput): void {
+    void this.auth.sendPasswordReset(email);
+  }
+
+  /** Every session ends, so the admin signs in again with the new password. */
+  @Post('reset-password')
+  @HttpCode(204)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  resetPassword(@Body(new ZodPipe(resetPasswordSchema)) body: ResetPasswordInput): Promise<void> {
+    return this.auth.resetPassword(body);
   }
 
   /** The signed-in admin's own name and email (any role). */

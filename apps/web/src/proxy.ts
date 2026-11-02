@@ -20,7 +20,8 @@ export function proxy(request: NextRequest) {
  */
 function adminGate(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  if (pathname === "/admin/logout") return NextResponse.next();
+  // Reset pages work signed out, and with an old session still in the browser.
+  if (pathname === "/admin/logout" || pathname === "/admin/forgot-password" || pathname === "/admin/reset-password") return NextResponse.next();
 
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const isLogin = pathname === "/admin/login";

@@ -289,6 +289,7 @@
   z-index: 1;
   display: block;
   margin-left: auto;
+  cursor: pointer;
   border-radius: 10px;
   background: var(--color-brand);
   padding: 9px 22px;

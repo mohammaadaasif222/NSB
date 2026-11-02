@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { api } from "@/lib/api";
 import { getSiteLocation } from "@/lib/location-server";
 import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
+import "./static-pages.css";
 
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
   const [categories, { whatsapp, footer }, location] = await Promise.all([

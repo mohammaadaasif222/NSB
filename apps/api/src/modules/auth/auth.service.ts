@@ -3,16 +3,29 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
-import { and, asc, count, eq, ne, sql } from 'drizzle-orm';
-import type { AdminUser, AdminUserInput, AdminUserRow, AdminUserUpdate, ChangePasswordInput, LoginInput, ProfileInput } from '@nsb/shared';
+import { and, asc, count, eq, gt, isNull, lte, ne, or, sql } from 'drizzle-orm';
+import { createHash, randomBytes } from 'node:crypto';
+import {
+  type AdminUser,
+  type AdminUserInput,
+  type AdminUserRow,
+  type AdminUserUpdate,
+  type ChangePasswordInput,
+  type LoginInput,
+  PASSWORD_RESET_MINUTES,
+  type ProfileInput,
+  type ResetPasswordInput,
+} from '@nsb/shared';
 import { DB, type Database, type Tx } from '../../db/db.module.js';
 import { adminUsers } from '../../db/schema.js';
 import { pgCode } from '../../common/db-errors.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 export interface SessionPayload {
   sub: string;
@@ -35,6 +48,14 @@ const DUMMY_HASH = bcrypt.hashSync('nsb-timing-guard', 12);
 const LOCK_AFTER = 10;
 const LOCK_MINUTES = 15;
 
+/** One reset email per account in this time, so nobody can flood an admin's inbox from many addresses. */
+const RESET_RESEND_MINUTES = 1;
+
+const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
+
+/** Clears a reset link, once the password or the address it went to has changed. */
+const noResetLink = { resetTokenHash: null, resetExpiresAt: null };
+
 const publicFields = { id: adminUsers.id, email: adminUsers.email, name: adminUsers.name, role: adminUsers.role };
 
 const emailTaken = () =>
@@ -46,9 +67,12 @@ const emailTaken = () =>
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @Inject(DB) private readonly db: Database,
     private readonly jwt: JwtService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async login({ email, password }: LoginInput, ip = ''): Promise<{ token: string; user: AdminUser }> {
@@ -106,16 +130,63 @@ export class AuthService {
     // A new session version signs out every other session; this one gets a fresh token.
     const [updated] = await this.db
       .update(adminUsers)
-      .set({ passwordHash: await bcrypt.hash(newPassword, 12), sessionVersion: sql`${adminUsers.sessionVersion} + 1` })
+      .set({ passwordHash: await bcrypt.hash(newPassword, 12), sessionVersion: sql`${adminUsers.sessionVersion} + 1`, ...noResetLink })
       .where(eq(adminUsers.id, id))
       .returning({ id: adminUsers.id, email: adminUsers.email, sessionVersion: adminUsers.sessionVersion });
     return this.sign(updated);
   }
 
+  /**
+   * Emails a reset link if the address is an admin's. Called after the reply, which is the same
+   * either way, so neither its wording nor its timing reveals which emails exist. Only the token's
+   * hash is stored, so a copy of the database cannot be used to reset a password.
+   */
+  async sendPasswordReset(email: string): Promise<void> {
+    try {
+      const token = randomBytes(32).toString('base64url');
+      const expiresAt = (minutes: number) => sql`now() + make_interval(mins => ${minutes})`;
+      const [admin] = await this.db
+        .update(adminUsers)
+        .set({ resetTokenHash: hashToken(token), resetExpiresAt: expiresAt(PASSWORD_RESET_MINUTES) })
+        .where(
+          and(
+            eq(adminUsers.email, email),
+            or(isNull(adminUsers.resetExpiresAt), lte(adminUsers.resetExpiresAt, expiresAt(PASSWORD_RESET_MINUTES - RESET_RESEND_MINUTES))),
+          ),
+        )
+        .returning({ email: adminUsers.email, name: adminUsers.name });
+      if (admin) await this.notifications.passwordReset(admin, token);
+    } catch (err) {
+      this.logger.error('Could not send a password reset email', err);
+    }
+  }
+
+  /** Sets the password from a reset link. Signs out every session, and clears any lock on the account. */
+  async resetPassword({ token, newPassword }: ResetPasswordInput): Promise<void> {
+    // One statement, so a link used twice at once only works once.
+    const [row] = await this.db
+      .update(adminUsers)
+      .set({
+        passwordHash: await bcrypt.hash(newPassword, 12),
+        sessionVersion: sql`${adminUsers.sessionVersion} + 1`,
+        ...noResetLink,
+        failedLogins: 0,
+        lastFailedAt: null,
+        lastFailedIp: null,
+        lockedUntil: null,
+      })
+      .where(and(eq(adminUsers.resetTokenHash, hashToken(token)), gt(adminUsers.resetExpiresAt, sql`now()`)))
+      .returning({ id: adminUsers.id });
+    if (!row) {
+      const message = 'This reset link is invalid or has expired';
+      throw new BadRequestException({ statusCode: 400, message, issues: [{ path: 'token', message }] });
+    }
+  }
+
   /** The signed-in admin's own name and email. The session stays valid: it is keyed by id. */
   async updateProfile(id: string, input: ProfileInput): Promise<AdminUser> {
     try {
-      const [row] = await this.db.update(adminUsers).set(input).where(eq(adminUsers.id, id)).returning(publicFields);
+      const [row] = await this.db.update(adminUsers).set({ ...input, ...noResetLink }).where(eq(adminUsers.id, id)).returning(publicFields);
       if (!row) throw new UnauthorizedException('Account no longer exists');
       return row;
     } catch (err) {

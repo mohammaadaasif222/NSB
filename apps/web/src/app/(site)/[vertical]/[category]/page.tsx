@@ -6,6 +6,7 @@ import { type Category, defaultEliteBanner, type ListingCounts, type ListingSumm
 import { BackButton } from "@/components/site/back-button";
 import { Breadcrumb } from "@/components/site/breadcrumb";
 import { BrowsePanel } from "@/components/site/listing/browse-panel";
+import { EnquireButton, EnquiryProvider } from "@/components/site/listing/enquiry-dialog";
 import { EliteBanner } from "@/components/shared/elite-banner";
 import { FilterMenu } from "@/components/site/listing/filter-menu";
 import { ListingCard, type ListingView } from "@/components/shared/listing-card";
@@ -108,7 +109,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
 
   return (
     <div className="bg-surface">
-      <div className="container-page pt-4 pb-8 sm:pt-6 sm:pb-12">
+      <div className="container-home pt-4 pb-8 sm:pt-6 sm:pb-12">
         <BackButton fallback="/" className="mb-3" />
         <Breadcrumb
           items={[
@@ -249,19 +250,22 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
                 )}
               </p>
             ) : (
-              <ul id="listings" className={`lp-list scroll-mt-24 ${view === "grid" ? "is-grid" : ""}`}>
-                {listings.items.map((listing, i) => (
-                  <li key={listing.id} className={listing.isElite ? "lp-wide" : undefined}>
-                    <ListingCard
-                      listing={listing}
-                      view={view}
-                      eager={i < EAGER_CARDS}
-                      href={listingPath(vertical.slug, category.slug, listing.slug)}
-                      contact={{ whatsapp: whatsapp ? whatsappHref(whatsapp, listing.name) : undefined, phone: nsbPhone ? `tel:${nsbPhone}` : undefined }}
-                    />
-                  </li>
-                ))}
-              </ul>
+              <EnquiryProvider wedding={vertical.slug === "wedding"}>
+                <ul id="listings" className={`lp-list scroll-mt-24 ${view === "grid" ? "is-grid" : ""}`}>
+                  {listings.items.map((listing, i) => (
+                    <li key={listing.id} className={listing.isElite ? "lp-wide" : undefined}>
+                      <ListingCard
+                        listing={listing}
+                        view={view}
+                        eager={i < EAGER_CARDS}
+                        href={listingPath(vertical.slug, category.slug, listing.slug)}
+                        contact={{ whatsapp: whatsapp ? whatsappHref(whatsapp, listing.name) : undefined, phone: nsbPhone ? `tel:${nsbPhone}` : undefined }}
+                        enquire={<EnquireButton id={listing.id} name={listing.name} />}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </EnquiryProvider>
             )}
 
             <Pagination page={page} pageCount={pageCount} href={(p) => href({ page: p })} />

@@ -11,7 +11,8 @@ COPY apps/web apps/web
 # rewrites() in next.config.ts are fixed at build time. The image optimizer fetches locally
 # stored uploads (/api/uploads/...) through them, so point them at the api container.
 ARG API_INTERNAL_URL=http://api:4000/api
-ENV NEXT_TELEMETRY_DISABLED=1 API_INTERNAL_URL=$API_INTERNAL_URL
+ARG NEXT_PUBLIC_GA4_MEASUREMENT_ID=
+ENV NEXT_TELEMETRY_DISABLED=1 API_INTERNAL_URL=$API_INTERNAL_URL NEXT_PUBLIC_GA4_MEASUREMENT_ID=$NEXT_PUBLIC_GA4_MEASUREMENT_ID
 RUN npm run build -w @nsb/shared && npm run build -w @nsb/web
 
 FROM node:24-alpine AS runtime

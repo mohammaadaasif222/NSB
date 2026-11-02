@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Landmark, MapPin, MessageCircle, Phone, Star, Users } from "lucide-react";
+import type { ReactNode } from "react";
 import { type ListingRating, type ListingSummary, listingPlace, type QuickInfoItem, serviceTitle } from "@nsb/shared";
 import { CardPhotos } from "./card-photos";
 import { MoreInfo } from "./more-info";
@@ -17,9 +18,24 @@ export interface CardContact {
  * Vendor card, after the NSB venue page design. The whole card links to the listing (the name's
  * link is stretched over it). Key info: the first two items show as label/value pairs, the rest
  * as chips; phones swap the chips for a short summary and add call buttons. Elite listings get
- * the blue card, which spans the row in grid view.
+ * the blue card, which spans the row in grid view. `enquire` replaces the link to the listing's
+ * enquiry card, so the site can open its popup here without the admin's preview loading it.
  */
-export function ListingCard({ listing, href, view, contact, eager }: { listing: ListingSummary; href: string; view: ListingView; contact?: CardContact; eager?: boolean }) {
+export function ListingCard({
+  listing,
+  href,
+  view,
+  contact,
+  eager,
+  enquire,
+}: {
+  listing: ListingSummary;
+  href: string;
+  view: ListingView;
+  contact?: CardContact;
+  eager?: boolean;
+  enquire?: ReactNode;
+}) {
   const primary = listing.keyInfo.slice(0, 2);
   const chips = [...listing.keyInfo.slice(2).map((item) => `${item.label}: ${item.value}`), ...listing.services.map(serviceTitle)];
   const shownChips = chips.slice(0, 2);
@@ -91,9 +107,11 @@ export function ListingCard({ listing, href, view, contact, eager }: { listing: 
         )}
 
         <div className="lp-bt">
-          <Link href={`${href}#enquire`} className="lp-en">
-            Enquire Now
-          </Link>
+          {enquire ?? (
+            <Link href={`${href}#enquire`} className="lp-en">
+              Enquire Now
+            </Link>
+          )}
           {contact?.whatsapp && (
             <a href={contact.whatsapp} target="_blank" rel="noreferrer" className="lp-ic" aria-label={`WhatsApp about ${listing.name}`}>
               <MessageCircle aria-hidden />

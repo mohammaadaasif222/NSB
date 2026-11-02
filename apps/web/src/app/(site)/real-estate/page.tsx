@@ -89,9 +89,9 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
   });
 
   return (
-    <div className="re">
+    <div className="re re-listing">
       <LeadProvider>
-        <div className="re-w">
+        <div className="re-w container-home">
           <div className="re-top">
             <BackButton fallback="/" />
             <nav className="re-crumb" aria-label="Breadcrumb">

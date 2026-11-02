@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import type { Env } from '../../config/env.js';
+import { NotificationsModule } from '../notifications/notifications.module.js';
 import { AdminGuard } from './admin.guard.js';
 import { AdminUsersController, AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
@@ -10,6 +11,7 @@ import { AuthService } from './auth.service.js';
 @Global()
 @Module({
   imports: [
+    NotificationsModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => ({

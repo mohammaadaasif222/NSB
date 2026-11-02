@@ -67,6 +67,9 @@ export const adminUsers = pgTable(
     lastFailedIp: text('last_failed_ip'),
     /** Sign-in refused until then, after too many wrong passwords. */
     lockedUntil: timestamp('locked_until', { withTimezone: true }),
+    /** SHA-256 of the emailed reset link's token; only the newest link works, and only once. */
+    resetTokenHash: text('reset_token_hash'),
+    resetExpiresAt: timestamp('reset_expires_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => [check('admin_users_role_check', oneOf(t.role, ADMIN_ROLES))],

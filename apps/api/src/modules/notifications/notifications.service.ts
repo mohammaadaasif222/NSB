@@ -5,6 +5,7 @@ import type { Env } from '../../config/env.js';
 import { SettingsService } from '../settings/settings.service.js';
 import { adminEnquiryEmail, type EnquiryListing, vendorEnquiryEmail } from './enquiry-email.js';
 import { MailService } from './mail.service.js';
+import { passwordResetEmail } from './password-reset-email.js';
 
 export interface EnquiryNotice {
   enquiry: Enquiry;
@@ -71,6 +72,16 @@ export class NotificationsService {
     const failed = results.flatMap((r, i) => (r.status === 'rejected' ? [`${sends[i].label}: ${(r.reason as Error).message}`] : []));
     const left = sends.filter((_, i) => results[i].status === 'rejected').map((s) => s.target);
     if (failed.length) throw new AlertFailed(`Enquiry ${enquiry.id} alert failed (${failed.join('; ')})`, left);
+  }
+
+  /** Emails an admin their reset link, even while lead alerts are switched off. */
+  async passwordReset({ email, name }: { email: string; name: string }, token: string): Promise<void> {
+    const config = await this.settings.smtpConfig();
+    if (!config || !this.adminUrl) {
+      this.logger.warn('A password reset was requested, but it needs saved SMTP settings and SITE_URL');
+      return;
+    }
+    await this.mail.send(config, [email], passwordResetEmail(name, new URL(`/admin/reset-password?token=${token}`, this.adminUrl).toString()));
   }
 
   /** Sends a test email with the saved settings, even while alerts are switched off. */

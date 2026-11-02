@@ -29,6 +29,9 @@ export const MAX_LISTING_VIDEOS = 12;
 /** Filter tags per listing (Admin › listing form › Tags). */
 export const MAX_LISTING_TAGS = 20;
 
+/** How long an emailed admin password reset link works. */
+export const PASSWORD_RESET_MINUTES = 30;
+
 /** Choices for "Event type" on wedding enquiries. Stored as plain text, so other verticals can use their own list. */
 export const WEDDING_EVENT_TYPES = ['Wedding', 'Engagement', 'Reception', 'Haldi & Mehendi', 'Sangeet', 'Other'] as const;
 

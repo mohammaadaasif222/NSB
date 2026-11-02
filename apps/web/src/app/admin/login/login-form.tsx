@@ -1,15 +1,11 @@
 "use client";
 
 import { Lock, Mail } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import { authLinkClass, inputClass, labelClass, submitClass, wellClass } from "@/components/admin/auth-page";
 import { adminClient, RequestError } from "@/lib/admin-client";
-
-/** Icon-and-input row from the login design: grey well that turns white with a blue ring on focus. */
-const wellClass =
-  "flex h-12 items-center gap-2.5 rounded-xl border-[1.5px] border-[#E2E5EE] bg-[#F5F6FA] px-3.5 text-[#64748B] transition-[border-color,box-shadow,background-color] duration-200 focus-within:border-[#1700D6] focus-within:bg-white focus-within:text-[#1700D6] focus-within:shadow-[0_0_0_4px_#EEF0FF]";
-const inputClass = "h-full min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[#0F172A] outline-none placeholder:text-[#64748B]/80";
-const labelClass = "mb-[7px] block text-[13px] font-semibold";
 
 export function LoginForm({ next }: { next: string }) {
   const router = useRouter();
@@ -56,9 +52,14 @@ export function LoginForm({ next }: { next: string }) {
         </div>
       </div>
       <div className="mb-5">
-        <label htmlFor="login-password" className={labelClass}>
-          Password
-        </label>
+        <div className="flex items-baseline justify-between gap-3">
+          <label htmlFor="login-password" className={labelClass}>
+            Password
+          </label>
+          <Link href="/admin/forgot-password" className={authLinkClass}>
+            Forgot password?
+          </Link>
+        </div>
         <div className={wellClass}>
           <Lock className="size-[18px] shrink-0" strokeWidth={1.8} aria-hidden />
           <input
@@ -81,11 +82,7 @@ export function LoginForm({ next }: { next: string }) {
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="flex h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-[#1700D6] text-[15px] font-bold text-white transition-[background-color,transform] duration-200 hover:bg-[#12049E] active:scale-[0.99] disabled:cursor-progress disabled:opacity-80"
-      >
+      <button type="submit" disabled={pending} className={submitClass}>
         {pending && <span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden />}
         {pending ? "Signing in" : "Login"}
       </button>

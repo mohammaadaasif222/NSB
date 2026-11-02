@@ -9,13 +9,30 @@ const GTM_ID = "GTM-M5RVF7KB";
 /** Meta Pixel for the site (set up by the client). */
 const META_PIXEL_ID = "2746716702269511";
 
-/** Google Tag Manager and the Meta Pixel, loaded only after the visitor taps "Allow all cookies". */
+/** GA4 measurement ID, exposed to the client at build time and set in the web environment. */
+const GA4_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+
+/** Analytics tags are loaded only after the visitor taps "Allow all cookies". */
 export function Analytics() {
   const choice = useCookieChoice();
   if (choice !== "allow") return null;
 
   return (
     <>
+      {GA4_MEASUREMENT_ID && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga4" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA4_MEASUREMENT_ID}');`}
+          </Script>
+        </>
+      )}
       <Script id="gtm" strategy="afterInteractive">
         {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

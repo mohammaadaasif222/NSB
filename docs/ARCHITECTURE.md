@@ -82,6 +82,7 @@ modules/
 - Admin listings support `q`, `categoryId` and `from`/`to` (date added, India time). Listing photos accept any orientation (min 480×320 either way round, `imageTooSmall` in `@nsb/shared`). Numbers in listing details are not comma-grouped below 10,000, and a calendar year typed into "Years in business" shows as "Since 2005".
 - The NSB alert email carries the listing context (category path, area, quick info, services, the vendor's private phone and email) plus Call, WhatsApp, View listing and admin links. The vendor email carries only the lead and Call/WhatsApp links.
 - Login is rate-limited to 5 per minute per IP (`@nestjs/throttler`, with Caddy trusted as the proxy).
+- Forgot password: `/admin/forgot-password` emails a link to `/admin/reset-password`, over the SMTP settings even while lead alerts are off (needs `SITE_URL` or `ADMIN_URL`). The link works once for 30 minutes, and only the newest one works. Only the token's SHA-256 is stored. Each account gets one email a minute, and the reply is the same for any address. A reset signs out every session and clears any lock; changing the password or profile drops an open link.
 
 ### Endpoints (Milestone 1)
 
@@ -91,6 +92,7 @@ modules/
 | POST | `/api/auth/login` · `/api/auth/logout` | – |
 | GET | `/api/auth/me` | admin |
 | POST | `/api/auth/password` `{ currentPassword, newPassword, confirmPassword }` (wrong current password → 400 on `currentPassword`, not 401) | admin |
+| POST | `/api/auth/forgot-password` `{ email }` (always 204; 3 a minute per IP) · `/api/auth/reset-password` `{ token, newPassword, confirmPassword }` (bad link → 400 on `token`) | – |
 | GET | `/api/categories` (top-level) · `?parent=<slug>` (sub-categories) · `/api/categories/:slug` (with parent + children) | – |
 | GET | `/api/listings?category=&q=&featured=&page=&pageSize=` (`q` matches any part of the name, area, locality, short description or tags) · `/api/listings/:slug` | – |
 | GET | `/api/listings/sitemap` · `/api/projects/sitemap` (public addresses, for `/sitemap.xml`) | – |
@@ -134,7 +136,7 @@ modules/
 ## Data model
 
 ```
-admin_users   id, email (unique), name, password_hash (bcrypt), role (super|admin|analyst|view), created_at
+admin_users   id, email (unique), name, password_hash (bcrypt), role (super|admin|analyst|view), reset_token_hash, reset_expires_at, created_at
 categories    id, parent_id → categories (restrict, 2 levels), name, slug (unique), description,
               image_url (URL or /images/... path), is_active, sort_order, timestamps
 listings      id, category_id → categories (restrict), name, slug (unique), area, locality, address,
@@ -188,6 +190,7 @@ components/site/            public site UI: header, footer, listing and real est
 app/(home)/                 home page
 app/(site)/                 public site (M2 adds /wedding, M3 adds /wedding/[category]/[slug])
 app/admin/login/            sign-in page (client form → POST /api/auth/login)
+app/admin/forgot-password/  asks for the admin's email; app/admin/reset-password/ sets the new password from the emailed link
 app/admin/logout/route.ts   clears the cookie (POST from the button; GET when a session expires)
 app/admin/(panel)/          authenticated layout; it verifies the session via /api/auth/me
 components/admin/           nav, table, page header
@@ -207,7 +210,7 @@ Next 16 rules apply: `params`, `searchParams` and `cookies()` are async, `fetch`
 
 **URLs:** `/` (home), `/[vertical]` (one landing template, e.g. `/wedding`), `/[vertical]/[category]` (M3), `/[vertical]/[category]/[vendor-slug]` (M3), `/real-estate` and `/real-estate/[project]` (static segment, wins over `/[vertical]`; styles in `real-estate.css`, `re-` classes), `/admin/…`.
 
-**Layout:** `container-page` is up to 1536px wide (matching kalasquare.com). On phones the site follows an app layout: sticky header, swipeable `ScrollRow` card rows (arrows on desktop), a 4-column category icon grid, and `MobileTabBar` (Home, Categories, Wedding, WhatsApp) on every page except vendor pages, which keep their own Enquire bar.
+**Layout:** `container-page` is up to 1536px wide (matching kalasquare.com). Listing pages, in every vertical, use `container-home` instead: 1260px, matching the home page and the site header. On phones the site follows an app layout: sticky header, swipeable `ScrollRow` card rows (arrows on desktop), a 4-column category icon grid, and `MobileTabBar` (Home, Categories, Wedding, WhatsApp) on every page except vendor pages, which keep their own Enquire bar.
 
 **WhatsApp button:** set in Admin › Settings (stored as the `contact.whatsapp` setting) and read by the site from the public `GET /api/site-settings`. It shows on vendor pages and in the phone tab bar only while switched on; `{listing}` in the message becomes the vendor's name.
 
@@ -230,9 +233,9 @@ Next 16 rules apply: `params`, `searchParams` and `cookies()` are async, `fetch`
 
 Build only what the roadmap lists. Anything else is a change request: flag it and do not build it.
 
-Built so far, beyond the original wedding roadmap: real estate projects with their leads and sponsor ads; hand-entered reviews and typed-in Google ratings; the WhatsApp button; lead follow-up (status and masked numbers in Admin › Leads); admin roles; and filters (location, tag and search on listings; area, locality, bedrooms, possession and sort on projects).
+Built so far, beyond the original wedding roadmap: real estate projects with their leads and sponsor ads; hand-entered reviews and typed-in Google ratings; the WhatsApp button; lead follow-up (status and masked numbers in Admin › Leads); admin roles; admin forgot password; and filters (location, tag and search on listings; area, locality, bedrooms, possession and sort on projects).
 
-Still **Phase-2**: vendor and customer logins, OTP, a full CRM, a "list your business" form, a blog, and category-specific layouts. Each module is self-contained, so Phase-2 can add, for example, a `vendors` auth module or a CRM module without rewriting existing ones.
+Still **Phase-2**: vendor and customer logins, OTP, a full CRM, a "list your business" form, a blog CMS, and category-specific layouts. Static informational pages and the supplied Noida Insider articles are published as code; editorial management remains out of scope. Each module is self-contained, so Phase-2 can add, for example, a `vendors` auth module or a CRM module without rewriting existing ones.
 
 ## Milestones
 

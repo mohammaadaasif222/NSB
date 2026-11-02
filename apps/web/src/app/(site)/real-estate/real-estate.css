@@ -22,6 +22,9 @@
   font-size: 15px;
   line-height: 1.5;
 }
+.re-listing {
+  background: var(--color-surface);
+}
 .re button {
   font-family: inherit;
   cursor: pointer;
@@ -39,7 +42,7 @@
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
-.re-w {
+.re-w:not(.container-home) {
   max-width: 1260px;
   margin: 0 auto;
   padding: 0 24px;
@@ -1842,7 +1845,7 @@ button.re-pl4::after {
   }
 }
 @media (max-width: 640px) {
-  .re-w {
+  .re-w:not(.container-home) {
     padding: 0 14px;
   }
   .re-card {

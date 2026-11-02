@@ -102,17 +102,17 @@ describe('enquiry emails', () => {
 });
 
 describe('NotificationsService', () => {
-  const setup = (config: SmtpConfig | null, fail: string[] = []) => {
-    const sent: { to: string[]; subject: string }[] = [];
+  const setup = (config: SmtpConfig | null, fail: string[] = [], siteUrl?: string) => {
+    const sent: { to: string[]; subject: string; text?: string }[] = [];
     const mail = {
-      send: (_: SmtpConfig, to: string[], content: { subject: string }) => {
+      send: (_: SmtpConfig, to: string[], content: { subject: string; text: string }) => {
         if (to.some((t) => fail.includes(t))) return Promise.reject(new Error('550 mailbox unavailable'));
-        sent.push({ to, subject: content.subject });
+        sent.push({ to, subject: content.subject, text: content.text });
         return Promise.resolve();
       },
     } as unknown as MailService;
     const settings = { smtpConfig: () => Promise.resolve(config) } as unknown as SettingsService;
-    const env = { get: () => undefined } as unknown as ConfigService<Env, true>;
+    const env = { get: (key: string) => (key === 'SITE_URL' ? siteUrl : undefined) } as unknown as ConfigService<Env, true>;
     return { service: new NotificationsService(settings, mail, env), sent };
   };
 
@@ -167,5 +167,24 @@ describe('NotificationsService', () => {
     expect(await setup(null).service.sendTest('a@b.co')).toMatchObject({ ok: false, message: 'Save the SMTP settings first.' });
     expect(await setup(smtp).service.sendTest('a@b.co')).toMatchObject({ ok: true });
     expect(await setup(smtp, ['a@b.co']).service.sendTest('a@b.co')).toMatchObject({ ok: false, message: /550/ });
+  });
+
+  describe('passwordReset', () => {
+    const admin = { email: 'owner@example.com', name: 'Owner' };
+
+    it('emails only that admin a link to the reset page, even with lead alerts off', async () => {
+      const { service, sent } = setup({ ...smtp, enabled: false }, [], 'https://nsb.example.com');
+      await service.passwordReset(admin, 'tok-en_1');
+      expect(sent).toHaveLength(1);
+      expect(sent[0].to).toEqual(['owner@example.com']);
+      expect(sent[0].text).toContain('https://nsb.example.com/admin/reset-password?token=tok-en_1');
+    });
+
+    it('sends nothing without SMTP settings or a site address to link to', async () => {
+      for (const { service, sent } of [setup(null, [], 'https://nsb.example.com'), setup(smtp)]) {
+        await service.passwordReset(admin, 'token');
+        expect(sent).toEqual([]);
+      }
+    });
   });
 });

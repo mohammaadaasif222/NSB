@@ -102,6 +102,20 @@ export const changePasswordSchema = z
   .refine((v) => v.newPassword !== v.currentPassword, { path: ['newPassword'], message: 'Choose a different password from your current one' });
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 
+/** "Forgot password?" on the admin login. */
+export const forgotPasswordSchema = z.object({ email: emailAddress() });
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+/** The form behind an emailed reset link; `token` comes from the link. */
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1).max(200),
+    newPassword: newPasswordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((v) => v.confirmPassword === v.newPassword, { path: ['confirmPassword'], message: 'Passwords do not match' });
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
 /** The signed-in admin's own name and email (Settings › Admin account). */
 export const profileSchema = z.object({
   name: trimmed(80),

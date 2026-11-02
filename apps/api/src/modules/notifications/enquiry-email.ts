@@ -49,7 +49,7 @@ const oneLine = (value: string, max = 80) => value.replace(/[\r\n\t]+/g, ' ').tr
 const receivedAt = new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' });
 const dateOnly = new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeZone: 'UTC' });
 
-function render(title: string, blocks: Block[], links: Link[], footer: string): Omit<EmailContent, 'subject'> {
+export function render(title: string, blocks: Block[], links: Link[], footer: string): Omit<EmailContent, 'subject'> {
   const text = [
     title,
     '',

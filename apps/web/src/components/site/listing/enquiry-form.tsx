@@ -3,13 +3,9 @@
 import { CalendarDays, CheckCircle2, ChevronDown, MessageCircle } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import type { QuickInfoItem } from "@nsb/shared";
-import { postJson } from "@/lib/site-client";
 import { Honeypot } from "../honeypot";
+import { type EnquiryErrors as Errors, type EnquiryField as Field, sendEnquiry } from "./send-enquiry";
 import { ServiceIcon } from "./service-icon";
-
-const FIELDS = ["name", "mobile", "email", "preferredDate", "budget", "message", "eventType"] as const;
-type Field = (typeof FIELDS)[number];
-type Errors = Partial<Record<Field | "form", string>>;
 
 const todayInIndia = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 
@@ -65,29 +61,16 @@ export function EnquiryCard({
     const data = Object.fromEntries(new FormData(formEl)) as Record<Field, string>;
     setErrors({});
     setPending(true);
-    try {
-      const { res, error } = await postJson("/api/enquiries", { ...data, budget: data.budget || undefined, email: data.email || undefined, eventType: data.eventType || undefined, listingId });
-      if (res.ok) {
-        formEl.reset();
-        setSent(true);
-        setOpen(false);
-        return;
-      }
-      const fieldErrors: Errors = {};
-      for (const issue of error?.issues ?? []) {
-        if (FIELDS.includes(issue.path as Field)) fieldErrors[issue.path as Field] ??= issue.message;
-      }
-      // Nothing to show beside a field (a 429, a 404, or an issue on the listing itself).
-      if (!Object.keys(fieldErrors).length) {
-        fieldErrors.form = res.status === 429 ? "Too many enquiries. Please try again shortly." : "Something went wrong. Please try again.";
-      }
-      setErrors(fieldErrors);
-      if (DETAIL_FIELDS.some((f) => fieldErrors[f])) setOpen(true);
-    } catch {
-      setErrors({ form: "Could not send your enquiry. Check your connection and try again." });
-    } finally {
-      setPending(false);
+    const fieldErrors = await sendEnquiry({ ...data, budget: data.budget || undefined, email: data.email || undefined, eventType: data.eventType || undefined, listingId });
+    setPending(false);
+    if (!fieldErrors) {
+      formEl.reset();
+      setSent(true);
+      setOpen(false);
+      return;
     }
+    setErrors(fieldErrors);
+    if (DETAIL_FIELDS.some((f) => fieldErrors[f])) setOpen(true);
   }
 
   const field = (name: Field) => ({
