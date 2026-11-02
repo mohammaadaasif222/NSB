@@ -2919,7 +2919,7 @@ const DiceGame = () => {
                                     value exactly like the slider thumb does for middle values. */}
                                 {showHexagon && (
                                   <div
-                                    className="absolute top-[-28px] -translate-y-1/2 -translate-x-1/2"
+                                    className="absolute top-[-12px] -translate-y-1/2 -translate-x-1/2"
                                     ref={hexagonRef}
                                     style={{
                                       left: `${hexagonPos}%`,
