@@ -1701,7 +1701,7 @@ const MineGame = () => {
 
                                 {/* Current and last game profit */}
                                 {(gameStarted) &&
-                                  <div className="mt-2   rounded-full  p-2 bg-[#18181A] w-full transition-all duration-500 ease-in-out
+                                  <div className="mt-2   rounded-2xl  p-2 bg-[#18181A] w-full transition-all duration-500 ease-in-out
             opacity-100 translate-y-0
 ">
                                     <div className="flex items-center justify-between text-sm p-3 text-white">
@@ -1752,7 +1752,7 @@ const MineGame = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="h-10 rounded-full w-full  bg-[#262628] flex items-center justify-around">
+                                    <div className="h-10 rounded-xl w-full  bg-[#262628] flex items-center justify-around">
                                       <div className="flex flex-col items-center justify-between w-1/2">
 
                                         <span className="text-[#F9D028] text-[14px] font-medium  ">{currentMultiplier.toFixed(2)}x</span>
