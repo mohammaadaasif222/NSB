@@ -295,13 +295,15 @@ const DiceGame = () => {
         el.offsetHeight;
 
         if (ShowAnimation) {
-          // Full animated behaviour (tilt + soft pop)
+          // Full animated behaviour (tilt + soft pop). translateX is linearly interpolated with
+          // hexagonPos (0% → 0 translate, 100% → -100% translate) so the hexagon body never
+          // overflows past the 0 or 100 labels but still "points to" its value for middle values.
           el.style.transition =
             'left 600ms cubic-bezier(0.23, 1, 0.32, 1), transform 600ms cubic-bezier(0.23,1,0.32,1), opacity 400ms ease';
-          el.style.transform = 'translateY(-50%) translateX(-50%) scale(1.2) rotate(15deg)';
+          el.style.transform = `translateY(-50%) translateX(-${prev}%) scale(1.2) rotate(15deg)`;
           requestAnimationFrame(() => {
             el.style.left = `${hexagonPos}%`;
-            el.style.transform = 'translateY(-50%) translateX(-50%) scale(1) rotate(0deg)';
+            el.style.transform = `translateY(-50%) translateX(-${hexagonPos}%) scale(1) rotate(0deg)`;
           });
           requestAnimationFrame(() => {
             el.style.left = `${hexagonPos}%`;
@@ -309,15 +311,15 @@ const DiceGame = () => {
         } else {
           if (playFast) {
             // Simple slide (no rotation) used when animations are disabled
-            el.style.transition = 'left 300ms cubic-bezier(.2,.8,.2,1), opacity 200ms ease';
-            el.style.transform = 'translateY(-50%) translateX(-50%) scale(1) rotate(0deg)';
+            el.style.transition = 'left 300ms cubic-bezier(.2,.8,.2,1), transform 300ms cubic-bezier(.2,.8,.2,1), opacity 200ms ease';
+            el.style.transform = `translateY(-50%) translateX(-${hexagonPos}%) scale(1) rotate(0deg)`;
             requestAnimationFrame(() => {
               el.style.left = `${hexagonPos}%`;
             });
           } else {
             // Simple slide (no rotation) used when animations are disabled
-            el.style.transition = 'left 600ms cubic-bezier(.2,.8,.2,1), opacity 400ms ease';
-            el.style.transform = 'translateY(-50%) translateX(-50%) scale(1) rotate(0deg)';
+            el.style.transition = 'left 600ms cubic-bezier(.2,.8,.2,1), transform 600ms cubic-bezier(.2,.8,.2,1), opacity 400ms ease';
+            el.style.transform = `translateY(-50%) translateX(-${hexagonPos}%) scale(1) rotate(0deg)`;
             requestAnimationFrame(() => {
               el.style.left = `${hexagonPos}%`;
             });
@@ -844,7 +846,7 @@ const DiceGame = () => {
         setIsAnimating(false);
 
         if (hexagonRef.current) {
-          hexagonRef.current.style.transform = "translateY(-50%) translateX(-50%) rotate(0deg) scale(1)";
+          hexagonRef.current.style.transform = `translateY(-50%) translateX(-${parsed}%) rotate(0deg) scale(1)`;
         }
 
         try { stopDiceHexSlideLoop(); } catch (e) { }
@@ -924,7 +926,7 @@ const DiceGame = () => {
 
       if (hexagonRef.current) {
         hexagonRef.current.style.transform = `
-                translateY(-50%) translateX(-50%)
+                translateY(-50%) translateX(-${currentPos}%)
                 rotate(${rotation}deg)
                 scale(${scale})
             `;
@@ -951,7 +953,7 @@ const DiceGame = () => {
 
         if (hexagonRef.current) {
           hexagonRef.current.style.transform =
-            "translateY(-50%) translateX(-50%) rotate(0deg) scale(1)";
+            `translateY(-50%) translateX(-${parsed}%) rotate(0deg) scale(1)`;
         }
 
         try { stopDiceHexSlideLoop(); } catch (e) { }
@@ -1271,7 +1273,7 @@ const DiceGame = () => {
   //       {!user?._id && (
   //         <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full">
   //           <button
-  //             className="bg-royalGreen-50 text-royalPurple-50 py-2 px-6 rounded-lg font-bold text-[18px]"
+  //             className="bg-royalGreen-50 text-royalPurple-50 py-2 px-6 rounded-full font-bold text-[18px]"
   //             onClick={() => {
   //               if (user?._id) {
   //                 setHasLoaded(true)
@@ -1662,11 +1664,11 @@ const DiceGame = () => {
 
               <div
                 id="slot"
-                className="w-full bg-[#090C1D]  p-2  lg:p-4 rounded-xl mt-1"
+                className="w-full  rounded-4xl "
               >
 
 
-                <div className="lg:flex lg:flex-col lg:justify-center lg:items-center md:flex md:flex-col md:justify-center md:items-center rounded-xl">
+                <div className="rl-liquid-glow bg-white/[0.01] lg:flex lg:flex-col lg:justify-center lg:items-center md:flex md:flex-col md:justify-center md:items-center rounded-4xl">
                   {/* <div className=" flex flex-row justify-between  items-center bg-gradient-to-br from-[#3c3a55] via-[#4a4967] to-[#8f8da6] rounded-t-xl w-full "> */}
                   {/* <div className="lg:w-[70%] xl:w-[65%] w-full  text-white rounded-t-xl lg:rounded-tr-none flex flex-row justify-between  items-center px-1 py-[3px] bg-gradient-to-r from-[#FFFFFF4D] to-[#FFFFFF33] ">
                       <div direction="row" spacing={2} >
@@ -1705,18 +1707,21 @@ const DiceGame = () => {
                     </div> */}
 
                   {/* </div> */}
-                  <div className="bg-[#19183A]  lg:p-4 rounded-xl w-full">
-                    <div className="text-white font-sans  lg:p-4 flex flex-col lg:flex-row rounded-xl lg:justify-center w-full lg:w-[100%] xl:w-[100%] bg-[#090C1D]">
+                  <div className=" rounded-4xl w-full">
+                    <div className="text-white font-sans  flex flex-col lg:flex-row rounded-4xl lg:justify-center w-full lg:w-[100%] xl:w-[100%]">
                       {/* Left sidebar — tabs sit OUTSIDE the scroll area so
                           scrolled content can never pass behind them. Only
                           the panel below scrolls. */}
-                      <div className="order-2 lg:order-1 rounded-xl flex flex-col xl:w-[35%] lg:w-[30%] xl:h-[420px] lg:h-[420px]">
-                        {/* Tabs — recessed groove with raised / pressed segmented buttons */}
-                        <div className="pl-3d-input mt-2 lg:mt-0 flex w-full gap-[2px] rounded-lg px-[4px] py-[4px] bg-[#090C1D] mb-2 flex-shrink-0">
+                      <div className="order-2 lg:order-1 rounded-4xl flex flex-col xl:w-[35%] lg:w-[30%] xl:h-[420px] lg:h-[420px]">
+                        {/* Tabs — pill-style Mines-match: no 3D, glassy inset */}
+                        {/* <div className=' flex flex-col-reverse gap-2 lg:flex-col rounded-full bg-[#18181A]  '> */}
+
+                        <div className={`flex flex-col-reverse rounded-4xl lg:rounded-tr-none lg:rounded-br-none lg:overflow-y-auto scrollbar-hide lg:min-h-[370px] lg:flex-1 bg-gradient-to-b from-[#262628] to-[#262628] pt-4 ${checked ? "pb-3 md:pb-3 sm:pb-3" : " lg:pb-3 md:pb-3 pb-3 sm:pb-3"} gap-3 lg:flex-col px-4 sm:pt-4 sm:px-4 md:pt-4 md:px-5`}>
+                        <div className="flex items-center gap-1 bg-[#18181A] rounded-full p-1 border border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),inset_0_-1px_0_rgba(0,0,0,0.4)] ">
                           {[
                             { key: "manual", label: "Manual" },
                             { key: "auto", label: "Auto" },
-                          ].map((t, index) => {
+                          ].map((t) => {
                             const isActive = mode === t.key;
                             return (
                               <button
@@ -1727,22 +1732,21 @@ const DiceGame = () => {
                                   if (IsBtnClick) return;
                                   setMode(t.key)
                                 }}
-                                className={`flex-1 text-center py-2 font-semibold ${index == 0 ? 'rounded-bl-lg rounded-tl-lg' : "rounded-br-lg rounded-tr-lg"} transition-all duration-150 text-sm focus:outline-none
-                                ${isActive ? 'pl-3d-pressed bg-[#2c2852] text-white' : 'pl-3d-mini-btn text-gray-200 hover:bg-[#2c2852] hover:text-white bg-[#19183a]'}`}
+                                className={`flex-1 py-2.5 text-sm font-semibold rounded-full transition-colors ${isActive
+                                  ? "bg-[#333333] text-white border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_0_rgba(0,0,0,0.3)]"
+                                  : "bg-transparent text-gray-400 hover:text-white"
+                                  }`}
                               >
                                 {t.label}
                               </button>
                             );
                           })}
                         </div>
-                        {/* <div className=' flex flex-col-reverse gap-2 lg:flex-col rounded-lg bg-[#19183A]  '> */}
-
-                        <div className={`pl-3d-panel flex flex-col-reverse rounded-lg lg:overflow-y-auto scrollbar-hide lg:min-h-[370px] lg:flex-1 bg-gradient-to-b from-[#1f1d44] to-[#16142f] pt-1 ${checked ? "pb-3 md:pb-3 sm:pb-3" : " lg:pb-3 md:pb-3 pb-3 sm:pb-3"} gap-2 lg:flex-col px-3 sm:pt-1 sm:px-4 md:pt-1 md:px-5 `}>
 
                           {/* Bet Amount */}
                           <div className="mt-2 lg:block hidden">
                             <div className="flex items-center font-medium justify-between text-gray-300 text-sm px-1">
-                              <span className="pl-3d-label">Bet Amount</span>
+                              <span className="">Bet Amount</span>
                               <span className="text-xs text-white flex ">
                                 <span className='flex align-middle items-center'>
 
@@ -1852,7 +1856,7 @@ const DiceGame = () => {
                                   setBetAmount(numeric === "" ? "" : numeric);
                                 }}
                                 placeholder="0.00"
-                                className={`pl-3d-input w-full bg-[#090C1D] rounded-lg pl-8 pr-32 py-2 outline-none text-[#FAFAFA] focus:text-white`}
+                                className={`w-full bg-[#18181A] rounded-full pl-8 pr-32 py-2 outline-none text-[#94a59e] focus:text-white`}
                               />
                               <Tooltip
                                 id="betError"
@@ -1860,7 +1864,7 @@ const DiceGame = () => {
                                 clickable={false}
                                 place="top"
                                 className="!bg-black  !text-white
-          !px-3 !py-2 !rounded-md 
+          !px-3 !py-2 !rounded-full 
           !backdrop-blur-sm !text-xs !font-medium
           !z-[9999]"
                               >
@@ -1881,7 +1885,7 @@ const DiceGame = () => {
                                       return newVal.toFixed(2);
                                     });
                                   }}
-                                  className={`pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-l-md text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                  className={`px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] rounded-l-full text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 >
                                   1/2
                                 </button>
@@ -1895,7 +1899,7 @@ const DiceGame = () => {
                                       Math.min(parseFloat(prev || "0") * 2).toFixed(2)
                                     )
                                   }}
-                                  className={`pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] ${!ShowMAxBetBTN ? "rounded-r-md" : ""} text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                  className={`px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] ${!ShowMAxBetBTN ? "rounded-r-full" : ""} text-gray-200 ${isDemoMode ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 >
                                   2X
                                 </button>
@@ -1921,7 +1925,7 @@ const DiceGame = () => {
 
                                   }
                                   }
-                                  className="pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-r-md text-gray-200"
+                                  className="px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] rounded-r-full text-gray-200"
                                 >
                                   Max
                                 </button>}
@@ -1935,11 +1939,11 @@ const DiceGame = () => {
                               {/* Profit on Win */}
                               <div className="mt-2">
                                 <div className="flex items-center font-medium justify-between text-gray-300 text-sm px-1">
-                                  <span className="pl-3d-label">Profit on win</span>
+                                  <span className="">Profit on win</span>
 
                                 </div>
                                 <div className="relative mt-1">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#FAFAFA] select-none">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a59e] select-none">
 
                                     {
                                       displayCurrency == 'USD'
@@ -1967,7 +1971,7 @@ const DiceGame = () => {
                                   <input
                                     disabled={true}
                                     value={profitOnWin}
-                                    className="pl-3d-input w-full bg-[#090C1D] rounded-lg pl-9 pr-3 py-2 text-gray-100"
+                                    className="w-full bg-[#18181A] rounded-full pl-9 pr-3 py-2 text-gray-100"
                                   />
                                 </div>
 
@@ -1975,7 +1979,7 @@ const DiceGame = () => {
                               {/* Bet Amount */}
                               <div className="mt-2 block lg:hidden">
                                 <div className="flex items-center font-medium justify-between text-gray-300 text-sm px-1">
-                                  <span className="pl-3d-label">Bet Amount</span>
+                                  <span className="">Bet Amount</span>
                                   <span className="text-xs text-white flex ">
                                     <span className='flex align-middle items-center'>
 
@@ -2082,10 +2086,10 @@ const DiceGame = () => {
                                       setBetAmount(numeric === "" ? "" : numeric);
                                     }}
                                     placeholder="0.00"
-                                    className={`pl-3d-input w-full bg-[#090C1D]  ${errorMsg
+                                    className={`w-full bg-[#18181A]  ${errorMsg
                                       ? "ring-2 ring-red-500"
                                       : ""
-                                      } rounded-lg pl-8 pr-32 py-2 outline-none text-[#FAFAFA]  focus:text-white`}
+                                      } rounded-full pl-8 pr-32 py-2 outline-none text-[#94a59e]  focus:text-white`}
                                   />
                                   <Tooltip
                                     id="betError1"
@@ -2093,7 +2097,7 @@ const DiceGame = () => {
                                     clickable={false}
                                     place="top"
                                     className="!bg-black  !text-white
-          !px-3 !py-2 !rounded-md 
+          !px-3 !py-2 !rounded-full 
           !backdrop-blur-sm !text-xs !font-medium
           !z-[9999]"
                                   >
@@ -2112,7 +2116,7 @@ const DiceGame = () => {
                                           return newVal.toFixed(2);
                                         });
                                       }}
-                                      className="pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-l-md text-gray-200"
+                                      className="px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] rounded-l-full text-gray-200"
                                     >
                                       1/2
                                     </button>
@@ -2124,7 +2128,7 @@ const DiceGame = () => {
                                           Math.min(parseFloat(prev || "0") * 2).toFixed(2)
                                         )
                                       }}
-                                      className={`pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] ${!ShowMAxBetBTN ? "rounded-r-md" : ""} text-gray-200`}
+                                      className={`px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] ${!ShowMAxBetBTN ? "rounded-r-full" : ""} text-gray-200`}
                                     >
                                       2X
                                     </button>
@@ -2144,7 +2148,7 @@ const DiceGame = () => {
 
                                       }
                                       }
-                                      className="pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-r-md text-gray-200"
+                                      className="px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] rounded-r-full text-gray-200"
                                     >
                                       Max
                                     </button>}
@@ -2158,7 +2162,7 @@ const DiceGame = () => {
                                   || gameValues.multiplier < 1 || gameValues.multiplier > 9900.00 || isAutoBetting || errorMsg
                                 }
                                 onClick={handleBetPlaced}
-                                className="pl-3d-place-btn w-full flex mt-2 mb-2 items-center justify-center font-semibold py-3 rounded-lg text-base tracking-wide"
+                                className="bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] text-black ring-2 ring-[#F9D028] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed w-full flex mt-2 mb-2 items-center justify-center font-semibold py-3 rounded-full text-base tracking-wide"
                               >
                                 {BetLoading ? (
 
@@ -2179,7 +2183,7 @@ const DiceGame = () => {
                                   disabled={gameValues.winChance < 0.01 || gameValues.winChance > 99.99 || BetLoading
                                     || gameValues.multiplier < 1 || gameValues.multiplier > 9900.00 || errorMsg
                                   }
-                                  className="pl-3d-place-btn w-full lg:hidden flex items-center justify-center font-semibold mt-2 lg:mb-3 sm:mb-1 mb-0 py-3 rounded-lg text-base tracking-wide"
+                                  className="bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] text-black ring-2 ring-[#F9D028] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed w-full lg:hidden flex items-center justify-center font-semibold mt-2 lg:mb-3 sm:mb-1 mb-0 py-3 rounded-full text-base tracking-wide"
                                 >
                                   {/* Logic for button text and loading state */}
                                   {(() => {
@@ -2219,7 +2223,7 @@ const DiceGame = () => {
                                 {/* Bet Amount */}
                                 <div className="mt-2 block lg:hidden">
                                   <div className="flex items-center font-medium justify-between text-gray-300 text-sm px-1">
-                                    <span className="pl-3d-label">Bet Amount</span>
+                                    <span className="">Bet Amount</span>
                                     <span className="text-xs text-white flex ">
                                       <span className='flex align-middle items-center'>
 
@@ -2327,10 +2331,10 @@ const DiceGame = () => {
                                         setBetAmount(numeric === "" ? "" : numeric);
                                       }}
                                       placeholder="0.00"
-                                      className={`pl-3d-input w-full bg-[#090C1D]  ${errorMsg
+                                      className={`w-full bg-[#18181A]  ${errorMsg
                                         ? "ring-2 ring-red-500"
                                         : ""
-                                        } rounded-lg pl-8 pr-32 py-2 outline-none text-[#FAFAFA]  focus:text-white`}
+                                        } rounded-full pl-8 pr-32 py-2 outline-none text-[#94a59e]  focus:text-white`}
                                     />
                                     <Tooltip
                                       id="betError2"
@@ -2338,7 +2342,7 @@ const DiceGame = () => {
                                       clickable={false}
                                       place="top"
                                       className="!bg-black  !text-white
-          !px-3 !py-2 !rounded-md 
+          !px-3 !py-2 !rounded-full 
           !backdrop-blur-sm !text-xs !font-medium
           !z-[9999]"
                                     >
@@ -2357,7 +2361,7 @@ const DiceGame = () => {
                                             return newVal.toFixed(2);
                                           });
                                         }}
-                                        className="pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-l-md text-gray-200"
+                                        className="px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] rounded-l-full text-gray-200"
                                       >
                                         1/2
                                       </button>
@@ -2369,7 +2373,7 @@ const DiceGame = () => {
                                             Math.min(parseFloat(prev || "0") * 2).toFixed(2)
                                           )
                                         }}
-                                        className={`pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] ${!ShowMAxBetBTN ? "rounded-r-md" : ""} text-gray-200`}
+                                        className={`px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] ${!ShowMAxBetBTN ? "rounded-r-full" : ""} text-gray-200`}
                                       >
                                         2X
                                       </button>
@@ -2390,7 +2394,7 @@ const DiceGame = () => {
                                           }
                                         }
                                         }
-                                        className="pl-3d-mini-btn px-2 py-1 text-xs font-semibold bg-[#19183a] hover:bg-[#2c2852] rounded-r-md text-gray-200"
+                                        className="px-2 py-1 text-xs font-semibold bg-[#18181A] hover:bg-[#333333] rounded-r-full text-gray-200"
                                       >
                                         Max
                                       </button>}
@@ -2399,7 +2403,7 @@ const DiceGame = () => {
                                 </div>
                                 {/* Number of bets */}
                                 <div className="mt-2">
-                                  <div className="pl-3d-label text-gray-300 text-sm font-medium mb-1 px-1">Number of bets</div>
+                                  <div className="text-gray-300 text-sm font-medium mb-1 px-1">Number of bets</div>
                                   <div className="relative">
                                     <input
                                       disabled={isAutoBetting}
@@ -2432,7 +2436,7 @@ const DiceGame = () => {
                                         const num = val.replace(/[^0-9]/g, "");
                                         setNumberOfBets(num === "" ? "" : parseInt(num));
                                       }}
-                                      className={`pl-3d-input w-full bg-[#090C1D] outline-none rounded-lg px-3 py-2 text-gray-200 ${numberOfBets === "Infinite" ? "cursor-text text-gray-400" : ""}`}
+                                      className={`w-full bg-[#18181A] outline-none rounded-full px-3 py-2 text-gray-200 ${numberOfBets === "Infinite" ? "cursor-text text-gray-400" : ""}`}
                                       readOnly={false} // ✅ always editable (RainBet behavior)
                                     />
 
@@ -2457,13 +2461,13 @@ const DiceGame = () => {
                                 </div>
 
                                 <div className="flex mt-2  px-1 justify-between items-center text-gray-300 text-sm">
-                                  <span className='pl-3d-label font-medium'>Advanced</span>
+                                  <span className='font-medium'>Advanced</span>
                                   <button
                                     type="button"
                                     onClick={() => setChecked(!checked)}
-                                    className={`pl-3d-toggle-track relative inline-flex h-5 w-12 border-[1px] border-[#3B413E] items-center rounded-full transition-colors duration-200 ${checked ? "bg-[#1f86b7]" : "bg-[#0c0e22]"}`}
+                                    className={`relative inline-flex h-5 w-12 border-[1px] border-[#333333] items-center rounded-full transition-colors duration-200 ${checked ? "bg-[#F9D028]" : "bg-[#18181A]"}`}
                                   >
-                                    <span className={`pl-3d-toggle-knob inline-block h-4 w-5 transform rounded-full transition-transform duration-200 ${checked ? "translate-x-6 bg-gradient-to-b from-[#5dc5ef] to-[#249EDB]" : "translate-x-1 bg-gradient-to-b from-[#6a7180] to-[#3B413E]"}`} />
+                                    <span className={`inline-block h-4 w-5 transform rounded-full transition-transform duration-200 ${checked ? "translate-x-6 bg-gradient-to-b from-[#F9D028] to-[#F9D028]" : "translate-x-1 bg-gradient-to-b from-[#333333] to-[#333333]"}`} />
                                   </button>
                                 </div>
 
@@ -2471,8 +2475,8 @@ const DiceGame = () => {
                                   <div>
                                     {/* On Win */}
                                     <div className="mt-2">
-                                      <div className="pl-3d-label text-gray-300 font-medium text-sm mb-1 px-1">On Win</div>
-                                      <div className="pl-3d-input flex items-center justify-between bg-[#090C1D] p-1 rounded-lg outline-none">
+                                      <div className="text-gray-300 font-medium text-sm mb-1 px-1">On Win</div>
+                                      <div className="flex items-center justify-between bg-[#18181A] p-1 rounded-full outline-none">
                                         <div className="flex items-center">
                                           {/* ✅ Reset button fades when value <= 0 */}
                                           <button
@@ -2482,7 +2486,7 @@ const DiceGame = () => {
                                               buttonClickSoundFn();
                                               setOnWinIncrease("0.00");
                                             }}
-                                            className={`pl-3d-mini-btn px-3 font-semibold py-[7px] rounded-md text-sm text-[#F4FFFB] transition
+                                            className={`px-3 font-semibold py-[7px] rounded-full text-sm text-white transition
           ${parseFloat(onWinIncrease || "0") > 0
                                                 ? "bg-[#2C2852] hover:opacity-80 cursor-pointer"
                                                 : "bg-[#2C2852] cursor-not-allowed opacity-60"
@@ -2491,7 +2495,7 @@ const DiceGame = () => {
                                             Reset
                                           </button>
 
-                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-md text-[#FFFFFFB2] text-sm ">
+                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-full text-[#FFFFFFB2] text-sm ">
                                             Increase by:
                                           </button>
 
@@ -2524,18 +2528,18 @@ const DiceGame = () => {
                                               if (["0", "0.0", "0.00"].includes(e.target.value)) setOnWinIncrease("");
                                               else e.target.select();
                                             }}
-                                            className="w-1/3 bg-transparent font-medium outline-none rounded-lg px-2 py-2 text-gray-200"
+                                            className="w-1/3 bg-transparent font-medium outline-none rounded-full px-2 py-2 text-gray-200"
                                           />
                                         </div>
 
-                                        <span className="px-2 py-2 font-medium rounded-md text-gray-200">%</span>
+                                        <span className="px-2 py-2 font-medium rounded-full text-gray-200">%</span>
                                       </div>
                                     </div>
 
                                     {/* On Loss */}
                                     <div className="mt-2">
-                                      <div className="pl-3d-label text-gray-300 text-sm font-medium mb-1 px-1">On Loss</div>
-                                      <div className="pl-3d-input flex items-center justify-between p-1 rounded-lg outline-none bg-[#090C1D]">
+                                      <div className="text-gray-300 text-sm font-medium mb-1 px-1">On Loss</div>
+                                      <div className="flex items-center justify-between p-1 rounded-full outline-none bg-[#18181A]">
                                         <div className="flex items-center">
                                           {/* ✅ Reset button fades when value <= 0 */}
                                           <button
@@ -2545,7 +2549,7 @@ const DiceGame = () => {
                                               buttonClickSoundFn();
                                               setOnLossIncrease("0.00");
                                             }}
-                                            className={`pl-3d-mini-btn px-3 font-semibold py-[7px] rounded-md text-sm text-[#F4FFFB] transition
+                                            className={`px-3 font-semibold py-[7px] rounded-full text-sm text-white transition
                                                                                         ${parseFloat(onLossIncrease || "0") > 0
                                                 ? "bg-[#2C2852] hover:opacity-80 cursor-pointer"
                                                 : "bg-[#2C2852] cursor-not-allowed opacity-60"
@@ -2554,7 +2558,7 @@ const DiceGame = () => {
                                             Reset
                                           </button>
 
-                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-md text-[#FFFFFFB2] text-sm ">
+                                          <button className="px-2 py-[8px] ml-2 font-medium rounded-full text-[#FFFFFFB2] text-sm ">
                                             Increase by:
                                           </button>
 
@@ -2587,11 +2591,11 @@ const DiceGame = () => {
                                               if (["0", "0.0", "0.00"].includes(e.target.value)) setOnLossIncrease("");
                                               else e.target.select();
                                             }}
-                                            className="w-1/3 font-medium bg-transparent outline-none rounded-lg px-2 py-2 text-gray-200"
+                                            className="w-1/3 font-medium bg-transparent outline-none rounded-full px-2 py-2 text-gray-200"
                                           />
                                         </div>
 
-                                        <span className="px-2 py-2 font-medium rounded-md text-gray-200">%</span>
+                                        <span className="px-2 py-2 font-medium rounded-full text-gray-200">%</span>
                                       </div>
                                     </div>
 
@@ -2600,10 +2604,10 @@ const DiceGame = () => {
                                     <div className="flex justify-between gap-3">
                                       <div className="mt-2">
                                         <div className="flex items-center justify-between text-gray-300 text-sm px-1">
-                                          <span className='pl-3d-label font-medium'>Stop on Profit</span>
+                                          <span className='font-medium'>Stop on Profit</span>
                                         </div>
                                         <div className="relative mt-1">
-                                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#FAFAFA] select-none">
+                                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a59e] select-none">
                                             {/* <img
                                               src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
                                               alt="dollar"
@@ -2661,7 +2665,7 @@ const DiceGame = () => {
                                               else e.target.select();
                                             }}
 
-                                            className="pl-3d-input w-full bg-[#090C1D] outline-none rounded-lg pl-10 pr-8 py-2 text-gray-200"
+                                            className="w-full bg-[#18181A] outline-none rounded-full pl-10 pr-8 py-2 text-gray-200"
                                           />
                                         </div>
                                       </div>
@@ -2669,10 +2673,10 @@ const DiceGame = () => {
                                       {/* Stop on Loss */}
                                       <div className="mt-2">
                                         <div className="flex items-center justify-between text-gray-300 text-sm px-1">
-                                          <span className='pl-3d-label font-medium'>Stop on Loss</span>
+                                          <span className='font-medium'>Stop on Loss</span>
                                         </div>
                                         <div className="relative mt-1">
-                                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#FAFAFA] select-none">
+                                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a59e] select-none">
 
                                             {
                                               displayCurrency == 'USD'
@@ -2724,7 +2728,7 @@ const DiceGame = () => {
                                               else e.target.select();
                                             }}
 
-                                            className="pl-3d-input w-full bg-[#090C1D] outline-none rounded-lg pl-10 pr-8 py-2 text-gray-200"
+                                            className="w-full bg-[#18181A] outline-none rounded-full pl-10 pr-8 py-2 text-gray-200"
                                           />
                                         </div>
                                       </div>
@@ -2734,7 +2738,7 @@ const DiceGame = () => {
                                 }
                                 {/* Current and last game profit */}
                                 {isAutoBetting &&
-                                  <div className="mt-2  rounded-lg  p-2 bg-[#090C1D] w-full transition-all duration-500 ease-in-out
+                                  <div className="mt-2  rounded-2xl  p-2 bg-[#18181A] w-full transition-all duration-500 ease-in-out
                                                                             opacity-100 translate-y-0
                                                                 ">
                                     <div className="flex items-center justify-between text-sm p-3 text-white">
@@ -2770,12 +2774,12 @@ const DiceGame = () => {
                                         </span>
                                       </div>
                                     </div>
-                                    {/* <div className="h-10 rounded-lg w-full  bg-[#3E3564] flex items-center justify-around">
+                                    {/* <div className="h-10 rounded-full w-full  bg-[#3E3564] flex items-center justify-around">
                                                                             <div className="flex flex-col items-center justify-between w-1/2">
 
                                                                                 <span className="text-[#31ABE8] text-[14px] font-medium font-rubik ">{3}x</span>
                                                                             </div>
-                                                                            <div className="h-full border border-[#090C1D] border-r-[0.5px]">
+                                                                            <div className="h-full border border-[#18181A] border-r-[0.5px]">
                                                                             </div>
                                                                             <div className="flex flex-col items-center justify-between w-1/2">
 
@@ -2786,13 +2790,13 @@ const DiceGame = () => {
                                   </div>
 
                                 }
-                                {/* <div className="sticky bottom-0 bg-[#19183A] py-1  mt-1 z-20 lg:block hidden"> */}
+                                {/* <div className="sticky bottom-0 bg-[#18181A] py-1  mt-1 z-20 lg:block hidden"> */}
                                   <button
                                     onClick={handleBetPlacedAuto}
                                     disabled={gameValues.winChance < 0.01 || gameValues.winChance > 99.99 || BetLoading
                                       || gameValues.multiplier < 1 || gameValues.multiplier > 9900.00 || errorMsg
                                     }
-                                    className="pl-3d-place-btn w-full lg:flex hidden items-center justify-center font-semibold mt-2 lg:mb-3 sm:mb-1 mb-0 py-3 rounded-lg text-base tracking-wide"
+                                    className="bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] text-black ring-2 ring-[#F9D028] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed w-full lg:flex hidden items-center justify-center font-semibold mt-2 lg:mb-3 sm:mb-1 mb-0 py-3 rounded-full text-base tracking-wide"
                                   >
                                     {/* Logic for button text and loading state */}
                                     {(() => {
@@ -2863,7 +2867,7 @@ const DiceGame = () => {
                                 return (
                                   <div
                                     key={index}
-                                    className={`pl-3d-pill rounded-lg text-sm font-semibold flex-shrink-0 bg-gradient-to-b from-[#2c2852] to-[#19183A] ${H?.status
+                                    className={`rounded-full text-sm font-semibold flex-shrink-0 bg-gradient-to-b from-[#333333] to-[#18181A] ${H?.status
                                       ? "text-[#15E267]"
                                       : "text-[#DD000C]"
                                       }`}
@@ -2895,7 +2899,7 @@ const DiceGame = () => {
                             </div>
                           </div> */}
                             {/* Track */}
-                            <div className='pl-3d-input w-[92%] flex justify-center bg-[#19183A] rounded-full py-4 px-2'>
+                            <div className='w-[92%] flex justify-center bg-[#18181A] rounded-full py-4 px-2'>
                               <div
                                 ref={sliderTrackRef}
                                 className="relative w-[97%] h-2 rounded-full cursor-pointer"
@@ -2906,20 +2910,26 @@ const DiceGame = () => {
                                 }}
                                 onClick={(e) => gameState === "idle" && handleSliderChange(getValueFromMouseX(e.clientX))}
                               >
-                                {/* Hexagon now lives inside the same relative parent as the slider's handle. Always mounted so left changes animate immediately. */}
+                                {/* Hexagon lives inside the same relative parent as the slider's handle. The X translate is
+                                    linearly interpolated with hexagonPos so the hexagon slides against its own body:
+                                      • at pos 0   → translateX(0%)   (hex left edge at 0%)
+                                      • at pos 50  → translateX(-50%) (hex centre at 50% — matches 50 label like slider)
+                                      • at pos 100 → translateX(-100%) (hex right edge at 100%)
+                                    So the hexagon never extends past the 0 or 100 labels, but still "points to" its
+                                    value exactly like the slider thumb does for middle values. */}
                                 {showHexagon && (
                                   <div
-                                    className="absolute top-[-45px] -translate-y-1/2 -translate-x-1/2"
+                                    className="absolute top-[-28px] -translate-y-1/2 -translate-x-1/2"
                                     ref={hexagonRef}
                                     style={{
                                       left: `${hexagonPos}%`,
                                       // Disable CSS left-transition during JS animation or when animations are turned off
                                       transition: ShowAnimation && !isAnimating
-                                        ? 'left 250ms cubic-bezier(.2,.8,.2,1)'
+                                        ? 'left 250ms cubic-bezier(.2,.8,.2,1), transform 250ms cubic-bezier(.2,.8,.2,1)'
                                         : 'none',
                                       willChange: 'left, transform',
                                       opacity: 1,
-                                      transform: 'translateY(-50%) translateX(-50%) scale(1)',
+                                      transform: `translateY(-50%) translateX(-${hexagonPos}%) scale(1)`,
                                       transformOrigin: 'center center'
                                     }}
                                   >
@@ -2937,16 +2947,16 @@ const DiceGame = () => {
                                               : 'drop-shadow(0 4px 6px rgba(0,0,0,0.6)) drop-shadow(0 9px 14px rgba(0,0,0,0.45)) drop-shadow(0 0 8px rgba(116,104,178,0.45))',
                                         transition: 'filter 200ms ease'
                                       }}
-                                      className={`block w-12 sm:w-12 md:w-14 lg:w-18 !max-w-none !min-w-full ${isAnimating ? "pulse-glow" : ""
+                                      className={`block w-12 sm:w-12 md:w-14 lg:w-16 !max-w-none !min-w-full ${isAnimating ? "pulse-glow" : ""
                                         }`}
                                     />
 
 
                                     <div
                                       className={`absolute inset-0 flex items-center justify-center transition-transform duration-500 ${hexagonResult === "win"
-                                        ? "animate-pulse text-[#FFFFFF]"
+                                        ? "animate-pulse text-black"
                                         : hexagonResult === "loss"
-                                          ? "animate-pulse text-[#FFFFFF]"
+                                          ? "animate-pulse text-black"
                                           : "text-[#000000]"
                                         }`}
                                     >
@@ -2985,9 +2995,9 @@ const DiceGame = () => {
 
                                   {/* Tooltip */}
                                   <div
-                                    className="pl-3d-pill absolute left-1/2 top-[125%] -translate-x-1/2 bg-gradient-to-b from-[#2c2852] to-[#1f1c3d]
-        text-[#FFFFFF] text-[12px] font-semibold z-[900] px-2 py-[3px]
-        rounded-md opacity-1 group-hover:opacity-100
+                                    className="absolute left-1/2 top-[125%] -translate-x-1/2 bg-gradient-to-b from-[#333333] to-[#262628]
+        text-black text-[12px] font-semibold z-[900] px-2 py-[3px]
+        rounded-full opacity-1 group-hover:opacity-100
         transition-opacity duration-150"
                                   >
                                     {(Number(gameValues?.sliderValue ?? 0)).toFixed(2)}
@@ -3013,7 +3023,7 @@ const DiceGame = () => {
                               {/* </div> */}
                               {/* </div> */}
                             </div>
-                            <div className='w-[92%] px-4 flex justify-center rounded-sm mt-[41px] sm:mt-[41px] lg:mt-[37px]'>
+                            <div className='w-[92%] px-2 flex justify-center rounded-sm mt-[41px] sm:mt-[41px] lg:mt-[37px]'>
                               <div className="flex w-[97%] text-white text-xs relative">
 
                                 {[0, 25, 50, 75, 100].map((n) => (
@@ -3027,7 +3037,7 @@ const DiceGame = () => {
                                       className="w-[10px] h-[9px]"
                                       style={{
                                         background:
-                                          'linear-gradient(180deg, #3a3566 0%, #19183A 55%, #0a0a1d 100%)',
+                                          'linear-gradient(180deg, #3a3566 0%, #18181A 55%, #0a0a1d 100%)',
                                         clipPath:
                                           'polygon(50% 100%, 0% 0%, 100% 0%)',
                                         filter:
@@ -3036,7 +3046,7 @@ const DiceGame = () => {
                                     />
 
                                     {/* Number ABOVE */}
-                                    <span className="pl-3d-label text-[12px] mb-[4px] font-semibold">
+                                    <span className="text-[12px] mb-[4px] font-semibold">
                                       {n}
                                     </span>
 
@@ -3048,11 +3058,11 @@ const DiceGame = () => {
                             </div>
                           </div>
                           {/* Betting interface */}
-                          <div className=" grid grid-cols-3 gap-4 w-[100%] lg:w-[98%] rounded-lg bg-[#19183A]  p-4 lg:ml-2 ">
+                          <div className="grid grid-cols-3 gap-4 w-[100%] lg:w-[98%] rounded-2xl bg-[#262628] px-5 py-5 lg:ml-2 mb-4">
                             {/* Multiplier */}
                             <div className="flex flex-col w-full">
-                              <label className="pl-3d-label text-sm text-[#FAFAFA] font-medium mb-1">Multiplier</label>
-                              <div className="flex items-center pl-3d-input bg-[#090C1D] rounded-lg px-2 ">
+                              <label className="text-sm text-[#94a59e] font-medium mb-1">Multiplier</label>
+                              <div className="flex items-center bg-[#18181A] rounded-full px-4 py-1">
                                 <input
                                   type="number"
                                   step="1"
@@ -3069,19 +3079,19 @@ const DiceGame = () => {
                                 <Tooltip
                                   id="multiError"
                                   isOpen={!!multiplierError}
-                                  className="!bg-red-600 !text-white !px-3 !py-2 !rounded-md"
+                                  className="!bg-red-600 !text-white !px-3 !py-2 !rounded-full"
                                 >
                                   {multiplierError}
                                 </Tooltip>
                                 <button className="ml-2 shrink-0">
                                   <img width={24}
-                                    height={24} src={Ex_icon} alt="refresh" className="w-3 h-3 opacity-70" />
+                                    height={24} src={Ex_icon} alt="refresh" className="w-3.5 h-3.5 opacity-80" style={{ filter: 'brightness(0) invert(1)' }} />
                                 </button>
                               </div>
                             </div>
                             {/* Roll Over */}
                             <div className="flex flex-col w-full">
-                              <label className="pl-3d-label text-sm  text-[#FAFAFA] font-medium mb-1">Roll {isRollUnder ? "Under" : 'Over'}</label>
+                              <label className="text-sm  text-[#94a59e] font-medium mb-1">Roll {isRollUnder ? "Under" : 'Over'}</label>
                               <div onClick={() => {
                                 if (isAutoBetting) return;
                                 if (IsBtnClick) return;
@@ -3112,7 +3122,7 @@ const DiceGame = () => {
                                   });
                                 }
 
-                              }} className="flex items-center pl-3d-input bg-[#090C1D] rounded-lg px-2  cursor-pointer">
+                              }} className="flex items-center bg-[#18181A] rounded-full px-4 py-1 cursor-pointer">
                                 <input
                                   disabled={true}
                                   type="number"
@@ -3123,14 +3133,14 @@ const DiceGame = () => {
                                 />
                                 <button className="ml-2 shrink-0">
                                   <img width={24}
-                                    height={24} src={Refresh_icon} alt="refresh" className="w-3 h-3 opacity-70" />
+                                    height={24} src={Refresh_icon} alt="refresh" className="w-3.5 h-3.5 opacity-80" style={{ filter: 'brightness(0) invert(1)' }} />
                                 </button>
                               </div>
                             </div>
                             {/* Win Chance */}
                             <div className="flex flex-col w-full">
-                              <label className="pl-3d-label text-sm text-[#FAFAFA] font-medium mb-1">Win Chance</label>
-                              <div className="flex items-center pl-3d-input bg-[#090C1D] rounded-lg px-2 ">
+                              <label className="text-sm text-[#94a59e] font-medium mb-1">Win Chance</label>
+                              <div className="flex items-center bg-[#18181A] rounded-full px-4 py-1">
                                 <input
                                   type="number"
                                   step="1"
@@ -3147,7 +3157,7 @@ const DiceGame = () => {
                                 <Tooltip
                                   id="winError"
                                   isOpen={!!winChanceError}
-                                  className="!bg-red-600 !text-white !px-3 !py-2 !rounded-md"
+                                  className="!bg-red-600 !text-white !px-3 !py-2 !rounded-full"
                                 >
                                   {winChanceError}
                                 </Tooltip>
@@ -3156,7 +3166,8 @@ const DiceGame = () => {
                                   height={24}
                                   src={per_icon}
                                   alt="%"
-                                  className="w-4 h-4 opacity-70 ml-2 shrink-0"
+                                  className="w-4 h-4 opacity-80 ml-2 shrink-0"
+                                  style={{ filter: 'brightness(0) invert(1)' }}
                                 />
                               </div>
                             </div>
@@ -3169,15 +3180,15 @@ const DiceGame = () => {
                   </div>
 
                   {/* <div className="px-2 lg:px-0 pb-2 lg:pb-0"> */}
-                    <Footer setisFavorite={setisFavorite} isFavorite={isFavorite} setStats={setStats} stats={stats} gameData={gameData} setplayFast={setplayFast} setIsAnyModalOpen={setIsAnyModalOpen} isAnyModalOpen={isAnyModalOpen} playFast={playFast} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} socket={socket} gameHotKeys={HOtKeys} />
                   {/* </div> */}
                   {/* <Description gameData={gameData} setisFavorite={setisFavorite} isFavorite={isFavorite} /> */}
                   {/* <BetDashboard /> */}
                   {/* <div className="mt-[10px]">
                     <LatestBetTable />
-                  </div> */}
+                    </div> */}
 
                 </div>
+                    <Footer setisFavorite={setisFavorite} isFavorite={isFavorite} setStats={setStats} stats={stats} gameData={gameData} setplayFast={setplayFast} setIsAnyModalOpen={setIsAnyModalOpen} isAnyModalOpen={isAnyModalOpen} playFast={playFast} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} socket={socket} gameHotKeys={HOtKeys} />
 
 
               </div >
@@ -3372,7 +3383,7 @@ const DiceGame = () => {
             /* ─── Shared 3D-look utility classes (mirrored from PlinkoGame).
                Keep in sync with src/pages/Originals/PlinkoGame.jsx so every
                original game renders the same buttons/inputs/labels. ─── */
-            .pl-3d-input {
+            .{
               background-image: linear-gradient(180deg, #04060f 0%, #0b0e22 60%, #0e1228 100%);
               border-top: 1px solid #02030a;
               box-shadow:
@@ -3381,7 +3392,7 @@ const DiceGame = () => {
                 inset 0 -1px 0 rgba(255, 255, 255, 0.07),
                 0 1px 0 rgba(255, 255, 255, 0.06);
             }
-            .pl-3d-label {
+            .{
               text-shadow:
                 0 -1px 0 rgba(0, 0, 0, 0.9),
                 0 1px 1px rgba(255, 255, 255, 0.14),
@@ -3389,18 +3400,18 @@ const DiceGame = () => {
                 0 3px 6px rgba(0, 0, 0, 0.35);
               letter-spacing: 0.3px;
             }
-            .pl-3d-toggle-track {
+            .{
               box-shadow:
                 inset 0 2px 3px rgba(0, 0, 0, 0.6),
                 inset 0 -1px 0 rgba(255, 255, 255, 0.08);
             }
-            .pl-3d-toggle-knob {
+            .{
               box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.45),
                 inset 0 -2px 3px rgba(0, 0, 0, 0.35),
                 0 2px 3px rgba(0, 0, 0, 0.55);
             }
-            .pl-3d-mini-btn {
+            .{
               box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.18),
                 inset 0 -2px 3px rgba(0, 0, 0, 0.45),
@@ -3418,33 +3429,33 @@ const DiceGame = () => {
                 0 1px 2px rgba(0, 0, 0, 0.45);
             }
             .pl-3d-mini-btn:disabled { box-shadow: none; transform: none; }
-            .pl-3d-pill {
+            .{
               box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.55),
                 inset 0 -2px 3px rgba(0, 0, 0, 0.4),
                 0 2px 4px rgba(0, 0, 0, 0.55);
             }
             .pl-3d-tab-active {
-              background: linear-gradient(180deg, #2c2852 0%, #1f1c3d 100%);
+              background: linear-gradient(180deg, #333333 0%, #262628 100%);
               box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.18),
                 inset 0 -2px 3px rgba(0, 0, 0, 0.35),
                 0 3px 0 #0a0b1f,
                 0 4px 8px rgba(0, 0, 0, 0.55);
             }
-            .pl-3d-pressed {
+            .{
               box-shadow:
                 inset 0 2px 4px rgba(0, 0, 0, 0.65),
                 inset 0 -1px 0 rgba(255, 255, 255, 0.06);
             }
-            .pl-3d-panel {
+            .{
               box-shadow:
                 inset 0 1px 0 rgba(255, 255, 255, 0.07),
                 inset 0 -1px 0 rgba(0, 0, 0, 0.5),
                 0 4px 12px rgba(0, 0, 0, 0.55);
             }
-            .pl-3d-place-btn {
-              background: linear-gradient(180deg, #31ABE8 0%, #249EDB 100%);
+            .bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] text-black ring-2 ring-[#F9D028] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed{
+              background: linear-gradient(180deg, #31ABE8 0%, #F9D028 100%);
               border: 2px solid #31ABE8;
               color: #ffffff;
               box-shadow:
@@ -3455,7 +3466,7 @@ const DiceGame = () => {
               transition: all 150ms ease;
             }
             .pl-3d-place-btn:hover:not(:disabled) {
-              background: linear-gradient(180deg, #29A3E0 0%, #29A3E0 100%);
+              background: linear-gradient(180deg, #F9D028 0%, #F9D028 100%);
               transform: translateY(-1px);
             }
             .pl-3d-place-btn:active:not(:disabled) {
