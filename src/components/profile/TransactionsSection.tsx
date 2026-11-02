@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, type FC } from 'react';
+import BetSlipModal from '@/components/profile/transactions/BetSlipModal';
 import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import { SECTION_HEADING } from '@/components/profile/SectionShell';
@@ -13,6 +14,7 @@ import {
   type Transaction,
   type TxFilter,
 } from '@/components/profile/transactions/mockTransactions';
+import { formatUsd, roundEffect } from '@/components/profile/transactions/bets.rules';
 import { analytics } from '@/services/analytics';
 
 /**
@@ -72,6 +74,18 @@ const TransactionsSection: FC = () => {
 
       // Re-convert amounts based on user's current display currency
       const convertedRows = result.rows.map((row) => {
+        if (row.round) {
+          // Bets are shown in USD, the wallet's own unit: a past bet's value
+          // must not move with today's exchange rate.
+          const fmt = (usd: number) => formatUsd(Math.abs(usd));
+          const effect = roundEffect(row.status as 'BET_PLACED' | 'BET_WON' | 'BET_LOST', row.net_usd ?? 0);
+          return {
+            ...row,
+            usd: fmt(row.amount_usd ?? 0),
+            effect,
+          };
+        }
+
         if (!row.amount_usd) {
           return row;
         }
@@ -163,9 +177,18 @@ const TransactionsSection: FC = () => {
         <TablePager page={Math.min(page, totalPages)} totalPages={totalPages} onPage={setPage} />
       </div>
 
+      <BetSlipModal
+        open={modalOpen && !!selectedTransaction?.round}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedTransaction(null);
+        }}
+        betId={selectedTransaction?.round ? selectedTransaction.id : null}
+      />
+
       {/* Transaction Detail Modal */}
       <TransactionDetailModal
-        open={modalOpen}
+        open={modalOpen && !selectedTransaction?.round}
         onClose={() => {
           setModalOpen(false);
           setSelectedTransaction(null);

@@ -30,9 +30,8 @@ const TransactionTable: FC<Props> = ({ rows, onRowClick }) => {
         width: 180,
         cell: (r) => (
           <span
-            className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white truncate cursor-pointer hover:text-[#4ade80]"
+            className="text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[1.43] font-medium text-white truncate"
             title={r.id.toUpperCase()}
-            onClick={() => onRowClick?.(r)}
           >
             {r.id.slice(-12).toUpperCase()}
           </span>
@@ -154,6 +153,7 @@ const TransactionTable: FC<Props> = ({ rows, onRowClick }) => {
           surface="rl-glass-edge"
           minWidth="760px"
           empty={t('tx.noResults')}
+          onRowClick={onRowClick}
         />
       </div>
     </>

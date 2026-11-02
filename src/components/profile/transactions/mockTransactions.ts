@@ -1,5 +1,7 @@
 import api from '@/services/api';
 import type { TranslationKey } from '@/i18n/locales';
+import { betToTx, betsFilterQueryString, betsQueryString } from './bets.rules';
+
 
 /** Currency symbols for display */
 export const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -82,7 +84,102 @@ export interface Transaction {
   provider?: string | null;
   /** Network code (FIAT, BTC, ETH, BEP20, TRC20, etc.) */
   network_code?: string | null;
+  /** A game round (one row per round) rather than a payment-ledger row. */
+  round?: boolean;
+  /** Payout minus stake in USD, for a round's wallet effect. */
+  net_usd?: number;
 }
+
+/** One bet as `GET /wallet/bets` returns it. USD amounts, as text. */
+export interface BetRow {
+  id: string;
+  provider_round_id: string | null;
+  game_title: string | null;
+  game_slug: string | null;
+  game_provider: string | null;
+  game_image: string | null;
+  bet_usd: string;
+  payout_usd: string;
+  multiplier: string | null;
+  status: 'BET_PLACED' | 'BET_WON' | 'BET_LOST';
+  created_at: string;
+}
+
+export interface BetSlip extends BetRow {
+  external_round_id: string | null;
+  completed: boolean;
+  events: {
+    id: string;
+    type: string;
+    status: string;
+    bet_usd: string;
+    win_usd: string;
+    rolled_back: boolean;
+    created_at: string;
+  }[];
+}
+
+export const fetchBetSlip = async (id: string): Promise<BetSlip> => {
+  const response = (await api.get(`/wallet/bets/${encodeURIComponent(id)}`)) as any;
+  return response.data?.data || response.data;
+};
+
+export type BetSort = 'recent' | 'payout' | 'multiplier';
+
+export interface BetsQuery {
+  query: string;
+  page: number;
+  pageSize: number;
+  /** Game slug; empty for every game. */
+  game?: string;
+  sort?: BetSort;
+}
+
+export interface BetsPage {
+  bets: BetRow[];
+  total: number;
+  totalPages: number;
+}
+
+/** `GET /wallet/bets`: the player's rounds, one row each, newest first by default. */
+export const fetchBets = async ({ query, page, pageSize, game, sort }: BetsQuery): Promise<BetsPage> => {
+  const response = (await api.get(`/wallet/bets?${betsQueryString({ query, page, pageSize, game, sort })}`)) as any;
+  const apiData = response.data?.data || response.data;
+  const total = apiData.pagination?.total || 0;
+  return {
+    bets: apiData.bets || [],
+    total,
+    totalPages: apiData.pagination?.total_pages || Math.ceil(total / pageSize),
+  };
+};
+
+/** `GET /wallet/bets/export`: every bet the filters match, for a CSV. */
+export const fetchBetsForExport = async (
+  q: Pick<BetsQuery, 'query' | 'game' | 'sort'>,
+): Promise<{ bets: BetRow[]; total: number; truncated: boolean }> => {
+  const response = (await api.get(
+    `/wallet/bets/export?${betsFilterQueryString(q)}`,
+  )) as any;
+  const data = response.data?.data || response.data;
+  return { bets: data.bets || [], total: data.total || 0, truncated: Boolean(data.truncated) };
+};
+
+/** The games this player has bet on, for the Game filter. */
+export const fetchBetGames = async (): Promise<{ slug: string; title: string }[]> => {
+  const response = (await api.get('/wallet/bets/games')) as any;
+  return (response.data?.data || response.data).games || [];
+};
+
+/** The ledger's Bets chip: rounds drawn as ledger rows. */
+const queryBets = async ({ query, page, pageSize }: TxQuery): Promise<TxPage> => {
+  try {
+    const result = await fetchBets({ query, page, pageSize });
+    return { rows: result.bets.map(betToTx), total: result.total, totalPages: result.totalPages };
+  } catch (error) {
+    console.error('Failed to fetch bets:', error);
+    return { rows: [], total: 0, totalPages: 0 };
+  }
+};
 
 /** The filter chips, in the order the design lists them. */
 export const TX_FILTERS = [
@@ -150,7 +247,9 @@ export interface TxPage {
  * Fetches transactions from the API endpoint: GET /wallet/transactions
  * Transforms the API response to match the Transaction interface.
  */
-export const queryTransactions = async ({ query, filter, page, pageSize }: TxQuery): Promise<TxPage> => {
+export const queryTransactions = async (q: TxQuery): Promise<TxPage> => {
+  const { query, filter, page, pageSize } = q;
+  if (filter === 'bet') return queryBets(q);
   try {
     // Build query string manually to avoid nested params issue
     const queryParts: string[] = [];
@@ -175,6 +274,17 @@ export const queryTransactions = async ({ query, filter, page, pageSize }: TxQue
 
     // Transform API response to UI Transaction format
     const rows = transactions.map((tx: any) => {
+      // "All" carries rounds among the payments.
+      if (tx.round) {
+        return betToTx({
+          id: tx.id,
+          created_at: tx.created_at,
+          game_title: tx.game_title,
+          status: tx.status,
+          bet_usd: tx.amount_usd,
+          payout_usd: tx.payout_usd,
+        });
+      }
       const isOutgoing = tx.type === 'WITHDRAWAL' || tx.status === 'TIP_SENT';
       const categoryMap: Record<string, TxCategory> = {
         DEPOSIT: 'DEPOSIT',
