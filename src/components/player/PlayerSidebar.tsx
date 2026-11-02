@@ -367,7 +367,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
     promotions: promotionsOn,
     referrals: referralsOn,
   } = usePlatformFeatures();
-  const { openRegister } = useAuthModal();
+  const { openLogin, openRegister } = useAuthModal();
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
   const [suggesting, setSuggesting] = useState(false);
@@ -750,7 +750,8 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               <RailButton
                 icon={suggestionIcon}
                 label={t('lobby.rail.suggestionBox')}
-                onClick={() => setSuggesting(true)}
+                // Suggestions are tied to an account, so a guest signs in first.
+                onClick={() => (token ? setSuggesting(true) : openLogin())}
                 collapsed={collapsed}
               />
             </div>

@@ -19,6 +19,7 @@ export type GameShelfKey =
   | 'popular'
   | 'trending'
   | 'table'
+  | 'high-rtp'
   | 'bonus-buys'
   | 'instant-wins'
   | 'blackjack'

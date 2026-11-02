@@ -43,6 +43,7 @@ export const en = {
     "Rolluck Originals are provably fair: every round is generated from a server seed, your own client seed and a nonce, and you can change your client seed and verify any past round yourself from the game screen. Third-party titles use the studio's own certified random number generators, which are tested by independent laboratories, and each provider's return-to-player figure is published on the game's detail page.",
 
   // Category rail
+  'lobby.banner.slide': 'Banner {n} of {total}',
   'lobby.rail.welcomeTitle': 'Welcome package — {amount} + {count} free spins',
   'lobby.rail.welcomePackage': 'Welcome package',
   'lobby.rail.freeSpins': '+ {count} free spins',
@@ -71,17 +72,22 @@ export const en = {
   'lobby.selectGame.demo': 'Play DEMO',
   'suggest.title': "Got an Idea? Let's Build It Together",
   'suggest.category': 'Select a category',
-  'suggest.cat.feature': 'New Feature',
-  'suggest.cat.transparency': 'Transparency Tool',
-  'suggest.cat.fairness': 'Fairness Improvement',
   'suggest.cat.ux': 'User Experience',
+  'suggest.cat.games': 'Games & Providers',
+  'suggest.cat.bonuses': 'Bonuses & Promotions',
+  'suggest.cat.payments': 'Deposits & Withdrawals',
+  'suggest.cat.bug': 'Report a Problem',
   'suggest.cat.other': 'Other',
-  'suggest.placeholder': 'Describe your idea or feature suggestion...',
+  'suggest.placeholder': 'Describe your idea...',
   'suggest.body':
-    "Have an idea that could make our platform better? We'd love to hear it. Whether it's a new feature, a fairness improvement, or a transparency tool, every suggestion is reviewed by our team. We take community feedback seriously, and the best ideas may become part of future updates.",
+    "Have an idea that could make our platform better? We'd love to hear it. Every suggestion is reviewed by our team. We take community feedback seriously, and the best ideas may become part of future updates.",
   'suggest.submit': 'Submit Suggestion',
-  'suggest.mailSubject': 'Suggestion',
-  'suggest.thanks': 'Thanks! Your suggestion is ready to send in your mail app.',
+  'suggest.tooShort': 'Please describe your idea in at least {count} characters.',
+  'suggest.failed': "We couldn't send your suggestion. Please try again.",
+  'suggest.thanksTitle': 'Thank You for Your Suggestion!',
+  'suggest.thanksBody':
+    "We've received your idea. Our team will review it carefully and use it to make improvements and plan future updates.",
+  'suggest.done': 'Done',
 
   // Site footer
   'lobby.footer.contactQuestions': 'Questions',
@@ -156,8 +162,8 @@ export const en = {
   'lobby.streams.paused': 'Paused',
   'lobby.streams.open': 'Open stream',
   'lobby.streams.share': 'Share',
-  'lobby.streams.play': "Play",
-  'lobby.streams.copied': "Link copied",
+  'lobby.streams.play': 'Play',
+  'lobby.streams.copied': 'Link copied',
 
   // Header balance menu
   'lobby.balance.label': 'Wallet balance',
@@ -238,7 +244,8 @@ export const en = {
   'lobby.game.breadcrumb': 'Breadcrumb',
 
   'lobby.providers.title': 'Game Providers',
-  'lobby.providers.intro': 'Every studio in the ROLLUCK casino. Pick a provider to see all of its games.',
+  'lobby.providers.intro':
+    'Every studio in the ROLLUCK casino. Pick a provider to see all of its games.',
   'lobby.providers.games': '{provider} Games',
   'lobby.providers.count': '{count} games from {provider}, all playable with crypto.',
   'lobby.providers.empty': 'No games from this provider yet.',
