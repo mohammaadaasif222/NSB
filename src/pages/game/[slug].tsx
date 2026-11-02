@@ -7,7 +7,10 @@ import PlayerLayout from '@/layout/PlayerLayout';
 import GameRow from '@/components/player/GameRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import SiteFooter from '@/components/player/SiteFooter';
-import DiceGame from '@/components/dice/DiceGame';
+// Native in-house Dice (`<DiceGame>`) is retired — the slug `dice` is
+// now a Rolluck Originals row that renders via the ported component in
+// /play/dice (see @/components/originals/registry).
+// import DiceGame from '@/components/dice/DiceGame';
 import { getOriginalsComponent, ORIGINALS_PROVIDER_NAME } from '@/components/originals/registry';
 import { CATEGORY_ICONS } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
@@ -190,9 +193,14 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
           <span className="text-slate-300 truncate">{game.title}</span>
         </nav>
 
-        {dice?.enabled ? (
-          <DiceGame game={game} config={dice} />
-        ) : (
+        {/* Legacy native in-house Dice (`<DiceGame>` from @/components/dice)
+            used to be rendered inline when the slug === 'dice' and
+            `fetchDiceConfig()` returned enabled. That path is retired:
+            `dice` is now a Rolluck Originals slug, served through the
+            same /play/<slug> wrapper + registry as mines / blackjack.
+            Every slug — including dice — shows the marketing card here
+            and launches the real game in /play. */}
+        {false /* dice?.enabled retired */ ? null : (
           <section className="grid grid-cols-1 md:grid-cols-[minmax(200px,320px)_1fr] gap-6 lg:gap-10 items-start">
             <div className="relative aspect-[3/4] w-full max-w-[320px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-800 shadow-2xl">
               {game.image_url ? (

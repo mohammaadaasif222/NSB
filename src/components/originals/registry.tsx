@@ -41,7 +41,7 @@ export const ORIGINALS_PROVIDER_NAME = 'Rolluck';
  */
 export const ORIGINALS_SLUGS = [
   'mines',
-  'dice-originals',
+  'dice',
   'blackjack',
   'plinko',
   'crash',
@@ -82,7 +82,7 @@ export const getOriginalsComponent = (
   switch (slug) {
     case 'mines':
       return Mines;
-    case 'dice-originals':
+    case 'dice':
       return DiceOriginals;
     case 'blackjack':
       return Blackjack;
