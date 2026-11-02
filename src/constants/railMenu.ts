@@ -51,7 +51,7 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
       { labelKey: 'lobby.rail.latestReleases', href: categoryHref('new') },
       { labelKey: 'lobby.rail.highRtp', href: `${ALL_GAMES_PATH}?sort=rtp` },
       { labelKey: 'dash.bonusBuys', href: categoryHref('bonus-buys') },
-      { labelKey: 'lobby.rail.holdWin' },
+      { labelKey: 'lobby.rail.holdWin', href: categoryHref('hold-and-win') },
       { labelKey: 'allGames.title', href: ALL_GAMES_PATH },
     ],
   },

@@ -21,6 +21,7 @@ export type GameShelfKey =
   | 'table'
   | 'high-rtp'
   | 'bonus-buys'
+  | 'hold-and-win'
   | 'instant-wins'
   | 'blackjack'
   | 'roulette'
@@ -51,7 +52,8 @@ export type GameCollection =
   | 'scratch-cards'
   | 'keno'
   | 'hilo'
-  | 'bingo';
+  | 'bingo'
+  | 'hold-and-win';
 
 export type GameType = 'STANDARD' | 'LIVE' | 'LOBBY';
 

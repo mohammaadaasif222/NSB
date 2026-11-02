@@ -55,6 +55,7 @@ export const GAME_SHELVES = [
   { key: 'table', titleKey: 'dash.tableGames', list: { genre: 'table' } },
   { key: 'high-rtp', titleKey: 'lobby.rail.highRtp', list: { sort: 'rtp' } },
   { key: 'bonus-buys', titleKey: 'dash.bonusBuys', list: { buy_feature: true } },
+  { key: 'hold-and-win', titleKey: 'lobby.rail.holdWin', list: { collection: 'hold-and-win' } },
   {
     key: 'instant-wins',
     titleKey: 'lobby.chips.instantWins',
