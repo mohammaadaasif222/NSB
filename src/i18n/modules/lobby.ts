@@ -43,6 +43,7 @@ export const en = {
     "Rolluck Originals are provably fair: every round is generated from a server seed, your own client seed and a nonce, and you can change your client seed and verify any past round yourself from the game screen. Third-party titles use the studio's own certified random number generators, which are tested by independent laboratories, and each provider's return-to-player figure is published on the game's detail page.",
 
   // Category rail
+  'lobby.banner.slide': 'Banner {n} of {total}',
   'lobby.rail.welcomeTitle': 'Welcome package — {amount} + {count} free spins',
   'lobby.rail.welcomePackage': 'Welcome package',
   'lobby.rail.freeSpins': '+ {count} free spins',

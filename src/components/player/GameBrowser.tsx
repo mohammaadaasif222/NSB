@@ -8,7 +8,7 @@ import { fetchShelfPage, type BrowseQuery } from '@/services/games';
 import {
   CATEGORY_PAGE_SIZE,
   LIVE_CASINO_HREF,
-  LOBBY_SHELF_KEYS,
+  HOME_SHELF_KEYS,
   categoryHref,
   shelfFor,
 } from '@/constants/games';
@@ -41,13 +41,9 @@ interface Props {
   shelves: GameShelf[];
   /** The route the browser is on; the provider picker keeps the URL there. */
   basePath?: string;
-  /**
-   * Show the search / sort / filter toolbar and the category chips. The home
-   * lobby's design has neither — it is the shelves alone, and browsing lives
-   * on /casino — so it turns them off.
-   */
+  /** Show the search / sort / filter toolbar and the category chips. */
   controls?: boolean;
-  /** Show the chips on a phone too. The casino page draws them; the lobby keeps them desktop-only. */
+  /** Show the chips on a phone too; off, they are desktop-only. */
   chipsOnPhone?: boolean;
   /** Which shelves to show when idle, in order. */
   shelfKeys?: readonly GameShelfKey[];
@@ -90,7 +86,7 @@ const GameBrowser: FC<Props> = ({
   shelves,
   basePath = '/',
   controls = true,
-  shelfKeys = LOBBY_SHELF_KEYS,
+  shelfKeys = HOME_SHELF_KEYS,
   hiddenShelfKeys,
   titles = {},
   chipsOnPhone = false,

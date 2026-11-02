@@ -49,7 +49,7 @@ const Sports: FC = () => {
       <Seo title={t('nav.sports')} />
 
       <div className="mx-auto max-w-[1548px] px-1 pt-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:pt-[calc(var(--u)*4)]">
-        <LobbyBanner />
+        <LobbyBanner placement="sports" />
 
         <div className="mt-[30px] lg:mt-[calc(var(--u)*26)]">
           <SportsToolbar

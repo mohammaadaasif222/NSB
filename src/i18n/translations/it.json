@@ -1013,6 +1013,7 @@
   "lobby.faq.a5": "La maggior parte dei prelievi viene esaminata e approvata entro poche ore dalla richiesta. Una volta approvato, la rapidità con cui ricevi il denaro dipende dal metodo: le cripto arrivano in genere pochi minuti dopo la trasmissione della transazione, i portafogli elettronici in giornata e i rimborsi su carta in pochi giorni lavorativi, a seconda dell'emittente. Il primo prelievo può richiedere più tempo se la verifica dell'identità non è ancora completa: completarla una volta mantiene veloci tutti i pagamenti successivi.",
   "lobby.faq.q6": "I vostri giochi sono equi in modo dimostrabile e verificati in modo indipendente?",
   "lobby.faq.a6": "I Rolluck Originals sono equi in modo dimostrabile: ogni round viene generato da un seed del server, dal tuo seed client e da un nonce, e puoi cambiare il tuo seed client e verificare tu stesso qualsiasi round passato dalla schermata del gioco. I titoli di terze parti usano i generatori di numeri casuali certificati dello studio, testati da laboratori indipendenti, e il ritorno al giocatore di ogni fornitore è pubblicato nella pagina di dettaglio del gioco.",
+  "lobby.banner.slide": "Banner {n} di {total}",
   "lobby.rail.welcomeTitle": "Pacchetto di benvenuto — {amount} + {count} giri gratis",
   "lobby.rail.welcomePackage": "Pacchetto di benvenuto",
   "lobby.rail.freeSpins": "+ {count} giri gratis",

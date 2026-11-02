@@ -1013,6 +1013,7 @@
   "lobby.faq.a5": "La plupart des retraits sont examinés et approuvés dans les quelques heures qui suivent la demande. Une fois approuvé, le délai de réception dépend de la méthode : la crypto arrive généralement quelques minutes après la diffusion de la transaction, les portefeuilles électroniques le jour même et les remboursements sur carte en quelques jours ouvrés selon votre banque émettrice. Un premier retrait peut prendre plus de temps si la vérification d'identité n'est pas encore terminée — la compléter une fois pour toutes permet à tous les paiements suivants d'être traités rapidement.",
   "lobby.faq.q6": "Vos jeux sont-ils équitables de manière prouvable et audités de façon indépendante ?",
   "lobby.faq.a6": "Les Rolluck Originals sont équitables de manière prouvable : chaque partie est générée à partir d'une graine serveur, de votre propre graine client et d'un nonce, et vous pouvez changer votre graine client et vérifier vous-même n'importe quelle partie passée depuis l'écran du jeu. Les titres tiers utilisent les générateurs de nombres aléatoires certifiés de leur studio, testés par des laboratoires indépendants, et le taux de retour au joueur de chaque fournisseur est publié sur la page de détail du jeu.",
+  "lobby.banner.slide": "Bannière {n} sur {total}",
   "lobby.rail.welcomeTitle": "Pack de bienvenue — {amount} + {count} tours gratuits",
   "lobby.rail.welcomePackage": "Pack de bienvenue",
   "lobby.rail.freeSpins": "+ {count} tours gratuits",
