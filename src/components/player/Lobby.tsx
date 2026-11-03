@@ -136,11 +136,6 @@ const Lobby: FC<Props> = ({
   const page: SectionPageKey = variant === 'home' ? (player ? 'home_player' : 'home') : variant;
   const shelves = withPageShelves(mainShelves, pageShelves[page]);
   const pageSections = sections[page] ?? DEFAULT_SECTIONS[page];
-  // The winners row pairs its sample wins with real games, newest first.
-  const winnerGames = [
-    ...(shelves.find((s) => s.key === 'new')?.games ?? []),
-    ...shelves.filter((s) => s.key !== 'new').flatMap((s) => s.games),
-  ];
   const live = variant === 'live';
   // The live lobby is laid out as the casino page is, with its own rows.
   const casino = variant === 'casino' || live;
@@ -177,9 +172,7 @@ const Lobby: FC<Props> = ({
       case 'streamers':
         return <StreamersRow streams={streams} title={title} />;
       case 'recent-winners':
-        return (
-          <RecentWinners games={winnerGames} tabs={player ? 'player' : 'landing'} title={title} />
-        );
+        return <RecentWinners tabs={player ? 'player' : 'landing'} title={title} />;
       default:
         return null;
     }
@@ -240,7 +233,7 @@ const Lobby: FC<Props> = ({
           </>
         )}
 
-        {casino && <RecentWinners games={winnerGames} tabs="player" />}
+        {casino && <RecentWinners tabs="player" />}
         <FaqAccordion items={faqs} />
         <SiteFooter glow={variant === 'home'} />
       </div>

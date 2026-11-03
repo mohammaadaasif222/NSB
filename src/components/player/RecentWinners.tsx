@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
-import type { Game } from '@/types';
 import { gameHref } from '@/constants/games';
 import { SHELF_TRACK } from '@/components/player/ShelfHeading';
 import amara from '@/assets/lobby/winner-avatar.webp';
@@ -18,50 +17,40 @@ import pharaoh from '@/assets/profile/avatars/pharaoh.webp';
 import cowboy from '@/assets/profile/avatars/cowboy.webp';
 import { useTranslation } from '@/context/I18nContext';
 import type { TranslationKey } from '@/i18n/locales';
+import { fetchLiveBets, type LiveBet } from '@/services/liveBets';
+import { formatAmount, withCurrency } from '@/utils/money';
 
 /**
- * Illustrative "Recent Winners" row, running as a live feed the way Rainbet's
- * Live Wins does: twice a second a new win lands on the left — sliding in a
- * little way and fading up — while the rest step along by one card at once,
- * the oldest falling off the far end.
+ * The "Recent Winners" row, running as a live feed the way Rainbet's Live
+ * Wins does: rounds that just paid out on the site (GET /live-bets), each
+ * with the game it was played on and the masked player. New wins land on the
+ * left one at a time — sliding in a little way and fading up — while the rest
+ * step along by one card, the oldest falling off the far end.
  *
- * There is no bets feed yet, so the wins are generated from sample players, paired with real games from the lobby's own shelves so each
- * card opens a game that exists. The tabs switch state but filter nothing
- * until a feed lands.
+ * The tabs switch state but filter nothing yet.
  */
-interface Win {
-  id: string;
-  user: string;
-  avatar: StaticImageData;
-  multiplier: string;
-  payout: string;
-}
 
-const PLAYERS: { user: string; avatar: StaticImageData }[] = [
-  { user: 'LuckyAmara', avatar: amara },
-  { user: 'ZeusMode', avatar: zeus },
-  { user: 'jdawg_spins', avatar: john },
-  { user: 'LionHeart88', avatar: lion },
-  { user: 'AliceTwister', avatar: alice },
-  { user: 'DragonHoard', avatar: dragon },
-  { user: 'tony.bets', avatar: tony },
-  { user: 'CheekyMonkey', avatar: monkey },
-  { user: 'MarkJenga', avatar: mark },
-  { user: 'PharaohGold', avatar: pharaoh },
-  { user: 'WildWestRoll', avatar: cowboy },
-  { user: 'JokersWild', avatar: jester },
+/** The feed carries no avatars, so each player keeps one picked from their name. */
+const AVATARS: StaticImageData[] = [
+  amara,
+  zeus,
+  john,
+  lion,
+  alice,
+  dragon,
+  tony,
+  monkey,
+  mark,
+  pharaoh,
+  cowboy,
+  jester,
 ];
 
-const COINS = [
-  { code: 'SOL', min: 0.2, span: 4, digits: 4 },
-  { code: 'USDT', min: 5, span: 400, digits: 2 },
-  { code: 'BTC', min: 0.0002, span: 0.004, digits: 6 },
-  { code: 'ETH', min: 0.004, span: 0.12, digits: 5 },
-] as const;
-
-const MULTIPLIERS = [1.35, 2.1, 1.8, 5.5, 3.2, 12.4, 1.55, 2.75, 48.2, 4.1, 1.95, 8.6, 2.4];
-
-const SAMPLE_SIZE = 7;
+const avatarFor = (player: string): StaticImageData => {
+  let hash = 0;
+  for (const char of player) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return AVATARS[hash % AVATARS.length];
+};
 
 /** Each design's tab set: the landing page's, and the signed-in lobby's. */
 export const WINNER_TABS: Record<'landing' | 'player', readonly TranslationKey[]> = {
@@ -87,6 +76,9 @@ const LiveBadge: FC = () => {
     </span>
   );
 };
+
+/** The card's frame, shared by a win and its loading placeholder. */
+const CARD_FRAME = 'relative block aspect-[198/261] overflow-hidden rounded-[11.1cqw] bg-[#333333]';
 
 /*
  * The card is laid out in `cqw` of the design's 198px card, like the game
@@ -121,27 +113,22 @@ const ReelText: FC<{ text: string; spin: boolean }> = ({ text, spin }) => {
 
 const JACKPOT_AT = 10;
 
-const WinnerCard: FC<{ game: Game; win: Win; fresh?: boolean; slot?: boolean }> = ({
-  game,
-  win,
+const WinnerCard: FC<{ bet: LiveBet; fresh?: boolean; slot?: boolean }> = ({
+  bet,
   fresh,
   slot,
 }) => {
   const { t } = useTranslation();
-  const jackpot = slot && parseFloat(win.multiplier) >= JACKPOT_AT;
+  const { game } = bet;
+  const payout = withCurrency(formatAmount(bet.payout_usd), 'USD');
+  const jackpot = slot && parseFloat(bet.multiplier) >= JACKPOT_AT;
 
   return (
     <div className={`@container ${fresh ? (slot ? 'rl-reel-in' : 'rl-winner-in') : ''}`}>
       <Link
         href={gameHref(game.slug)}
-        title={t('lobby.winners.cardTitle', {
-          user: win.user,
-          payout: win.payout,
-          game: game.title,
-        })}
-        className={`group relative block aspect-[198/261] overflow-hidden rounded-[11.1cqw] bg-[#333333] ${
-          jackpot ? 'rl-jackpot' : ''
-        }`}
+        title={t('lobby.winners.cardTitle', { user: bet.player, payout, game: game.title })}
+        className={`group ${CARD_FRAME} ${jackpot ? 'rl-jackpot' : ''}`}
       >
         <Image
           src={game.image_url || '/images/placeholder.png'}
@@ -154,22 +141,25 @@ const WinnerCard: FC<{ game: Game; win: Win; fresh?: boolean; slot?: boolean }> 
         {/* The design's "Liquid Glass" band: the artwork blurred through a
             faint white frost, a hairline of light along its top — not a dark
             pane, so each card's band takes its own game's colours. */}
-        <span className="absolute inset-x-0 bottom-0 flex h-[31.8%] flex-col justify-between rounded-b-[11.1cqw] bg-black/[0.40] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-[3cqw]">
+        <span className="absolute inset-x-0 bottom-0 flex h-[39.5%] flex-col justify-between rounded-b-[11.1cqw] bg-black/[0.40] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-[3cqw]">
+          <span className="truncate text-[max(10px,7.07cqw)] font-semibold leading-[1.43] text-white">
+            {game.title}
+          </span>
           <span className="flex min-w-0 items-center gap-[4.04cqw]">
             <Image
-              src={win.avatar}
+              src={avatarFor(bet.player)}
               alt=""
               className="h-[18.2cqw] w-[18.2cqw] flex-shrink-0 rounded-full object-cover"
             />
             <span className="truncate text-[max(10px,7.07cqw)] font-medium leading-[1.43] text-[#f0f1f5]">
-              {win.user}
+              {bet.player}
             </span>
           </span>
           <span className="flex items-center justify-between gap-[calc(var(--u)*4)] text-[max(10px,7.07cqw)] leading-[1.43] tabular-nums">
             <span className={`font-medium ${jackpot ? 'text-[#f9d028]' : 'text-[#f4fffb]'}`}>
-              <ReelText text={win.multiplier} spin={!!(fresh && slot)} />
+              <ReelText text={`${bet.multiplier}x`} spin={!!(fresh && slot)} />
             </span>
-            <span className="truncate font-medium text-[#f0f1f5]">{win.payout}</span>
+            <span className="truncate font-medium text-[#f0f1f5]">{payout}</span>
           </span>
         </span>
       </Link>
@@ -177,86 +167,98 @@ const WinnerCard: FC<{ game: Game; win: Win; fresh?: boolean; slot?: boolean }> 
   );
 };
 
-/** A new win every this many milliseconds — Rainbet's pace, measured off its feed. */
+/** A new win every this many milliseconds while some are waiting — Rainbet's pace. */
 const FEED_INTERVAL = 500;
+/** How often the feed is asked for new wins; the backend caches it for 5 s. */
+const POLL_MS = 10_000;
 /** Cards kept: the widest row shows seven; the rest are off the end. */
 const KEPT = 9;
+/** Placeholders while the first answer is on its way: the widest row's seven. */
+const PLACEHOLDERS = 7;
 
-interface FeedItem {
-  key: string;
-  win: Win;
-  /** Index into the games the row was given. */
-  game: number;
+interface Feed {
+  bets: LiveBet[];
+  /** The win that has just landed, which slides in. */
+  fresh: string | null;
+  /** The first fetch has answered (successfully or not). */
+  loaded: boolean;
 }
 
 /**
- * The n-th generated win. Strides coprime with each list keep neighbouring
- * cards on different players, coins and games. Deterministic, so a render and
- * its re-render agree.
+ * The feed: polled every POLL_MS while the tab is visible. The first answer
+ * is shown as it is; wins that arrive after it wait in a queue and land one
+ * every FEED_INTERVAL, held while the pointer is over the row (so a card can
+ * be clicked) and while the tab is hidden. A failed poll keeps what is shown.
  */
-const winAt = (n: number, games: number): FeedItem => {
-  const player = PLAYERS[(n * 5) % PLAYERS.length];
-  const coin = COINS[(n * 3) % COINS.length];
-  const multiplier = MULTIPLIERS[(n * 4) % MULTIPLIERS.length];
-  const stake = coin.min + (((n * 7919) % 1000) / 1000) * coin.span;
-  return {
-    key: `feed-${n}`,
-    win: {
-      id: `feed-${n}`,
-      ...player,
-      multiplier: `${multiplier.toFixed(2)}x`,
-      payout: `${(stake * multiplier).toLocaleString('en-US', { minimumFractionDigits: coin.digits, maximumFractionDigits: coin.digits })} ${coin.code}`,
-    },
-    game: (n * 7) % Math.max(1, games),
-  };
-};
-
-/** The row as the server renders it: the first wins of the same sequence. */
-const initialFeed = (games: number): FeedItem[] =>
-  Array.from({ length: SAMPLE_SIZE }, (_, i) => ({ ...winAt(i, games), key: `w${i}` }));
-
-/**
- * The feed: a new win at the front every FEED_INTERVAL, held while the
- * pointer is over the row (so a card can be clicked) and while the tab is
- * hidden. Starts after hydration, so the first paint matches the server's.
- */
-const useWinnerFeed = (games: number, paused: boolean): FeedItem[] => {
-  const [items, setItems] = useState<FeedItem[]>(() => initialFeed(games));
-  const next = useRef(SAMPLE_SIZE);
+const useLiveBets = (paused: boolean): Feed => {
+  const [feed, setFeed] = useState<Feed>({ bets: [], fresh: null, loaded: false });
+  /** Wins fetched but not yet shown, oldest first. */
+  const queue = useRef<LiveBet[]>([]);
+  /** The ids in the last answer: anything else in the next one is new. */
+  const known = useRef<Set<string> | null>(null);
 
   useEffect(() => {
-    if (paused || games === 0) return;
+    let alive = true;
+    const poll = async (): Promise<void> => {
+      if (document.hidden && known.current) return;
+      const bets = await fetchLiveBets();
+      if (!alive) return;
+      if (!bets) {
+        setFeed((current) => (current.loaded ? current : { ...current, loaded: true }));
+        return;
+      }
+      const seen = known.current;
+      known.current = new Set(bets.map((bet) => bet.id));
+      if (!seen) {
+        setFeed({ bets: bets.slice(0, KEPT), fresh: null, loaded: true });
+        return;
+      }
+      const arrived = bets.filter((bet) => !seen.has(bet.id)).reverse();
+      queue.current = [...queue.current, ...arrived].slice(-KEPT);
+    };
+
+    void poll();
+    const id = window.setInterval(poll, POLL_MS);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (paused) return undefined;
     const id = window.setInterval(() => {
       if (document.hidden) return;
-      const item = winAt(next.current++, games);
-      setItems((current) => [item, ...current].slice(0, KEPT));
+      const bet = queue.current.shift();
+      if (!bet) return;
+      setFeed((current) => ({
+        ...current,
+        bets: [bet, ...current.bets.filter((shown) => shown.id !== bet.id)].slice(0, KEPT),
+        fresh: bet.id,
+      }));
     }, FEED_INTERVAL);
     return () => window.clearInterval(id);
-  }, [paused, games]);
+  }, [paused]);
 
-  return items;
+  return feed;
 };
 
 interface Props {
-  /** Games to pair the sample winners with — any of the lobby's shelves. */
-  games: Game[];
   /** Which design's tabs to show. */
   tabs?: keyof typeof WINNER_TABS;
   title?: string;
 }
 
-const RecentWinners: FC<Props> = ({ games: given, tabs = 'landing', title }) => {
+const RecentWinners: FC<Props> = ({ tabs = 'landing', title }) => {
   const { t } = useTranslation();
   const labels = WINNER_TABS[tabs];
   const [tab, setTab] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const games = useMemo(() => {
-    const withArt = given.filter((game) => game.image_url);
-    return withArt.length > 0 ? withArt : given;
-  }, [given]);
-  const items = useWinnerFeed(games.length, hovered);
+  const { bets, fresh, loaded } = useLiveBets(hovered);
+  const slot = labels[tab] === 'lobby.winners.activeWins';
 
-  if (games.length === 0) {
+  // Nothing has paid out lately: no row rather than an empty one.
+  if (loaded && bets.length === 0) {
     return null;
   }
 
@@ -300,15 +302,20 @@ const RecentWinners: FC<Props> = ({ games: given, tabs = 'landing', title }) => 
         aria-live="off"
       >
         <div className={`${SHELF_TRACK} !overflow-visible`}>
-          {items.map((item, i) => (
-            <WinnerCard
-              key={item.key}
-              game={games[item.game % games.length]}
-              win={item.win}
-              fresh={i === 0 && item.key.startsWith('feed-')}
-              slot={labels[tab] === 'lobby.winners.activeWins'}
-            />
-          ))}
+          {loaded
+            ? bets.map((bet, i) => (
+                <WinnerCard
+                  key={bet.id}
+                  bet={bet}
+                  fresh={i === 0 && bet.id === fresh}
+                  slot={slot}
+                />
+              ))
+            : Array.from({ length: PLACEHOLDERS }, (_, i) => (
+                <div key={i} className="@container" aria-hidden="true">
+                  <span className={`${CARD_FRAME} animate-pulse`} />
+                </div>
+              ))}
         </div>
       </div>
     </section>
