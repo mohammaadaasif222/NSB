@@ -9,6 +9,7 @@ import { isPlatformRole } from '@/constants/roles';
 import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import { trackSignupComplete } from '@/utils/events';
+import { markPostSignup } from '@/lib/postSignup';
 import { clearReferral, referralField } from '@/lib/referralCapture';
 import { affiliateField, clearAffiliateTag } from '@/lib/affiliateCapture';
 import { analytics } from '@/services/analytics';
@@ -169,6 +170,7 @@ export function useTelegramAuth(): TelegramAuth {
         // a social signup never reaches the funnel at all.
         if (response?.data?.is_new_account === true) {
           trackSignupComplete('telegram');
+          markPostSignup();
           clearAffiliateTag();
           if (referralField().referral_code) {
             analytics.referral.signUpAttributed('link');

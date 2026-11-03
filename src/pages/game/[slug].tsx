@@ -53,16 +53,16 @@ const money = (value: number | null, currency?: string | null): string =>
   value === null ? '—' : `${value.toFixed(2)}${currency ? ` ${currency}` : ''}`;
 
 const Stat: FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="rounded-xl bg-slate-900 border border-slate-800 px-4 py-3">
-    <dt className="text-[11px] uppercase tracking-wide text-slate-500">{label}</dt>
-    <dd className="mt-1 text-base font-semibold text-slate-100 tabular-nums">{value}</dd>
+  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+    <dt className="text-[11px] uppercase tracking-wide text-[#9da2b4]">{label}</dt>
+    <dd className="mt-1 text-base font-semibold text-[#f0f1f5] tabular-nums">{value}</dd>
   </div>
 );
 
 const PRIMARY =
-  'inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 text-sm font-bold transition-colors';
+  'rl-btn-gold inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold';
 const SECONDARY =
-  'inline-flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-slate-700 transition-colors';
+  'rl-btn-ghost inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold';
 
 /**
  * Play calls to action. Real money needs an account, so a visitor is sent to
@@ -79,7 +79,7 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
     return token ? (
       <span
         aria-disabled="true"
-        className="inline-flex items-center justify-center rounded-lg bg-slate-800/60 border border-slate-800 px-6 py-2.5 text-sm font-semibold text-slate-400 cursor-not-allowed"
+        className="rl-btn-ghost inline-flex cursor-not-allowed items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold opacity-60"
       >
         {t('game.unavailable')}
       </span>
@@ -87,7 +87,7 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
       <button
         type="button"
         onClick={() => openLogin()}
-        className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 text-sm font-bold transition-colors"
+        className={PRIMARY}
       >
         {t('game.loginToPlay')}
       </button>
@@ -122,12 +122,12 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
       <PlayerLayout>
         <Seo title="ROLLUCK" bareTitle noindex />
         <div className="p-6 max-w-lg mx-auto text-center space-y-4">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-[#9da2b4]">
             {failed ? t('dash.catalogueUnavailable') : t('game.notFound')}
           </p>
           <Link
             href="/"
-            className="inline-flex rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
+            className="rl-btn-ghost inline-flex rounded-full px-4 py-2 text-xs font-semibold"
           >
             {t('game.backToLobby')}
           </Link>
@@ -171,29 +171,29 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
       <div className="mx-auto max-w-[1600px] space-y-6 pb-2 sm:space-y-8">
         {/* Breadcrumb */}
         <nav
-          className="flex items-center gap-1.5 text-xs text-slate-500"
+          className="flex items-center gap-1.5 text-xs text-[#9da2b4]"
           aria-label={t('lobby.game.breadcrumb')}
         >
-          <Link href="/" className="hover:text-slate-200 transition-colors">
+          <Link href="/" className="hover:text-[#f0f1f5] transition-colors">
             {t('nav.home')}
           </Link>
           {def && (
             <>
               <span aria-hidden="true">/</span>
-              <Link href={categoryHref(def.key)} className="hover:text-slate-200 transition-colors">
+              <Link href={categoryHref(def.key)} className="hover:text-[#f0f1f5] transition-colors">
                 {categoryTitle}
               </Link>
             </>
           )}
           <span aria-hidden="true">/</span>
-          <span className="text-slate-300 truncate">{game.title}</span>
+          <span className="text-[#f0f1f5] truncate">{game.title}</span>
         </nav>
 
         {dice?.enabled ? (
           <DiceGame game={game} config={dice} />
         ) : (
           <section className="grid grid-cols-1 md:grid-cols-[minmax(200px,320px)_1fr] gap-6 lg:gap-10 items-start">
-            <div className="relative aspect-[3/4] w-full max-w-[320px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-800 shadow-2xl">
+            <div className="relative aspect-[3/4] w-full max-w-[320px] rounded-2xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl">
               {game.image_url ? (
                 <Image
                   src={game.image_url}
@@ -204,12 +204,12 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
                   className="object-cover"
                 />
               ) : (
-                <span className="absolute inset-0 flex items-end bg-gradient-to-br from-slate-700 to-slate-900 p-4 text-lg font-extrabold text-slate-200">
+                <span className="absolute inset-0 flex items-end bg-gradient-to-br from-white/10 to-white/[0.03] p-4 text-lg font-extrabold text-[#f0f1f5]">
                   {game.title}
                 </span>
               )}
               {game.is_new && (
-                <span className="absolute top-3 right-3 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                <span className="absolute top-3 right-3 rounded-full bg-[#f9d028] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#07080a]">
                   {t('game.new')}
                 </span>
               )}
@@ -219,27 +219,27 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
               {def && Icon && (
                 <Link
                   href={categoryHref(def.key)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-blue-600/15 border border-blue-500/30 px-3 py-1 text-[11px] font-semibold text-blue-300 hover:bg-blue-600/25 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#f9d028]/40 bg-[#f9d028]/10 px-3 py-1 text-[11px] font-semibold text-[#f9d028] hover:bg-[#f9d028]/20 transition-colors"
                 >
                   <Icon size={12} />
                   {categoryTitle}
                 </Link>
               )}
 
-              <h1 className="mt-3 text-2xl sm:text-4xl font-extrabold text-white leading-tight">
+              <h1 className="mt-3 text-2xl sm:text-4xl font-extrabold text-[#f0f1f5] leading-tight">
                 {game.title}
               </h1>
-              <p className="mt-1.5 text-sm text-slate-400">
+              <p className="mt-1.5 text-sm text-[#9da2b4]">
                 {t('game.provider')}:{' '}
                 {providerSlug ? (
                   <Link
                     href={providerHref(providerSlug)}
-                    className="text-slate-200 font-medium underline-offset-2 hover:text-white hover:underline"
+                    className="text-[#f0f1f5] font-medium underline-offset-2 hover:text-[#ffe779] hover:underline"
                   >
                     {displayProvider(game.provider)}
                   </Link>
                 ) : (
-                  <span className="text-slate-200 font-medium">{displayProvider(game.provider)}</span>
+                  <span className="text-[#f0f1f5] font-medium">{displayProvider(game.provider)}</span>
                 )}
               </p>
 

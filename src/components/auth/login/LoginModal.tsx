@@ -1,5 +1,4 @@
 import { useState, type FC } from 'react';
-import { toast } from 'react-toastify';
 
 import { useTranslation } from '@/context/I18nContext';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
@@ -147,7 +146,6 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
             google.signIn();
           }}
           onTelegram={telegram.signIn}
-          onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
           onMore={() => setStep('social')}
           googleBusy={google.loading}
         />
@@ -155,7 +153,6 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
       {step === 'social' && (
         <SocialStep
           onTelegram={telegram.signIn}
-          onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
         />
       )}
 

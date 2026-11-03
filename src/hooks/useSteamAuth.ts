@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { isPlatformRole } from '@/constants/roles';
 import { trackSignupComplete } from '@/utils/events';
+import { markPostSignup } from '@/lib/postSignup';
 
 import type { JwtPayload } from '@/types';
 
@@ -98,6 +99,7 @@ export function useSteamAuth(): SteamAuth {
       // provider vouching for it plus this flag — see trackSignupComplete.
       if (event.data.is_new_account === true) {
         trackSignupComplete('steam');
+        markPostSignup();
       }
 
       login(sessionToken);

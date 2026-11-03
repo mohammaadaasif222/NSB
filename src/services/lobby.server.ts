@@ -4,7 +4,7 @@ import {
   fetchHomeSections,
   fetchHomeShelves,
   fetchLobbyProviders,
-  fetchRegisteredTodayCount,
+  fetchTotalRegistrationsCount,
   parsePageParam,
 } from '@/services/games.server';
 import { fetchFaqsServer } from '@/services/faqs.server';
@@ -29,7 +29,7 @@ export interface LobbyProps {
   catalogueFailed: boolean;
   faqs: FaqItem[];
   streams: LiveStream[];
-  registeredToday: number | null;
+  totalRegistrations: number | null;
 }
 
 interface LobbyOptions {
@@ -85,13 +85,13 @@ export const lobbyProps =
     ) as Record<LobbyShelfKey, number>;
 
     // In parallel: independent public reads, and the page waits on all of them.
-    const [main, others, providers, faqs, streams, registeredToday] = await Promise.all([
+    const [main, others, providers, faqs, streams, totalRegistrations] = await Promise.all([
       fetchHomeShelves(mainKeys, pages, mainPage),
       Promise.all(otherPages.map((page) => fetchHomeShelves(keysToFetchFor(page), pages, page))),
       fetchLobbyProviders(),
       fetchFaqsServer(),
       options.streams ? fetchLiveStreamsServer() : Promise.resolve([]),
-      fetchRegisteredTodayCount(),
+      fetchTotalRegistrationsCount(),
     ]);
 
     return {
@@ -105,7 +105,7 @@ export const lobbyProps =
         catalogueFailed: main.failed || others.some((result) => result.failed),
         faqs,
         streams,
-        registeredToday,
+        totalRegistrations,
       },
     };
   };

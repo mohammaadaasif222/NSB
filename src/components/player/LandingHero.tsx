@@ -13,8 +13,6 @@ import sportsBall from '@/assets/sports-ball-glass-mobile.webp';
 import gmailIcon from '@/assets/lobby/gmail.svg';
 import mailIcon from '@/assets/lobby/mail.svg';
 import telegramIcon from '@/assets/lobby/telegram.svg';
-import facebookIcon from '@/assets/lobby/facebook.svg';
-import whatsappIcon from '@/assets/lobby/whatsapp.svg';
 import chevronDown from '@/assets/lobby/chevron-down.svg';
 import trustPrivacy from '@/assets/lobby/trust-privacy.svg';
 import trustFair from '@/assets/lobby/trust-fair.svg';
@@ -29,7 +27,7 @@ import { WinnersRow } from '@/components/player/TopWinnersTicker';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
 import { SECTION_ART } from '@/constants/cdn';
 import { LOBBY_STATS } from '@/constants/stats';
-import { useRegisteredTodayLabel } from '@/hooks/useRegisteredToday';
+import { useTotalRegistrationsLabel } from '@/hooks/useTotalRegistrations';
 import type { TranslationKey } from '@/i18n/locales';
 
 /* ==================================================================== */
@@ -194,10 +192,10 @@ const SocialDisc: FC<{
  * its mobile form with the number already filled in, so validation, the OTP
  * step and the rest of signup live in one place.
  */
-const SignupTeaser: FC<{ registeredToday: number | null }> = ({ registeredToday }) => {
+const SignupTeaser: FC<{ totalRegistrations: number | null }> = ({ totalRegistrations }) => {
   const { openRegister } = useAuthModal();
   const { t } = useTranslation();
-  const registeredLabel = useRegisteredTodayLabel(registeredToday);
+  const registeredLabel = useTotalRegistrationsLabel(totalRegistrations);
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
 
@@ -212,10 +210,6 @@ const SignupTeaser: FC<{ registeredToday: number | null }> = ({ registeredToday 
       return;
     }
     openRegister({ mobile: digits, dialCode: dial });
-  };
-
-  const soon = (method: string): void => {
-    toast.info(t('auth.methodSoon', { method }));
   };
 
   return (
@@ -294,8 +288,6 @@ const SignupTeaser: FC<{ registeredToday: number | null }> = ({ registeredToday 
           onClick={() => telegram.signIn()}
           first
         />
-        <SocialDisc icon={facebookIcon} label="Facebook" onClick={() => soon('Facebook')} />
-        <SocialDisc icon={whatsappIcon} label="WhatsApp" onClick={() => soon('WhatsApp')} />
         <button
           type="button"
           onClick={() => openRegister({ social: true })}
@@ -449,7 +441,7 @@ const TRUST: { icon: StaticImageData; label: TranslationKey }[] = [
  * Vertical rhythm is set with explicit margins rather than centring in a
  * fixed height, so each gap can match the design independently.
  */
-const LandingHero: FC<{ registeredToday: number | null }> = ({ registeredToday }) => {
+const LandingHero: FC<{ totalRegistrations: number | null }> = ({ totalRegistrations }) => {
   const { t } = useTranslation();
 
   return (
@@ -478,7 +470,7 @@ const LandingHero: FC<{ registeredToday: number | null }> = ({ registeredToday }
         </h1>
 
         <div className="mt-[calc(var(--u)*22)] flex w-full justify-center lg:mt-[calc(var(--u)*25)]">
-          <SignupTeaser registeredToday={registeredToday} />
+          <SignupTeaser totalRegistrations={totalRegistrations} />
         </div>
 
         <div className="mt-[calc(var(--u)*40)] hidden items-center justify-center gap-[calc(var(--u)*24)] lg:flex">

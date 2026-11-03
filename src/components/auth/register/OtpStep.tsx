@@ -7,6 +7,7 @@ import { apiErrorMessage, transportErrorKey } from '@/lib/apiError';
 import { analytics, failureReason } from '@/services/analytics';
 import { ANALYTICS_SIGNUP_METHOD } from '@/constants/auth';
 import { trackSignupComplete } from '@/utils/events';
+import { markPostSignup } from '@/lib/postSignup';
 import OtpVerification from '@/components/auth/OtpVerification';
 
 import type { SignupTarget } from '@/hooks/useSignupForm';
@@ -37,6 +38,7 @@ const OtpStep: FC<OtpStepProps> = ({ target, onVerified }) => {
         analytics.auth.otpVerified('sign_up');
         // The real end of the funnel: the account is confirmed and usable.
         trackSignupComplete(ANALYTICS_SIGNUP_METHOD[target.method]);
+        markPostSignup();
         toast.success(t('otp.verified'));
         onVerified(res.data?.token);
         return true;

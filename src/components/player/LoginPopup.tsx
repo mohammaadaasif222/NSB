@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import GlassDialog from '@/components/ui/GlassDialog';
 import { useTranslation } from '@/context/I18nContext';
 import { SIGNED_IN_EVENT } from '@/constants/events';
+import { postSignupPending } from '@/lib/postSignup';
 import {
   fetchLoginPopup,
   recordLoginPopupClick,
@@ -27,6 +28,8 @@ const LoginPopup: FC = () => {
     const onSignedIn = (): void => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
+        // A new account sees the welcome popup instead, not both at once.
+        if (postSignupPending()) return;
         fetchLoginPopup(locale)
           .then(setPopup)
           .catch(() => setPopup(null));

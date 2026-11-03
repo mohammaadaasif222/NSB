@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { isPlatformRole } from '@/constants/roles';
 import { trackSignupComplete } from '@/utils/events';
+import { markPostSignup } from '@/lib/postSignup';
 import Seo from '@/components/seo/Seo';
 
 import type { JwtPayload } from '@/types';
@@ -96,7 +97,10 @@ const SteamCallback: FC = () => {
     // The fallback path signs in here rather than relaying, so the event has
     // to be recorded here too — otherwise a player whose popup lost its opener
     // silently vanishes from the signup figures.
-    if (isNewAccount) trackSignupComplete('steam');
+    if (isNewAccount) {
+      trackSignupComplete('steam');
+      markPostSignup();
+    }
 
     login(token);
     void router.replace('/');

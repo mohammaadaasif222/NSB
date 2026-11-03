@@ -151,10 +151,10 @@ export async function fetchHomeShelves(
  * providers are decoration on the landing page, not something worth failing
  * the whole render over.
  */
-export async function fetchRegisteredTodayCount(): Promise<number | null> {
+export async function fetchTotalRegistrationsCount(): Promise<number | null> {
   try {
-    const data = await getJson<{ registered_today?: unknown }>('/statistics/public');
-    return typeof data?.registered_today === 'number' ? data.registered_today : null;
+    const data = await getJson<{ registered_total?: unknown }>('/statistics/public');
+    return typeof data?.registered_total === 'number' ? data.registered_total : null;
   } catch (error) {
     logFailure('Public statistics fetch', error);
     return null;
@@ -192,6 +192,24 @@ export async function fetchProviders(): Promise<LobbyProvider[] | null> {
     return Array.isArray(data) ? data : null;
   } catch (error) {
     logFailure('Providers fetch', error);
+    return null;
+  }
+}
+
+/**
+ * The studios that have a game on a shelf, most games first, or null when the
+ * call fails. The studio filter is built from this, not from every studio the
+ * lobby knows: on Originals most of them have nothing to show.
+ */
+export async function fetchShelfProviders(list: ShelfListQuery): Promise<string[] | null> {
+  const query = new URLSearchParams(
+    Object.entries(list).map(([key, value]) => [key, String(value)])
+  );
+  try {
+    const data = await getJson<{ providers: { name: string }[] }>(`/games/providers?${query}`);
+    return Array.isArray(data?.providers) ? data.providers.map((p) => p.name) : null;
+  } catch (error) {
+    logFailure(`Shelf providers ${query} fetch`, error);
     return null;
   }
 }

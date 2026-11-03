@@ -180,6 +180,18 @@ export interface GameListResponse {
   pagination: GamePagination;
 }
 
+/** POST /sportsbook/launch */
+export interface SportsbookLaunch {
+  /** A document to render in a frame on this site. Single use — launch again for a fresh session. */
+  html: string;
+  /** What the sportsbook shows and takes bets in; see GameLaunch.currency. */
+  currency: string;
+  /** The player's display currency at launch. */
+  display_currency: string;
+  /** Why `currency` differs from `display_currency`; null when they match. */
+  currency_fallback: 'UNSUPPORTED_BY_PROVIDER' | 'NO_RATE' | null;
+}
+
 /** POST /games/:slug/launch */
 export interface GameLaunch {
   /** Load in an iframe on this site. Single use — launch again for a fresh session. */

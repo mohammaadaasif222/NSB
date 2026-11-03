@@ -8,19 +8,13 @@ import GameTile from '@/components/player/GameTile';
 import Pager from '@/components/player/Pager';
 import SiteFooter from '@/components/player/SiteFooter';
 import Seo from '@/components/seo/Seo';
-import {
-  CHIP_ROW,
-  ChipButton,
-  Dropdown,
-  Option,
-  SearchField,
-} from '@/components/player/BrowseControls';
+import { CHIP_ROW, ChipButton, Dropdown, Option } from '@/components/player/BrowseControls';
+import GameListToolbar, { SORTS, type Sort } from '@/components/player/GameListToolbar';
 import { useTranslation } from '@/context/I18nContext';
 import {
   ALL_GAMES_PATH,
   CATEGORY_PAGE_SIZE,
   shelfFor,
-  type ShelfListQuery,
 } from '@/constants/games';
 import { MIN_SEARCH_LENGTH } from '@/services/catalogue';
 import {
@@ -32,9 +26,7 @@ import {
 import { markUnavailable } from '@/utils/unavailable.server';
 import type { TranslationKey } from '@/i18n/locales';
 import type { Game, GamePagination, GameShelfKey, TagFilterGroup } from '@/types';
-import sortIcon from '@/assets/lobby/player/tool-sort.svg';
 import filterIcon from '@/assets/lobby/player/tool-filter.svg';
-import providerIcon from '@/assets/lobby/player/tool-provider.svg';
 import chipLobby from '@/assets/lobby/player/chip-lobby.svg';
 import chipSlots from '@/assets/lobby/player/chip-slots.svg';
 import chipLive from '@/assets/lobby/player/chip-live.svg';
@@ -43,17 +35,6 @@ import chipBaccarat from '@/assets/lobby/player/chip-baccarat.svg';
 import chipGameShows from '@/assets/lobby/player/chip-gameshows.svg';
 import chipNewArrivals from '@/assets/lobby/player/chip-newarrivals.svg';
 import chipOriginals from '@/assets/lobby/player/chip-originals.svg';
-
-type Sort = NonNullable<ShelfListQuery['sort']>;
-const SORTS: readonly Sort[] = ['popular', 'trending', 'new', 'rtp', 'az', 'za'];
-const SORT_LABEL: Record<Sort, TranslationKey> = {
-  popular: 'allGames.sort.popular',
-  trending: 'allGames.sort.trending',
-  new: 'allGames.sort.new',
-  rtp: 'allGames.sort.rtp',
-  az: 'allGames.sort.az',
-  za: 'allGames.sort.za',
-};
 
 /** Max win and release are ranges the API takes as numbers, not tags. */
 const MAX_WINS = [1000, 5000, 10000, 20000] as const;
@@ -131,8 +112,6 @@ const allGamesHref = (f: Filters, page = 1): string => {
   return qs ? `${ALL_GAMES_PATH}?${qs}` : ALL_GAMES_PATH;
 };
 
-const SEARCH_DELAY_MS = 400;
-
 /**
  * Every game, with filters that combine (Casino Manager sheet, "All games
  * page"), in the casino browser's own controls: search, sort and studio on
@@ -148,7 +127,6 @@ const AllGamesPage: FC<Props> = ({ games, pagination, failed, groups, providers,
   const { t } = useTranslation();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [term, setTerm] = useState(filters.q);
 
   useEffect(() => {
     const start = (): void => setBusy(true);
@@ -166,17 +144,6 @@ const AllGamesPage: FC<Props> = ({ games, pagination, failed, groups, providers,
   const go = (next: Partial<Filters>): void => {
     void router.push(allGamesHref({ ...filters, ...next }), undefined, { scroll: false });
   };
-
-  // The box follows the URL (back button, Clear all) and searches once typing pauses.
-  useEffect(() => setTerm(filters.q), [filters.q]);
-  useEffect(() => {
-    const wanted = term.trim().length >= MIN_SEARCH_LENGTH ? term.trim() : '';
-    if (wanted === filters.q) return undefined;
-    const timer = setTimeout(() => go({ q: wanted }), SEARCH_DELAY_MS);
-    return () => clearTimeout(timer);
-    // `go` reads the current filters; re-running on them would re-arm the timer for nothing.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [term]);
 
   const filterGroups = groups.filter((g) => g.key !== TYPE_GROUP);
   const allTags = groups.flatMap((g) => g.tags);
@@ -244,63 +211,14 @@ const AllGamesPage: FC<Props> = ({ games, pagination, failed, groups, providers,
         </header>
 
         {/* --- Search, order and studio: the casino browser's toolbar --- */}
-        <div className="flex flex-col gap-[14px] lg:flex-row lg:gap-[calc(var(--u)*20)]">
-          <SearchField
-            value={term}
-            onChange={setTerm}
-            placeholder={t('search.placeholder')}
-            label={t('search.title')}
-          />
-          <div className="grid grid-cols-2 gap-[7px] lg:flex lg:gap-[calc(var(--u)*10)]">
-            <Dropdown icon={sortIcon} label={t(SORT_LABEL[filters.sort])}>
-              {(close) =>
-                SORTS.map((sort) => (
-                  <Option
-                    key={sort}
-                    selected={filters.sort === sort}
-                    onSelect={() => {
-                      close();
-                      go({ sort });
-                    }}
-                  >
-                    {t(SORT_LABEL[sort])}
-                  </Option>
-                ))
-              }
-            </Dropdown>
-            <Dropdown
-              icon={providerIcon}
-              label={filters.provider || t('browse.provider')}
-              active={!!filters.provider}
-            >
-              {(close) => (
-                <>
-                  <Option
-                    selected={!filters.provider}
-                    onSelect={() => {
-                      close();
-                      go({ provider: '' });
-                    }}
-                  >
-                    {t('browse.allProviders')}
-                  </Option>
-                  {providers.map((name) => (
-                    <Option
-                      key={name}
-                      selected={filters.provider === name}
-                      onSelect={() => {
-                        close();
-                        go({ provider: name });
-                      }}
-                    >
-                      {name}
-                    </Option>
-                  ))}
-                </>
-              )}
-            </Dropdown>
-          </div>
-        </div>
+        <GameListToolbar
+          q={filters.q}
+          sort={filters.sort}
+          provider={filters.provider}
+          providers={providers}
+          // This page has no order of its own to go back to, so Sort never clears.
+          onChange={({ sort, ...rest }) => go({ ...rest, ...(sort ? { sort } : {}) })}
+        />
 
         {/* --- Kind: the chip row, pinned under the top bar as on the casino page --- */}
         <div className="sticky top-[var(--player-bar-h,66px)] z-20 -mx-3 bg-[#07080b]/90 px-3 py-2 backdrop-blur-xl lg:top-[calc(var(--u)*20+var(--player-bar-h,80px))] lg:mx-0 lg:rounded-b-[calc(var(--u)*24)] lg:px-[calc(var(--u)*12)] lg:py-[calc(var(--u)*12)]">

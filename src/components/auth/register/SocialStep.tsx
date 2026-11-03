@@ -1,12 +1,10 @@
 import type { FC, ReactNode } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { FacebookMark, TelegramMark, WhatsappMark } from '@/components/brand';
+import { TelegramMark } from '@/components/brand';
 import Button from '@/components/ui/Button';
 
 interface SocialStepProps {
   onTelegram: () => void;
-  /** Providers the backend does not support yet (Facebook, WhatsApp). */
-  onUnavailable: (provider: string) => void;
 }
 
 /** One provider: its mark beside its name, centred in the design's 56px pill. */
@@ -26,10 +24,9 @@ const ProviderButton: FC<{
 
 /**
  * "Register with": the social providers, one full-width pill each — what
- * "more option" opens. Telegram signs in for real; Facebook and WhatsApp say
- * they are coming, as the shortcut discs beside "more option" already do.
+ * "more option" opens. Telegram is the one provider here today.
  */
-const SocialStep: FC<SocialStepProps> = ({ onTelegram, onUnavailable }) => {
+const SocialStep: FC<SocialStepProps> = ({ onTelegram }) => {
   const { t } = useTranslation();
 
   return (
@@ -39,18 +36,6 @@ const SocialStep: FC<SocialStepProps> = ({ onTelegram, onUnavailable }) => {
         colour="text-[#2aabee]"
         label={t('auth.methodTelegram')}
         onClick={onTelegram}
-      />
-      <ProviderButton
-        icon={<FacebookMark size={20} />}
-        colour="text-[#1877f2]"
-        label="Facebook"
-        onClick={() => onUnavailable('Facebook')}
-      />
-      <ProviderButton
-        icon={<WhatsappMark size={22} />}
-        colour="text-[#25d366]"
-        label="WhatsApp"
-        onClick={() => onUnavailable('WhatsApp')}
       />
     </div>
   );

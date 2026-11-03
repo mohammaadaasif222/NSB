@@ -34,11 +34,6 @@ import preferencesIcon from '@/assets/lobby/profile-menu/preferences.svg';
 import securityIcon from '@/assets/lobby/profile-menu/security.svg';
 import verificationIcon from '@/assets/lobby/profile-menu/verification.svg';
 import transactionsIcon from '@/assets/lobby/profile-menu/transactions.svg';
-import dashboardIcon from '@/assets/lobby/profile-menu/dashboard.svg';
-import campaignIcon from '@/assets/lobby/profile-menu/campaign.svg';
-import referredIcon from '@/assets/lobby/profile-menu/referred.svg';
-import earningIcon from '@/assets/lobby/profile-menu/earning.svg';
-import termsIcon from '@/assets/lobby/profile-menu/terms.svg';
 
 /* ==================================================================== */
 /* The menu's contents                                                   */
@@ -59,7 +54,7 @@ interface Leaf {
 interface Group {
   labelKey: TranslationKey;
   icon: StaticImageData;
-  /** The group's rows — the design's Account and Referral dropdowns. */
+  /** The group's rows — the design's Account dropdown. */
   items: Leaf[];
 }
 
@@ -74,23 +69,11 @@ const ACCOUNT: Group = {
     { labelKey: 'account.profile', icon: accountIcon, href: profile() },
     { labelKey: 'profile.statistic', icon: statisticIcon, href: profile('statistic') },
     { labelKey: 'profile.preferences', icon: preferencesIcon, href: profile('preferences') },
+    { labelKey: 'profile.referral', icon: affiliateIcon, href: profile('referral') },
     { labelKey: 'profile.security', icon: securityIcon, href: profile('security') },
     { labelKey: 'profile.verification', icon: verificationIcon, href: profile('verification') },
     { labelKey: 'profile.transactions', icon: transactionsIcon, href: profile('transactions') },
     { labelKey: 'profile.helpCentre', icon: helpIcon, href: profile('help') },
-  ],
-};
-
-/** The design's second dropdown: the referral page and its sections. */
-const REFERRAL: Group = {
-  labelKey: 'aff.title',
-  icon: affiliateIcon,
-  items: [
-    { labelKey: 'aff.dashboard', icon: dashboardIcon, href: '/referral' },
-    { labelKey: 'aff.campaign', icon: campaignIcon, href: '/referral#campaign' },
-    { labelKey: 'aff.referredUsers', icon: referredIcon, href: '/referral#referred-users' },
-    { labelKey: 'aff.earning', icon: earningIcon, href: '/referral#earning' },
-    { labelKey: 'aff.terms', icon: termsIcon, href: '/referral#terms' },
   ],
 };
 
@@ -176,7 +159,7 @@ const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void; nested?: boolean
 /** A row that folds its group's rows open beneath it. */
 const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group, onAction }) => {
   const { t } = useTranslation();
-  const { help_center: helpOn } = usePlatformFeatures();
+  const { help_center: helpOn, referrals: referralsOn } = usePlatformFeatures();
   const [open, setOpen] = useState(false);
   const listId = useId();
 
@@ -200,7 +183,11 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
       {open && (
         <ul id={listId} className={LIST}>
           {group.items
-            .filter((leaf) => helpOn || leaf.href !== profile('help'))
+            .filter(
+              (leaf) =>
+                (helpOn || leaf.href !== profile('help')) &&
+                (referralsOn || leaf.href !== profile('referral'))
+            )
             .map((leaf) => (
               <li key={leaf.labelKey}>
                 <LeafRow leaf={leaf} onAction={onAction} nested />
@@ -243,8 +230,8 @@ interface Props {
 }
 
 /**
- * The account menu, as the design draws it: Account and Referral fold open
- * into their sections, then Wallet, the rewards, help and support, and Log
+ * The account menu, as the design draws it: Account folds open into its
+ * sections (Referral among them), then Wallet, the rewards, help and support, and Log
  * out. The bar's profile button opens it on desktop, the Profile tab on a
  * phone. Closes on a choice, a click away, Escape, or navigation.
  */
@@ -253,7 +240,6 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
     promotions: promotionsOn,
     help_center: helpOn,
     responsible_gambling: responsibleOn,
-    referrals: referralsOn,
   } = usePlatformFeatures();
   const { t } = useTranslation();
   const router = useRouter();
@@ -340,7 +326,6 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
           >
             <ul role="menu" className={LIST}>
               <GroupRow group={ACCOUNT} onAction={onAction} />
-              {referralsOn && <GroupRow group={REFERRAL} onAction={onAction} />}
               {LEAVES.filter(
                 (leaf) =>
                   (phone || !leaf.phoneOnly) &&

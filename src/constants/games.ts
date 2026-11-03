@@ -257,8 +257,23 @@ export const categoryForEnum = (category: GameCategory): GameShelfDef =>
   GAME_CATEGORIES.find((c) => c.list.category === category) ?? GAME_SHELVES[0];
 
 /** Path of the listing page for a shelf. */
-export const categoryHref = (key: GameShelfKey, page = 1): string =>
-  page > 1 ? `/games/${key}?page=${page}` : `/games/${key}`;
+/** What a category page's toolbar narrows by; each lives in the URL. */
+export interface CategoryFilters {
+  q?: string;
+  sort?: NonNullable<ShelfListQuery['sort']> | '';
+  provider?: string;
+}
+
+/** Only what is set goes in the address, so the plain page stays bare. */
+export const categoryHref = (key: GameShelfKey, page = 1, filters: CategoryFilters = {}): string => {
+  const query = new URLSearchParams();
+  if (filters.q) query.set('q', filters.q);
+  if (filters.provider) query.set('provider', filters.provider);
+  if (filters.sort) query.set('sort', filters.sort);
+  if (page > 1) query.set('page', String(page));
+  const qs = query.toString();
+  return qs ? `/games/${key}?${qs}` : `/games/${key}`;
+};
 
 export const PROVIDERS_PATH = '/providers';
 

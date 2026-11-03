@@ -4,15 +4,15 @@ const CACHE_MS = 60_000;
 
 let cached: { at: number; value: Promise<number | null> } | null = null;
 
-export const fetchRegisteredToday = (): Promise<number | null> => {
+export const fetchTotalRegistrations = (): Promise<number | null> => {
   if (cached && Date.now() - cached.at < CACHE_MS) {
     return cached.value;
   }
   const value = apiService
-    .get<{ registered_today: number }>('/statistics/public')
+    .get<{ registered_total: number }>('/statistics/public')
     .then((res) =>
-      res?.success && typeof res.data?.registered_today === 'number'
-        ? res.data.registered_today
+      res?.success && typeof res.data?.registered_total === 'number'
+        ? res.data.registered_total
         : null
     )
     .catch(() => null);

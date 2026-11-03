@@ -4,6 +4,7 @@ import Modal from '@/components/ui/Modal';
 import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
+import { usePostSignupPending } from '@/hooks/usePostSignupPending';
 
 const PROFILE_PATH = '/profile';
 
@@ -16,8 +17,10 @@ const EmailVerifyPromptModal: FC = () => {
     email_verification: emailOtpOn,
     loaded,
   } = usePlatformFeatures();
+  const welcomeUp = usePostSignupPending();
 
   const open =
+    !welcomeUp &&
     loaded &&
     promptOn &&
     emailOtpOn &&

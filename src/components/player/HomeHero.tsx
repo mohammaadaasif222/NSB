@@ -17,7 +17,6 @@ import casinoArt from '@/assets/lobby/player/panel-casino.webp';
 import sportsArt from '@/assets/lobby/player/panel-sports.webp';
 import casinoMobile from '@/assets/lobby/player/panel-casino-mobile.webp';
 import sportsMobile from '@/assets/lobby/player/panel-sports-mobile.webp';
-import editPencil from '@/assets/lobby/player/edit-pencil.svg';
 import promoArt from '@/assets/lobby/player/promo-banner.webp';
 import promoArtMobile from '@/assets/lobby/player/promo-banner-mobile.webp';
 
@@ -271,24 +270,8 @@ const PlayerPanel: FC = () => {
       <div className="flex flex-col items-center px-[15px] pt-5 lg:h-[calc(var(--u)*212)] lg:flex-row lg:items-start lg:justify-between lg:px-[calc(var(--u)*20)] lg:pl-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*20)]">
         <div className="flex flex-col items-center gap-1.5 lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">
           <Avatar ringed />
-          {/* The profile's pencil sits 8 after the name; on a phone it hangs
-              there so the name stays centred. */}
-          <span className="relative flex max-w-full items-center">
-            <span className="max-w-[calc(var(--u)*240)] truncate text-[18px] font-medium leading-7 text-white lg:max-w-[calc(var(--u)*140)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
-              {name}
-            </span>
-            <Link
-              href="/profile"
-              aria-label={t('nav.profile')}
-              title={t('nav.profile')}
-              className="absolute start-full ms-2 w-[18px] flex-shrink-0 opacity-90 transition-opacity hover:opacity-100 lg:static lg:ms-[calc(var(--u)*8)] lg:w-[calc(var(--u)*18)]"
-            >
-              <img
-                src={editPencil.src}
-                alt=""
-                className="h-[18px] w-[18px] lg:h-[calc(var(--u)*18)] lg:w-[calc(var(--u)*18)]"
-              />
-            </Link>
+          <span className="max-w-[calc(var(--u)*240)] truncate text-[18px] font-medium leading-7 text-white lg:max-w-[calc(var(--u)*140)] lg:text-[length:max(min(var(--tf,11px),18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*28)]">
+            {name}
           </span>
         </div>
 

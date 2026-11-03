@@ -4,7 +4,7 @@ import { GmailMark } from '@/components/brand';
 import { MailIcon, PhoneIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
 import SocialShortcuts from '@/components/auth/SocialShortcuts';
-import { useRegisteredTodayLabel } from '@/hooks/useRegisteredToday';
+import { useTotalRegistrationsLabel } from '@/hooks/useTotalRegistrations';
 
 import type { SignupMethod } from '@/types';
 
@@ -12,8 +12,6 @@ interface MethodStepProps {
   onSelectMethod: (method: SignupMethod) => void;
   onGoogle: () => void;
   onTelegram: () => void;
-  /** Providers the backend does not support yet (Facebook, WhatsApp). */
-  onUnavailable: (provider: string) => void;
   /** "more option": every social provider, on a step of its own. */
   onMore: () => void;
   googleBusy?: boolean;
@@ -24,17 +22,16 @@ const MethodStep: FC<MethodStepProps> = ({
   onSelectMethod,
   onGoogle,
   onTelegram,
-  onUnavailable,
   onMore,
   googleBusy,
 }) => {
   const { t } = useTranslation();
-  const registeredToday = useRegisteredTodayLabel();
+  const totalRegistrations = useTotalRegistrationsLabel();
 
   return (
     <div className="space-y-3">
       <AuthMethodList
-        tab={registeredToday}
+        tab={totalRegistrations}
         methods={[
           {
             id: 'gmail',
@@ -61,7 +58,6 @@ const MethodStep: FC<MethodStepProps> = ({
 
       <SocialShortcuts
         onTelegram={onTelegram}
-        onUnavailable={onUnavailable}
         onMore={onMore}
         moreLabel={t('registerModal.moreOptions')}
       />
