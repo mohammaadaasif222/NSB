@@ -1679,7 +1679,8 @@ html:not([data-theme='dark']) .border-blue-600 {
    corners is clear — a bigger dialog clears more).
    Plain CSS after the card polish, so it replaces that polish's rim. */
 .rl-diag-rim::before,
-.rl-diag-rim:not(header *, footer *, [aria-modal='true'] *)::before {
+.rl-diag-rim:not(header *, footer *, [aria-modal='true'] *)::before,
+:is(.rl-pill-rim, .rl-chip, .rl-chip-active, .rl-chip-danger, .rl-chip-success, .rl-glass-btn.rounded-full:not(header *))::before {
   content: '';
   position: absolute;
   z-index: 1;
@@ -1692,7 +1693,7 @@ html:not([data-theme='dark']) .border-blue-600 {
   transform-origin: 0 0;
   padding: 1px;
   border-radius: calc(var(--rim-radius, 24px) * 2);
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--rim-color, rgba(255, 255, 255, 0.5));
   -webkit-mask:
     radial-gradient(circle at 100% 0, transparent var(--rim-clear, 28px), #000 var(--rim-fade, 80px)),
     radial-gradient(circle at 0 100%, transparent var(--rim-clear, 28px), #000 var(--rim-fade, 80px)),
@@ -1706,6 +1707,32 @@ html:not([data-theme='dark']) .border-blue-600 {
     linear-gradient(#000 0 0);
   mask-composite: intersect, intersect, exclude;
   pointer-events: none;
+}
+
+/* Every pill on every page wears that same diagonal rim (`rl-pill-rim`, and
+   the chips and round glass buttons outside the header by default): at a
+   pill's radius, its two bare corners left dark. The rim is the only edge — the even white glow the
+   glass button and the chips draw inside their edge would close the gaps,
+   so only their depth is kept. */
+:is(.rl-pill-rim, .rl-chip, .rl-chip-active, .rl-chip-danger, .rl-chip-success, .rl-glass-btn.rounded-full:not(header *))::before {
+  --rim-radius: 999px;
+  /* A long pill's corners sit too close for the cleared rounds: lit on a
+     gradient instead, whose midline runs exactly through the top-end and
+     bottom-start corners at any width. */
+  --rim-clear: 0px;
+  --rim-fade: 0px;
+  --rim-color: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0) 42% 58%,
+    rgba(255, 255, 255, 0.9)
+  );
+}
+:is(.rl-pill-rim, .rl-glass-btn.rounded-full:not(header *)) {
+  --tw-inset-shadow: var(--rl-drop-face);
+}
+:is(.rl-chip, .rl-chip-active, .rl-chip-danger, .rl-chip-success) {
+  --tw-inset-shadow: var(--rl-drop-depth);
 }
 
 /* A digit cell on the wagering odometer: a pale glass face (about 12%
@@ -1856,6 +1883,7 @@ html:not([data-theme='dark']) .border-blue-600 {
    A dark glass lens (`rl-drop-fill`) lit by a soft white glow inside its
    edge (`rl-drop-glow-btn`) rather than a drawn border. */
 @utility rl-glass-btn {
+  position: relative;
   /* `--rl-btn-base` puts a solid colour under the glass, for buttons that
      overlap one another (the social stacks), where the one behind must not
      show through. Transparent everywhere else. */
@@ -2378,6 +2406,7 @@ html:not([data-theme='dark']) .border-blue-600 {
  * to move.)
  */
 @utility rl-chip {
+  position: relative;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
   border: 1px solid transparent;
   border-radius: 1000px;
@@ -2429,6 +2458,7 @@ html:not([data-theme='dark']) .border-blue-600 {
    the grade and hides it, and each was fitted to the design's own render
    rather than derived from the other. */
 @utility rl-chip-active {
+  position: relative;
   background:
     linear-gradient(180deg, rgba(255, 231, 121, 0.145), rgba(255, 231, 121, 0.2)),
     rgba(0, 0, 0, 0.1);
@@ -2447,6 +2477,7 @@ html:not([data-theme='dark']) .border-blue-600 {
    design reuses the rail's button here and only swaps the bloom's colour, so
    the base below the wash is the chip's. */
 @utility rl-chip-danger {
+  position: relative;
   background:
     linear-gradient(180deg, rgba(227, 56, 39, 0.19), rgba(227, 56, 39, 0.19)),
     linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
@@ -2523,6 +2554,7 @@ html:not([data-theme='dark']) .border-blue-600 {
 
 /* And lit green — Verification's "start" actions. Same pill, third colour. */
 @utility rl-chip-success {
+  position: relative;
   background:
     linear-gradient(180deg, rgba(53, 208, 127, 0.19), rgba(53, 208, 127, 0.19)),
     linear-gradient(180deg, rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0));
@@ -2941,8 +2973,8 @@ html:not([data-theme='dark']) .border-blue-600 {
     linear-gradient(rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)),
     rgba(0, 0, 0, 0.4);
   border: 0;
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
   --tw-inset-shadow:
     inset 8px 8px 16px rgba(0, 0, 0, 0.45), inset -8px -8px 16px rgba(255, 255, 255, 0.045);
   box-shadow:

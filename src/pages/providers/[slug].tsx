@@ -15,6 +15,7 @@ import { fetchProviders, fetchShelfList, parsePageParam } from '@/services/games
 import { fetchWinnerGames } from '@/services/myGames.server';
 import { markUnavailable } from '@/utils/unavailable.server';
 import type { Game, GamePagination, LobbyProvider } from '@/types';
+import { chipClass } from '@/components/player/BrowseControls';
 
 interface Props {
   provider: LobbyProvider | null;
@@ -150,7 +151,7 @@ const ProviderGames: FC<Omit<Props, 'provider'> & { provider: LobbyProvider }> =
                 <li key={other.id}>
                   <Link
                     href={providerHref(other.slug)}
-                    className="rl-glass rl-glass-hover inline-flex items-center rounded-full px-3.5 py-1.5 text-[12px] font-medium text-white/70 transition-colors hover:text-white"
+                    className={`${chipClass(false)} whitespace-nowrap`}
                   >
                     {other.name}
                   </Link>
