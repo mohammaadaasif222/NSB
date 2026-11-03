@@ -35,6 +35,7 @@ import toast from "react-hot-toast";
 import { buttonClickSoundFn, mineDiamond1, mineDiamond2, mineDiamond3, mineDiamond4, mineDiamond5, mineDiamond6, mineHoverHiddenBlockHover, GridSizeChangeMin, mineMineBomb, preloadSoundsMines, GridSizeChangeMin2 } from "@/lib/originalsSound";
 // import state from '../../../../../../proxy/proxy'
 import { useAuth } from '@/lib/originalsAuthBridge';
+import { useActiveCurrencySymbol } from '@/lib/currencySymbols';
 import { useRouter as useNextRouter } from 'next/router';
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
@@ -125,6 +126,7 @@ const MineGame = () => {
   // };
   // const apiClient = useApiClient()
   const { user, playCurrency } = useAuth();
+  const { symbol: activeCurrencySymbol } = useActiveCurrencySymbol();
 
   let socket = initSocket(user?._id);
   // console.log('user info', user)
@@ -1405,14 +1407,7 @@ const MineGame = () => {
                                       displayCurrency == 'USD'
                                         ?
                                         (
-                                          <img
-                                            src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                            alt="dollar"
-                                            width={18}
-                                            height={18}
-                                            className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                              }`}
-                                          />
+                                          <span className="inline-flex items-center justify-center font-semibold leading-none text-current">{activeCurrencySymbol}</span>
                                         )
                                         : null
                                       // (
@@ -1436,14 +1431,7 @@ const MineGame = () => {
                                     displayCurrency == 'USD'
                                       ?
                                       (
-                                        <img
-                                          src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                          alt="dollar"
-                                          width={18}
-                                          height={18}
-                                          className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-50"
-                                            }`}
-                                        />
+                                        <span className={`inline-flex items-center justify-center font-semibold leading-none ${isFocused ? "opacity-100" : "opacity-50"}`}>{activeCurrencySymbol}</span>
                                       )
                                       :
                                       (
@@ -1712,14 +1700,7 @@ const MineGame = () => {
                                       <div className="flex flex-col items-center justify-between w-1/2">
                                         <span className="text-white">Current Profit</span>
                                         <span className="text-[#F9D028] flex align-middle  justify-center  mt-1">
-                                          <span className="flex justify-center items-center align-middle"><img
-                                            src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                            alt="dollar"
-                                            width={18}
-                                            height={18}
-                                            className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                              }`}
-                                          /></span>
+                                          <span className="flex justify-center items-center align-middle"><span className="inline-flex items-center justify-center font-semibold leading-none">{activeCurrencySymbol}</span></span>
                                           <span className="font-medium">{((betAmount * currentMultiplier).toFixed(2))}</span> </span>
 
                                       </div>
@@ -1742,14 +1723,7 @@ const MineGame = () => {
                                       <div className="flex flex-col items-center justify-between w-1/2">
                                         <span className="text-white">Next</span>
                                         <span className="text-[#F9D028] flex justify-center align-middle  mt-1">
-                                          <span className="flex justify-center align-middle items-center"><img
-                                            src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                            alt="dollar"
-                                            width={18}
-                                            height={18}
-                                            className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                              }`}
-                                          /></span>
+                                          <span className="flex justify-center align-middle items-center"><span className="inline-flex items-center justify-center font-semibold leading-none">{activeCurrencySymbol}</span></span>
                                           <span className="font-medium">{nextMultiplier ? ((betAmount * nextMultiplier).toFixed(2)) : 0}</span>
                                         </span>
                                       </div>
@@ -1799,14 +1773,7 @@ const MineGame = () => {
                                           displayCurrency == 'USD'
                                             ?
                                             (
-                                              <img
-                                                src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                                alt="dollar"
-                                                width={18}
-                                                height={18}
-                                                className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                                  }`}
-                                              />
+                                              <span className="inline-flex items-center justify-center font-semibold leading-none">{activeCurrencySymbol}</span>
                                             )
                                             : null
                                           // (
@@ -1831,14 +1798,7 @@ const MineGame = () => {
                                         displayCurrency == 'USD'
                                           ?
                                           (
-                                            <img
-                                              src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                              alt="dollar"
-                                              width={18}
-                                              height={18}
-                                              className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-50"
-                                                }`}
-                                            />
+                                            <span className={`inline-flex items-center justify-center font-semibold leading-none ${isFocused ? "opacity-100" : "opacity-50"}`}>{activeCurrencySymbol}</span>
                                           )
                                           :
                                           (
@@ -2343,13 +2303,7 @@ const MineGame = () => {
                                               displayCurrency == 'USD'
                                                 ?
                                                 (
-                                                  <img
-                                                    src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                                    alt="dollar"
-                                                    width={18}
-                                                    height={18}
-                                                    className="w-[1em] h-[1em] object-contain opacity-80"
-                                                  />
+                                                  <span className="inline-flex items-center justify-center font-semibold leading-none opacity-80">{activeCurrencySymbol}</span>
                                                 )
                                                 :
                                                 (
@@ -2407,13 +2361,7 @@ const MineGame = () => {
                                               displayCurrency == 'USD'
                                                 ?
                                                 (
-                                                  <img
-                                                    src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                                    alt="dollar"
-                                                    width={18}
-                                                    height={18}
-                                                    className="w-[1em] h-[1em] object-contain opacity-80"
-                                                  />
+                                                  <span className="inline-flex items-center justify-center font-semibold leading-none opacity-80">{activeCurrencySymbol}</span>
                                                 )
                                                 :
                                                 (
@@ -2473,14 +2421,7 @@ const MineGame = () => {
                                           displayCurrency == 'USD'
                                             ?
                                             (
-                                              <img
-                                                src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                                alt="dollar"
-                                                width={18}
-                                                height={18}
-                                                className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                                  }`}
-                                              />
+                                              <span className="inline-flex items-center justify-center font-semibold leading-none">{activeCurrencySymbol}</span>
                                             )
                                             : null
                                           // (
@@ -2505,14 +2446,7 @@ const MineGame = () => {
                                         displayCurrency == 'USD'
                                           ?
                                           (
-                                            <img
-                                              src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                              alt="dollar"
-                                              width={18}
-                                              height={18}
-                                              className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-50"
-                                                }`}
-                                            />
+                                            <span className={`inline-flex items-center justify-center font-semibold leading-none ${isFocused ? "opacity-100" : "opacity-50"}`}>{activeCurrencySymbol}</span>
                                           )
                                           :
                                           (
@@ -3009,7 +2943,7 @@ const MineGame = () => {
                                     <span className="border border-white/40 w-4"></span>
                                     <span className="text-base font-semibold flex items-center justify-center">
                                       <span className="select-none mr-1">
-                                        <img src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"} alt="chipsign" srcset="" className="w-[1em] h-[1em]" />
+                                        <span className="inline-flex items-center justify-center font-semibold leading-none">{activeCurrencySymbol}</span>
                                       </span>
                                       {(Number(betAmount) * Number(multiplier)).toFixed(2)}
                                     </span>

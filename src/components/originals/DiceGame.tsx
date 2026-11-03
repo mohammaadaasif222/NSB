@@ -40,6 +40,7 @@ const SplitImg = "/assets/img/split.png";
 // import state from '../../../../../../proxy/proxy'
 import { Tooltip } from 'react-tooltip';
 import { useAuth } from '@/lib/originalsAuthBridge';
+import { useActiveCurrencySymbol } from '@/lib/currencySymbols';
 import { useRouter as useNextRouter } from 'next/router';
 // `useParams` from react-router-dom is unused in this port — rlk-frontend
 // uses Next.js. Removed to drop the hard dep on react-router.
@@ -132,6 +133,7 @@ const DiceGame = () => {
   //   "signUpEventSent": false
   // };
   const { user, playCurrency } = useAuth();
+  const { symbol: activeCurrencySymbol } = useActiveCurrencySymbol();
   console.log('user info', playCurrency)
 
   let socket = initSocket(user?._id);
@@ -1754,14 +1756,7 @@ const DiceGame = () => {
                                     displayCurrency == 'USD'
                                       ?
                                       (
-                                        <img
-                                          src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                          alt="dollar"
-                                          width={18}
-                                          height={18}
-                                          className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                            }`}
-                                        />
+                                        <span className="inline-flex items-center justify-center font-semibold leading-none">{activeCurrencySymbol}</span>
                                       )
                                       :
                                       null
@@ -1787,14 +1782,7 @@ const DiceGame = () => {
                                   displayCurrency == 'USD'
                                     ?
                                     (
-                                      <img
-                                        src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                        alt="dollar"
-                                        width={18}
-                                        height={18}
-                                        className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-50"
-                                          }`}
-                                      />
+                                      <span className={`inline-flex items-center justify-center font-semibold leading-none ${isFocused ? "opacity-100" : "opacity-50"}`}>{activeCurrencySymbol}</span>
                                     )
                                     :
                                     (
@@ -1949,13 +1937,7 @@ const DiceGame = () => {
                                       displayCurrency == 'USD'
                                         ?
                                         (
-                                          <img
-                                            src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                            alt="dollar"
-                                            width={18}
-                                            height={18}
-                                            className="w-[1em] h-[1em] object-contain opacity-80"
-                                          />
+                                          <span className="inline-flex items-center justify-center font-semibold leading-none opacity-80">{activeCurrencySymbol}</span>
                                         )
                                         :
                                         (
@@ -1987,13 +1969,7 @@ const DiceGame = () => {
                                         displayCurrency == 'USD'
                                           ?
                                           (
-                                            <img
-                                              src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                              alt="dollar"
-                                              width={18}
-                                              height={18}
-                                              className={`w-[1em] h-[1em] object-contain opacity-80`}
-                                            />
+                                            <span className="inline-flex items-center justify-center font-semibold leading-none opacity-80">{activeCurrencySymbol}</span>
                                           )
                                           : null
                                         // (
@@ -2019,14 +1995,7 @@ const DiceGame = () => {
                                       displayCurrency == 'USD'
                                         ?
                                         (
-                                          <img
-                                            src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                            alt="dollar"
-                                            width={18}
-                                            height={18}
-                                            className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-50"
-                                              }`}
-                                          />
+                                          <span className={`inline-flex items-center justify-center font-semibold leading-none ${isFocused ? "opacity-100" : "opacity-50"}`}>{activeCurrencySymbol}</span>
                                         )
                                         :
                                         (
@@ -2231,14 +2200,7 @@ const DiceGame = () => {
                                           displayCurrency == 'USD'
                                             ?
                                             (
-                                              <img
-                                                src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                                alt="dollar"
-                                                width={18}
-                                                height={18}
-                                                className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                                  }`}
-                                              />
+                                              <span className="inline-flex items-center justify-center font-semibold leading-none">{activeCurrencySymbol}</span>
                                             )
                                             : null
                                           // (
@@ -2264,14 +2226,7 @@ const DiceGame = () => {
                                         displayCurrency == 'USD'
                                           ?
                                           (
-                                            <img
-                                              src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                              alt="dollar"
-                                              width={18}
-                                              height={18}
-                                              className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-50"
-                                                }`}
-                                            />
+                                            <span className={`inline-flex items-center justify-center font-semibold leading-none ${isFocused ? "opacity-100" : "opacity-50"}`}>{activeCurrencySymbol}</span>
                                           )
                                           :
                                           (
@@ -2619,13 +2574,7 @@ const DiceGame = () => {
                                               displayCurrency == 'USD'
                                                 ?
                                                 (
-                                                  <img
-                                                    src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                                    alt="dollar"
-                                                    width={18}
-                                                    height={18}
-                                                    className="w-[1em] h-[1em] object-contain opacity-80"
-                                                  />
+                                                  <span className="inline-flex items-center justify-center font-semibold leading-none opacity-80">{activeCurrencySymbol}</span>
                                                 )
                                                 :
                                                 (
@@ -2682,13 +2631,7 @@ const DiceGame = () => {
                                               displayCurrency == 'USD'
                                                 ?
                                                 (
-                                                  <img
-                                                    src={cardImageCache[playCurrency == "chips" ? "chip-13" : 'dimondsign']?.src ?? "/dollar.png"}
-                                                    alt="dollar"
-                                                    width={18}
-                                                    height={18}
-                                                    className="w-[1em] h-[1em] object-contain opacity-80"
-                                                  />
+                                                  <span className="inline-flex items-center justify-center font-semibold leading-none opacity-80">{activeCurrencySymbol}</span>
                                                 )
                                                 :
                                                 (

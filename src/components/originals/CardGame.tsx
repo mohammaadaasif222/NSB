@@ -116,6 +116,7 @@ import toast from "react-hot-toast";
 // import useUser from '@/shared/query/user.query';
 // import { useApiClient } from '@/shared/apiClient'
 import { useAuth } from '@/lib/originalsAuthBridge';
+import { useActiveCurrencySymbol } from '@/lib/currencySymbols';
 import { useRouter as useNextRouter } from 'next/router';
 import { Tooltip } from 'react-tooltip';
 // import { useCurrency } from "../../../../../contexts/CurrencyContext";
@@ -219,6 +220,7 @@ export default function CardGame() {
   // }
 
   const { user, playCurrency } = useAuth();
+  const { symbol: activeCurrencySymbol } = useActiveCurrencySymbol();
 
   let socket = initSocket(user?._id);
   const { displayCurrency, currencySymbols, convertAmount } = {
@@ -2803,33 +2805,6 @@ export default function CardGame() {
                               <div className="flex px-1 mb-1 items-center font-medium justify-between text-gray-300 text-sm">
                                 <span>Bet Amount</span>
                                 <span className="text-xs text-white flex ">
-                                  {/* <span className='flex align-middle items-center'>
-
-                                  {
-                                    displayCurrency == 'USD'
-                                      ?
-                                      (
-                                        <img
-                                          src={cardImageCache[playCurrency == "chips" ? "dolerSighn" : 'dimondsign']?.src ?? "/dollar.png"}
-                                          alt="dollar"
-                                          width={18}
-                                          height={18}
-                                          className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                            }`}
-                                        />
-                                      )
-                                      : null
-                                    // (
-                                    //     <span
-                                    //         className={`w-[1em] h-[1em] object-contain ${isFocused ? "opacity-100" : "opacity-100"
-                                    //             }`}
-                                    //     >
-                                    //         {currencySymbols[displayCurrency] || displayCurrency}
-                                    //     </span>
-                                    // )
-                                  }
-                                </span>
-                                <span> {displayCurrency == 'USD' ? betAmount : ' '}</span> */}
                                 </span>                                                    </div>
                               <div className="relative rounded-2xl">
                                 <span
@@ -2858,7 +2833,7 @@ export default function CardGame() {
 
                                     )
                                 } */}
-                                  <img src={playCurrency == "chips" ? chipsign : dimondsign} alt="chipsign" srcset="" className='w-[18px] h-[18px]' />
+                                  <span className="inline-flex items-center justify-center font-semibold leading-none text-[1rem]">{activeCurrencySymbol}</span>
                                 </span>
                                 <input
                                   id="betAmountInput"
@@ -3046,7 +3021,7 @@ export default function CardGame() {
 
                                     )
                                 } */}
-                                  <img src={playCurrency == "chips" ? chipsign : dimondsign} alt="chipsign" srcset="" className='w-[18px] h-[18px]' />
+                                  <span className="inline-flex items-center justify-center font-semibold leading-none text-[1rem]">{activeCurrencySymbol}</span>
                                 </span>
                                 <input
                                   id="perfectPairInput"
@@ -3232,7 +3207,7 @@ export default function CardGame() {
 
                                     )
                                 } */}
-                                  <img src={playCurrency == "chips" ? chipsign : dimondsign} alt="chipsign" srcset="" className='w-[18px] h-[18px]' />
+                                  <span className="inline-flex items-center justify-center font-semibold leading-none text-[1rem]">{activeCurrencySymbol}</span>
                                 </span>
                                 <input
                                   id="plus21Input"
