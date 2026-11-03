@@ -23,7 +23,6 @@ import {
 } from '@/services/games.server';
 import { markUnavailable } from '@/utils/unavailable.server';
 import { displayProvider } from '@/utils/branding';
-import { fetchWinnerGames } from '@/services/myGames.server';
 import type { DiceConfig, Game } from '@/types';
 import Seo, { type JsonLd } from '@/components/seo/Seo';
 import { gameDescription } from '@/components/seo/gameMeta';
@@ -40,8 +39,6 @@ interface Props {
    * the game in place of the details view.
    */
   dice: DiceConfig | null;
-  /** Real games for the Recent Winners row at the foot of the page. */
-  winnerGames: Game[];
   providerSlug: string | null;
 }
 
@@ -114,7 +111,7 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
   );
 };
 
-const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, providerSlug }) => {
+const GamePage: FC<Props> = ({ game, related, failed, dice, providerSlug }) => {
   const { t, locale } = useTranslation();
 
   if (!game) {
@@ -312,7 +309,7 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, winnerGames, provide
         )}
 
         <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
-          <RecentWinners games={winnerGames} tabs="player" />
+          <RecentWinners tabs="player" />
           <SiteFooter />
         </div>
       </div>
@@ -341,7 +338,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
         related: [],
         failed: true,
         dice: null,
-        winnerGames: [],
         providerSlug: null,
       },
     };
@@ -363,7 +359,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
       related,
       failed: false,
       dice,
-      winnerGames: await fetchWinnerGames(related),
       providerSlug: providers?.find((p) => p.name === lookup.game.provider)?.slug ?? null,
     },
   };

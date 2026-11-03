@@ -140,11 +140,6 @@ const Lobby: FC<Props> = ({
   const { t } = useTranslation();
   const { token } = useAuth();
   const player = !!token;
-  // The winners row pairs its sample wins with real games, newest first.
-  const winnerGames = [
-    ...(shelves.find((s) => s.key === 'new')?.games ?? []),
-    ...shelves.filter((s) => s.key !== 'new').flatMap((s) => s.games),
-  ];
   const live = variant === 'live';
   // The live lobby is laid out as the casino page is, with its own rows.
   const casino = variant === 'casino' || live;
@@ -237,7 +232,7 @@ const Lobby: FC<Props> = ({
             among the shelves instead. */}
         {!casino && <JackpotShelf />}
         {!casino && <StreamersRow streams={streams} />}
-        <RecentWinners games={winnerGames} tabs={player || casino ? 'player' : 'landing'} />
+        <RecentWinners tabs={player || casino ? 'player' : 'landing'} />
         <FaqAccordion items={faqs} />
         <SiteFooter glow={variant === 'home'} />
       </div>

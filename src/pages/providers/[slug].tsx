@@ -12,7 +12,6 @@ import { breadcrumbJsonLd } from '@/components/seo/breadcrumbs';
 import { useTranslation } from '@/context/I18nContext';
 import { CATEGORY_PAGE_SIZE, PROVIDERS_PATH, providerHref } from '@/constants/games';
 import { fetchProviders, fetchShelfList, parsePageParam } from '@/services/games.server';
-import { fetchWinnerGames } from '@/services/myGames.server';
 import { markUnavailable } from '@/utils/unavailable.server';
 import type { Game, GamePagination, LobbyProvider } from '@/types';
 
@@ -22,7 +21,6 @@ interface Props {
   games: Game[];
   pagination: GamePagination;
   failed: boolean;
-  winnerGames: Game[];
 }
 
 const ProviderPage: FC<Props> = ({ provider, ...rest }) => {
@@ -51,7 +49,6 @@ const ProviderGames: FC<Omit<Props, 'provider'> & { provider: LobbyProvider }> =
   games,
   pagination,
   failed,
-  winnerGames,
 }) => {
   const { t, locale } = useTranslation();
   const heading = t('lobby.providers.games', { provider: provider.name });
@@ -161,7 +158,7 @@ const ProviderGames: FC<Omit<Props, 'provider'> & { provider: LobbyProvider }> =
         )}
 
         <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
-          <RecentWinners games={winnerGames} tabs="player" />
+          <RecentWinners tabs="player" />
           <SiteFooter />
         </div>
       </div>
@@ -191,7 +188,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
         games: [],
         pagination: { total: 0, page: 1, limit: CATEGORY_PAGE_SIZE, totalPages: 0 },
         failed: true,
-        winnerGames: [],
       },
     };
   }
@@ -216,7 +212,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
       games: result.data,
       pagination: result.pagination,
       failed: result.failed,
-      winnerGames: await fetchWinnerGames(result.data),
     },
   };
 };

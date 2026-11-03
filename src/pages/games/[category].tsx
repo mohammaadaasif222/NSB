@@ -23,7 +23,6 @@ import {
 import { MIN_SEARCH_LENGTH } from '@/services/catalogue';
 import { fetchShelfList, fetchShelfProviders, parsePageParam } from '@/services/games.server';
 import { markUnavailable } from '@/utils/unavailable.server';
-import { fetchWinnerGames } from '@/services/myGames.server';
 import type { Game, GamePagination, GameShelfKey } from '@/types';
 import Seo from '@/components/seo/Seo';
 
@@ -34,8 +33,6 @@ interface Props extends Required<CategoryFilters> {
   games: Game[];
   pagination: GamePagination;
   failed: boolean;
-  /** Real games for the Recent Winners row under the grid. */
-  winnerGames: Game[];
 }
 
 /**
@@ -51,7 +48,6 @@ const CategoryPage: FC<Props> = ({
   games,
   pagination,
   failed,
-  winnerGames,
   providers,
   ...filters
 }) => {
@@ -159,7 +155,7 @@ const CategoryPage: FC<Props> = ({
         {pagination.totalPages > 1 && <div className="flex justify-center pt-2">{pager}</div>}
 
         <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
-          <RecentWinners games={winnerGames} tabs="player" />
+          <RecentWinners tabs="player" />
           <SiteFooter />
         </div>
       </div>
@@ -215,7 +211,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
       games: result.data,
       pagination: result.pagination,
       failed: result.failed,
-      winnerGames: await fetchWinnerGames(result.data),
     },
   };
 };
