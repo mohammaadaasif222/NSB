@@ -834,7 +834,13 @@ a.a-li:hover b {
   display: block;
   font-weight: 700;
 }
+/* One line, cut with "…", so a long description cannot stretch the row. */
 .a-nm small {
+  display: block;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--admin-muted);
 }
 .a-ac {

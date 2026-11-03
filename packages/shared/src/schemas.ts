@@ -544,10 +544,8 @@ export const homeCardSchema = z.object({
   link: siteOrWebLink,
   color: z.enum(HOME_CARD_COLORS),
   icon: z.enum(HOME_CARD_ICONS),
-  /** Own image; without one the card shows its colour and icon. */
+  /** Own image, shown with the title only; without one the card shows its colour and icon. */
   imageUrl: imageUrlSchema.nullable(),
-  /** With an image: also draw the icon on it (the title always shows). */
-  showIcon: z.boolean(),
   /** Shown on the card, e.g. "New" or "Top". */
   tags: z.array(homeCardTagSchema).max(HOME_CARD_MAX_TAGS, `Up to ${HOME_CARD_MAX_TAGS} tags per card`),
 });
@@ -558,10 +556,10 @@ export const homeCardsSchema = z.array(homeCardSchema).length(HOME_CARD_COUNT, `
 
 /** The cards the home page shows until an admin saves their own (the design's four). */
 export const DEFAULT_HOME_CARDS: HomeCard[] = [
-  { title: 'Wedding venues', link: '/wedding/wedding-venues', color: 'g1', icon: 'venue', imageUrl: '/images/nsb-home/tile-venue.jpg', showIcon: true, tags: [] },
-  { title: 'Makeup & beauty', link: '/wedding/makeup-beauty', color: 'g5', icon: 'makeup', imageUrl: '/images/nsb-home/tile-makeup.jpg', showIcon: true, tags: [] },
-  { title: 'Photography & films', link: '/wedding/photography-films', color: 'g2', icon: 'camera', imageUrl: '/images/nsb-home/tile-photo.jpg', showIcon: true, tags: [] },
-  { title: 'Catering', link: '/wedding', color: 'g3', icon: 'catering', imageUrl: '/images/nsb-home/tile-catering.jpg', showIcon: true, tags: [] },
+  { title: 'Wedding venues', link: '/wedding/wedding-venues', color: 'g1', icon: 'venue', imageUrl: '/images/nsb-home/tile-venue.jpg', tags: [] },
+  { title: 'Makeup & beauty', link: '/wedding/makeup-beauty', color: 'g5', icon: 'makeup', imageUrl: '/images/nsb-home/tile-makeup.jpg', tags: [] },
+  { title: 'Photography & films', link: '/wedding/photography-films', color: 'g2', icon: 'camera', imageUrl: '/images/nsb-home/tile-photo.jpg', tags: [] },
+  { title: 'Catering', link: '/wedding', color: 'g3', icon: 'catering', imageUrl: '/images/nsb-home/tile-catering.jpg', tags: [] },
 ];
 
 // ---------- Footer (every page) ----------

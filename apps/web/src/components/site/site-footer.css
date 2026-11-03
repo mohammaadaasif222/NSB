@@ -32,24 +32,13 @@
 }
 
 .nsb-footer .footer-logo {
-  display: inline-flex;
-  flex-direction: column;
-  line-height: 1;
+  display: inline-block;
 }
 
-.nsb-footer .footer-logo b {
-  color: var(--ft-blue);
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-
-.nsb-footer .footer-logo small {
-  margin-top: 2px;
-  color: #f59e0b;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+.nsb-footer .footer-logo img {
+  display: block;
+  width: auto;
+  height: 50px;
 }
 
 .nsb-footer .fgrid h4 {

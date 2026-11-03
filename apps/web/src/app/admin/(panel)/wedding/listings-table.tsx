@@ -78,7 +78,7 @@ export function WeddingListingsTable({
                         <Link href={`/admin/listings/${listing.id}`} className="hover:text-(--admin-accent)">
                           <b>{listing.name}</b>
                         </Link>
-                        <small>{listing.locality ?? listing.shortDescription}</small>
+                        <small title={listing.locality ?? listing.shortDescription}>{listing.locality ?? listing.shortDescription}</small>
                       </div>
                     </div>
                   </td>

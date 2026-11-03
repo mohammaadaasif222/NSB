@@ -55,7 +55,7 @@ export function HeroBanners({ slides, cards }: { slides: HeroSlide[]; cards: Hom
                     ))}
                   </span>
                 )}
-                {(!c.imageUrl || c.showIcon) && <Icon d={HOME_CARD_ICON_PATHS[c.icon]} size={26} />}
+                {!c.imageUrl && <Icon d={HOME_CARD_ICON_PATHS[c.icon]} size={26} />}
                 <div className="qb">
                   <b>{c.title}</b>
                   <i>

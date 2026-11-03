@@ -3,7 +3,7 @@
 import { CheckCircle2, X } from "lucide-react";
 import { createContext, type FormEvent, type ReactNode, useContext, useEffect, useId, useRef, useState } from "react";
 import { todayInIndia } from "@nsb/shared/client";
-import { Honeypot } from "../honeypot";
+import { Honeypot, honeypotValue } from "../honeypot";
 import { useModalBehaviour } from "../use-modal-behaviour";
 import { type EnquiryErrors, sendEnquiry } from "./send-enquiry";
 import "./enquiry-dialog.css";
@@ -67,7 +67,7 @@ function EnquiryDialog({ listing, wedding, onClose }: { listing: EnquiryTarget; 
       preferredDate: form.get("preferredDate"),
       eventType: form.get("eventType") || undefined,
       message: details.filter(Boolean).join(" · "),
-      website: form.get("website") || undefined,
+      website: honeypotValue(form),
     });
     setPending(false);
     if (refused) setErrors(refused);

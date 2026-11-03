@@ -14,7 +14,7 @@ import {
   type HomeCard,
   type HomeCardTag,
 } from "@nsb/shared";
-import { Button, Field, IconButton, Select, TextInput, Toggle } from "@/components/admin/form";
+import { Button, Field, IconButton, Select, TextInput } from "@/components/admin/form";
 import { useSessionUploads, useUploader } from "@/components/admin/image-upload";
 import { useSettingsSection } from "@/components/admin/use-settings-section";
 import { Icon } from "@/components/shared/icon";
@@ -38,7 +38,7 @@ function CardPreview({ card }: { card: HomeCard }) {
           ))}
         </div>
       )}
-      {(!card.imageUrl || card.showIcon) && <Icon d={HOME_CARD_ICON_PATHS[card.icon]} size={32} stroke={1.6} />}
+      {!card.imageUrl && <Icon d={HOME_CARD_ICON_PATHS[card.icon]} size={32} stroke={1.6} />}
       <span>{card.title || "Title"}</span>
     </div>
   );
@@ -224,9 +224,6 @@ export function HomeCardsManager({ cards: saved, maxUploadBytes }: { cards: Home
               <TextInput value={card.link} list="home-card-routes" maxLength={300} placeholder="/wedding" invalid={!!errors[`${i}.link`]} onChange={(e) => set(i, { link: e.target.value })} />
             </Field>
             <CardImage url={card.imageUrl} onChange={(imageUrl) => set(i, { imageUrl })} onUploaded={trackUpload} maxBytes={maxUploadBytes} />
-            {card.imageUrl && (
-              <Toggle label="Also show the icon on the image (the title always shows)" showLabel checked={card.showIcon} onChange={(showIcon) => set(i, { showIcon })} />
-            )}
           </div>
 
           <div className="a-mv">

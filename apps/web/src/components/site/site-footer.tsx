@@ -1,7 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { type Category, FOOTER_SOCIAL_LABELS, FOOTER_SOCIALS, type FooterSettings } from "@nsb/shared";
 import { Icon } from "./nsb-home/bits";
-import { CATEGORY_LOOK, DEFAULT_LOOK, ICON } from "./nsb-home/content";
+import { CATEGORY_LOOK, DEFAULT_LOOK, ICON, LOGO } from "./nsb-home/content";
 import "./site-footer.css";
 
 const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
@@ -9,8 +10,8 @@ const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
 const companyLinks = [
   { label: "About Us", href: "/about" },
   { label: "Blog", href: "/blog" },
-  { label: "How It Works", href: "/about#what-we-do" },
-  { label: "Partner With Us", href: "https://wa.me/919811590088" },
+  { label: "How It Works", href: "/how-it-works" },
+  { label: "Partner With Us", href: "/partner-with-us" },
   { label: "NSB Verification Policy", href: "/disclaimer#verification-policy" },
   { label: "Contact Us", href: "https://wa.me/919811590088" },
 ];
@@ -48,8 +49,7 @@ export function SiteFooter({ categories, footer }: { categories: Category[]; foo
       <div className="w fgrid">
         <div className="fb">
           <Link className="footer-logo" href="/" aria-label="Noida Super Bazaar home">
-            <b>Noida</b>
-            <small>Super Bazaar</small>
+            <Image src={LOGO} alt="" width={99} height={50} />
           </Link>
           <ul className="chk">
             <li>Trusted hyperlocal platform for Noida</li>

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, Res, StreamableFile, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Logger, Param, ParseUUIDPipe, Patch, Post, Query, Res, StreamableFile, UseGuards } from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { Response } from 'express';
 import {
@@ -29,6 +29,12 @@ import { EnquiriesService } from './enquiries.service.js';
 /** Leads a minute from one visitor. */
 const LEAD_LIMIT = { default: { limit: 10, ttl: 60_000 } };
 
+const logger = new Logger('EnquiriesController');
+
+/** Logs a lead the honeypot dropped, so a real visitor's lost lead (e.g. a browser autofilled the field) shows up in the logs. */
+const dropped = (form: string, about: string | null | undefined, website: string) =>
+  logger.warn(`Honeypot dropped a ${form} lead (${about ?? 'no project'}): field had ${website.length} characters`);
+
 @Controller('enquiries')
 export class EnquiriesController {
   constructor(private readonly enquiries: EnquiriesService) {}
@@ -39,7 +45,10 @@ export class EnquiriesController {
   @Throttle(LEAD_LIMIT)
   async create(@Body(new ZodPipe(enquiryInputSchema)) { website, ...body }: EnquiryInput): Promise<{ id: string }> {
     // A filled honeypot gets a normal reply, so the bot learns nothing, and nothing is saved.
-    if (website) return { id: randomUUID() };
+    if (website) {
+      dropped('listing', body.listingId, website);
+      return { id: randomUUID() };
+    }
     const { id } = await this.enquiries.create(body);
     return { id };
   }
@@ -52,7 +61,10 @@ export class EnquiriesController {
   @UseGuards(ThrottlerGuard)
   @Throttle(LEAD_LIMIT)
   async createForProject(@Body(new ZodPipe(projectEnquiryInputSchema)) { website, ...body }: ProjectEnquiryInput): Promise<ProjectEnquiryResult> {
-    if (website) return { id: randomUUID(), advertiserName: null, phone: null, brochureUrl: null };
+    if (website) {
+      dropped('project', body.projectId, website);
+      return { id: randomUUID(), advertiserName: null, phone: null, brochureUrl: null };
+    }
     return this.enquiries.createForProject(body);
   }
 }

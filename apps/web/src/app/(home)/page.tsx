@@ -69,8 +69,8 @@ export default async function HomePage() {
         <PopularMarkets />
         <Highlights />
         <TopPicks />
-        <BrandStores />
-        <JohriBazaar />
+        {/* <BrandStores /> */}
+        {/* <JohriBazaar /> */}
         <BestDeals />
       </main>
       <Faqs />

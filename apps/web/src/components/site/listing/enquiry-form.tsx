@@ -3,7 +3,7 @@
 import { CalendarDays, CheckCircle2, ChevronDown, MessageCircle } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import type { QuickInfoItem } from "@nsb/shared";
-import { Honeypot } from "../honeypot";
+import { Honeypot, honeypotValue } from "../honeypot";
 import { type EnquiryErrors as Errors, type EnquiryField as Field, sendEnquiry } from "./send-enquiry";
 import { ServiceIcon } from "./service-icon";
 
@@ -58,10 +58,11 @@ export function EnquiryCard({
       return;
     }
     const formEl = event.currentTarget;
-    const data = Object.fromEntries(new FormData(formEl)) as Record<Field, string>;
+    const form = new FormData(formEl);
+    const data = Object.fromEntries(form) as Record<Field, string>;
     setErrors({});
     setPending(true);
-    const fieldErrors = await sendEnquiry({ ...data, budget: data.budget || undefined, email: data.email || undefined, eventType: data.eventType || undefined, listingId });
+    const fieldErrors = await sendEnquiry({ ...data, budget: data.budget || undefined, email: data.email || undefined, eventType: data.eventType || undefined, listingId, website: honeypotValue(form) });
     setPending(false);
     if (!fieldErrors) {
       formEl.reset();

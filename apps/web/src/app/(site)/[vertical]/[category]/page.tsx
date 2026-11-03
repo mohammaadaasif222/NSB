@@ -75,9 +75,9 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
     getSiteSettings(),
   ]);
   const place = locationPlace(location);
-  // Side cards as switched on in Admin › Settings; shown beside list view only.
+  // Side cards as switched on in Admin › Settings.
   const panels = listingSidebar.enabled ? browsePanels(category.slug, category.name).filter((p) => listingSidebar[p.kind]) : [];
-  const sidebar = view === "list" && panels.length > 0;
+  const sidebar = panels.length > 0;
   const tags = [...new Set(panels.flatMap((p) => p.tiles.map((tile) => tile.label)))];
   const banner = eliteBanners[category.slug] ?? defaultEliteBanner(category.name);
   // First page only, whether or not any listing is Elite yet.
@@ -156,7 +156,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
               />
             )}
             {/* Phones show one column either way, so they do without the switch. */}
-            <div className="hidden shrink-0 items-center gap-5 text-base min-[701px]:flex" role="group" aria-label="Layout">
+            <div className="hidden shrink-0 items-center gap-2 text-sm min-[701px]:flex" role="group" aria-label="Layout">
               {(
                 [
                   ["list", "List", List],
@@ -167,10 +167,10 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
                   key={value}
                   href={href({ view: value, page: 1 })}
                   aria-current={view === value ? "true" : undefined}
-                  className="flex items-center justify-center gap-2 text-ink-soft hover:text-brand aria-[current=true]:text-brand"
+                  className="flex h-11 items-center justify-center gap-1.5 rounded-[10px] border border-[#e5e7eb] bg-white px-3 text-ink-soft hover:text-brand aria-[current=true]:border-brand aria-[current=true]:bg-brand-soft aria-[current=true]:text-brand"
                   scroll={false}
                 >
-                  <Icon className="size-5" aria-hidden />
+                  <Icon className="size-4" aria-hidden />
                   {label}
                 </Link>
               ))}
@@ -216,7 +216,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
           </div>
         )}
 
-        {/* The browse side cards sit beside list view only; grid view uses the full width. */}
+        {/* The browse side cards sit beside both views; without them, grid view uses the full width. */}
         <div className={`mt-5 grid gap-5 sm:mt-8 ${sidebar ? "lg:grid-cols-[minmax(0,1fr)_280px]" : ""}`}>
           <div className="min-w-0">
             {showBanner && <EliteBanner banner={banner} />}
@@ -251,7 +251,7 @@ export default async function CategoryListingPage({ params, searchParams }: Prop
               </p>
             ) : (
               <EnquiryProvider wedding={vertical.slug === "wedding"}>
-                <ul id="listings" className={`lp-list scroll-mt-24 ${view === "grid" ? "is-grid" : ""}`}>
+                <ul id="listings" className={`lp-list scroll-mt-24 ${view === "grid" ? "is-grid" : ""} ${sidebar ? "" : "no-side"}`}>
                   {listings.items.map((listing, i) => (
                     <li key={listing.id} className={listing.isElite ? "lp-wide" : undefined}>
                       <ListingCard

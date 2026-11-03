@@ -4,7 +4,7 @@ import { createContext, type FormEvent, type ReactNode, useContext, useEffect, u
 import type { ProjectEnquiryResult, ProjectLeadSource } from "@nsb/shared";
 import { BUY_WITHIN, todayInIndia } from "@nsb/shared/client";
 import { postJson } from "@/lib/site-client";
-import { Honeypot } from "../honeypot";
+import { Honeypot, honeypotValue } from "../honeypot";
 import { useModalBehaviour } from "../use-modal-behaviour";
 
 /** Who the visitor wants to reach, and which button they pressed. */
@@ -135,7 +135,7 @@ function LeadForm({
         visitDate: visit ? visitDate : undefined,
         altVisitDate: visit ? String(form.get("altVisitDate") ?? "") || undefined : undefined,
         agreed: true,
-        website: form.get("website") || undefined,
+        website: honeypotValue(form),
       });
       if (res.ok) {
         setResult((await res.json()) as ProjectEnquiryResult);

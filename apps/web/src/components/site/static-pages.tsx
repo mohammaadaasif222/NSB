@@ -38,6 +38,48 @@ export function StaticPage({
   );
 }
 
+const WHAT_WE_DO = [
+  ["Discover", "Browse local businesses and services by category and area, with clear details and photos."],
+  ["Verify", "NSB Verified partners are onboarded by our team, so customers can choose with more confidence."],
+  ["Connect", "Customers reach businesses directly by call or WhatsApp, with no middlemen."],
+] as const;
+
+const FOR_BUSINESSES = [
+  ["1. Share your details", "Tell our team about your business and the category and area you want to appear in."],
+  ["2. Go live", "After your details are confirmed, our team sets up your profile and tells you the go-live time."],
+  ["3. Get enquiries", "Customers view your profile and contact you directly by call or WhatsApp."],
+] as const;
+
+function StaticCards({ id, title, cards }: { id?: string; title: string; cards: readonly (readonly [string, string])[] }) {
+  return (
+    <section className="static-section" id={id}>
+      <h2>{title}</h2>
+      <div className="static-cards">
+        {cards.map(([heading, text]) => (
+          <article key={heading}>
+            <h3>{heading}</h3>
+            <p>{text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function HowItWorksContent() {
+  return (
+    <>
+      <StaticCards title="For customers" cards={WHAT_WE_DO} />
+      <StaticCards title="For businesses" cards={FOR_BUSINESSES} />
+      <section className="static-cta">
+        <h2>Want to grow your business with NSB?</h2>
+        <p>Share your details and our team will call you.</p>
+        <Link href="/partner-with-us">Partner with us</Link>
+      </section>
+    </>
+  );
+}
+
 export function AboutContent() {
   return (
     <>
@@ -73,23 +115,7 @@ export function AboutContent() {
         </dl>
       </section>
 
-      <section className="static-section" id="what-we-do">
-        <h2>What we do</h2>
-        <div className="static-cards">
-          <article>
-            <h3>Discover</h3>
-            <p>Browse local businesses and services by category and area, with clear details and photos.</p>
-          </article>
-          <article>
-            <h3>Verify</h3>
-            <p>NSB Verified partners are onboarded by our team, so customers can choose with more confidence.</p>
-          </article>
-          <article>
-            <h3>Connect</h3>
-            <p>Customers reach businesses directly by call or WhatsApp, with no middlemen.</p>
-          </article>
-        </div>
-      </section>
+      <StaticCards id="what-we-do" title="What we do" cards={WHAT_WE_DO} />
 
       <section className="static-mission">
         <small>Our mission</small>
