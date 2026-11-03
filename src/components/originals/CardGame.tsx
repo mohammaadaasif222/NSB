@@ -3558,7 +3558,7 @@ export default function CardGame() {
                                             height={16}
                                             loading="lazy" alt="front"
                                             draggable={false} src={src} alt="front" style={{
-                                              boxShadow: '0 0 4px rgba(0, 0, 0, 0.45)',
+                                              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3)',
                                               borderRadius: '4px'
                                             }} className="h-full w-full object-contain" />
                                         </div>
@@ -3810,7 +3810,7 @@ export default function CardGame() {
                                                         : (winner1 && gameFinished)
                                                           ? '2px solid #333333' //   black border
                                                           : 'none'
-                                                    : 'none', borderRadius: '4px', boxShadow: '0 0 4px rgba(0, 0, 0, 0.45)'
+                                                    : 'none', borderRadius: '4px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3)'
                                                 }}
                                                 alt="card front"
                                                 className="h-full w-full rounded-sm shadow-lg object-cover"
