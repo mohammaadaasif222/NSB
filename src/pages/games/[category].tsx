@@ -92,10 +92,7 @@ const CategoryPage: FC<Props> = ({
 
       <div className="mx-auto max-w-[1600px] space-y-4 pb-2 sm:space-y-6">
         {/* Category tabs */}
-        <nav
-          className={CHIP_ROW}
-          aria-label={t('dash.categories')}
-        >
+        <nav className={CHIP_ROW} aria-label={t('dash.categories')}>
           {tabs.map(shelfFor).map((c) => {
             const Icon = CATEGORY_ICONS[c.key];
             const active = c.key === def.key;

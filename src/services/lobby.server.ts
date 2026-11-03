@@ -11,13 +11,7 @@ import { fetchFaqsServer } from '@/services/faqs.server';
 import type { FaqItem } from '@/services/faqs';
 import { fetchLiveStreamsServer } from '@/services/liveStreams.server';
 import type { LiveStream } from '@/services/liveStreams';
-import type {
-  GameShelf,
-  HomeSection,
-  LobbyProvider,
-  LobbyShelfKey,
-  SectionPageKey,
-} from '@/types';
+import type { GameShelf, HomeSection, LobbyProvider, LobbyShelfKey, SectionPageKey } from '@/types';
 
 /** What every lobby-style page (home, casino, live casino) is rendered from. */
 export interface LobbyProps {
