@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
 
 /**
  * The account area's ledger.
@@ -37,6 +37,8 @@ interface Props<T> {
   title?: ReactNode;
   /** Shown in place of the rows when there are none. */
   empty?: ReactNode;
+  /** Makes the whole row a button: click, or Enter and Space from the keyboard. */
+  onRowClick?: (row: T) => void;
 }
 
 /* No gap between the tracks — the design's column positions already carry
@@ -66,6 +68,7 @@ const DataTable = <T,>({
   minWidth,
   title,
   empty,
+  onRowClick,
 }: Props<T>): ReactElement => {
   const tracks = { gridTemplateColumns: columns.map((c) => `${c.width}fr`).join(' ') };
 
@@ -104,8 +107,23 @@ const DataTable = <T,>({
                   /* The blur stays at a fixed 7: it is an optical effect, not
                      a measurement, and scaling it with the row would thin it
                      to nothing on a laptop for no reason the design asks for. */
-                  className={`${CELLS} h-[calc(var(--u)*42)] border-b border-white/15 backdrop-blur-[7px] last:border-b-0`}
+                  className={`${CELLS} h-[calc(var(--u)*42)] border-b border-white/15 backdrop-blur-[7px] last:border-b-0 ${
+                    onRowClick
+                      ? 'cursor-pointer transition-colors hover:bg-white/[0.06] focus-visible:bg-white/[0.06] focus-visible:outline-none'
+                      : ''
+                  }`}
                   style={tracks}
+                  {...(onRowClick && {
+                    role: 'button',
+                    tabIndex: 0,
+                    onClick: () => onRowClick(row),
+                    onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onRowClick(row);
+                      }
+                    },
+                  })}
                 >
                   {columns.map((c) => (
                     <span key={c.key} className={c.end ? 'text-end' : 'min-w-0'}>

@@ -97,6 +97,7 @@ const REFERRAL: Group = {
 const LEAVES: Leaf[] = [
   { labelKey: 'nav.wallet', icon: walletIcon, href: '/wallet' },
   { labelKey: 'menu.vault', icon: walletIcon, soon: true, phoneOnly: true },
+  { labelKey: 'nav.myBets', icon: transactionsIcon, href: '/my-bets' },
   { labelKey: 'menu.bonusesRewards', icon: bonusesIcon, href: '/bonuses' },
   { labelKey: 'menu.promotions', icon: promotionsIcon, href: '/promotions' },
   { labelKey: 'menu.responsibleGambling', icon: responsibleIcon, href: '/responsible-gambling' },
