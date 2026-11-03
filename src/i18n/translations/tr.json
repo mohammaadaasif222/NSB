@@ -64,7 +64,7 @@
   "register.login": "Giriş yap",
   "registerModal.title": "Kayıt Ol",
   "registerModal.titleLong": "Kayıt",
-  "registerModal.registeredToday": "Bugün {count} kayıt",
+  "registerModal.totalRegistrations": "Toplam {count} kayıt",
   "registerModal.recommended": "Önerilen",
   "registerModal.mobile": "Cep telefonu",
   "registerModal.email": "E-posta",

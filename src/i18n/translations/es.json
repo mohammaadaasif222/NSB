@@ -64,7 +64,7 @@
   "register.login": "Iniciar sesión",
   "registerModal.title": "Registrarse",
   "registerModal.titleLong": "Registro",
-  "registerModal.registeredToday": "{count} registrados hoy",
+  "registerModal.totalRegistrations": "{count} registros en total",
   "registerModal.recommended": "Recomendado",
   "registerModal.mobile": "Número de móvil",
   "registerModal.email": "Correo",

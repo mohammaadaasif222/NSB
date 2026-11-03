@@ -64,7 +64,7 @@
   "register.login": "लॉग इन",
   "registerModal.title": "रजिस्टर करें",
   "registerModal.titleLong": "पंजीकरण",
-  "registerModal.registeredToday": "आज {count} रजिस्टर हुए",
+  "registerModal.totalRegistrations": "कुल {count} रजिस्ट्रेशन",
   "registerModal.recommended": "अनुशंसित",
   "registerModal.mobile": "मोबाइल नंबर",
   "registerModal.email": "ईमेल",

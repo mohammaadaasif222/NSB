@@ -64,7 +64,7 @@
   "register.login": "تسجيل الدخول",
   "registerModal.title": "التسجيل",
   "registerModal.titleLong": "التسجيل",
-  "registerModal.registeredToday": "{count} سجّلوا اليوم",
+  "registerModal.totalRegistrations": "{count} إجمالي التسجيلات",
   "registerModal.recommended": "موصى به",
   "registerModal.mobile": "رقم الجوال",
   "registerModal.email": "البريد الإلكتروني",

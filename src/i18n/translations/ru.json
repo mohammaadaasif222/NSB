@@ -64,7 +64,7 @@
   "register.login": "Войти",
   "registerModal.title": "Регистрация",
   "registerModal.titleLong": "Регистрация",
-  "registerModal.registeredToday": "Сегодня зарегистрировались: {count}",
+  "registerModal.totalRegistrations": "Всего регистраций: {count}",
   "registerModal.recommended": "Рекомендуем",
   "registerModal.mobile": "Номер телефона",
   "registerModal.email": "Эл. почта",

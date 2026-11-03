@@ -2,7 +2,7 @@ import type { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsR
 import {
   fetchHomeShelves,
   fetchLobbyProviders,
-  fetchRegisteredTodayCount,
+  fetchTotalRegistrationsCount,
   parsePageParam,
 } from '@/services/games.server';
 import { fetchFaqsServer } from '@/services/faqs.server';
@@ -19,7 +19,7 @@ export interface LobbyProps {
   catalogueFailed: boolean;
   faqs: FaqItem[];
   streams: LiveStream[];
-  registeredToday: number | null;
+  totalRegistrations: number | null;
 }
 
 interface LobbyOptions {
@@ -51,12 +51,12 @@ export const lobbyProps =
     ) as Record<GameShelfKey, number>;
 
     // In parallel: independent public reads, and the page waits on all of them.
-    const [{ shelves, failed }, providers, faqs, streams, registeredToday] = await Promise.all([
+    const [{ shelves, failed }, providers, faqs, streams, totalRegistrations] = await Promise.all([
       fetchHomeShelves(keys, pages),
       fetchLobbyProviders(),
       fetchFaqsServer(),
       options.streams ? fetchLiveStreamsServer() : Promise.resolve([]),
-      fetchRegisteredTodayCount(),
+      fetchTotalRegistrationsCount(),
     ]);
 
     return {
@@ -66,7 +66,7 @@ export const lobbyProps =
         catalogueFailed: failed,
         faqs,
         streams,
-        registeredToday,
+        totalRegistrations,
       },
     };
   };

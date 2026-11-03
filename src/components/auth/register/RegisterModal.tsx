@@ -125,7 +125,6 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
           onSelectMethod={chooseMethod}
           onGoogle={google.signIn}
           onTelegram={telegram.signIn}
-          onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
           onMore={() => setStep('social')}
           googleBusy={google.loading}
         />
@@ -133,7 +132,6 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
       {step === 'social' && (
         <SocialStep
           onTelegram={telegram.signIn}
-          onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
         />
       )}
 

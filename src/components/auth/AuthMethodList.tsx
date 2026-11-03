@@ -15,7 +15,7 @@ export interface AuthMethodOption {
 
 interface AuthMethodListProps {
   methods: AuthMethodOption[];
-  /** White tab resting on the first row, e.g. "1.2K Registered Today". */
+  /** White tab resting on the first row, e.g. "1.2K Total Registrations". */
   tab?: string;
   /** The tab's text on a phone, where its design words it differently. */
   phoneTab?: string;

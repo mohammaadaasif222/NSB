@@ -64,7 +64,7 @@
   "register.login": "Accedi",
   "registerModal.title": "Registrati",
   "registerModal.titleLong": "Registrazione",
-  "registerModal.registeredToday": "{count} registrati oggi",
+  "registerModal.totalRegistrations": "{count} registrazioni totali",
   "registerModal.recommended": "Consigliato",
   "registerModal.mobile": "Numero di cellulare",
   "registerModal.email": "Email",

@@ -137,10 +137,10 @@ export async function fetchHomeShelves(
  * providers are decoration on the landing page, not something worth failing
  * the whole render over.
  */
-export async function fetchRegisteredTodayCount(): Promise<number | null> {
+export async function fetchTotalRegistrationsCount(): Promise<number | null> {
   try {
-    const data = await getJson<{ registered_today?: unknown }>('/statistics/public');
-    return typeof data?.registered_today === 'number' ? data.registered_today : null;
+    const data = await getJson<{ registered_total?: unknown }>('/statistics/public');
+    return typeof data?.registered_total === 'number' ? data.registered_total : null;
   } catch (error) {
     logFailure('Public statistics fetch', error);
     return null;

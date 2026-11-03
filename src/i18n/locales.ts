@@ -128,7 +128,7 @@ const coreEn = {
   // Register modal
   'registerModal.title': 'Register',
   'registerModal.titleLong': 'Registration',
-  'registerModal.registeredToday': '{count} Registered Today',
+  'registerModal.totalRegistrations': '{count} Total Registrations',
   'registerModal.recommended': 'Recommended',
   'registerModal.mobile': 'Mobile number',
   'registerModal.email': 'Email',

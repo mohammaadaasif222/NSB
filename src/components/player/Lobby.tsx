@@ -132,7 +132,7 @@ const Lobby: FC<Props> = ({
   catalogueFailed,
   faqs,
   streams,
-  registeredToday,
+  totalRegistrations,
   seo,
   basePath,
   variant,
@@ -226,7 +226,7 @@ const Lobby: FC<Props> = ({
           <>
             {/* The signed-out hero carries the welcome offer itself, where
                 the design puts it among the section shortcuts. */}
-            <LandingHero registeredToday={registeredToday} />
+            <LandingHero totalRegistrations={totalRegistrations} />
             <CrashPreview />
             {unavailable}
             {browser}
