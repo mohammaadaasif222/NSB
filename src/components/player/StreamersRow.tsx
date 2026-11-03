@@ -150,7 +150,7 @@ const StreamCard: FC<{ stream: LiveStream }> = ({ stream }) => {
  * card — the phone design is the same card at half size — with floors on the
  * caption so it stays readable there.
  */
-const StreamersRow: FC<{ streams: LiveStream[] }> = ({ streams }) => {
+const StreamersRow: FC<{ streams: LiveStream[]; title?: string }> = ({ streams, title }) => {
   const { t } = useTranslation();
 
   if (streams.length === 0) return null;
@@ -158,7 +158,7 @@ const StreamersRow: FC<{ streams: LiveStream[] }> = ({ streams }) => {
   return (
     <section className="space-y-[calc(var(--u)*14)] lg:space-y-[calc(var(--u)*45)]">
       <h2 className="text-center text-[length:max(min(11px,24px),calc(var(--u)*24))] font-semibold leading-[calc(var(--u)*32)] tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(min(11px,36px),calc(var(--u)*36))] lg:font-bold lg:leading-[calc(var(--u)*44)] lg:text-[#f2f5f9]">
-        {t('dash.liveStreamers')}
+        {title ?? t('dash.liveStreamers')}
       </h2>
 
       <div className="rl-shelf flex snap-x snap-mandatory gap-[calc(var(--u)*12)] lg:gap-[calc(var(--u)*40)]">

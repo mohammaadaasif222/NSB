@@ -10,6 +10,7 @@ import type { GameShelf } from '@/types';
 interface Props {
   /** The Featured shelf, server-rendered: what a visitor, or a player still loading, sees. */
   featured?: GameShelf;
+  title?: string;
 }
 
 /**
@@ -18,11 +19,11 @@ interface Props {
  * gets the Featured shelf the server rendered, so the row never jumps in or
  * out.
  */
-const RecommendedShelf: FC<Props> = ({ featured }) => {
+const RecommendedShelf: FC<Props> = ({ featured, title: customTitle }) => {
   const { token } = useAuth();
   const { t } = useTranslation();
   const { games } = useRecommendedGames();
-  const title = t('lobby.casino.recommended');
+  const title = customTitle ?? t('lobby.casino.recommended');
 
   if (token && games && games.length > 0) {
     return (

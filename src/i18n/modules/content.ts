@@ -112,6 +112,10 @@ export const en = {
   'content.role.riskManagementTrainee': 'Risk Management Trainee',
   'oath.eyebrow': 'Our oath. Our commitment.',
   'oath.title': 'The Rolluck Oath',
+  'oath.the': 'The',
+  'oath.name': 'Rolluck Oath',
+  'oath.body':
+    "At Rolluck, we promise to create a gaming experience built on fairness, trust, transparency, and respect for our players. Every game and result will be handled with integrity, with clear rules, honest information, and no hidden tricks or false promises. We put our players first by listening to our community and continuously improving the experience we create. Your privacy, security, and trust will always matter, and we are committed to keeping your experience safe and secure. At the same time, we want every spin and every game to feel exciting, fresh, and memorable, while encouraging responsible play and giving players the tools and freedom to stay in control of their gaming experience.",
   'oath.subtitle':
     'And we believe gaming should be more than just a game. It should be exciting, fair, transparent, and built on trust.',
   'oath.fair.title': 'We promise to play fair.',

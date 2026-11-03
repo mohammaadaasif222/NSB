@@ -4,23 +4,12 @@ import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
 import Seo from '@/components/seo/Seo';
 import { useTranslation } from '@/context/I18nContext';
-import type { TranslationKey } from '@/i18n/locales';
-
-const PROMISES: { title: TranslationKey; body: TranslationKey }[] = [
-  { title: 'oath.fair.title', body: 'oath.fair.body' },
-  { title: 'oath.players.title', body: 'oath.players.body' },
-  { title: 'oath.transparent.title', body: 'oath.transparent.body' },
-  { title: 'oath.protect.title', body: 'oath.protect.body' },
-  { title: 'oath.excitement.title', body: 'oath.excitement.body' },
-  { title: 'oath.enough.title', body: 'oath.enough.body' },
-];
+import scrollArt from '@/assets/oath/oath-scroll.webp';
+import sealArt from '@/assets/oath/oath-seal.webp';
+import dividerArt from '@/assets/oath/oath-divider.svg';
 
 const Divider: FC = () => (
-  <span aria-hidden="true" className="flex items-center gap-1">
-    <span className="h-1 w-1 rounded-full bg-white/20" />
-    <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-    <span className="h-1 w-1 rounded-full bg-white/20" />
-  </span>
+  <img src={dividerArt.src} alt="" aria-hidden="true" className="mx-auto block w-[46.6%]" />
 );
 
 const RolluckOathPage: FC = () => {
@@ -30,38 +19,45 @@ const RolluckOathPage: FC = () => {
     <PlayerLayout>
       <Seo title={t('oath.title')} description={t('oath.subtitle')} path="/rolluck-oath" />
 
-      <div className="mx-auto max-w-[1548px] px-1 pb-2 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:pt-[calc(var(--u)*24)]">
-        <header className="flex flex-col items-center text-center">
-          <p className="text-[10px] font-medium uppercase leading-4 tracking-[0.08em] text-[#9da2b4] lg:text-[length:max(10px,calc(var(--u)*11))]">
-            {t('oath.eyebrow')}
-          </p>
-          <h1 className="mt-2 text-[32px] font-semibold leading-tight text-[#f0f1f5] lg:text-[length:max(32px,calc(var(--u)*44))]">
-            {t('oath.title')}
-          </h1>
-          <p className="mt-3 max-w-[440px] text-[14px] leading-5 text-[#9da2b4]">
-            {t('oath.subtitle')}
-          </p>
-        </header>
+      <div className="mx-auto max-w-[1548px] px-1 pb-2 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:pt-[calc(var(--u)*74)]">
+        <div className="mx-auto max-w-[640px] lg:w-[calc(var(--u)*1226)] lg:max-w-none">
+          <article
+            className="bg-[length:100%_100%] bg-no-repeat pt-[17.6%] pr-[13%] pb-[18.2%] pl-[16%] text-center lg:pt-[calc(var(--u)*216)] lg:pr-[calc(var(--u)*227)] lg:pb-[calc(var(--u)*223)] lg:pl-[calc(var(--u)*268)]"
+            style={{ backgroundImage: `url(${scrollArt.src})` }}
+          >
+            <h1 className="font-bold text-[#07080a] uppercase">
+              {t('oath.the') && (
+                <span className="block text-[26px] leading-8 lg:text-[length:calc(var(--u)*54)] lg:leading-[calc(var(--u)*68)]">
+                  {t('oath.the')}
+                </span>
+              )}
+              <span className="mt-0.5 block text-[34px] leading-[38px] text-[#75461e] lg:mt-[calc(var(--u)*7)] lg:text-[length:calc(var(--u)*84)] lg:leading-[calc(var(--u)*78)]">
+                {t('oath.name')}
+              </span>
+            </h1>
 
-        <section className="mt-8 rounded-[24px] border border-white/[0.06] bg-[#16171b] px-5 py-10 sm:px-10 sm:py-14 lg:mt-[calc(var(--u)*40)]">
-          <ol className="mx-auto flex max-w-[720px] flex-col items-center gap-8 text-center sm:gap-10">
-            {PROMISES.map(({ title, body }, i) => (
-              <li key={title} className="flex flex-col items-center gap-8 sm:gap-10">
-                {i > 0 && <Divider />}
-                <div>
-                  <h2 className="text-[22px] font-semibold leading-tight text-[#f0f1f5] sm:text-[28px]">
-                    {t(title)}
-                  </h2>
-                  <p className="mx-auto mt-3 max-w-[520px] text-[13px] leading-5 text-[#9da2b4] sm:text-[14px]">
-                    {t(body)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
+            <div className="mt-5 lg:mt-[calc(var(--u)*46)]">
+              <Divider />
+            </div>
 
-        <div className="mt-10 lg:mt-[calc(var(--u)*96)]">
+            <p className="mt-6 text-[15px] leading-[26px] text-[#07080a] lg:mt-[calc(var(--u)*53)] lg:text-[length:calc(var(--u)*35)] lg:leading-[calc(var(--u)*62)]">
+              {t('oath.body')}
+            </p>
+
+            <div className="mt-6 lg:mt-[calc(var(--u)*53)]">
+              <Divider />
+            </div>
+
+            <img
+              src={sealArt.src}
+              alt=""
+              aria-hidden="true"
+              className="mx-auto mt-6 block w-[29.8%] lg:mt-[calc(var(--u)*52)]"
+            />
+          </article>
+        </div>
+
+        <div className="mt-10 lg:mt-[calc(var(--u)*112)]">
           <SiteFooter />
         </div>
       </div>

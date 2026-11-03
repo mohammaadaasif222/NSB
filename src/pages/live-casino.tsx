@@ -3,7 +3,7 @@ import type { GetServerSideProps } from 'next';
 
 import Lobby from '@/components/player/Lobby';
 import { useTranslation } from '@/context/I18nContext';
-import { LIVE_CASINO_HREF, LIVE_SHELF_KEYS } from '@/constants/games';
+import { LIVE_CASINO_HREF } from '@/constants/games';
 import { lobbyProps, type LobbyProps } from '@/services/lobby.server';
 
 /**
@@ -28,6 +28,8 @@ const LiveCasino: FC<LobbyProps> = (props) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<LobbyProps> = lobbyProps(LIVE_SHELF_KEYS);
+export const getServerSideProps: GetServerSideProps<LobbyProps> = lobbyProps([], {
+  pages: ['live'],
+});
 
 export default LiveCasino;

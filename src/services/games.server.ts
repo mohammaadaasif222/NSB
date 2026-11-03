@@ -4,11 +4,18 @@ import type {
   GameListResponse,
   TagFilterGroup,
   GameShelf,
-  GameShelfKey,
+  HomeSection,
   HomeShelvesResponse,
   LobbyProvider,
+  LobbyShelfKey,
+  SectionPageKey,
 } from '@/types';
-import { SHELF_KEYS, shelfFor, type LobbyLayouts, type ShelfListQuery } from '@/constants/games';
+import {
+  SHELF_KEYS,
+  isCustomShelfKey,
+  shelfFor,
+  type ShelfListQuery,
+} from '@/constants/games';
 
 /**
  * Server-side catalogue fetching, for getServerSideProps.
@@ -81,12 +88,12 @@ export const parsePageParam = (value: string | string[] | undefined): number => 
 };
 
 /** Empty shelf, so the page still renders when the API is unreachable. */
-const emptyShelf = (key: GameShelfKey, page: number): GameShelf => {
-  const { list } = shelfFor(key);
+const emptyShelf = (key: LobbyShelfKey, page: number): GameShelf => {
+  const list: ShelfListQuery = isCustomShelfKey(key) ? {} : shelfFor(key).list;
   return {
     key,
     title: key,
-    category: 'category' in list ? list.category : null,
+    category: list.category ?? null,
     games: [],
     pagination: { total: 0, page, limit: 10, totalPages: 0 },
   };
@@ -106,11 +113,18 @@ export interface HomeShelvesResult {
  * whole site down with it.
  */
 export async function fetchHomeShelves(
-  keys: readonly GameShelfKey[],
-  pages: Partial<Record<GameShelfKey, number>>
+  keys: readonly LobbyShelfKey[],
+  pages: Partial<Record<LobbyShelfKey, number>>,
+  on?: SectionPageKey
 ): Promise<HomeShelvesResult> {
+  if (keys.length === 0) {
+    return { shelves: [], failed: false };
+  }
   // The API fetches only the shelves named, so a page asks for its own.
   const query = new URLSearchParams(keys.map((key) => [key, String(pages[key] ?? 1)]));
+  if (on) {
+    query.set('on', on);
+  }
 
   try {
     const data = await getJson<HomeShelvesResponse>(`/games/home?${query}`);
@@ -158,12 +172,13 @@ export async function fetchTagFilters(): Promise<TagFilterGroup[] | null> {
   }
 }
 
-export async function fetchLobbyLayouts(): Promise<LobbyLayouts> {
+export async function fetchHomeSections(page: SectionPageKey): Promise<HomeSection[] | null> {
   try {
-    return (await getJson<LobbyLayouts>('/lobby-layouts')) ?? {};
+    const sections = await getJson<HomeSection[]>(`/home-sections?page=${page}`);
+    return Array.isArray(sections) ? sections : null;
   } catch (error) {
-    logFailure('Lobby layouts fetch', error);
-    return {};
+    logFailure('Home sections fetch', error);
+    return null;
   }
 }
 

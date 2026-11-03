@@ -123,8 +123,35 @@ export interface LobbyProvider {
   game_count: number;
 }
 
+export type CustomShelfKey = `custom-${string}`;
+
+export type LobbyShelfKey = GameShelfKey | CustomShelfKey;
+
+export type HomeWidgetKey =
+  | 'sports'
+  | 'providers'
+  | 'jackpots'
+  | 'streamers'
+  | 'recent-winners'
+  | 'favourites'
+  | 'recommended'
+  | 'recents'
+  | 'drops-wins'
+  | 'hot';
+
+export type SectionPageKey = 'home' | 'home_player' | 'casino' | 'live';
+
+export type HomeSectionKind = 'SHELF' | 'WIDGET' | 'CUSTOM';
+
+export interface HomeSection {
+  key: string;
+  kind: HomeSectionKind;
+  title: string | null;
+  own_games: boolean;
+}
+
 export interface GameShelf {
-  key: GameShelfKey;
+  key: LobbyShelfKey;
   /** English fallback; the UI prefers its own translated title. */
   title: string;
   /** The category the shelf lists; null for live and most played. */

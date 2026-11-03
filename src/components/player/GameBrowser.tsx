@@ -10,6 +10,7 @@ import {
   LIVE_CASINO_HREF,
   HOME_SHELF_KEYS,
   categoryHref,
+  isCustomShelfKey,
   shelfFor,
 } from '@/constants/games';
 import GameRow from '@/components/player/GameRow';
@@ -22,7 +23,7 @@ import {
   type BrowseState,
   type ChipKey,
 } from '@/components/player/BrowseControls';
-import type { Game, GameShelf, GameShelfKey } from '@/types';
+import type { Game, GameShelf, GameShelfKey, LobbyShelfKey, SectionPageKey } from '@/types';
 import type { TranslationKey } from '@/i18n/locales';
 
 /* ==================================================================== */
@@ -46,10 +47,11 @@ interface Props {
   /** Show the chips on a phone too; off, they are desktop-only. */
   chipsOnPhone?: boolean;
   /** Which shelves to show when idle, in order. */
-  shelfKeys?: readonly GameShelfKey[];
-  hiddenShelfKeys?: readonly GameShelfKey[];
+  shelfKeys?: readonly LobbyShelfKey[];
   /** A heading to use instead of a shelf's default one. */
   titles?: Partial<Record<GameShelfKey, TranslationKey>>;
+  headings?: Partial<Record<LobbyShelfKey, string>>;
+  sectionPage?: SectionPageKey;
   /**
    * Rows placed among the shelves — the signed-in lobby's sports row, the
    * casino page's providers and tournaments — each after the shelf named.
@@ -69,7 +71,7 @@ const SEARCH_DELAY_MS = 250;
 export interface ShelfInsert {
   /** Stable React key. */
   id: string;
-  after: GameShelfKey;
+  after: LobbyShelfKey | null;
   node: ReactNode;
 }
 
@@ -87,8 +89,9 @@ const GameBrowser: FC<Props> = ({
   basePath = '/',
   controls = true,
   shelfKeys = HOME_SHELF_KEYS,
-  hiddenShelfKeys,
   titles = {},
+  headings = {},
+  sectionPage,
   chipsOnPhone = false,
   inserts = [],
   providers = [],
@@ -265,20 +268,19 @@ const GameBrowser: FC<Props> = ({
   // the empty states are the honest thing to show.
   const lobbyShelves = useMemo(() => {
     const listed = shelfKeys
-      .filter((key) => !hiddenShelfKeys?.includes(key))
       .map((key) => shelves.find((s) => s.key === key))
       .filter((s): s is GameShelf => s !== undefined);
     const stocked = listed.filter((s) => s.games.length > 0);
     return live || stocked.length === 0 ? listed : stocked;
-  }, [shelves, shelfKeys, hiddenShelfKeys, live]);
+  }, [shelves, shelfKeys, live]);
 
   // Each insert follows its shelf, or — if that shelf was left out — the
   // nearest shown shelf before it, so the row keeps its place in the order.
   // Keyed by that shelf; `lead` holds any with no shown shelf before them.
   const placed = useMemo(() => {
-    const byShelf = new Map<GameShelfKey | 'lead', ShelfInsert[]>();
+    const byShelf = new Map<LobbyShelfKey | 'lead', ShelfInsert[]>();
     for (const insert of inserts) {
-      const limit = shelfKeys.indexOf(insert.after);
+      const limit = insert.after ? shelfKeys.indexOf(insert.after) : -1;
       const before = lobbyShelves.filter((s) => shelfKeys.indexOf(s.key) <= limit);
       const anchor = before[before.length - 1]?.key ?? 'lead';
       byShelf.set(anchor, [...(byShelf.get(anchor) ?? []), insert]);
@@ -286,7 +288,7 @@ const GameBrowser: FC<Props> = ({
     return byShelf;
   }, [inserts, shelfKeys, lobbyShelves]);
 
-  const insertsAt = (anchor: GameShelfKey | 'lead'): ReactNode =>
+  const insertsAt = (anchor: LobbyShelfKey | 'lead'): ReactNode =>
     placed.get(anchor)?.map((insert) => <Fragment key={insert.id}>{insert.node}</Fragment>);
 
   const onFavourites = category === 'favourites';
@@ -427,9 +429,15 @@ const GameBrowser: FC<Props> = ({
           {lobbyShelves.map((shelf) => (
             <Fragment key={shelf.key}>
               <GameRow
-                title={t(titles[shelf.key] ?? shelfFor(shelf.key).titleKey)}
+                title={
+                  headings[shelf.key] ??
+                  (isCustomShelfKey(shelf.key)
+                    ? ''
+                    : t(titles[shelf.key] ?? shelfFor(shelf.key).titleKey))
+                }
                 games={shelf.games}
                 shelfKey={shelf.key}
+                sectionPage={sectionPage}
                 page={shelf.pagination.page}
                 totalPages={shelf.pagination.totalPages}
                 limit={shelf.pagination.limit}

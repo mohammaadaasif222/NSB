@@ -5,12 +5,18 @@ import type {
   GameMode,
   GameShelfKey,
   GameType,
+  CustomShelfKey,
+  HomeSection,
+  HomeWidgetKey,
+  LobbyShelfKey,
+  SectionPageKey,
 } from '@/types/game';
 import type { TranslationKey } from '@/i18n/locales';
 
 /** What a shelf's "View all" page asks the list endpoint for. */
 export interface ShelfListQuery {
-  shelf?: GameShelfKey;
+  shelf?: LobbyShelfKey;
+  on?: SectionPageKey;
   category?: GameCategory;
   type?: GameType;
   /**
@@ -134,32 +140,6 @@ export const HOME_SHELF_KEYS: readonly GameShelfKey[] = [
 ];
 
 /**
- * The casino page's shelves, in the Casino Manager sheet's "Final" order.
- * Featured is the operator's curated pick, titled "Recommended for you" until
- * a per-player rule replaces it. The player's own rows (favourites, last
- * played), Providers and the rows with nothing behind them yet (Drops & Wins,
- * Hot) sit among these — Lobby's CASINO_INSERTS.
- */
-export const CASINO_SHELF_KEYS: readonly GameShelfKey[] = [
-  'originals',
-  'featured',
-  'new',
-  'live-popular',
-  'instant-wins',
-  'trending',
-  'blackjack',
-];
-
-/**
- * The shelves the casino page draws. Featured is fetched with them but not
- * drawn: Recommended for you shows it to visitors and to players it has
- * nothing personal for.
- */
-export const CASINO_BROWSER_KEYS: readonly GameShelfKey[] = CASINO_SHELF_KEYS.filter(
-  (key) => key !== 'featured'
-);
-
-/**
  * The Live Casino lobby's rows, in the Casino Manager sheet's order. Live
  * tables arrive slowly, so these rows stay on the page while empty and say
  * "Coming soon" instead of disappearing.
@@ -174,20 +154,8 @@ export const LIVE_SHELF_KEYS: readonly GameShelfKey[] = [
   'live-lightning',
 ];
 
-export type LobbyLayouts = Partial<
-  Record<
-    'home_guest' | 'home_player' | 'casino' | 'live',
-    { shelves: GameShelfKey[]; hidden: GameShelfKey[] }
-  >
->;
-
-export const orderedShelfKeys = (
-  defaults: readonly GameShelfKey[],
-  saved: readonly GameShelfKey[] = []
-): GameShelfKey[] => [
-  ...saved.filter((key) => defaults.includes(key)),
-  ...defaults.filter((key) => !saved.includes(key)),
-];
+export const isCustomShelfKey = (key: string): key is CustomShelfKey =>
+  /^custom-[a-z0-9]{8}$/.test(key);
 
 /**
  * Whether a game belongs on a shelf, judged in the browser the way the list
@@ -211,10 +179,66 @@ const isShelfKey = (value: string): value is GameShelfKey =>
 export const shelfFor = (key: GameShelfKey): GameShelfDef =>
   GAME_SHELVES.find((s) => s.key === key) ?? GAME_SHELVES[0];
 
-export const lobbyOrderQuery = (key: GameShelfKey): ShelfListQuery => ({
-  ...shelfFor(key).list,
+export const lobbyOrderQuery = (key: LobbyShelfKey, on?: SectionPageKey): ShelfListQuery => ({
+  ...(isCustomShelfKey(key) ? {} : shelfFor(key).list),
   shelf: key,
+  ...(on ? { on } : {}),
 });
+
+export const sectionShelfKey = (section: HomeSection): LobbyShelfKey | null => {
+  if (section.kind === 'CUSTOM') return isCustomShelfKey(section.key) ? section.key : null;
+  return section.kind === 'SHELF' && isShelfKey(section.key) ? section.key : null;
+};
+
+const shelfSection = (key: GameShelfKey): HomeSection => ({
+  key,
+  kind: 'SHELF',
+  title: null,
+  own_games: false,
+});
+
+const widgetSection = (key: HomeWidgetKey): HomeSection => ({
+  key,
+  kind: 'WIDGET',
+  title: null,
+  own_games: false,
+});
+
+const HOME_SECTIONS: readonly HomeSection[] = [
+  shelfSection('originals'),
+  shelfSection('trending'),
+  shelfSection('instant-wins'),
+  widgetSection('sports'),
+  shelfSection('live-popular'),
+  shelfSection('high-rtp'),
+  widgetSection('providers'),
+  shelfSection('table'),
+  shelfSection('new'),
+  widgetSection('jackpots'),
+  widgetSection('streamers'),
+  widgetSection('recent-winners'),
+];
+
+export const DEFAULT_SECTIONS: Record<SectionPageKey, readonly HomeSection[]> = {
+  home: HOME_SECTIONS,
+  home_player: HOME_SECTIONS,
+  casino: [
+    shelfSection('originals'),
+    widgetSection('favourites'),
+    widgetSection('recommended'),
+    widgetSection('jackpots'),
+    widgetSection('recents'),
+    widgetSection('drops-wins'),
+    shelfSection('new'),
+    shelfSection('live-popular'),
+    shelfSection('instant-wins'),
+    widgetSection('providers'),
+    shelfSection('trending'),
+    widgetSection('hot'),
+    shelfSection('blackjack'),
+  ],
+  live: LIVE_SHELF_KEYS.map(shelfSection),
+};
 
 /** Shelf definition for a URL segment, or null for anything unknown. */
 export const categoryForKey = (value: string | string[] | undefined): GameShelfDef | null => {

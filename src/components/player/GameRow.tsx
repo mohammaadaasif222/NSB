@@ -1,6 +1,11 @@
 import { useCallback, useRef, useState, type FC } from 'react';
-import type { Game, GameShelfKey } from '@/types';
-import { LIVE_CASINO_HREF, categoryHref, lobbyOrderQuery } from '@/constants/games';
+import type { Game, LobbyShelfKey, SectionPageKey } from '@/types';
+import {
+  LIVE_CASINO_HREF,
+  categoryHref,
+  isCustomShelfKey,
+  lobbyOrderQuery,
+} from '@/constants/games';
 import { useTranslation } from '@/context/I18nContext';
 import { fetchShelfPage } from '@/services/games';
 import ScrollShelf from './ScrollShelf';
@@ -12,7 +17,8 @@ interface Props {
   /** The server-rendered tiles: the shelf's first page, painted before hydration. */
   games: Game[];
   /** The category this shelf belongs to; "View all" links to its page. */
-  shelfKey: GameShelfKey;
+  shelfKey: LobbyShelfKey;
+  sectionPage?: SectionPageKey;
   /**
    * Where the server-rendered games sit in the shelf's listing. With both
    * given, the slider fetches the following pages as it nears the end; leave
@@ -42,6 +48,7 @@ const GameRow: FC<Props> = ({
   title,
   games: initial,
   shelfKey,
+  sectionPage,
   page,
   totalPages,
   limit = DEFAULT_LIMIT,
@@ -78,7 +85,7 @@ const GameRow: FC<Props> = ({
     loading.current = true;
     const startedFor = generation.current;
 
-    fetchShelfPage(lobbyOrderQuery(shelfKey), loaded + 1, limit)
+    fetchShelfPage(lobbyOrderQuery(shelfKey, sectionPage), loaded + 1, limit)
       .then(({ data, pagination }) => {
         if (generation.current !== startedFor) {
           return;
@@ -97,7 +104,7 @@ const GameRow: FC<Props> = ({
       .finally(() => {
         loading.current = false;
       });
-  }, [hasMore, shelfKey, loaded, limit]);
+  }, [hasMore, shelfKey, sectionPage, loaded, limit]);
 
   return (
     <ScrollShelf
@@ -106,7 +113,7 @@ const GameRow: FC<Props> = ({
       // An empty "coming soon" row has nothing to view all of.
       // Live Casino's "View all" is its own lobby rather than a flat grid.
       href={
-        soon && games.length === 0
+        (soon && games.length === 0) || isCustomShelfKey(shelfKey)
           ? undefined
           : shelfKey === 'live'
             ? LIVE_CASINO_HREF

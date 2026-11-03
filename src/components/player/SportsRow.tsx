@@ -275,11 +275,15 @@ interface ShelfProps {
  * designs run it as one row of three 122×150 tiles, like the game shelves
  * (`paged={false}`); `paged` lays a phone's out three by two instead.
  */
-export const SportsShelf: FC<ShelfProps & { paged?: boolean }> = ({ viewAll, paged = true }) => {
+export const SportsShelf: FC<ShelfProps & { paged?: boolean; title?: string }> = ({
+  viewAll,
+  paged = true,
+  title,
+}) => {
   const { t } = useTranslation();
 
   return (
-    <ScrollShelf id="sports" title={t('nav.sports')} href={viewAll} paged={paged}>
+    <ScrollShelf id="sports" title={title ?? t('nav.sports')} href={viewAll} paged={paged}>
       {DISCIPLINES.map((sport) => (
         <DisciplineTile key={sport.label} sport={sport} phoneLarge={!paged} />
       ))}
