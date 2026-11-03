@@ -2867,7 +2867,7 @@ const DiceGame = () => {
                                 return (
                                   <div
                                     key={index}
-                                    className={`rounded-full text-sm font-semibold flex-shrink-0 bg-gradient-to-b from-[#333333] to-[#18181A] ${H?.status
+                                    className={`rl-liquid-glow !bg-transparent !backdrop-blur-0 rounded-full text-sm font-semibold flex-shrink-0 ${H?.status
                                       ? "text-[#15E267]"
                                       : "text-[#DD000C]"
                                       }`}
@@ -2919,7 +2919,7 @@ const DiceGame = () => {
                                     value exactly like the slider thumb does for middle values. */}
                                 {showHexagon && (
                                   <div
-                                    className="absolute top-[-12px] -translate-y-1/2 -translate-x-1/2"
+                                    className="absolute top-[-6px] -translate-y-1/2 -translate-x-1/2"
                                     ref={hexagonRef}
                                     style={{
                                       left: `${hexagonPos}%`,
