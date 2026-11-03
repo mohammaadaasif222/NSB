@@ -172,6 +172,24 @@ export async function fetchProviders(): Promise<LobbyProvider[] | null> {
   }
 }
 
+/**
+ * The studios that have a game on a shelf, most games first, or null when the
+ * call fails. The studio filter is built from this, not from every studio the
+ * lobby knows: on Originals most of them have nothing to show.
+ */
+export async function fetchShelfProviders(list: ShelfListQuery): Promise<string[] | null> {
+  const query = new URLSearchParams(
+    Object.entries(list).map(([key, value]) => [key, String(value)])
+  );
+  try {
+    const data = await getJson<{ providers: { name: string }[] }>(`/games/providers?${query}`);
+    return Array.isArray(data?.providers) ? data.providers.map((p) => p.name) : null;
+  } catch (error) {
+    logFailure(`Shelf providers ${query} fetch`, error);
+    return null;
+  }
+}
+
 export interface CategoryPageResult extends GameListResponse {
   failed: boolean;
 }

@@ -422,6 +422,7 @@ const coreEn = {
   'dash.providers': 'Provider',
   'dash.liveStreamers': 'Games Loved by Live Streamers',
   'dash.faqTitle': 'Frequently asked questions',
+  'games.noMatch': 'No games match your search.',
   'games.empty': 'No games in this category yet.',
   'games.showing': 'Showing {from}–{to} of {total}',
   'games.page': 'Page {page} of {total}',
@@ -690,6 +691,7 @@ const coreEn = {
 
   // Lobby catalogue browser: search, sort, filter, provider
   'browse.sort': 'Sort',
+  'browse.sortDefault': 'Default order',
   'browse.filter': 'Filter',
   'browse.provider': 'Choose provider',
   'browse.lobby': 'Lobby',

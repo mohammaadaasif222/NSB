@@ -1,10 +1,12 @@
 import type { FC } from 'react';
 import type { GetServerSideProps } from 'next';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import GameTile from '@/components/player/GameTile';
 import Pager from '@/components/player/Pager';
+import GameListToolbar, { SORTS, type Sort } from '@/components/player/GameListToolbar';
 import RecentWinners from '@/components/player/RecentWinners';
 import SiteFooter from '@/components/player/SiteFooter';
 import { CATEGORY_ICONS } from '@/components/icons';
@@ -16,15 +18,19 @@ import {
   categoryForKey,
   categoryHref,
   shelfFor,
+  type CategoryFilters,
 } from '@/constants/games';
-import { fetchShelfList, parsePageParam } from '@/services/games.server';
+import { MIN_SEARCH_LENGTH } from '@/services/catalogue';
+import { fetchShelfList, fetchShelfProviders, parsePageParam } from '@/services/games.server';
 import { markUnavailable } from '@/utils/unavailable.server';
 import { fetchWinnerGames } from '@/services/myGames.server';
 import type { Game, GamePagination, GameShelfKey } from '@/types';
 import Seo from '@/components/seo/Seo';
 
-interface Props {
+interface Props extends Required<CategoryFilters> {
   categoryKey: GameShelfKey;
+  /** Studio names for the toolbar's provider list. */
+  providers: string[];
   games: Game[];
   pagination: GamePagination;
   failed: boolean;
@@ -40,9 +46,24 @@ interface Props {
  * (`/games/slots?page=3`), so it survives a refresh and works with the back
  * button; the pager links are plain navigations.
  */
-const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winnerGames }) => {
+const CategoryPage: FC<Props> = ({
+  categoryKey,
+  games,
+  pagination,
+  failed,
+  winnerGames,
+  providers,
+  ...filters
+}) => {
   const { t } = useTranslation();
+  const router = useRouter();
   const def = shelfFor(categoryKey);
+  const filtered = !!(filters.q || filters.provider || filters.sort);
+  const go = (next: CategoryFilters): void => {
+    void router.push(categoryHref(def.key, 1, { ...filters, ...next }), undefined, {
+      scroll: false,
+    });
+  };
   const title = t(def.titleKey);
   // A live row's page tabs between the live rows; every other between the casino's.
   const tabs = LIVE_SHELF_KEYS.includes(def.key) ? LIVE_SHELF_KEYS : CASINO_LISTING_KEYS;
@@ -55,7 +76,7 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
     <Pager
       page={pagination.page}
       totalPages={pagination.totalPages}
-      hrefFor={(page) => categoryHref(def.key, page)}
+      hrefFor={(page) => categoryHref(def.key, page, filters)}
     />
   );
 
@@ -106,6 +127,15 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
           {pager}
         </header>
 
+        <GameListToolbar
+          q={filters.q}
+          sort={filters.sort}
+          provider={filters.provider}
+          providers={providers}
+          defaultSort
+          onChange={go}
+        />
+
         {failed && (
           <p role="status" className="rl-glass rounded-2xl px-4 py-3 text-sm text-white/55">
             {t('dash.catalogueUnavailable')}
@@ -114,7 +144,7 @@ const CategoryPage: FC<Props> = ({ categoryKey, games, pagination, failed, winne
 
         {!failed && games.length === 0 && (
           <p className="rl-glass rounded-2xl px-4 py-10 text-center text-sm text-white/50">
-            {t('games.empty')}
+            {filtered ? t('games.noMatch') : t('games.empty')}
           </p>
         )}
 
@@ -149,7 +179,28 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
   }
 
   const page = parsePageParam(query.page);
-  const result = await fetchShelfList(def.list, page, CATEGORY_PAGE_SIZE);
+  const providers = (await fetchShelfProviders(def.list)) ?? [];
+
+  // Only what the toolbar offers: a hand-typed studio or order would fail the whole list.
+  const one = (value: string | string[] | undefined): string =>
+    (Array.isArray(value) ? value[0] : value)?.trim() ?? '';
+  const provider = providers.includes(one(query.provider)) ? one(query.provider) : '';
+  const sort = (SORTS as readonly string[]).includes(one(query.sort))
+    ? (one(query.sort) as Sort)
+    : '';
+  const asked = one(query.q).slice(0, 80);
+  const q = asked.length >= MIN_SEARCH_LENGTH ? asked : '';
+
+  const result = await fetchShelfList(
+    {
+      ...def.list,
+      ...(sort ? { sort } : {}),
+      ...(provider ? { provider } : {}),
+      ...(q ? { search: q } : {}),
+    },
+    page,
+    CATEGORY_PAGE_SIZE
+  );
   if (result.failed) {
     markUnavailable({ req, res });
   }
@@ -157,6 +208,10 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
   return {
     props: {
       categoryKey: def.key,
+      providers,
+      q,
+      sort,
+      provider,
       games: result.data,
       pagination: result.pagination,
       failed: result.failed,
