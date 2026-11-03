@@ -10,6 +10,7 @@ import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import { analytics, failureReason } from '@/services/analytics';
 import { trackSignupComplete } from '@/utils/events';
+import { markPostSignup } from '@/lib/postSignup';
 import { clearReferral, referralField } from '@/lib/referralCapture';
 import { affiliateField, clearAffiliateTag } from '@/lib/affiliateCapture';
 
@@ -249,6 +250,7 @@ export function useGoogleAuth(): GoogleAuth {
         // a social signup never reaches the funnel at all.
         if (response?.data?.is_new_account === true) {
           trackSignupComplete('google');
+          markPostSignup();
           clearAffiliateTag();
           if (referralField().referral_code) {
             analytics.referral.signUpAttributed('link');
