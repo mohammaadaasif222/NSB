@@ -6,6 +6,7 @@ import SiteFooter from '@/components/player/SiteFooter';
 import { SportsShelf } from '@/components/player/SportsRow';
 import { ChipButton, CHIP_ROW } from '@/components/player/BrowseControls';
 import MatchShelf from '@/components/sports/MatchShelf';
+import SportsbookGate from '@/components/sports/SportsbookGate';
 import SportsToolbar, {
   FIXTURE_QUERY_DEFAULTS,
   queryFixtures,
@@ -25,7 +26,7 @@ const LEAGUES = [...new Set(ALL_FIXTURES.map((f) => f.league))].sort();
  * Events and Upcoming. Fixtures are sample data until a feed exists — see
  * services/sportsbook.sample. The toolbar narrows every section at once.
  */
-const Sports: FC = () => {
+const SampleLobby: FC = () => {
   const { t } = useTranslation();
   const [query, setQuery] = useState<FixtureQuery>(FIXTURE_QUERY_DEFAULTS);
   const [chip, setChip] = useState<FixtureSport | 'all'>('all');
@@ -115,5 +116,12 @@ const Sports: FC = () => {
     </PlayerLayout>
   );
 };
+
+/** The sportsbook, or the sample lobby until one is configured. */
+const Sports: FC = () => (
+  <SportsbookGate>
+    <SampleLobby />
+  </SportsbookGate>
+);
 
 export default Sports;
