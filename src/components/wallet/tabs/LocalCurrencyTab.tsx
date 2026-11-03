@@ -20,6 +20,7 @@ import WalletField, {
   WALLET_VALUE,
 } from '../shared/WalletField';
 import WalletSelect from '../shared/WalletSelect';
+import { currencyOption } from '../shared/currencyOption';
 import PaymentMethodGrid from '../shared/PaymentMethodGrid';
 
 /**
@@ -51,7 +52,7 @@ const FALLBACK_AMOUNT = 5000; // Default demo amount for initial offers
 const EMBEDDED_METHODS = ['PIX', 'IX', 'ACH', 'SEPA', 'NEFT', 'WIRE', 'FASTER_PAYMENTS', 'UPI'];
 
 const LocalCurrencyTab: FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   // On a 428 it asks for the one-time code and resubmits.
   const { run } = useSeonGuard();
   const { me } = useMe();
@@ -899,12 +900,8 @@ const LocalCurrencyTab: FC = () => {
   }
 
   const currencyOptions = (
-    displayCurrencies.length > 0 ? displayCurrencies : [{ code: 'USD', name: 'US Dollar' }]
-  ).map((c: any) => ({
-    value: c.code as string,
-    label: c.code as string,
-    detail: c.name as string,
-  }));
+    displayCurrencies.length > 0 ? displayCurrencies : [{ code: 'USD', country_code: 'US' }]
+  ).map((c) => currencyOption(c, locale));
   const sign = displayCurrencies.find((c) => c.code === currency)?.symbol || '$';
   const noMethods = (
     <p className={`${WALLET_NOTE} py-8 text-center`}>

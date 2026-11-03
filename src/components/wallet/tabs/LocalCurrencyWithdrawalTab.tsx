@@ -15,6 +15,7 @@ import WalletField, {
   WALLET_VALUE,
 } from '../shared/WalletField';
 import WalletSelect from '../shared/WalletSelect';
+import { currencyOption } from '../shared/currencyOption';
 import PaymentMethodGrid from '../shared/PaymentMethodGrid';
 
 interface Props {
@@ -27,7 +28,7 @@ interface Props {
 }
 
 const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused, available }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { me } = useMe();
   // On a 428 it asks for the one-time code and resubmits.
   const { run } = useSeonGuard();
@@ -309,7 +310,7 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused, ava
           ) : (
             <WalletSelect
               id="lw-currency"
-              options={currencies.map((c) => ({ value: c.code, label: c.code, detail: c.name }))}
+              options={currencies.map((c) => currencyOption(c, locale))}
               value={selectedCurrency}
               onChange={setSelectedCurrency}
               placeholder={t('acct.wallet.selectCurrency')}

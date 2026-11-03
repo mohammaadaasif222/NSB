@@ -8,6 +8,8 @@ export interface WalletOption<V extends string> {
   label: string;
   /** Quieter text at the row's end in the list (a full name). */
   detail?: string;
+  /** A mark before the label, in the pill and in the list (a flag). */
+  icon?: ReactNode;
 }
 
 interface Props<V extends string> {
@@ -57,6 +59,7 @@ const WalletSelect = <V extends string>({
         aria-expanded={open}
         className={`${WALLET_PILL} w-full text-start transition-colors hover:border-white/30`}
       >
+        {selected?.icon}
         <span className={`min-w-0 flex-1 truncate ${WALLET_VALUE}`}>
           {selected?.label ?? placeholder}
         </span>
@@ -94,7 +97,10 @@ const WalletSelect = <V extends string>({
                   on ? 'bg-white/10 text-[#f0f1f5]' : 'text-[#f0f1f5] hover:bg-white/5'
                 }`}
               >
-                <span className="font-semibold">{o.label}</span>
+                <span className="flex min-w-0 items-center gap-2.5">
+                  {o.icon}
+                  <span className="font-semibold">{o.label}</span>
+                </span>
                 {o.detail && (
                   <span className="truncate text-[13px] text-[#9da2b4]">{o.detail}</span>
                 )}
