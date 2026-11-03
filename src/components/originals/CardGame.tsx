@@ -598,7 +598,7 @@ export default function CardGame() {
   //       {!user?._id && (
   //         <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full">
   //           <button
-  //             className="bg-royalGreen-50 text-royalPurple-50 py-2 px-6 rounded-lg font-bold text-[18px]"
+  //             className="bg-royalGreen-50 text-royalPurple-50 py-2 px-6 rounded-full font-bold text-[18px]"
   //             onClick={() => {
   //               if (user?._id) {
   //                 setHasLoaded(true)
@@ -2631,11 +2631,11 @@ export default function CardGame() {
                 className="w-full "
               >
 
-                <div className="max-w-full bg-[#090C1D] p-2 lg:p-4 rounded-xl mt-1 lg:flex lg:flex-col lg:justify-center lg:items-center  md:flex md:flex-col md:justify-center md:items-center  ">
-                  <div className=' p-0 lg:p-4 bg-[#19183A] w-full rounded-xl'>
-                    <div className=" text-white bg-[#090C1D] p-0 lg:p-4 rounded-xl font-sans flex flex-col lg:flex-row lg:justify-center md:w-full  lg:w-[100%] xl:w-[100%] ">
+                <div className="rl-liquid-glow bg-white/[0.01] max-w-full  rounded-4xl mt-1 lg:flex lg:flex-col lg:justify-center lg:items-center md:flex md:flex-col md:justify-center md:items-center">
+                  <div className='  w-full rounded-4xl'>
+                    <div className=" text-white  rounded-4xl font-sans flex flex-col lg:flex-row lg:justify-center md:w-full  lg:w-[100%] xl:w-[100%] ">
                       {/* Left sidebar */}
-                      <div className="order-2 lg:order-1 rounded-xl  lg:overflow-y-auto scrollbar-hide xl:w-[30%] lg:w-[30%] bg-[#19183A] lg:rounded-l-xl p-3 sm:p-4 md:p-5 lg:px-5 lg:py-3 ">
+                      <div className="order-2 lg:order-1 rounded-4xl lg:rounded-tr-none lg:rounded-br-none lg:overflow-y-auto scrollbar-hide xl:w-[30%] lg:w-[30%] bg-gradient-to-b from-[#262628] to-[#262628] p-4 sm:p-4 md:p-5 lg:px-5 lg:py-4">
                         <div className="flex flex-col lg:flex-col-reverse gap-2  ">
                           {/* Place Bet Button - show when game hasn't started */}
                           <button
@@ -2648,13 +2648,16 @@ export default function CardGame() {
                               btnClickRef || Number(betAmount) > MAX_BET || (Number(betAmount) > 0 && Number(betAmount) < convertAmount(0.01, displayCurrency).toFixed(2)) ||
                               Number(betAmount) > gameMaxBet || errorMsg
                             }
-                            className={`mb-2 w-full text-white font-semibold py-2 rounded-lg
-    bg-[linear-gradient(180deg,#4ab0fc_0%,#c839f1_100%)]
-    disabled:bg-[linear-gradient(180deg,#19183A_0%,#19183A_100%)]
-    disabled:ring-2  disabled:ring-[#000000]
-    transition-all duration-200
-    disabled:cursor-not-allowed
-    flex items-center justify-center
+                            className={`mb-2 w-full font-semibold py-2 rounded-full transition-all duration-200 flex items-center justify-center
+    ${(
+                                AlreadyActivated || isAnimating ||
+                                (Number(betAmount) < 0) ||
+                                (gameObject.current && !gameObject.current?.handOver) ||
+                                btnClickRef || Number(betAmount) > MAX_BET || (Number(betAmount) > 0 && Number(betAmount) < convertAmount(0.01, displayCurrency).toFixed(2)) ||
+                                Number(betAmount) > gameMaxBet || errorMsg
+                              )
+                                ? "cursor-not-allowed bg-[#262628] border-2 border-[#000000] text-gray-300"
+                                : "bg-[linear-gradient(180deg,#F9D028_0%,#F9D028_100%)] text-black hover:brightness-110"}
     ${isAnyModalOpen ? "hidden" : ""}
   `}
                           >
@@ -2683,13 +2686,13 @@ export default function CardGame() {
                                   onClick={takeaction}
                                   className={[
                                     // sizing & layout
-                                    "w-full h-12 sm:h-12 rounded-lg  font-semibold",
+                                    "w-full h-12 sm:h-12 rounded-full  font-semibold",
                                     "items-center justify-center flex gap-1.5 sm:gap-2",
                                     "flex-row sm:flex-row text-sm sm:text-sm",
                                     // colors / states
                                     disabled
-                                      ? "bg-[#19183A] border-[2px] border-[#000000]  cursor-not-allowed"
-                                      : "bg-[#2C2852] hover:bg-[linear-gradient(180deg,#4ab0fc_0%,#c839f1_100%)] border-[2px] border-[#000000] active:scale-[0.99] transition-all duration-200",
+                                      ? "bg-[#18181A] border-[2px] border-[#000000] text-gray-500 cursor-not-allowed"
+                                      : "bg-[#1a1a1a] hover:bg-[#262628] text-white border-[2px] border-[#333333] active:scale-[0.99] transition-all duration-200",
                                   ].join(" ")}
                                   title={label}
                                 >
@@ -2724,10 +2727,10 @@ export default function CardGame() {
                                   onClick={() => acceptInsurance()}
                                   disabled={btnClickRef || isAnimating}
                                   className={[
-                                    "w-full h-12 sm:h-12 rounded-lg  font-medium",
+                                    "w-full h-12 sm:h-12 rounded-full  font-medium",
                                     "items-center justify-center flex gap-1.5 sm:gap-2",
                                     "flex-row sm:flex-row text-xs sm:text-sm",
-                                    "bg-[#2C2852] border-[2px] border-[#000000]  text-[#F4FFFB] hover:bg-[linear-gradient(180deg,#4ab0fc_0%,#c839f1_100%)] active:scale-[0.99] transition",
+                                    "bg-[#1a1a1a] hover:bg-[#262628] border-[2px] border-[#333333] text-white disabled:bg-[#18181A] disabled:text-gray-500 disabled:border-[#000000] disabled:cursor-not-allowed active:scale-[0.99] transition",
                                   ].join(" ")}
                                 >
                                   <span>Accept Insurance</span>
@@ -2738,10 +2741,10 @@ export default function CardGame() {
                                   onClick={() => rejectInsurance()}
                                   disabled={btnClickRef || isAnimating}
                                   className={[
-                                    "w-full h-12 sm:h-12 rounded-lg  font-medium",
+                                    "w-full h-12 sm:h-12 rounded-full  font-medium",
                                     "items-center justify-center flex gap-1.5 sm:gap-2",
                                     "flex-row sm:flex-row text-xs sm:text-sm",
-                                    "bg-[#2C2852] border-[2px] border-[#000000]   text-[#F4FFFB] hover:bg-[linear-gradient(180deg,#4ab0fc_0%,#c839f1_100%)] active:scale-[0.99] transition",
+                                    "bg-[#1a1a1a] hover:bg-[#262628] border-[2px] border-[#333333] text-white disabled:bg-[#18181A] disabled:text-gray-500 disabled:border-[#000000] disabled:cursor-not-allowed active:scale-[0.99] transition",
                                   ].join(" ")}
                                 >
                                   <span>Reject Insurance</span>
@@ -2828,7 +2831,7 @@ export default function CardGame() {
                                 </span>
                                 <span> {displayCurrency == 'USD' ? betAmount : ' '}</span> */}
                                 </span>                                                    </div>
-                              <div className="relative rounded-xl">
+                              <div className="relative rounded-2xl">
                                 <span
                                   className={`absolute left-3 top-1/2 -translate-y-1/2 select-none flex items-center text-[1rem] leading-none transition-opacity duration-200 ${isFocused ? "opacity-100" : "opacity-50"
                                     }`}
@@ -2914,11 +2917,11 @@ export default function CardGame() {
                                     setBetAmount(numeric);
                                   }}
                                   disabled={isDemoMode || (gameObject.current && !gameObject.current?.handOver) || btnClickRef}
-                                  className={`w-full  text-[#94a59e] focus:text-white bg-[#090C1D]  rounded-lg pl-8 pr-32 py-2 outline-none
+                                  className={`w-full  text-[#94a59e] focus:text-white bg-[#18181A]  rounded-full pl-8 pr-32 py-2 outline-none
        
       ${errorMsg
                                       ? "   ring-2 ring-red-500"
-                                      : " focus:ring-2 focus:ring-[#31ABE8]  "
+                                      : " focus:ring-2 focus:ring-[#F9D028]  "
                                     }
     `}
                                   placeholder="0.00"
@@ -2930,7 +2933,7 @@ export default function CardGame() {
                                   clickable={false}
                                   place="top"
                                   className="!bg-black  !text-white
-                                    !px-3 !py-2 !rounded-md 
+                                    !px-3 !py-2 !rounded-full 
                                     !backdrop-blur-sm !text-xs !font-medium
                                     !z-[9999]"
                                 >
@@ -2956,7 +2959,7 @@ export default function CardGame() {
                                       isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
-                                    className="px-2 py-1 text-xs bg-[#19183a]  rounded-l-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
+                                    className="px-2 py-1 text-xs bg-[#262628]  rounded-l-full text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed"
                                   >
                                     1/2
                                   </button>
@@ -2972,7 +2975,7 @@ export default function CardGame() {
                                       isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
-                                    className={`px-2 py-1 text-xs bg-[#19183a]  ${ShowMAxBetBTN ? "" : "rounded-r-md"}  text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed`}
+                                    className={`px-2 py-1 text-xs bg-[#262628]  ${ShowMAxBetBTN ? "" : "rounded-r-full"}  text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed`}
                                   >
                                     2X
                                   </button>
@@ -2997,7 +3000,7 @@ export default function CardGame() {
                                       disabled={
                                         (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                       }
-                                      className="px-2 py-1 text-xs bg-[#19183a]  rounded-r-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
+                                      className="px-2 py-1 text-xs bg-[#262628]  rounded-r-full text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed"
                                     >
                                       Max
                                     </button>
@@ -3016,7 +3019,7 @@ export default function CardGame() {
                                   }
                                 </span>
                               </div>
-                              <div className="relative rounded-xl">
+                              <div className="relative rounded-2xl">
                                 <span
                                   className={`absolute left-3 top-1/2 -translate-y-1/2 select-none flex items-center text-[1rem] leading-none transition-opacity duration-200 ${isFocusedPerfectPair ? "opacity-100" : "opacity-50"
                                     }`}
@@ -3098,11 +3101,11 @@ export default function CardGame() {
                                     setPefectPairAmount(numeric);
                                   }}
                                   disabled={(gameObject.current && !gameObject.current?.handOver) || btnClickRef}
-                                  className={`w-full  text-[#94a59e] focus:text-white bg-[#090C1D]  rounded-lg pl-8 pr-32 py-2 outline-none
+                                  className={`w-full  text-[#94a59e] focus:text-white bg-[#18181A]  rounded-full pl-8 pr-32 py-2 outline-none
        
       ${errorMsgParfectPair
                                       ? "   ring-2 ring-red-500"
-                                      : " focus:ring-2 focus:ring-[#31ABE8] "
+                                      : " focus:ring-2 focus:ring-[#F9D028] "
 
                                     }
                                   ${perfectPairWin && perfectPairResult ? 'ring-2 ring-[#0bf191] ' : ''}
@@ -3116,7 +3119,7 @@ export default function CardGame() {
                                   clickable={false}
                                   place="top"
                                   className="!bg-black  !text-white
-                                    !px-3 !py-2 !rounded-md 
+                                    !px-3 !py-2 !rounded-full 
                                     !backdrop-blur-sm !text-xs !font-medium
                                     !z-[9999]"
                                 >
@@ -3142,7 +3145,7 @@ export default function CardGame() {
                                       isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
-                                    className="px-2 py-1 text-xs bg-[#19183a]  rounded-l-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
+                                    className="px-2 py-1 text-xs bg-[#262628]  rounded-l-full text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed"
                                   >
                                     1/2
                                   </button>
@@ -3158,7 +3161,7 @@ export default function CardGame() {
                                       isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
-                                    className={`px-2 py-1 text-xs bg-[#19183a]  ${ShowMAxBetBTN ? "" : "rounded-r-md"}  text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed`}
+                                    className={`px-2 py-1 text-xs bg-[#262628]  ${ShowMAxBetBTN ? "" : "rounded-r-full"}  text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed`}
                                   >
                                     2X
                                   </button>
@@ -3183,7 +3186,7 @@ export default function CardGame() {
                                       disabled={
                                         (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                       }
-                                      className="px-2 py-1 text-xs bg-[#19183a]  rounded-r-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
+                                      className="px-2 py-1 text-xs bg-[#262628]  rounded-r-full text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed"
                                     >
                                       Max
                                     </button>
@@ -3202,7 +3205,7 @@ export default function CardGame() {
                                   }
                                 </span>
                               </div>
-                              <div className="relative rounded-xl">
+                              <div className="relative rounded-2xl">
                                 <span
                                   className={`absolute left-3 top-1/2 -translate-y-1/2 select-none flex items-center text-[1rem] leading-none transition-opacity duration-200 ${isFocusedPlus21 ? "opacity-100" : "opacity-50"
                                     }`}
@@ -3284,11 +3287,11 @@ export default function CardGame() {
                                     setPlus21Amount(numeric);
                                   }}
                                   disabled={(gameObject.current && !gameObject.current?.handOver) || btnClickRef}
-                                  className={`w-full  text-[#94a59e] focus:text-white bg-[#090C1D]  rounded-lg pl-8 pr-32 py-2 outline-none
+                                  className={`w-full  text-[#94a59e] focus:text-white bg-[#18181A]  rounded-full pl-8 pr-32 py-2 outline-none
        
       ${errorMsgPlus21
                                       ? "   ring-2 ring-red-500"
-                                      : " focus:ring-2 focus:ring-[#31ABE8]"
+                                      : " focus:ring-2 focus:ring-[#F9D028]"
                                     }
                                   ${plus21Win && plus21Result ? 'ring-2 ring-[#0bf191] ' : ''}
     `}
@@ -3301,7 +3304,7 @@ export default function CardGame() {
                                   clickable={false}
                                   place="top"
                                   className="!bg-black  !text-white
-                                    !px-3 !py-2 !rounded-md 
+                                    !px-3 !py-2 !rounded-full 
                                     !backdrop-blur-sm !text-xs !font-medium
                                     !z-[9999]"
                                 >
@@ -3327,7 +3330,7 @@ export default function CardGame() {
                                       isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
-                                    className="px-2 py-1 text-xs bg-[#19183a]  rounded-l-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
+                                    className="px-2 py-1 text-xs bg-[#262628]  rounded-l-full text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed"
                                   >
                                     1/2
                                   </button>
@@ -3343,7 +3346,7 @@ export default function CardGame() {
                                       isDemoMode ||
                                       (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                     }
-                                    className={`px-2 py-1 text-xs bg-[#19183a]  ${ShowMAxBetBTN ? "" : "rounded-r-md"}  text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed`}
+                                    className={`px-2 py-1 text-xs bg-[#262628]  ${ShowMAxBetBTN ? "" : "rounded-r-full"}  text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed`}
                                   >
                                     2X
                                   </button>
@@ -3368,7 +3371,7 @@ export default function CardGame() {
                                       disabled={
                                         (gameObject.current && !gameObject.current?.handOver || btnClickRef)
                                       }
-                                      className="px-2 py-1 text-xs bg-[#19183a]  rounded-r-md text-gray-200 hover:bg-[#2c2852] disabled:cursor-not-allowed"
+                                      className="px-2 py-1 text-xs bg-[#262628]  rounded-r-full text-gray-200 hover:bg-[#333333] disabled:cursor-not-allowed"
                                     >
                                       Max
                                     </button>
@@ -3420,7 +3423,7 @@ export default function CardGame() {
                     </div> */}
 
                       {/* Right content: Blackjack Table (responsive, matches design exactly) */}
-                      <div className="order-1 lg:order-2 lg:w-[70%]    bg-[#090C1D] lg:rounded-r-xl relative overflow-hidden h-[450px] lg:h-[530px] sm:h-[500px] md:h-[530px] xl:h-[550px] 2xl:h-[600px]">
+                      <div className="order-1 lg:order-2 lg:w-[70%] bg-[#0a0a0a] lg:rounded-r-4xl rounded-4xl lg:rounded-tl-none lg:rounded-bl-none relative overflow-hidden h-[450px] lg:h-[530px] sm:h-[500px] md:h-[530px] xl:h-[550px] 2xl:h-[600px]">
 
                         {/* Deck stack top-right */}
                         <div
@@ -3465,17 +3468,17 @@ export default function CardGame() {
                               // opacity: isFadingOut ? 0 : 1,
                               transition: "opacity 0.2s ease"
 
-                            }} className={`px-2 py-1 mb-1 rounded  ${allAnimationsComplete
+                            }} className={`px-2 py-1 mb-1 rounded ${allAnimationsComplete
                               ?
                               (winner2 && gameFinished)
                                 ? "bg-[#333333B2]"
                                 : (playerCardsScore === dealerCardsScore && gameFinished)
-                                  ? "bg-[#F4C50A]" // 🟡 yellow border
+                                  ? "bg-[#F9D028]"
                                   : (winner1 && gameFinished)
                                     ? "bg-[#3BB97499] border-[#3BB974BF] border-[1.8px] "
-                                    : "bg-[#2C2C45] border-[#6D6585] border-[1.8px] "
-                              : "bg-[#2C2C45] border-[#6D6585] border-[1.8px]" // default while sliding
-                              } text-[#F4FFFB]  text-sm sm:text-base font-semibold shadow-md mt-[15px] lg:-mt-[20px] ${dealerCardsScore > 0 && !isFadingOut ? ' opacity-100 ' : "opacity-0"}`}>
+                                    : "bg-[#262628] border-[#333333] border-[1.8px] "
+                              : "bg-[#262628] border-[#333333] border-[1.8px]"
+                              } text-white  text-sm sm:text-base font-semibold shadow-md mt-[15px] lg:-mt-[20px] ${dealerCardsScore > 0 && !isFadingOut ? ' opacity-100 ' : "opacity-0"}`}>
                               {dealerDisplayPoints && !gameFinished ? dealerDisplayPoints : dealerCardsScore}
                             </div>
 
@@ -3658,17 +3661,17 @@ export default function CardGame() {
                               {/* Player's score */}
                               {playerCardsScore > 0 && (
                                 <div
-                                  className={`  text-[#F4FFFB]    flex justify-start  items-center rounded  text-sm sm:text-base font-semibold shadow-md mb-2
+                                  className={`text-white flex justify-start items-center rounded text-sm sm:text-base font-semibold shadow-md mb-2
       ${allAnimationsComplete
                                       ?
                                       (winner1 && gameFinished)
                                         ? "bg-[#333333B2] border-[#333333] border-[1.8px]"
                                         : (playerCardsScore === dealerCardsScore && gameFinished)
-                                          ? "bg-[#A18204] border-[#F4C50A] border-[1.8px]" // 🟡 yellow border
+                                          ? "bg-[#A17A04] border-[#F9D028] border-[1.8px]"
                                           : (winner2 && gameFinished)
                                             ? "bg-[#3BB97499] border-[#3BB974BF] border-[1.8px] "
-                                            : "bg-[#2C2C45] border-[#6D6585] border-[1.8px] "
-                                      : "bg-[#2C2C45] border-[#6D6585] border-[1.8px]" // default while sliding
+                                            : "bg-[#262628] border-[#333333] border-[1.8px] "
+                                      : "bg-[#262628] border-[#333333] border-[1.8px]"
                                     }`}
                                   style={{
                                     opacity: isFadingOut ? 0 : 1,
@@ -3678,13 +3681,13 @@ export default function CardGame() {
                                   <span className={`px-2 py-1 rounded ${(winner1 && gameFinished)
                                     ? "bg-[#333333B2] "
                                     : (playerCardsScore === dealerCardsScore && gameFinished)
-                                      ? "bg-[#F4C50A]" // 🟡 yellow border
+                                      ? "bg-[#F9D028]"
                                       : (winner2 && gameFinished)
                                         ? "bg-[#3BB97499]  "
-                                        : "bg-[#2C2C45] border-[#6D6585] "}`}>{playerDisplayPoints && (playerCardsScore !== 21) ? playerDisplayPoints : playerCardsScore}</span>
+                                        : ""}`}>{playerDisplayPoints && (playerCardsScore !== 21) ? playerDisplayPoints : playerCardsScore}</span>
                                   {/* Show "Win" button only when winner2 */}
                                   <span
-                                    className={`mx-4 text-[#FFFFFF] text-sm font-semibold cursor-none ${!(
+                                    className={`mx-4 text-white text-sm font-semibold cursor-none ${!(
                                       winner2 && gameFinished ||
                                       winner1 && gameFinished ||
                                       (playerCardsScore === dealerCardsScore && gameFinished)
@@ -3859,19 +3862,17 @@ export default function CardGame() {
                                 {splitScores > 0 && (
                                   <div
                                     className={`
-    flex  justify-start items-center rounded text-sm sm:text-base font-semibold shadow-md mb-2
-    
-                                      text-[#F4FFFB] 
+    flex justify-start items-center rounded text-sm sm:text-base font-semibold shadow-md mb-2 text-white
     ${allAnimationsComplete
                                         ?
                                         (splitScores > 21 || !handTwoWin && splitScores < dealerCardsScore) && gameFinished
-                                          ? "bg-[#333333B2] border-[#333333] border-[1.8px]" // 🔴 Lose/Bust
+                                          ? "bg-[#333333B2] border-[#333333] border-[1.8px]"
                                           : splitScores === dealerCardsScore && gameFinished
-                                            ? "bg-[#A18204] border-[#F4C50A] border-[1.8px]"   // 🟡 Tie
+                                            ? "bg-[#A17A04] border-[#F9D028] border-[1.8px]"
                                             : winner2 && handTwoWin && gameFinished
-                                              ? "bg-[#3BB97499] border-[#3BB974BF] border-[1.8px]" // 🟢 Win 
-                                              : "bg-[#2C2C45] border-[#6D6585] border-[1.8px] "
-                                        : "bg-[#2C2C45] border-[#6D6585] border-[1.8px]" // default while sliding
+                                              ? "bg-[#3BB97499] border-[#3BB974BF] border-[1.8px]"
+                                              : "bg-[#262628] border-[#333333] border-[1.8px] "
+                                        : "bg-[#262628] border-[#333333] border-[1.8px]"
                                       }
   `}
                                     style={{
@@ -3882,15 +3883,15 @@ export default function CardGame() {
                                     <span className={`px-2 py-1 rounded ${(splitScores > 21 || !handTwoWin && splitScores < dealerCardsScore) && gameFinished
                                       ? "bg-[#333333B2] "
                                       : (splitScores === dealerCardsScore && gameFinished)
-                                        ? "bg-[#F4C50A]" // 🟡 yellow border
+                                        ? "bg-[#F9D028]"
                                         : (winner2 && handTwoWin && gameFinished)
                                           ? "bg-[#3BB97499]  "
-                                          : "bg-[#2C2C45] "}`}>
+                                          : ""}`}>
                                       {playerDisplayPoints2 && (splitScores !== 21) ? playerDisplayPoints2 : splitScores}</span>
 
                                     {/* ✅ Show "Blackjack" or "Win" */}
                                     {/* {winner2 && handTwoWin && gameFinished && ( */}
-                                    <span className={`mx-4 text-[#FFFFFF] text-sm font-semibold cursor-none ${!(
+                                    <span className={`mx-4 text-white text-sm font-semibold cursor-none ${!(
                                       winner2 && handTwoWin && gameFinished ||
                                       splitCards?.length === 2 && splitScores === 21 ||
                                       ((splitScores > 21 || !handTwoWin && splitScores < dealerCardsScore) && gameFinished) ||
@@ -4092,17 +4093,17 @@ export default function CardGame() {
                                 {playerCardsScore > 0 && (
                                   <div
                                     className={`
-    flex justify-start items-center rounded text-sm sm:text-base font-semibold mb-2 text-[#F4FFFB]
+    flex justify-start items-center rounded text-sm sm:text-base font-semibold mb-2 text-white
     ${allAnimationsComplete
                                         ?
                                         (playerCardsScore > 21 || !handOneWin && playerCardsScore < dealerCardsScore) && gameFinished
-                                          ? "bg-[#333333B2] border-[#333333] border-[1.8px]" // 🔴 Lose/Bust
+                                          ? "bg-[#333333B2] border-[#333333] border-[1.8px]"
                                           : playerCardsScore === dealerCardsScore && gameFinished
-                                            ? "bg-[#A18204] border-[#F4C50A] border-[1.8px]"  // 🟡 Tie
+                                            ? "bg-[#A17A04] border-[#F9D028] border-[1.8px]"
                                             : winner2 && handOneWin && gameFinished
-                                              ? "bg-[#3BB97499] border-[#3BB974BF] border-[1.8px]" // 🟢 Win
-                                              : "bg-[#2C2C45] border-[#6D6585] border-[1.8px] "
-                                        : "bg-[#2C2C45] border-[#6D6585] border-[1.8px]" // default while sliding
+                                              ? "bg-[#3BB97499] border-[#3BB974BF] border-[1.8px]"
+                                              : "bg-[#262628] border-[#333333] border-[1.8px] "
+                                        : "bg-[#262628] border-[#333333] border-[1.8px]"
                                       }`}
                                     style={{
                                       opacity: isFadingOut ? 0 : 1,
@@ -4112,14 +4113,14 @@ export default function CardGame() {
                                     <span className={`px-2 py-1 rounded ${(playerCardsScore > 21 || !handOneWin && playerCardsScore < dealerCardsScore) && gameFinished
                                       ? "bg-[#333333B2] "
                                       : (playerCardsScore === dealerCardsScore && gameFinished)
-                                        ? "bg-[#F4C50A]" // 🟡 yellow border
+                                        ? "bg-[#F9D028]"
                                         : (winner2 && handOneWin && gameFinished)
                                           ? "bg-[#3BB97499] "
-                                          : "bg-[#2C2C45] "}`}>{playerDisplayPoints && (playerCardsScore !== 21) ? playerDisplayPoints : playerCardsScore}</span>
+                                          : ""}`}>{playerDisplayPoints && (playerCardsScore !== 21) ? playerDisplayPoints : playerCardsScore}</span>
 
                                     {/* ✅ Show "Blackjack" or "Win" */}
                                     {/* {winner2 && handOneWin && gameFinished && ( */}
-                                    <span className={`mx-2 text-[#FFFFFF] text-sm font-semibold cursor-none ${!(
+                                    <span className={`mx-2 text-white text-sm font-semibold cursor-none ${!(
                                       (playerCardsScore > 21 || !handOneWin && playerCardsScore < dealerCardsScore) && gameFinished ||
                                       (playerCardsScore === dealerCardsScore && gameFinished) ||
                                       (playerCardsScore === dealerCardsScore && gameFinished) ||
@@ -4312,13 +4313,13 @@ export default function CardGame() {
                     </div> {/* End of bg-[#0C1110] wrapper */}
                   </div>
 
-                  <Footer setisFavorite={setisFavorite} isFavorite={isFavorite} stats={stats} setStats={setStats} gameData={gameData} gameHotKeys={HOtKeys} showInBigScreen={showInBigScreen} setshowInBigScreen={setshowInBigScreen} setplayFast={setplayFast} playFast={playFast} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} endGameData={endGameData} socket={socket} isAnyModalOpen={isAnyModalOpen} setIsAnyModalOpen={setIsAnyModalOpen} />
                   {/* <Description gameData={gameData} setisFavorite={setisFavorite} isFavorite={isFavorite} /> */}
                   {/* <BetDashboard /> */}
                   {/* <div className="mt-[10px]">
                     <LatestBetTable />
-                  </div> */}
+                    </div> */}
                 </div>
+                    <Footer setisFavorite={setisFavorite} isFavorite={isFavorite} stats={stats} setStats={setStats} gameData={gameData} gameHotKeys={HOtKeys} showInBigScreen={showInBigScreen} setshowInBigScreen={setshowInBigScreen} setplayFast={setplayFast} playFast={playFast} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} endGameData={endGameData} socket={socket} isAnyModalOpen={isAnyModalOpen} setIsAnyModalOpen={setIsAnyModalOpen} />
               </div>
 
             </main >
