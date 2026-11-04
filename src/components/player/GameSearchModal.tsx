@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FC } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/context/I18nContext';
@@ -122,6 +123,12 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   useEffect(() => {
     inputRef.current?.focus();
+    // The page behind stays put while the sheet is up.
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
   }, []);
 
   useEffect(() => {
@@ -189,10 +196,14 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
   const ready = !firstLoad && !failed && !tooShort;
   const more = ready && pagination !== null && pagination.page < pagination.totalPages;
 
-  return (
+  // Portalled to <body>: it opens from the top bar, the phone's tab bar and the
+  // sidebar, whose blur or transform would otherwise pin this `fixed` overlay to
+  // them instead of the screen, so on a phone it hung mid-page and scrolled away.
+  return createPortal(
     <div
       // On a phone, a sheet from the screen's foot like the auth modals':
-      // full width, 24 clear of the top, its top corners at 34.
+      // full width and height, 24 clear of the top, its top corners at 34. A
+      // fixed height, so the search box and chips stay put whatever the results.
       className="rl-modal-overlay fixed inset-0 z-50 flex items-end justify-center pt-6 sm:items-start sm:px-4 sm:py-24"
       onClick={onClose}
       role="presentation"
@@ -203,7 +214,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
         aria-label={t('search.title')}
         onClick={(e) => e.stopPropagation()}
         // The modals' smoked glass and rim.
-        className="rl-modal-card rl-modal-rim flex max-h-full w-full flex-col overflow-hidden max-sm:!rounded-t-[34px] max-sm:!rounded-b-none sm:max-w-lg"
+        className="rl-modal-card rl-modal-rim flex max-h-full w-full flex-col overflow-hidden max-sm:h-full max-sm:!rounded-t-[34px] max-sm:!rounded-b-none sm:max-w-lg"
       >
         <div className="flex flex-shrink-0 items-center gap-2 border-b border-white/[0.08] p-3">
           <span className="flex-shrink-0 ps-1 text-white/40" aria-hidden="true">
@@ -333,7 +344,8 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
           </p>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

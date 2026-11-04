@@ -824,8 +824,8 @@ const coreEn = {
   // Account area: the Statistic section
   'stats.lifetime': 'Lifetime',
   'stats.weekly': 'Weekly',
-  'stats.lastMonthly': 'Last Monthly',
-  'stats.last6Month': 'Last 6 Month',
+  'stats.lastMonthly': 'Monthly',
+  'stats.last6Month': 'Last 6 Months',
   'stats.yearly': 'Yearly',
   'stats.totalBets': 'Total Bets',
   'stats.totalWins': 'Total Wins',
