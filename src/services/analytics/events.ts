@@ -332,6 +332,22 @@ const referral = {
     track('referral_reward_earned', { value, currency }),
 };
 
+/* ------------------------------------------------------------- welcome -- */
+
+const welcome = {
+  /** The popup after signup was shown; `offer` is whether it carried a welcome bonus. */
+  shown: (offer: boolean): void => track('post_signup_popup_shown', { offer }),
+
+  /** Chose to look around first. */
+  explored: (offer: boolean): void => track('post_signup_explore', { offer }),
+
+  /** Chose to deposit; the wallet opens on its Deposit tab. */
+  deposit: (offer: boolean): void => track('post_signup_deposit', { offer }),
+
+  /** Closed it with the close button, Escape or a click outside. */
+  dismissed: (offer: boolean): void => track('post_signup_dismissed', { offer }),
+};
+
 /* -------------------------------------------------------------- wallet -- */
 
 const wallet = {
@@ -351,5 +367,6 @@ export const analytics = {
   bonus,
   promotion,
   referral,
+  welcome,
   wallet,
 } as const;

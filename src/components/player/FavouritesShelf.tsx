@@ -15,7 +15,7 @@ import GameTile from '@/components/player/GameTile';
  * is loading, or when it is empty: an empty shelf on a catalogue page is noise,
  * and hearting a game anywhere puts the shelf straight back.
  */
-const FavouritesShelf: FC = () => {
+const FavouritesShelf: FC<{ title?: string }> = ({ title }) => {
   const { token } = useAuth();
   const { t } = useTranslation();
   const { games } = useFavourites();
@@ -23,7 +23,7 @@ const FavouritesShelf: FC = () => {
   if (!token || !games || games.length === 0) return null;
 
   return (
-    <ScrollShelf title={t('nav.favourites')} href="/favourites">
+    <ScrollShelf title={title ?? t('nav.favourites')} href="/favourites">
       {games.map((game) => (
         <GameTile key={game.id} game={game} surface="favourites" />
       ))}

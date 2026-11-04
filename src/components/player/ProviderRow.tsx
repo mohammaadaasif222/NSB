@@ -128,6 +128,7 @@ export const ProviderCard: FC<{ provider: LobbyProvider }> = ({ provider }) => {
 interface Props {
   /** Curated in the admin console, already filtered and ordered by the API. */
   providers: LobbyProvider[];
+  title?: string;
   /** The heading. The lobby's own row says "Provider". */
   titleKey?: TranslationKey;
   /**
@@ -148,7 +149,12 @@ interface Props {
  * linked to /games/slots?provider=… — a page that ignores `provider`, so the
  * click opened every slot rather than that studio's games.
  */
-const ProviderRow: FC<Props> = ({ providers, titleKey = 'dash.providers', viewAll = true }) => {
+const ProviderRow: FC<Props> = ({
+  providers,
+  title,
+  titleKey = 'dash.providers',
+  viewAll = true,
+}) => {
   const { t } = useTranslation();
 
   if (providers.length === 0) {
@@ -156,7 +162,7 @@ const ProviderRow: FC<Props> = ({ providers, titleKey = 'dash.providers', viewAl
   }
 
   return (
-    <ScrollShelf title={t(titleKey)} href={viewAll ? PROVIDERS_PATH : undefined} paged>
+    <ScrollShelf title={title ?? t(titleKey)} href={viewAll ? PROVIDERS_PATH : undefined} paged>
       {providers.map((provider) => (
         <ProviderCard key={provider.id} provider={provider} />
       ))}

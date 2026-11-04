@@ -8,6 +8,7 @@ import { isPlayerToken } from '@/lib/session';
 import { analytics } from '@/services/analytics';
 import { ANALYTICS_SIGNUP_METHOD } from '@/constants/auth';
 import { trackSignupComplete } from '@/utils/events';
+import { markPostSignup } from '@/lib/postSignup';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import AuthModalShell from '@/components/auth/AuthModalShell';
@@ -79,6 +80,7 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
     (next: SignupTarget): void => {
       if (!next.otpRequired) {
         trackSignupComplete(ANALYTICS_SIGNUP_METHOD[next.method]);
+        markPostSignup();
         toast.success(t('registerModal.created'));
         finishSignup(next.token);
         return;
@@ -125,7 +127,6 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
           onSelectMethod={chooseMethod}
           onGoogle={google.signIn}
           onTelegram={telegram.signIn}
-          onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
           onMore={() => setStep('social')}
           googleBusy={google.loading}
         />
@@ -133,7 +134,6 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
       {step === 'social' && (
         <SocialStep
           onTelegram={telegram.signIn}
-          onUnavailable={(provider) => toast.info(t('auth.methodSoon', { method: provider }))}
         />
       )}
 

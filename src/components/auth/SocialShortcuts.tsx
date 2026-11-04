@@ -1,11 +1,10 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { FacebookMark, TelegramMark, WhatsappMark } from '@/components/brand';
+import { TelegramMark } from '@/components/brand';
 import SocialDot from '@/components/auth/SocialDot';
 
 interface SocialShortcutsProps {
   onTelegram: () => void;
-  onUnavailable: (provider: string) => void;
   onMore: () => void;
   moreLabel: string;
   className?: string;
@@ -13,7 +12,6 @@ interface SocialShortcutsProps {
 
 const SocialShortcuts: FC<SocialShortcutsProps> = ({
   onTelegram,
-  onUnavailable,
   onMore,
   moreLabel,
   className = 'pt-[6px] sm:pt-4',
@@ -31,22 +29,6 @@ const SocialShortcuts: FC<SocialShortcutsProps> = ({
           first
         >
           <TelegramMark size={18} />
-        </SocialDot>
-        <SocialDot
-          size={40}
-          label="Facebook"
-          colour="text-[#1877f2]"
-          onClick={() => onUnavailable('Facebook')}
-        >
-          <FacebookMark size={18} />
-        </SocialDot>
-        <SocialDot
-          size={40}
-          label="WhatsApp"
-          colour="text-[#25d366]"
-          onClick={() => onUnavailable('WhatsApp')}
-        >
-          <WhatsappMark size={19} />
         </SocialDot>
       </div>
       <button

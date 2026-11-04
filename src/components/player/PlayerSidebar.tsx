@@ -74,7 +74,7 @@ const SectionTab: FC<SectionProps> = ({ href, art, glow, label, active, collapse
     title={label}
     className={`group/section flex flex-1 flex-col items-center justify-center rounded-[calc(var(--u)*24)] transition-colors ${
       active
-        ? 'rl-drop bg-white/[0.12] text-white hover:bg-white/[0.16]'
+        ? 'rl-drop rl-diag-rim relative [--tw-inset-shadow:var(--rl-drop-depth)]! [--rim-radius:calc(var(--u)*24)] [--rim-clear:48px] [--rim-fade:120px] [--rim-color:rgba(255,255,255,0.35)] bg-white/[0.12] text-white hover:bg-white/[0.16]'
         : 'text-[#9da2b4] hover:bg-white/[0.06] hover:text-white'
     } ${collapsed ? 'lg:py-[calc(var(--u)*10)]' : ''}`}
   >
@@ -150,7 +150,9 @@ const PhoneSectionCard: FC<{
    in; the desktop rail's rows are bare until hovered or current. */
 const ROW =
   'flex h-12 w-full flex-shrink-0 items-center gap-2.5 rounded-full px-6 text-[16px] leading-6 transition-colors max-lg:shadow-[0_8px_40px_rgba(0,0,0,0.12)] lg:h-[calc(var(--u)*44)] lg:gap-[calc(var(--u)*11)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*15)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
-const ROW_ACTIVE = 'rl-drop bg-white/10 text-white';
+/* The current row wears every pill's rim: whitish on the diagonal, clear
+   round the top-end and bottom-start corners (`rl-pill-rim`). */
+const ROW_ACTIVE = 'rl-drop rl-pill-rim relative bg-white/10 text-white';
 const ROW_IDLE =
   'text-[#9da2b4] max-lg:bg-white/5 hover:bg-white/5 hover:text-white max-lg:hover:bg-white/10';
 
@@ -461,7 +463,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           one — near opaque, so the page under it does not show through. From
           lg it is the sticky rail. */}
       <aside
-        className={`rl-glass-deep fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden rounded-t-[34px] transition-[transform,width] max-lg:![background:rgba(17,18,22,0.97)] duration-300 lg:![background:linear-gradient(rgba(255,255,255,0.06),rgba(255,255,255,0.06)),rgba(0,0,0,0.6)] lg:![backdrop-filter:blur(6px)] lg:![-webkit-backdrop-filter:blur(6px)] lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
+        className={`rl-glass-deep rl-diag-rim [--rim-radius:34px] lg:[--rim-radius:calc(var(--u)*34)] [--rim-clear:80px] [--rim-fade:220px] [--tw-inset-shadow:var(--rl-tile-face)]! fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden rounded-t-[34px] transition-[transform,width] max-lg:![background:rgba(17,18,22,0.97)] duration-300 lg:![background:linear-gradient(rgba(255,255,255,0.06),rgba(255,255,255,0.06)),rgba(0,0,0,0.6)] lg:![backdrop-filter:blur(6px)] lg:![-webkit-backdrop-filter:blur(6px)] lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
           open ? 'translate-y-0' : 'max-lg:invisible max-lg:translate-y-full'
         }`}
         style={{ '--menu-top': `${menuTop}px` } as CSSProperties}
@@ -514,7 +516,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             the rail's glass, which already blurs, and a second blur nested in
             the first was flickering under Chrome's GPU compositor. */}
           <div
-            className={`rl-liquid hidden h-[calc(var(--u)*90)] flex-shrink-0 gap-0 overflow-hidden rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ![-webkit-backdrop-filter:none] ![backdrop-filter:none] lg:flex ${
+            className={`rl-liquid rl-diag-rim [--rim-radius:calc(var(--u)*24)] [--rim-clear:48px] [--rim-fade:120px] [--tw-inset-shadow:var(--rl-tile-face)]! ![background:rgba(255,255,255,0.02)] hidden h-[calc(var(--u)*90)] flex-shrink-0 gap-0 overflow-hidden rounded-[calc(var(--u)*24)] p-[calc(var(--u)*3)] ![-webkit-backdrop-filter:none] ![backdrop-filter:none] lg:flex ${
               collapsed ? 'lg:h-auto lg:flex-col' : ''
             }`}
           >

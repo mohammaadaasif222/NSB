@@ -1,18 +1,13 @@
 import type { FC } from 'react';
 
 import ButtonLoader from '@/components/ButtonLoader';
+import { STAGE_LABEL_KEYS, stageHeadline, stageTerms } from '@/components/bonus/stageCopy';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useTranslation } from '@/context/I18nContext';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
 import { formatRewardAmount } from '@/utils/money';
 import type { TranslationKey } from '@/i18n/locales';
 import type { WelcomeStage, WelcomeStageReasonCode, WelcomeStageStatus } from '@/types';
-
-const STAGE_LABEL_KEYS: Record<number, TranslationKey> = {
-  1: 'bonus.deposit1',
-  2: 'bonus.deposit2',
-  3: 'bonus.deposit3',
-};
 
 const STAGE_STATUS_KEYS: Record<WelcomeStageStatus, TranslationKey> = {
   UNAVAILABLE: 'bonus.unavailable',
@@ -74,34 +69,8 @@ const StageCard: FC<StageCardProps> = ({
 
   const labelKey = STAGE_LABEL_KEYS[stage.sequence];
   const label = labelKey ? t(labelKey) : stage.label;
-
-  const headline =
-    stage.match_percentage !== null
-      ? `${stage.match_percentage}%`
-      : stage.estimated_amount && Number(stage.estimated_amount) > 0
-        ? formatRewardAmount(stage.estimated_amount, currency)
-        : stage.free_spins_count
-          ? t('bonus.spinsCount', { count: stage.free_spins_count })
-          : '—';
-
-  const terms = [
-    Number(stage.min_deposit_amount ?? 0) > 0
-      ? t('bonus.minDeposit', {
-          amount: formatRewardAmount(stage.min_deposit_amount as string, currency),
-        })
-      : null,
-    Number(stage.max_bonus_amount ?? 0) > 0
-      ? t('bonus.upTo', {
-          amount: formatRewardAmount(stage.max_bonus_amount as string, currency),
-        })
-      : null,
-    stage.free_spins_count && stage.match_percentage !== null
-      ? t('bonus.spinsCount', { count: stage.free_spins_count })
-      : null,
-    Number(stage.wagering_multiplier ?? 0) > 0
-      ? t('bonus.terms.wagering', { multiplier: Number(stage.wagering_multiplier) })
-      : null,
-  ].filter((line): line is string => !!line);
+  const headline = stageHeadline(stage, currency, t);
+  const terms = stageTerms(stage, currency, t);
 
   const reasonKey = stage.reason_code ? REASON_KEYS[stage.reason_code] : undefined;
   const params = stage.reason_params;

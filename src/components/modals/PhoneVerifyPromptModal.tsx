@@ -5,6 +5,7 @@ import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { isUnverifiedPhoneAccount } from '@/utils/phoneVerification';
+import { usePostSignupPending } from '@/hooks/usePostSignupPending';
 
 const PROFILE_PATH = '/profile';
 
@@ -13,8 +14,10 @@ const PhoneVerifyPromptModal: FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const { phone_verify_modal: promptOn, loaded } = usePlatformFeatures();
+  const welcomeUp = usePostSignupPending();
 
   const open =
+    !welcomeUp &&
     loaded &&
     promptOn &&
     isUnverifiedPhoneAccount(me) &&

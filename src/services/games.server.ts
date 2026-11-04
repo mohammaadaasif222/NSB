@@ -4,11 +4,18 @@ import type {
   GameListResponse,
   TagFilterGroup,
   GameShelf,
-  GameShelfKey,
+  HomeSection,
   HomeShelvesResponse,
   LobbyProvider,
+  LobbyShelfKey,
+  SectionPageKey,
 } from '@/types';
-import { SHELF_KEYS, shelfFor, type ShelfListQuery } from '@/constants/games';
+import {
+  SHELF_KEYS,
+  isCustomShelfKey,
+  shelfFor,
+  type ShelfListQuery,
+} from '@/constants/games';
 
 /**
  * Server-side catalogue fetching, for getServerSideProps.
@@ -81,12 +88,12 @@ export const parsePageParam = (value: string | string[] | undefined): number => 
 };
 
 /** Empty shelf, so the page still renders when the API is unreachable. */
-const emptyShelf = (key: GameShelfKey, page: number): GameShelf => {
-  const { list } = shelfFor(key);
+const emptyShelf = (key: LobbyShelfKey, page: number): GameShelf => {
+  const list: ShelfListQuery = isCustomShelfKey(key) ? {} : shelfFor(key).list;
   return {
     key,
     title: key,
-    category: 'category' in list ? list.category : null,
+    category: list.category ?? null,
     games: [],
     pagination: { total: 0, page, limit: 10, totalPages: 0 },
   };
@@ -106,11 +113,18 @@ export interface HomeShelvesResult {
  * whole site down with it.
  */
 export async function fetchHomeShelves(
-  keys: readonly GameShelfKey[],
-  pages: Partial<Record<GameShelfKey, number>>
+  keys: readonly LobbyShelfKey[],
+  pages: Partial<Record<LobbyShelfKey, number>>,
+  on?: SectionPageKey
 ): Promise<HomeShelvesResult> {
+  if (keys.length === 0) {
+    return { shelves: [], failed: false };
+  }
   // The API fetches only the shelves named, so a page asks for its own.
   const query = new URLSearchParams(keys.map((key) => [key, String(pages[key] ?? 1)]));
+  if (on) {
+    query.set('on', on);
+  }
 
   try {
     const data = await getJson<HomeShelvesResponse>(`/games/home?${query}`);
@@ -137,10 +151,10 @@ export async function fetchHomeShelves(
  * providers are decoration on the landing page, not something worth failing
  * the whole render over.
  */
-export async function fetchRegisteredTodayCount(): Promise<number | null> {
+export async function fetchTotalRegistrationsCount(): Promise<number | null> {
   try {
-    const data = await getJson<{ registered_today?: unknown }>('/statistics/public');
-    return typeof data?.registered_today === 'number' ? data.registered_today : null;
+    const data = await getJson<{ registered_total?: unknown }>('/statistics/public');
+    return typeof data?.registered_total === 'number' ? data.registered_total : null;
   } catch (error) {
     logFailure('Public statistics fetch', error);
     return null;
@@ -158,6 +172,16 @@ export async function fetchTagFilters(): Promise<TagFilterGroup[] | null> {
   }
 }
 
+export async function fetchHomeSections(page: SectionPageKey): Promise<HomeSection[] | null> {
+  try {
+    const sections = await getJson<HomeSection[]>(`/home-sections?page=${page}`);
+    return Array.isArray(sections) ? sections : null;
+  } catch (error) {
+    logFailure('Home sections fetch', error);
+    return null;
+  }
+}
+
 export async function fetchLobbyProviders(): Promise<LobbyProvider[]> {
   return (await fetchProviders()) ?? [];
 }
@@ -168,6 +192,24 @@ export async function fetchProviders(): Promise<LobbyProvider[] | null> {
     return Array.isArray(data) ? data : null;
   } catch (error) {
     logFailure('Providers fetch', error);
+    return null;
+  }
+}
+
+/**
+ * The studios that have a game on a shelf, most games first, or null when the
+ * call fails. The studio filter is built from this, not from every studio the
+ * lobby knows: on Originals most of them have nothing to show.
+ */
+export async function fetchShelfProviders(list: ShelfListQuery): Promise<string[] | null> {
+  const query = new URLSearchParams(
+    Object.entries(list).map(([key, value]) => [key, String(value)])
+  );
+  try {
+    const data = await getJson<{ providers: { name: string }[] }>(`/games/providers?${query}`);
+    return Array.isArray(data?.providers) ? data.providers.map((p) => p.name) : null;
+  } catch (error) {
+    logFailure(`Shelf providers ${query} fetch`, error);
     return null;
   }
 }

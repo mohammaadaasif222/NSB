@@ -35,8 +35,6 @@ interface Props {
    * Favourites has them; Recents has no equivalent.
    */
   providers?: LobbyProvider[] | null;
-  /** Real games for the Recent Winners row, rendered server-side. */
-  winnerGames: Game[];
 }
 
 /** Tiles per page: two rows of seven on desktop, five rows of three on a phone. */
@@ -69,7 +67,6 @@ const MyGamesPage: FC<Props> = ({
   games,
   failed,
   providers: favouriteProviders,
-  winnerGames,
 }) => {
   const { t } = useTranslation();
   const { token, hydrated } = useAuth();
@@ -185,7 +182,7 @@ const MyGamesPage: FC<Props> = ({
               viewAll={false}
             />
           )}
-          <RecentWinners games={winnerGames} tabs="player" />
+          <RecentWinners tabs="player" />
           <SiteFooter />
         </div>
       </div>

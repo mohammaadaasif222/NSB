@@ -54,12 +54,19 @@ const ReferralSection: FC = () => {
       <div className="grid gap-[calc(var(--u)*22)] lg:mt-[calc(var(--u)*29)] lg:grid-cols-2">
         <ReferralCodeCard code={code} />
 
-        <div className="rl-panel flex flex-col justify-between gap-5 px-[calc(var(--u)*24)] py-[calc(var(--u)*24)] max-lg:hidden">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="rl-panel flex flex-col gap-[calc(var(--u)*16)] p-[calc(var(--u)*20)] max-lg:hidden">
+          <div className="grid flex-1 grid-cols-2 grid-rows-2 gap-[calc(var(--u)*12)]">
             {figures.map((f) => (
-              <div key={f.label}>
-                <p className="truncate text-xl leading-7 font-semibold text-[#f0f1f5]">{f.value}</p>
-                <p className="mt-1 truncate text-xs leading-4 text-[#9da2b4]">{f.label}</p>
+              <div
+                key={f.label}
+                className="rl-field-card flex min-w-0 flex-col items-center justify-center rounded-[calc(var(--u)*24)] px-3 text-center"
+              >
+                <p className="max-w-full truncate text-2xl leading-8 font-semibold text-[#f0f1f5]">
+                  {f.value}
+                </p>
+                <p className="mt-1 max-w-full truncate text-sm leading-5 text-[#9da2b4]">
+                  {f.label}
+                </p>
               </div>
             ))}
           </div>

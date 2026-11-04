@@ -128,7 +128,7 @@ const coreEn = {
   // Register modal
   'registerModal.title': 'Register',
   'registerModal.titleLong': 'Registration',
-  'registerModal.registeredToday': '{count} Registered Today',
+  'registerModal.totalRegistrations': '{count} Total Registrations',
   'registerModal.recommended': 'Recommended',
   'registerModal.mobile': 'Mobile number',
   'registerModal.email': 'Email',
@@ -422,6 +422,7 @@ const coreEn = {
   'dash.providers': 'Provider',
   'dash.liveStreamers': 'Games Loved by Live Streamers',
   'dash.faqTitle': 'Frequently asked questions',
+  'games.noMatch': 'No games match your search.',
   'games.empty': 'No games in this category yet.',
   'games.showing': 'Showing {from}–{to} of {total}',
   'games.page': 'Page {page} of {total}',
@@ -690,6 +691,7 @@ const coreEn = {
 
   // Lobby catalogue browser: search, sort, filter, provider
   'browse.sort': 'Sort',
+  'browse.sortDefault': 'Default order',
   'browse.filter': 'Filter',
   'browse.provider': 'Choose provider',
   'browse.lobby': 'Lobby',
@@ -1139,6 +1141,12 @@ const coreEn = {
   'bonus.placeBets': 'Place bets to get a bonus',
   'bonus.claimIn': 'Claim in:',
   'bonus.deposit1': '1st Deposit Bonus',
+  'postSignup.title': 'Welcome aboard!',
+  'postSignup.subtitle': 'Your account is ready. Where would you like to start?',
+  'postSignup.offerSubtitle': 'Your account is ready. Make your first deposit to unlock your welcome bonus.',
+  'postSignup.explore': 'Explore Platform',
+  'postSignup.deposit': 'Deposit Now',
+  'postSignup.depositBonus': 'Deposit & Claim Bonus',
   'bonus.deposit2': '2nd Deposit Bonus',
   'bonus.deposit3': '3rd Deposit Bonus',
   'bonus.regularBonuses': 'Regular Bonuses',

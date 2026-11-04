@@ -4,7 +4,7 @@ import { GmailMark } from '@/components/brand';
 import { MailIcon, PhoneIcon, UserIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
 import SocialShortcuts from '@/components/auth/SocialShortcuts';
-import { useRegisteredTodayLabel } from '@/hooks/useRegisteredToday';
+import { useTotalRegistrationsLabel } from '@/hooks/useTotalRegistrations';
 
 import type { LoginMethod } from '@/types';
 
@@ -12,7 +12,6 @@ interface LoginMethodStepProps {
   onSelectMethod: (method: LoginMethod) => void;
   onGoogle: () => void;
   onTelegram: () => void;
-  onUnavailable: (provider: string) => void;
   onMore: () => void;
   googleBusy?: boolean;
 }
@@ -22,18 +21,17 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({
   onSelectMethod,
   onGoogle,
   onTelegram,
-  onUnavailable,
   onMore,
   googleBusy,
 }) => {
   const { t } = useTranslation();
-  const registeredToday = useRegisteredTodayLabel();
+  const totalRegistrations = useTotalRegistrationsLabel();
 
   return (
     <div className="space-y-3">
       <AuthMethodList
         tab={t('loginModal.suggestion')}
-        phoneTab={registeredToday}
+        phoneTab={totalRegistrations}
         methods={[
           {
             id: 'gmail',
@@ -68,7 +66,6 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({
 
       <SocialShortcuts
         onTelegram={onTelegram}
-        onUnavailable={onUnavailable}
         onMore={onMore}
         moreLabel={t('lobby.hero.moreOptions')}
         className="pt-[2px] sm:pt-1"

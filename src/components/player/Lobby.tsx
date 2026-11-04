@@ -13,9 +13,9 @@ import RecentShelf from '@/components/player/RecentShelf';
 import ComingSoonShelf from '@/components/player/ComingSoonShelf';
 import JackpotShelf from '@/components/player/JackpotShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
-import { CASINO_BROWSER_KEYS, HOME_SHELF_KEYS, LIVE_SHELF_KEYS } from '@/constants/games';
+import { DEFAULT_SECTIONS, sectionShelfKey } from '@/constants/games';
 import RecommendedShelf from '@/components/player/RecommendedShelf';
-import type { GameShelf } from '@/types';
+import type { GameShelf, HomeSection, LobbyShelfKey, SectionPageKey } from '@/types';
 import StreamersRow from '@/components/player/StreamersRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import FaqAccordion from '@/components/player/FaqAccordion';
@@ -23,7 +23,6 @@ import SiteFooter from '@/components/player/SiteFooter';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import type { LobbyProps } from '@/services/lobby.server';
-import type { TranslationKey } from '@/i18n/locales';
 import Seo, { type JsonLd, type SeoProps } from '@/components/seo/Seo';
 import type { FaqItem } from '@/services/faqs';
 
@@ -72,39 +71,31 @@ const faqJsonLd = (faqs: FaqItem[]): JsonLd => ({
   })),
 });
 
-/** The home page's Sports row after Instant Wins, and Providers after High RTP. */
-const HOME_INSERTS = (providerRow: ReactNode): readonly ShelfInsert[] => [
-  {
-    id: 'sports',
-    after: 'instant-wins',
-    node: <SportsShelf viewAll="/sports" paged={false} />,
-  },
-  { id: 'providers', after: 'high-rtp', node: providerRow },
-];
+const sectionInserts = (
+  sections: readonly HomeSection[],
+  widgetOf: (section: HomeSection) => ReactNode
+): ShelfInsert[] => {
+  const inserts: ShelfInsert[] = [];
+  let after: LobbyShelfKey | null = null;
+  for (const section of sections) {
+    const shelfKey = sectionShelfKey(section);
+    if (shelfKey) {
+      after = shelfKey;
+    } else if (section.kind === 'WIDGET') {
+      inserts.push({ id: section.key, after, node: widgetOf(section) });
+    }
+  }
+  return inserts;
+};
 
-/**
- * The casino page's rows among its shelves, as the sheet orders them: the
- * player's favourites and Recommended for you after Originals, then the
- * provider jackpots, their last played and Drops & Wins, Providers after
- * Instant Wins, Hot after Trending. Recommended takes the place of the
- * Featured shelf, which it falls back to (CASINO_BROWSER_KEYS).
- */
-const CASINO_INSERTS = (
-  providerRow: ReactNode,
-  t: (key: TranslationKey) => string,
-  featured: GameShelf | undefined
-): readonly ShelfInsert[] => [
-  { id: 'favourites', after: 'originals', node: <FavouritesShelf /> },
-  { id: 'recommended', after: 'originals', node: <RecommendedShelf featured={featured} /> },
-  { id: 'jackpots', after: 'originals', node: <JackpotShelf /> },
-  { id: 'recents', after: 'originals', node: <RecentShelf /> },
-  {
-    id: 'drops-wins',
-    after: 'originals',
-    node: <ComingSoonShelf title={t('lobby.rail.dropsWins')} />,
-  },
-  { id: 'providers', after: 'instant-wins', node: providerRow },
-  { id: 'hot', after: 'trending', node: <ComingSoonShelf title={t('lobby.casino.hot')} /> },
+const shelfHeadings = (
+  entries: readonly { key: string; title: string | null }[]
+): Partial<Record<LobbyShelfKey, string>> =>
+  Object.fromEntries(entries.flatMap(({ key, title }) => (title ? [[key, title]] : [])));
+
+const withPageShelves = (shelves: GameShelf[], overrides: GameShelf[] = []): GameShelf[] => [
+  ...overrides,
+  ...shelves.filter((shelf) => !overrides.some((override) => override.key === shelf.key)),
 ];
 
 /**
@@ -127,12 +118,14 @@ const CASINO_INSERTS = (
  * what the server sends too.
  */
 const Lobby: FC<Props> = ({
-  shelves,
+  shelves: mainShelves,
+  pageShelves,
+  sections,
   providers,
   catalogueFailed,
   faqs,
   streams,
-  registeredToday,
+  totalRegistrations,
   seo,
   basePath,
   variant,
@@ -140,18 +133,14 @@ const Lobby: FC<Props> = ({
   const { t } = useTranslation();
   const { token } = useAuth();
   const player = !!token;
-  // The winners row pairs its sample wins with real games, newest first.
-  const winnerGames = [
-    ...(shelves.find((s) => s.key === 'new')?.games ?? []),
-    ...shelves.filter((s) => s.key !== 'new').flatMap((s) => s.games),
-  ];
+  const page: SectionPageKey = variant === 'home' ? (player ? 'home_player' : 'home') : variant;
+  const shelves = withPageShelves(mainShelves, pageShelves[page]);
+  const pageSections = sections[page] ?? DEFAULT_SECTIONS[page];
   const live = variant === 'live';
   // The live lobby is laid out as the casino page is, with its own rows.
   const casino = variant === 'casino' || live;
   const jsonLd =
     !casino && faqs.length > 0 ? [...[seo.jsonLd ?? []].flat(), faqJsonLd(faqs)] : seo.jsonLd;
-
-  const providerRow = <ProviderRow providers={providers} />;
 
   const unavailable = catalogueFailed && (
     <p role="status" className="rl-glass rounded-2xl px-4 py-3 text-sm text-white/55">
@@ -159,37 +148,48 @@ const Lobby: FC<Props> = ({
     </p>
   );
 
+  const widget = (section: HomeSection): ReactNode => {
+    const title = section.title ?? undefined;
+    switch (section.key) {
+      case 'favourites':
+        return <FavouritesShelf title={title} />;
+      case 'recommended':
+        return (
+          <RecommendedShelf featured={shelves.find((s) => s.key === 'featured')} title={title} />
+        );
+      case 'recents':
+        return <RecentShelf title={title} />;
+      case 'drops-wins':
+        return <ComingSoonShelf title={title ?? t('lobby.rail.dropsWins')} />;
+      case 'hot':
+        return <ComingSoonShelf title={title ?? t('lobby.casino.hot')} />;
+      case 'sports':
+        return <SportsShelf viewAll="/sports" paged={false} title={title} />;
+      case 'providers':
+        return <ProviderRow providers={providers} title={title} />;
+      case 'jackpots':
+        return <JackpotShelf title={title} />;
+      case 'streamers':
+        return <StreamersRow streams={streams} title={title} />;
+      case 'recent-winners':
+        return <RecentWinners tabs={player ? 'player' : 'landing'} title={title} />;
+      default:
+        return null;
+    }
+  };
+
   const browser = (
     <GameBrowser
       shelves={shelves}
       basePath={basePath}
       providers={providers.map((p) => p.name).sort((a, b) => a.localeCompare(b))}
-      {...(live
-        ? {
-            shelfKeys: LIVE_SHELF_KEYS,
-            chipsOnPhone: true,
-            live: true,
-          }
-        : casino
-          ? {
-              // The sheet's casino rows, with the player's own, Providers and
-              // the not-yet-available ones among them.
-              shelfKeys: CASINO_BROWSER_KEYS,
-              titles: { originals: 'nav.originals' },
-              chipsOnPhone: true,
-              inserts: CASINO_INSERTS(
-                providerRow,
-                t,
-                shelves.find((s) => s.key === 'featured')
-              ),
-            }
-          : {
-              // The sheet's home shelves, with Sports and Providers among them.
-              shelfKeys: HOME_SHELF_KEYS,
-              titles: { originals: 'nav.originals' },
-              chipsOnPhone: true,
-              inserts: HOME_INSERTS(providerRow),
-            })}
+      sectionPage={page}
+      shelfKeys={pageSections.flatMap((section) => sectionShelfKey(section) ?? [])}
+      titles={live ? {} : { originals: 'nav.originals' }}
+      headings={shelfHeadings(pageSections)}
+      inserts={sectionInserts(pageSections, widget)}
+      chipsOnPhone
+      live={live}
     />
   );
 
@@ -226,18 +226,14 @@ const Lobby: FC<Props> = ({
           <>
             {/* The signed-out hero carries the welcome offer itself, where
                 the design puts it among the section shortcuts. */}
-            <LandingHero registeredToday={registeredToday} />
+            <LandingHero totalRegistrations={totalRegistrations} />
             <CrashPreview />
             {unavailable}
             {browser}
           </>
         )}
 
-        {/* Provider jackpots and their latest winners; on /casino they sit
-            among the shelves instead. */}
-        {!casino && <JackpotShelf />}
-        {!casino && <StreamersRow streams={streams} />}
-        <RecentWinners games={winnerGames} tabs={player || casino ? 'player' : 'landing'} />
+        {casino && <RecentWinners tabs="player" />}
         <FaqAccordion items={faqs} />
         <SiteFooter glow={variant === 'home'} />
       </div>

@@ -123,8 +123,35 @@ export interface LobbyProvider {
   game_count: number;
 }
 
+export type CustomShelfKey = `custom-${string}`;
+
+export type LobbyShelfKey = GameShelfKey | CustomShelfKey;
+
+export type HomeWidgetKey =
+  | 'sports'
+  | 'providers'
+  | 'jackpots'
+  | 'streamers'
+  | 'recent-winners'
+  | 'favourites'
+  | 'recommended'
+  | 'recents'
+  | 'drops-wins'
+  | 'hot';
+
+export type SectionPageKey = 'home' | 'home_player' | 'casino' | 'live';
+
+export type HomeSectionKind = 'SHELF' | 'WIDGET' | 'CUSTOM';
+
+export interface HomeSection {
+  key: string;
+  kind: HomeSectionKind;
+  title: string | null;
+  own_games: boolean;
+}
+
 export interface GameShelf {
-  key: GameShelfKey;
+  key: LobbyShelfKey;
   /** English fallback; the UI prefers its own translated title. */
   title: string;
   /** The category the shelf lists; null for live and most played. */
@@ -151,6 +178,18 @@ export interface TagFilterGroup {
 export interface GameListResponse {
   data: Game[];
   pagination: GamePagination;
+}
+
+/** POST /sportsbook/launch */
+export interface SportsbookLaunch {
+  /** A document to render in a frame on this site. Single use — launch again for a fresh session. */
+  html: string;
+  /** What the sportsbook shows and takes bets in; see GameLaunch.currency. */
+  currency: string;
+  /** The player's display currency at launch. */
+  display_currency: string;
+  /** Why `currency` differs from `display_currency`; null when they match. */
+  currency_fallback: 'UNSUPPORTED_BY_PROVIDER' | 'NO_RATE' | null;
 }
 
 /** POST /games/:slug/launch */

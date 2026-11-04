@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { compactCount, fetchRegisteredToday } from '@/services/stats';
+import { compactCount, fetchTotalRegistrations } from '@/services/stats';
 
-export const useRegisteredTodayLabel = (initial: number | null = null): string | undefined => {
+export const useTotalRegistrationsLabel = (initial: number | null = null): string | undefined => {
   const { t } = useTranslation();
   const [count, setCount] = useState(initial);
 
@@ -11,7 +11,7 @@ export const useRegisteredTodayLabel = (initial: number | null = null): string |
       return;
     }
     let active = true;
-    void fetchRegisteredToday().then((value) => {
+    void fetchTotalRegistrations().then((value) => {
       if (active && value !== null) {
         setCount(value);
       }
@@ -23,5 +23,5 @@ export const useRegisteredTodayLabel = (initial: number | null = null): string |
 
   return count === null
     ? undefined
-    : t('registerModal.registeredToday', { count: compactCount(count) });
+    : t('registerModal.totalRegistrations', { count: compactCount(count) });
 };

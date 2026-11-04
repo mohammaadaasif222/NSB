@@ -7,6 +7,7 @@ import Betslip from '@/components/sports/Betslip';
 import LeagueTable from '@/components/sports/LeagueTable';
 import MatchShelf from '@/components/sports/MatchShelf';
 import { MatchTracker, OfferBanner, SafePlayCard } from '@/components/sports/SidePanels';
+import SportsbookGate from '@/components/sports/SportsbookGate';
 import SportsToolbar, {
   FIXTURE_QUERY_DEFAULTS,
   queryFixtures,
@@ -32,7 +33,7 @@ interface Props {
  * responsible-play card. Sample fixtures (services/sportsbook.sample): the
  * design's football content on football, the sample's own match elsewhere.
  */
-const SportPage: FC<Props> = ({ sport }) => {
+const SampleSportPage: FC<Props> = ({ sport }) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState<FixtureQuery>(FIXTURE_QUERY_DEFAULTS);
   const labelKey = sportPageLabel(sport);
@@ -117,5 +118,12 @@ const SportPage: FC<Props> = ({ sport }) => {
 /** Unknown sports are a 404, not an empty page. */
 export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) =>
   isSportPageKey(params?.sport) ? { props: { sport: params.sport } } : { notFound: true };
+
+/** The sportsbook, or the sample page until one is configured. */
+const SportPage: FC<Props> = (props) => (
+  <SportsbookGate>
+    <SampleSportPage {...props} />
+  </SportsbookGate>
+);
 
 export default SportPage;

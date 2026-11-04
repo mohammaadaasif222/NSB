@@ -211,13 +211,13 @@ const Placeholder: FC<{ className: string }> = ({ className }) => (
  * backend reads the providers' feeds), refreshed once a minute, and each
  * says so plainly when it is empty. Paused jackpots stay listed, dimmed.
  */
-const JackpotShelf: FC = () => {
+const JackpotShelf: FC<{ title?: string }> = ({ title }) => {
   const { t } = useTranslation();
   const { jackpots, winners, loaded } = useJackpots();
 
   return (
-    <section aria-label={t('lobby.jackpots.title')} id="jackpots">
-      <ShelfHeading title={t('lobby.jackpots.title')} />
+    <section aria-label={title ?? t('lobby.jackpots.title')} id="jackpots">
+      <ShelfHeading title={title ?? t('lobby.jackpots.title')} />
 
       <div className="mt-4 grid gap-4 lg:mt-[calc(var(--u)*20)] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-[calc(var(--u)*20)]">
         <div className="grid gap-4 sm:grid-cols-2 lg:gap-[calc(var(--u)*20)]">
