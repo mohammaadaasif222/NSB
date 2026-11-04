@@ -14,6 +14,10 @@ import { toast } from 'react-toastify';
 
 import PlayerLayout from '@/layout/PlayerLayout';
 import { MinimizeIcon, PopoutIcon } from '@/components/icons';
+import {
+  getOriginalsComponent,
+  ORIGINALS_PROVIDER_NAME,
+} from '@/components/originals/registry';
 import GameActionBar from '@/components/play/GameActionBar';
 import LiveStatsPanel from '@/components/play/LiveStatsPanel';
 import { useAuth } from '@/context/AuthContext';
@@ -537,4 +541,37 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
   return { props: { game: lookup.game, failed: false } };
 };
 
-export default PlayPage;
+/**
+ * Wrapper for /play/[slug]: hands off to our native Originals component
+ * instead of the aggregator-iframe PlayPage when the row is one of our
+ * ported games (Rolluck brand + ORIGINALS category + registry hit).
+ *
+ * Doing the swap here, not inside PlayPage, keeps that component's hook
+ * order intact and avoids launching an aggregator session we never need.
+ */
+const PlayRoute: FC<Props> = (props) => {
+  const g = props.game;
+  const isNativeOriginals =
+    !!g &&
+    g.provider === ORIGINALS_PROVIDER_NAME &&
+    g.category === 'ORIGINALS' &&
+    getOriginalsComponent(g.slug) !== null;
+
+  if (isNativeOriginals && g) {
+    // Anonymous users enter demo mode — `originalsAuthBridge.useAuth`
+    // synthesizes a per-tab demo UUID, `originalsSocket` connects via
+    // the ALLOW_UNAUTH_SOCKET legacy-query path, and `OriginalAPI.js`
+    // on the socket side short-circuits every placeBet/payout into
+    // local demo-pot simulations. No real wallet is ever touched.
+    const OriginalsComponent = getOriginalsComponent(g.slug)!;
+    return (
+      <PlayerLayout>
+        <OriginalsComponent />
+      </PlayerLayout>
+    );
+  }
+
+  return <PlayPage {...props} />;
+};
+
+export default PlayRoute;

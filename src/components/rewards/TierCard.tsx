@@ -29,7 +29,7 @@ const Stat: FC<{ label: string; value: string }> = ({ label, value }) => (
 const TierCard: FC<{ summary: RewardSummary }> = ({ summary }) => {
   const { t } = useTranslation();
   const { tier, next_tier: next, currency } = summary;
-  const money = (amount: string): string => withCurrency(formatAmount(amount), currency);
+  const money = (amount: string): string => withCurrency(formatAmount(amount, 2, 'vip.tiers'), currency);
 
   return (
     <section className={PANEL}>

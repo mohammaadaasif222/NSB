@@ -10,6 +10,7 @@ import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useCurrencyConversion } from '@/context/CurrencyConversionContext';
 import Seo from '@/components/seo/Seo';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 /** My Assets, as the design lists them: the coins a player can hold. */
 const ASSETS = [
@@ -51,6 +52,8 @@ const WalletPage: FC = () => {
     // wallet's own unit, whatever the display currency.
     const worthOf = (code: string): string => {
       const usd = code === held && balance ? Number.parseFloat(balance.total_amount) : 0;
+      const custom = displayDecimal(Number.isFinite(usd) ? usd : 0, 'wallet.balances', locale);
+      if (custom !== null) return `~$${custom}`;
       return `~${(Number.isFinite(usd) ? usd : 0).toLocaleString(locale, {
         style: 'currency',
         currency: 'USD',
@@ -59,10 +62,13 @@ const WalletPage: FC = () => {
     const row = (code: string, name: string): WalletAsset => ({
       code,
       name,
-      amount: `${amountOf(code).toLocaleString(locale, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 8,
-      })} ${code}`,
+      amount: `${
+        displayDecimal(amountOf(code), 'wallet.crypto_amounts', locale) ??
+        amountOf(code).toLocaleString(locale, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 8,
+        })
+      } ${code}`,
       worth: worthOf(code),
     });
 

@@ -5,8 +5,11 @@ import { TicketIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
 import { BONUS_TITLE_KEYS } from '@/constants/bonus';
-import { formatRewardAmount, formatWalletAmount } from '@/utils/money';
+import { formatRewardAmount as formatMoney, formatWalletAmount } from '@/utils/money';
 import type { UserBonus } from '@/types';
+
+const formatRewardAmount = (amount: string, currency: string): string =>
+  formatMoney(amount, currency, 'bonus.awards');
 
 interface Props {
   award: UserBonus;

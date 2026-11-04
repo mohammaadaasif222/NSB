@@ -8,6 +8,7 @@ import {
 } from 'react';
 
 import { useWallet } from './WalletContext';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 interface ConversionResult {
   /** Amount in user's display currency */
@@ -45,7 +46,7 @@ interface CurrencyConversionContextType {
    *
    * Example: "₹ 2,450.50"
    */
-  formatCurrencyDisplay: (amount: string) => string;
+  formatCurrencyDisplay: (amount: string, feature?: string) => string;
 
   /**
    * Get snapshot rate for a specific currency to USD.
@@ -190,7 +191,7 @@ export const CurrencyConversionProvider: FC<CurrencyConversionProviderProps> = (
   );
 
   const formatCurrencyDisplay = useCallback(
-    (amount: string): string => {
+    (amount: string, feature?: string): string => {
       const converted = convertToDisplayCurrency(amount, 'USD');
       const numAmount = Number(converted.displayAmount);
 
@@ -223,10 +224,12 @@ export const CurrencyConversionProvider: FC<CurrencyConversionProviderProps> = (
       };
 
       const symbol = symbols[displayCurrency] || displayCurrency;
-      const formatted = numAmount.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
+      const formatted =
+        (feature ? displayDecimal(converted.displayAmount, feature, 'en-US') : null) ??
+        numAmount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
 
       return `${symbol} ${formatted}`;
     },

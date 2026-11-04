@@ -19,12 +19,16 @@ import casinoMobile from '@/assets/lobby/player/panel-casino-mobile.webp';
 import sportsMobile from '@/assets/lobby/player/panel-sports-mobile.webp';
 import promoArt from '@/assets/lobby/player/promo-banner.webp';
 import promoArtMobile from '@/assets/lobby/player/promo-banner-mobile.webp';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 const usd = (value: number, locale: string): string =>
-  `$${value.toLocaleString(locale, {
-    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
-    maximumFractionDigits: 2,
-  })}`;
+  `$${
+    displayDecimal(value, 'bonus.rollover', locale) ??
+    value.toLocaleString(locale, {
+      minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+      maximumFractionDigits: 2,
+    })
+  }`;
 
 const useWagering = (enabled: boolean): { rollover: RolloverSummary | null; loaded: boolean } => {
   const [rollover, setRollover] = useState<RolloverSummary | null>(null);

@@ -19,7 +19,7 @@ interface Props {
 
 /** "$1.25" or "−$0.40", from cents. */
 const signedMoney = (cents: number, currency: string): string =>
-  `${cents < 0 ? '−' : ''}${withCurrency(formatAmount((Math.abs(cents) / 100).toFixed(2)), currency)}`;
+  `${cents < 0 ? '−' : ''}${withCurrency(formatAmount((Math.abs(cents) / 100).toFixed(2), 2, 'originals.dice'), currency)}`;
 
 const Stat: FC<{ label: string; value: string; tone?: 'win' | 'loss' }> = ({
   label,
@@ -147,11 +147,11 @@ const DiceGame: FC<Props> = ({ game, config }) => {
               (last.won
                 ? t('dice.resultWin', {
                     roll: last.roll,
-                    amount: withCurrency(formatAmount(last.profit), currency),
+                    amount: withCurrency(formatAmount(last.profit, 2, 'originals.dice'), currency),
                   })
                 : t('dice.resultLoss', {
                     roll: last.roll,
-                    amount: withCurrency(formatAmount(last.amount), currency),
+                    amount: withCurrency(formatAmount(last.amount, 2, 'originals.dice'), currency),
                   }))}
           </p>
 

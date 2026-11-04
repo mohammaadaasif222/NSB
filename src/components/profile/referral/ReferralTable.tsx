@@ -57,7 +57,7 @@ const ReferralTable: FC<{ rows: readonly ReferredPlayer[] }> = ({ rows }) => {
         header: t('ref.colWagered'),
         width: 160,
         cell: (r) => (
-          <span className={`${TEXT} text-white`}>{formatRewardAmount(r.total_wagered, 'USD')}</span>
+          <span className={`${TEXT} text-white`}>{formatRewardAmount(r.total_wagered, 'USD', 'referral.commissions')}</span>
         ),
       },
       {
@@ -67,7 +67,7 @@ const ReferralTable: FC<{ rows: readonly ReferredPlayer[] }> = ({ rows }) => {
         end: true,
         cell: (r) => (
           <span className={`${TEXT} font-medium text-white`}>
-            {formatRewardAmount(r.total_commission, 'USD')}
+            {formatRewardAmount(r.total_commission, 'USD', 'referral.commissions')}
           </span>
         ),
       },
@@ -98,7 +98,7 @@ const ReferralTable: FC<{ rows: readonly ReferredPlayer[] }> = ({ rows }) => {
                     {t('ref.colCode')}: {r.code ?? '—'}
                   </span>
                   <span className="shrink-0 font-semibold text-white">
-                    +{formatRewardAmount(r.total_commission, 'USD')}
+                    +{formatRewardAmount(r.total_commission, 'USD', 'referral.commissions')}
                   </span>
                 </div>
               </li>

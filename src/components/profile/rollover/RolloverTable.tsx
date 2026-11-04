@@ -71,14 +71,14 @@ const RolloverTable: FC<Props> = ({ rows, locale, empty, onOpen }) => {
                   {row.deposit
                     ? row.deposit.network_code
                     : t('roll.bonusAmount', {
-                        amount: formatCurrencyDisplay(row.base_amount),
+                        amount: formatCurrencyDisplay(row.base_amount, 'bonus.rollover'),
                       })}{' '}
                   · {t('roll.times', { times: Number(row.wagering_multiplier) })}
                 </p>
               </td>
 
               <td className={`${CELL} ${BODY} text-white/72`}>
-                {formatCurrencyDisplay(row.wagering_required)}
+                {formatCurrencyDisplay(row.wagering_required, 'bonus.rollover')}
               </td>
 
               <td className={`${CELL} min-w-[160px]`}>
@@ -98,8 +98,8 @@ const RolloverTable: FC<Props> = ({ rows, locale, empty, onOpen }) => {
                   />
                 </div>
                 <p className="mt-1 text-[11px] text-white/50 lg:text-[length:max(10px,calc(var(--u)*13))]">
-                  {formatCurrencyDisplay(row.wagering_completed)} /{' '}
-                  {formatCurrencyDisplay(row.wagering_required)} · {row.progress}%
+                  {formatCurrencyDisplay(row.wagering_completed, 'bonus.rollover')} /{' '}
+                  {formatCurrencyDisplay(row.wagering_required, 'bonus.rollover')} · {row.progress}%
                 </p>
               </td>
 
