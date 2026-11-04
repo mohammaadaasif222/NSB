@@ -175,7 +175,7 @@ const BetTable = ({ data, headerRowClass, headerCellClass, rowClass }) => (
                 {item.username}
               </span>
             </td>
-            <td className="px-5 py-4 truncate text-sm font-medium tabular-nums text-[#B3A9E5]">
+            <td className="px-5 py-4 truncate text-sm font-medium tabular-nums text-[#94a59e]">
               {item.time}
             </td>
             <td className="px-5 py-4 text-right">
@@ -212,9 +212,9 @@ const SectionHeader = ({ title, subtitle }) => (
       </h3>
       <p className="text-xs text-[#8C82C7]">{subtitle}</p>
     </div>
-    <div className="hidden items-center gap-2 rounded-full bg-[#0F1233] px-3 py-1.5 ring-1 ring-[#2A2658] md:flex">
+    <div className="hidden items-center gap-2 rounded-full bg-[#262628] px-3 py-1.5 ring-1 ring-[#333333] md:flex">
       <span className="h-2 w-2 animate-pulse rounded-full bg-[#5DFF00]" />
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B3A9E5]">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-[#94a59e]">
         Live
       </span>
     </div>
@@ -223,13 +223,13 @@ const SectionHeader = ({ title, subtitle }) => (
 
 const StatusPanel = ({ icon: Icon, title, subtitle, spin = false }) => (
   <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1B1A45] ring-1 ring-[#2A2658]">
-      <Icon size={26} className={`text-[#8A5CFF] ${spin ? "animate-spin" : ""}`} />
+    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#262628] ring-1 ring-[#333333]">
+      <Icon size={26} className={`text-[#F9D028] ${spin ? "animate-spin" : ""}`} />
     </div>
     <h4 className="mb-1 text-base font-bold tracking-tight text-white">
       {title}
     </h4>
-    {subtitle && <p className="text-sm text-[#B3A9E5]">{subtitle}</p>}
+    {subtitle && <p className="text-sm text-[#94a59e]">{subtitle}</p>}
   </div>
 );
 
@@ -335,9 +335,9 @@ export default function CasinoTable() {
   const headerRowClass =
     "text-left text-[11px] md:text-xs font-semibold uppercase tracking-[0.12em] text-[#9D93D8]";
   const headerCellClass =
-    "px-5 py-4 bg-[#1B1A45]/80 backdrop-blur-sm first:rounded-tl-xl last:rounded-tr-xl";
+    "px-5 py-4 bg-[#262628]/80 backdrop-blur-sm first:rounded-tl-xl last:rounded-tr-xl";
   const rowClass =
-    "group border-b border-[#24224A]/70 transition-all duration-200 hover:bg-gradient-to-r hover:from-[#1F1D52]/80 hover:to-[#1B1A45]/40";
+    "group border-b border-[#24224A]/70 transition-all duration-200 hover:bg-gradient-to-r hover:from-[#333333]/80 hover:to-[#262628]/40";
 
   const renderContent = () => {
     switch (activeTab) {
@@ -415,18 +415,18 @@ export default function CasinoTable() {
       case "Race Leader Board":
         return (
           <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8A5CFF] to-[#6B3BFF] shadow-[0_8px_32px_rgba(138,92,255,0.45)]">
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F9D028] to-[#6B3BFF] shadow-[0_8px_32px_rgba(138,92,255,0.45)]">
               <Clock size={36} className="text-white" />
             </div>
             <h3 className="mb-2 text-2xl font-extrabold tracking-tight text-white md:text-3xl">
               Coming Soon
             </h3>
-            <p className="max-w-md text-sm text-[#B3A9E5] md:text-base">
+            <p className="max-w-md text-sm text-[#94a59e] md:text-base">
               The Race Leader Board is on its way. Stay tuned for live standings,
               odds, and race results.
             </p>
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0F1233] px-4 py-2 ring-1 ring-[#2A2658]">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-[#8A5CFF]" />
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#262628] px-4 py-2 ring-1 ring-[#333333]">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-[#F9D028]" />
               <span className="text-[11px] font-semibold uppercase tracking-wider text-[#CFC8FF]">
                 In Development
               </span>
@@ -440,10 +440,10 @@ export default function CasinoTable() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#05081D] py-4 text-white font-sans antialiased">
+    <div className="w-full min-h-screen bg-[#000000] py-4 text-white font-sans antialiased">
       {/* Tabs + Limit selector */}
       <div className="mb-4 flex w-full flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-2xl bg-[#0A0D2A] p-1.5 ring-1 ring-[#1F1D52] shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+        <div className="inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-2xl bg-[#18181A] p-1.5 ring-1 ring-[#333333] shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
           {tabs.map((tab) => {
             const Icon = tabIcons[tab];
             const isActive = activeTab === tab;
@@ -453,18 +453,18 @@ export default function CasinoTable() {
                 onClick={() => setActiveTab(tab)}
                 className={`relative flex items-center gap-2 whitespace-nowrap rounded-xl px-4 md:px-5 py-2.5 text-xs md:text-sm font-bold tracking-wide transition-all duration-300 ${
                   isActive
-                    ? "text-white bg-gradient-to-r from-[#8A5CFF] to-[#6B3BFF] shadow-[0_4px_18px_rgba(138,92,255,0.45)]"
-                    : "text-[#B3A9E5] hover:text-white hover:bg-[#1B1A45]/60"
+                    ? "text-white bg-gradient-to-r from-[#F9D028] to-[#6B3BFF] shadow-[0_4px_18px_rgba(138,92,255,0.45)]"
+                    : "text-[#94a59e] hover:text-white hover:bg-[#262628]/60"
                 }`}
               >
-                {Icon && <Icon size={15} className={isActive ? "text-white" : "text-[#8A5CFF]"} />}
+                {Icon && <Icon size={15} className={isActive ? "text-white" : "text-[#F9D028]"} />}
                 <span>{tab}</span>
               </button>
             );
           })}
         </div>
 
-        <label className="relative flex items-center gap-2 rounded-2xl bg-[#0A0D2A] px-3 py-2 ring-1 ring-[#1F1D52] shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+        <label className="relative flex items-center gap-2 rounded-2xl bg-[#18181A] px-3 py-2 ring-1 ring-[#333333] shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
           <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9D93D8]">
             Show
           </span>
@@ -472,7 +472,7 @@ export default function CasinoTable() {
             <select
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="appearance-none cursor-pointer rounded-lg bg-[#0A0D2A] py-1.5 pl-3 pr-8 text-sm font-bold text-white  outline-none transition-colors  "
+              className="appearance-none cursor-pointer rounded-lg bg-[#18181A] py-1.5 pl-3 pr-8 text-sm font-bold text-white  outline-none transition-colors  "
             >
               {limitOptions.map((n) => (
                 <option key={n} value={n} className=" text-white">
@@ -482,7 +482,7 @@ export default function CasinoTable() {
             </select>
             <ChevronDown
               size={14}
-              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#8A5CFF]"
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#F9D028]"
             />
           </div>
         </label>

@@ -99,7 +99,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
     return createPortal(
         <div className="fixed inset-0 bg-black/60 flex h-full items-center justify-center z-[1000] isolate px-4">
             <div
-                className="bg-gradient-to-b from-[#1f1e44] via-[#19183a] to-[#13122b] rounded-2xl w-full max-w-2xl no-scrollbar relative overflow-y-auto max-h-[50vh] lg:max-h-[70vh] border border-white/5"
+                className="rl-liquid-glow bg-[#18181A]/95 rounded-2xl w-full max-w-2xl no-scrollbar relative overflow-y-auto max-h-[50vh] lg:max-h-[70vh]"
                 style={{
                     boxShadow:
                         '0 20px 40px rgba(0,0,0,0.55), 0 10px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.4)',
@@ -107,12 +107,11 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
             >
                 {/* Header */}
                 <div
-                    className="flex bg-gradient-to-b from-[#1f1e44] to-[#19183a] items-center sticky top-0 z-50 py-4 px-4 justify-between mb-6"
-                    style={{ boxShadow: '0 4px 10px rgba(0,0,0,0.35), inset 0 -1px 0 rgba(0,0,0,0.4)' }}
-                >
+                    className="flex bg-[#18181A] items-center sticky top-0 z-50 py-4 px-4 justify-between mb-6 border-b border-white/[0.06]"
+                                    >
                     <div className="flex items-center space-x-3">
-                        <Scale className="w-6 h-6 text-[#F4FFFB]" />
-                        <h2 className="text-xl font-bold text-[#F4FFFB]">Fairness</h2>
+                        <Scale className="w-6 h-6 text-white" />
+                        <h2 className="text-xl font-bold text-white">Fairness</h2>
                     </div>
                     <button
                         className="text-gray-400 hover:text-white transition-colors"
@@ -122,12 +121,9 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                     </button>
                 </div>
 
-                {/* Navigation Tabs — 3D segmented control: recessed track, raised active tab */}
+                {/* Navigation Tabs — flat pill segmented control (Mines/Dice match) */}
                 <div className="px-5">
-                    <div
-                        className="flex w-full gap-[2px] rounded-lg px-[4px] py-[4px] mb-6 bg-[#090c1d]"
-                        style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.6), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                    >
+                    <div className="flex items-center gap-1 bg-[#18181A] rounded-full p-1 border border-white/[0.06] mb-6">
                         {["Overview", "Seeds", "Verify"].map((tab, index) => {
                             const isActive = activeTab === tab;
                             return (
@@ -135,18 +131,10 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     aria-pressed={isActive}
-                                    style={
-                                        isActive
-                                            ? {
-                                                boxShadow:
-                                                    '0 3px 6px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -2px 0 rgba(0,0,0,0.35)',
-                                                background: 'linear-gradient(180deg, #232251 0%, #19183a 100%)',
-                                            }
-                                            : undefined
-                                    }
-                                    className={`flex-1 text-center py-2 font-semibold transition-all duration-200 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer
-                                        ${index === 0 ? 'rounded-bl-lg rounded-tl-lg' : index === 2 ? 'rounded-br-lg rounded-tr-lg' : ''}
-                                        ${isActive ? 'text-white -translate-y-[1px]' : 'text-gray-200 hover:bg-[#19183a] hover:text-white bg-[#090c1d]'}`}
+                                    className={`flex-1 py-2 text-sm font-semibold rounded-full transition-colors focus:outline-none cursor-pointer
+                                        ${isActive
+                                            ? 'bg-[#333333] text-white border border-white/[0.08]'
+                                            : 'bg-transparent text-gray-400 hover:text-white'}`}
                                 >
                                     {tab}
                                 </button>
@@ -193,8 +181,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     type="text"
                                     value={ActiveclientSeed}
                                     readOnly
-                                    style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                                    className="w-full bg-[#090c1d] rounded-lg px-4 py-3 pr-10 text-white text-sm border border-black/30"
+                                                                        className="w-full bg-[#18181A] rounded-full px-4 py-3 pr-10 text-white text-sm outline-none focus:ring-2 focus:ring-[#F9D028]"
                                     placeholder="Enter client seed"
                                 />
                                 <button
@@ -216,9 +203,8 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-white mb-2">New Client Seed</label>
                             <div
-                                className="flex gap-2 rounded-lg p-1 bg-[#090c1d] transition-colors border border-black/30"
-                                style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                            >
+                                className="flex gap-2 rounded-full p-1 bg-[#18181A] transition-colors"
+                                                            >
                                 <input
                                     type="text"
                                     value={newClientSeed}
@@ -230,12 +216,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                 <button
                                     type="button"
                                     onClick={() => changeSeed()}
-                                    style={{
-                                        background: 'linear-gradient(180deg, #232251 0%, #19183a 100%)',
-                                        boxShadow:
-                                            '0 3px 6px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -2px 0 rgba(0,0,0,0.35)',
-                                    }}
-                                    className="px-4 py-2 rounded-lg text-white text-sm font-medium transition-all hover:-translate-y-[1px] active:translate-y-[1px]"
+                                    className="px-4 py-2 rounded-full text-black text-sm font-semibold bg-[#F9D028] hover:brightness-110 transition"
                                 >
                                     Change
                                 </button>
@@ -251,8 +232,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     type="text"
                                     value={ActiveserverSeed}
                                     readOnly
-                                    style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                                    className="w-full bg-[#090c1d] rounded-lg px-4 py-3 pr-10 text-white text-sm border border-black/30"
+                                                                        className="w-full bg-[#18181A] rounded-full px-4 py-3 pr-10 text-white text-sm outline-none focus:ring-2 focus:ring-[#F9D028]"
                                     placeholder="Active server seed (hashed)"
                                 />
                                 <button
@@ -272,8 +252,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                 type="number"
                                 value={totalBets}
                                 readOnly
-                                style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                                className="w-full bg-[#090c1d] rounded-lg px-4 py-3 text-white text-sm border border-black/30"
+                                                                className="w-full bg-[#18181A] rounded-full px-4 py-3 text-white text-sm outline-none focus:ring-2 focus:ring-[#F9D028]"
                                 placeholder="0"
                             />
                         </div>
@@ -303,7 +282,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     rx="12"
                                     ry="12"
                                     fill="none"
-                                    stroke="#29A3E0"
+                                    stroke="#F9D028"
                                     strokeWidth="2"
                                     strokeDasharray="18 12"
                                 />
@@ -314,9 +293,8 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
 
                             {loading ? (
                                 <div
-                                    className="relative bg-[#090c1d] rounded-lg p-6 text-center border border-black/30"
-                                    style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), 0 6px 14px rgba(0,0,0,0.35)' }}
-                                >
+                                    className="relative bg-[#18181A] rounded-full p-6 text-center border border-black/30"
+                                                                    >
                                     <p className="text-gray-400">Loading...</p>
                                 </div>
                             ) : (selectedGame === "Blackjack" && blackJackVerifiedData ? (
@@ -330,9 +308,8 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     <PlinkoVerified plinkoVerifiedData={plinkoVerifiedData} />
                                 ) : (
                                     <div
-                                        className="relative bg-[#090c1d] rounded-lg p-4 text-center border border-black/30"
-                                        style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), 0 6px 14px rgba(0,0,0,0.35)' }}
-                                    >
+                                        className="relative bg-[#18181A] rounded-full p-4 text-center border border-black/30"
+                                                                            >
                                         <p className="text-white">More inputs are required to verify result</p>
                                     </div>
                                 )
@@ -342,15 +319,14 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
 
 
                         {/* Verification Form */}
-                        <div className=" rounded-lg ">
+                        <div className=" rounded-full ">
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-white mb-2">Game</label>
                                 <div className="relative">
                                     <select
                                         value={selectedGame}
                                         onChange={(e) => setSelectedGame(e.target.value)}
-                                        style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                                        className="w-full bg-[#090c1d] rounded-lg px-4 py-3 text-white text-sm appearance-none border border-black/30"
+                                                                                className="w-full bg-[#18181A] rounded-full px-4 py-3 text-white text-sm appearance-none outline-none focus:ring-2 focus:ring-[#F9D028]"
                                     >
                                         <option value="Select Game" disabled>Select Game</option>
                                         <option value="Blackjack">Blackjack</option>
@@ -371,8 +347,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     type="text"
                                     value={clientSeed}
                                     onChange={(e) => setClientSeed(e.target.value)}
-                                    style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                                    className="w-full bg-[#090c1d] rounded-lg px-4 py-3 text-white text-sm border border-black/30"
+                                                                        className="w-full bg-[#18181A] rounded-full px-4 py-3 text-white text-sm outline-none focus:ring-2 focus:ring-[#F9D028]"
                                     placeholder="Enter client seed"
                                 />
                             </div>
@@ -384,8 +359,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     type="text"
                                     value={serverSeed}
                                     onChange={(e) => setServerSeed(e.target.value)}
-                                    style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                                    className="w-full bg-[#090c1d] rounded-lg px-4 py-3 text-white text-sm border border-black/30"
+                                                                        className="w-full bg-[#18181A] rounded-full px-4 py-3 text-white text-sm outline-none focus:ring-2 focus:ring-[#F9D028]"
                                     placeholder="Enter server seed"
                                 />
                             </div>
@@ -394,9 +368,8 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-white mb-2">Nonce</label>
                                 <div
-                                    className="flex items-center space-x-2 p-1 rounded-lg bg-[#090c1d] transition-colors border border-black/30"
-                                    style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.55), inset 0 -1px 0 rgba(255,255,255,0.04)' }}
-                                >
+                                    className="flex items-center space-x-2 p-1 rounded-full bg-[#18181A] transition-colors border border-black/30"
+                                                                    >
                                     <input
                                         type="number"
                                         value={nonce}
@@ -408,12 +381,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
                                     <div className="flex flex-row space-x-1">
                                         <button
                                             onClick={incrementNonce}
-                                            style={{
-                                                background: 'linear-gradient(180deg, #232251 0%, #19183a 100%)',
-                                                boxShadow:
-                                                    '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -2px 0 rgba(0,0,0,0.35)',
-                                            }}
-                                            className="p-2 text-gray-300 rounded hover:text-white transition-all hover:-translate-y-[1px] active:translate-y-[1px]"
+                                            className="p-2 text-gray-300 rounded-full bg-[#262628] hover:bg-[#333333] hover:text-white transition"
                                             type="button"
                                         >
                                             <ChevronUp className="w-4 h-4" />
@@ -421,12 +389,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
 
                                         <button
                                             onClick={decrementNonce}
-                                            style={{
-                                                background: 'linear-gradient(180deg, #232251 0%, #19183a 100%)',
-                                                boxShadow:
-                                                    '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -2px 0 rgba(0,0,0,0.35)',
-                                            }}
-                                            className="p-2 text-gray-300 rounded hover:text-white transition-all hover:-translate-y-[1px] active:translate-y-[1px]"
+                                            className="p-2 text-gray-300 rounded-full bg-[#262628] hover:bg-[#333333] hover:text-white transition"
                                             type="button"
                                         >
                                             <ChevronDown className="w-4 h-4" />
@@ -438,12 +401,7 @@ function FairnessModal({ showFairness, setShowFairness, socket, userId }) {
 
                             <button
                                 onClick={handleVerify}
-                                style={{
-                                    background: 'linear-gradient(180deg, #3CB6F0 0%, #29A3E0 50%, #1F8FCA 100%)',
-                                    boxShadow:
-                                        '0 6px 12px rgba(41,163,224,0.35), 0 2px 4px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -3px 0 rgba(0,0,0,0.25)',
-                                }}
-                                className="w-full text-white py-3 rounded-lg font-semibold transition-all hover:-translate-y-[1px] active:translate-y-[1px]"
+                                className="w-full text-black py-3 rounded-full font-semibold bg-[#F9D028] hover:brightness-110 transition"
                             >
                                 Verify Result
                             </button>

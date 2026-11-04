@@ -37,13 +37,13 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
   else VolumeIcon = Volume2;
 
   return (
-    <div className={`absolute left-0 mt-4 w-48 sm:w-56 md:w-64 lg:w-72 rounded-xl bg-[linear-gradient(180deg,#19183a_0%,#19183a_100%)]  shadow-2xl p-4 sm:p-5 text-[#94A59E] space-y-4 z-20 text-sm sm:text-base`}>
+    <div className={`absolute left-0 mt-4 w-48 sm:w-56 md:w-64 lg:w-72 rounded-2xl rl-liquid-glow bg-[#18181A]  shadow-2xl p-4 sm:p-5 text-gray-300 space-y-4 z-20 text-sm sm:text-base`}>
       {/* Arrow */}
       {/* <div className="absolute -top-2 left-4 w-4 h-4 bg-gray-800 rotate-45"></div> */}
 
       {/* Volume Control */}
-      <div className="flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors">
-        <VolumeIcon size={18} className="text-[#29A3E0]" />
+      <div className="flex items-center space-x-3 p-2 rounded-full cursor-pointer transition-colors">
+        <VolumeIcon size={18} className="text-[#F9D028]" />
         <input
           type="range"
           min={0}
@@ -51,15 +51,15 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
           step={0.01}
           value={volume}
           onChange={handleVolumeChange}
-          className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+          className="w-full h-2 bg-gray-600 rounded-full appearance-none cursor-pointer slider"
           style={{
-            background: `linear-gradient(to right, #36228A 0%, #36228A ${volume * 100}%, #4B5563 ${volume * 100}%, #4B5563 100%)`
+            background: `linear-gradient(to right, #F9D028 0%, #F9D028 ${volume * 100}%, #333333 ${volume * 100}%, #333333 100%)`
           }}
         />
       </div>
 
       {/* Instant Bet */}
-      {/* <div className="flex items-center space-x-3  p-2 rounded-md cursor-pointer transition-colors">
+      {/* <div className="flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors">
         <Zap size={18} className="text-white" />
         <span className="text-white">Instant Bet</span>
       </div> */}
@@ -67,7 +67,7 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
       {/* Animations (Highlighted) */}
       {/* <div
         onClick={() => setAnimationsEnabled(!animationsEnabled)}
-        className={`flex items-center space-x-3  p-2 rounded-md cursor-pointer transition-colors ${animationsEnabled ? 'text-green-400' : ''
+        className={`flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors ${animationsEnabled ? 'text-green-400' : ''
           }`}
       >
         <div className="flex space-x-1">
@@ -81,7 +81,7 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
       {/* Max Bet */}
       <div
         onClick={() => setShowMAxBetBTN(!ShowMAxBetBTN)}
-        className={`flex items-center space-x-3  p-2 rounded-md cursor-pointer transition-colors ${ShowMAxBetBTN ? 'text-[#29A3E0]' : ''
+        className={`flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors ${ShowMAxBetBTN ? 'text-[#F9D028]' : ''
           }`}
       >
         <Flame size={18} className="" />
@@ -89,7 +89,7 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
       </div>
       <div
         onClick={() => setShowAnimation(!ShowAnimation)}
-        className={`flex items-center space-x-3  p-2 rounded-md cursor-pointer transition-colors ${ShowAnimation ? 'text-[#29A3E0]' : ''
+        className={`flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors ${ShowAnimation ? 'text-[#F9D028]' : ''
           }`}
       >
         <Eclipse size={18} className="" />
@@ -97,7 +97,7 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
       </div>
       <div
         onClick={() => setplayFast(!playFast)}
-        className={`flex items-center space-x-3  p-2 rounded-md cursor-pointer transition-colors ${playFast ? 'text-[#29A3E0]' : ''
+        className={`flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors ${playFast ? 'text-[#F9D028]' : ''
           }`}
       >
         <Rabbit size={18} className="" />
@@ -110,7 +110,7 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
           setshowGameInfo(!showGameInfo)
           setIsAnyModalOpen(!isAnyModalOpen)
         }}
-        className={`flex items-center space-x-3  p-2 rounded-md cursor-pointer transition-colors ${showGameInfo ? "text-[#29A3E0]" : ''}`}
+        className={`flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors ${showGameInfo ? "text-[#F9D028]" : ''}`}
       >
         <Info size={18} className="" />
         <span className="">Game Info</span>
@@ -118,7 +118,7 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
       </div> */}
 
       {/* Hotkeys */}
-      <div className={`flex items-center space-x-3  p-2 rounded-md cursor-pointer transition-colors ${showHotkeyModal || hotkeysEnabled ? "text-[#29A3E0]" : ''}`} onClick={() => {
+      <div className={`flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors ${showHotkeyModal || hotkeysEnabled ? "text-[#F9D028]" : ''}`} onClick={() => {
         {
           setShowHotkeyModal(true)
           setIsAnyModalOpen(!isAnyModalOpen)
@@ -135,20 +135,20 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
           height: 15px;
           width: 30px;
           border-radius: 5px;
-          background: #29A3E0;
+          background: #F9D028;
           cursor: pointer;
           border: 1px solid #ffffff;
-         box-shadow: 0 0 12px 3px rgba(41, 163, 224, 0.8);
+         box-shadow: 0 0 12px 3px rgba(249, 208, 40, 0.4);
         }
         
         .slider::-moz-range-thumb {
           height: 15px;
           width: 30px;
           border-radius: 10px;
-          background: #29A3E0;
+          background: #F9D028;
           cursor: pointer;
           border: 2px solid #ffffff;
-          box-shadow: 3px 2px 4px rgba(41, 163, 224, 1);
+          box-shadow: 3px 2px 4px rgba(249, 208, 40, 0.6);
         }
       `}</style>
     </div>
@@ -340,7 +340,7 @@ function Footer({ stats, setStats, gameData, setShowMAxBetBTN, ShowMAxBetBTN, ho
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   return (
-    <div ref={footerRef} className="w-full  lg:w-full xl:w-full  mt-4 rounded-lg p-1 bg-[#19183a] ">
+    <div ref={footerRef} className="w-full  lg:w-full xl:w-full  mt-4 rounded-full p-1 rl-liquid-glow bg-[#18181A] ">
       <div className=" text-white flex flex-row justify-between  mt-1  items-center  ">
         <div direction="col" spacing={2} className="flex items-center space-x-1">
           <div className="relative">
@@ -375,7 +375,7 @@ function Footer({ stats, setStats, gameData, setShowMAxBetBTN, ShowMAxBetBTN, ho
           <IconButton
             onClick={toggleFullscreen}
             sx={{
-              color: isFullscreen ? "#29A3E0" : "#94a59e",
+              color: isFullscreen ? "#F9D028" : "#94a59e",
               "&:hover": {
                 color: "#ffffff",
               },
