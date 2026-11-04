@@ -2,8 +2,11 @@ import type { FC } from 'react';
 
 import { useTranslation } from '@/context/I18nContext';
 import { BONUS_STATUS_KEYS, BONUS_TITLE_KEYS } from '@/constants/bonus';
-import { formatRewardAmount } from '@/utils/money';
+import { formatRewardAmount as formatMoney } from '@/utils/money';
 import type { UserBonus, UserBonusStatus } from '@/types';
+
+const formatRewardAmount = (amount: string, currency: string): string =>
+  formatMoney(amount, currency, 'bonus.awards');
 
 const STATUS_STYLE: Record<UserBonusStatus, string> = {
   ACTIVE: 'bg-[#f9d028]/10 text-[#f9d028]',

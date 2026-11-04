@@ -1,4 +1,5 @@
 import type { BetRow, BetSort, Transaction } from './mockTransactions';
+import { displayDecimal } from '../../../utils/decimalPrecision.ts';
 
 /**
  * What the bets screens decide on their own, kept free of the app's aliases and
@@ -8,10 +9,12 @@ import type { BetRow, BetSort, Transaction } from './mockTransactions';
 /** Bets are always shown in USD, the wallet's own unit. */
 export const formatUsd = (usd: number | string, signed = false): string => {
   const n = typeof usd === 'string' ? parseFloat(usd) : usd;
-  const text = Math.abs(n).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const text =
+    displayDecimal(Math.abs(n), 'casino.bets', 'en-US') ??
+    Math.abs(n).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   const sign = signed && n !== 0 ? (n > 0 ? '+' : '-') : '';
   return `${sign}$${text}`;
 };

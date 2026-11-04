@@ -2,6 +2,7 @@ import { useMemo, type FC } from 'react';
 import { useWallet } from '@/context/WalletContext';
 import { useTranslation } from '@/context/I18nContext';
 import type { DisplayFiat } from '@/types';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 const SettingsTab: FC = () => {
   const { summary, changePreferences, displayCurrencies } = useWallet();
@@ -37,10 +38,13 @@ const SettingsTab: FC = () => {
     };
     const symbol = symbolMap[code] ?? '';
     const n = Number(amount);
-    return `${symbol}${n.toLocaleString(locale, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
+    return `${symbol}${
+      displayDecimal(amount, 'wallet.balances', locale) ??
+      n.toLocaleString(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    }`;
   };
 
   return (

@@ -1,5 +1,6 @@
 import { DISPLAY_CURRENCY_SYMBOL } from '@/components/responsible/rgContent';
 import { translate } from '@/i18n/translate';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 /**
  * Formatting for the Responsible Gambling section.
@@ -54,7 +55,7 @@ export const formatDate = (iso: string, locale = 'en'): string =>
 export const formatLimit = (amount: string, unit: 'currency' | 'minutes'): string =>
   unit === 'minutes'
     ? `${amount} ${translate('rgc.limitMinutes')}`
-    : `${DISPLAY_CURRENCY_SYMBOL}${amount}`;
+    : `${DISPLAY_CURRENCY_SYMBOL}${displayDecimal(amount, 'responsible_gambling.limits', 'en-US') ?? amount}`;
 
 /** How much of a limit is spent, clamped to 0–1 for the usage bar. */
 export const usageRatio = (used: string, amount: string): number => {
