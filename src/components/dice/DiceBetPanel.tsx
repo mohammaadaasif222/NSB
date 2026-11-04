@@ -201,8 +201,8 @@ const DiceBetPanel: FC<Props> = ({ dice, config, authReady, signedIn }) => {
           </label>
           <span className="text-[11px] text-slate-500 tabular-nums">
             {t('dice.betRange', {
-              min: formatAmount(String(config.min_bet)),
-              max: formatAmount(String(config.max_bet)),
+              min: formatAmount(String(config.min_bet), 2, 'originals.dice'),
+              max: formatAmount(String(config.max_bet), 2, 'originals.dice'),
               currency: displayCurrency,
             })}
           </span>
@@ -243,7 +243,7 @@ const DiceBetPanel: FC<Props> = ({ dice, config, authReady, signedIn }) => {
       <div>
         <p className={`mb-1 ${LABEL}`}>{t('dice.profitOnWin')}</p>
         <p className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm font-semibold text-emerald-300 tabular-nums">
-          {withCurrency(formatAmount(dice.profitOnWin.toFixed(2)), displayCurrency)}
+          {withCurrency(formatAmount(dice.profitOnWin.toFixed(2), 2, 'originals.dice'), displayCurrency)}
         </p>
       </div>
 

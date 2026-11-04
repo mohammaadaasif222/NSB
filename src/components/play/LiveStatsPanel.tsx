@@ -57,7 +57,7 @@ const LiveStatsPanel: FC<Props> = ({
   /** A signed amount — the sign is the cue, never the colour alone. */
   const signed = (usd: string): string => {
     const value = Number(usd);
-    const body = formatCurrencyDisplay(String(Math.abs(value)));
+    const body = formatCurrencyDisplay(String(Math.abs(value)), 'casino.bets');
     return value > 0 ? `+${body}` : value < 0 ? `−${body}` : body;
   };
 
@@ -171,7 +171,7 @@ const LiveStatsPanel: FC<Props> = ({
               { label: t('game.stats.profit'), value: ready ? signed(ready.profit) : '—' },
               {
                 label: t('game.stats.wagered'),
-                value: ready ? formatCurrencyDisplay(ready.wagered) : '—',
+                value: ready ? formatCurrencyDisplay(ready.wagered, 'casino.bets') : '—',
               },
               { label: t('game.stats.wins'), value: ready ? String(ready.wins) : '—' },
               { label: t('game.stats.losses'), value: ready ? String(ready.losses) : '—' },

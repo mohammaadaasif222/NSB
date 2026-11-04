@@ -34,11 +34,11 @@ const ReferralSection: FC = () => {
   const figures = [
     {
       label: t('aff.availableFunds'),
-      value: stats ? formatRewardAmount(stats.available, 'USD') : '—',
+      value: stats ? formatRewardAmount(stats.available, 'USD', 'referral.commissions') : '—',
     },
     {
       label: t('aff.totalEarnings'),
-      value: stats ? formatRewardAmount(stats.total_earned, 'USD') : '—',
+      value: stats ? formatRewardAmount(stats.total_earned, 'USD', 'referral.commissions') : '—',
     },
     { label: t('aff.totalReferrals'), value: stats ? String(stats.referred) : '—' },
     {

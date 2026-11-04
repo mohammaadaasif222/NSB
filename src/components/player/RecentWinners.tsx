@@ -120,7 +120,7 @@ const WinnerCard: FC<{ bet: LiveBet; fresh?: boolean; slot?: boolean }> = ({
 }) => {
   const { t } = useTranslation();
   const { game } = bet;
-  const payout = withCurrency(formatAmount(bet.payout_usd), 'USD');
+  const payout = withCurrency(formatAmount(bet.payout_usd, 2, 'casino.bets'), 'USD');
   const jackpot = slot && parseFloat(bet.multiplier) >= JACKPOT_AT;
 
   return (

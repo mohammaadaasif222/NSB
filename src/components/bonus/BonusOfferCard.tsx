@@ -3,8 +3,11 @@ import type { FC } from 'react';
 import BonusGlassCard, { type BonusCardAction } from '@/components/bonus/BonusGlassCard';
 import { useTranslation } from '@/context/I18nContext';
 import { BONUS_TITLE_KEYS } from '@/constants/bonus';
-import { formatRewardAmount } from '@/utils/money';
+import { formatRewardAmount as formatMoney } from '@/utils/money';
 import type { AvailableBonus } from '@/types';
+
+const formatRewardAmount = (amount: string, currency: string): string =>
+  formatMoney(amount, currency, 'bonus.awards');
 
 interface Props {
   bonus: AvailableBonus;

@@ -58,6 +58,7 @@ const RequestStatsModal: FC<Props> = ({ range, onClose }) => {
       if (res?.success) {
         setNotice(t('stats.sent', { email: trimmed }));
         toast.success(t('stats.sent', { email: trimmed }));
+        onClose();
       } else {
         setError(res?.message || t('stats.sendFailed'));
         toast.error(res?.message || t('stats.sendFailed'));
@@ -66,8 +67,8 @@ const RequestStatsModal: FC<Props> = ({ range, onClose }) => {
       setError(fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed'));
       toast.error(fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed'));
     } finally {
+      // Open on a failure, so the error shows beside the email and it can be retried.
       setSending(false);
-      onClose()
     }
   };
 

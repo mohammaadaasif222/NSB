@@ -5,9 +5,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useBetslip, type Pick } from '@/context/BetslipContext';
 import { text } from '@/components/player/typeScale';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 const usd = (amount: number): string =>
-  `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  `$${
+    displayDecimal(amount, 'sportsbook.betslip', 'en-US') ??
+    amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }`;
 
 /** "Arsenal to Win" / "Draw", with its match underneath and the price. */
 const PickCard: FC<{ pick: Pick }> = ({ pick }) => {

@@ -57,7 +57,7 @@ const BalanceMenu: FC = () => {
   /** USD amounts from the API, shown in the display currency. */
   const shown = useCallback(
     (usd: string | undefined): string =>
-      loading && !balance ? '—' : formatCurrencyDisplay(usd ?? '0'),
+      loading && !balance ? '—' : formatCurrencyDisplay(usd ?? '0', 'wallet.balances'),
     [balance, loading, formatCurrencyDisplay]
   );
 

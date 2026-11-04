@@ -53,7 +53,8 @@ const VipTierTable: FC<Props> = ({ tiers, currentTierId, currency, loading = fal
                       {withCurrency(
                         formatAmount(
                           tier.min_wager,
-                          Number.isInteger(Number(tier.min_wager)) ? 0 : 2
+                          Number.isInteger(Number(tier.min_wager)) ? 0 : 2,
+                          'vip.tiers'
                         ),
                         currency
                       )}

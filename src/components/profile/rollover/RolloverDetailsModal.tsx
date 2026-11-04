@@ -110,7 +110,7 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
           <div className="text-center">
             <p className="text-[12px] text-white/50">{t('roll.detail.remaining')}</p>
             <p className="mt-0.5 text-[26px] font-semibold text-[#ffe779]">
-              {formatCurrencyDisplay(shown.wagering_remaining)}
+              {formatCurrencyDisplay(shown.wagering_remaining, 'bonus.rollover')}
             </p>
             <span
               className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${ROLLOVER_STATUS_STYLE[shown.status]}`}
@@ -145,7 +145,7 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
                 <Row
                   label={t('roll.detail.depositValue')}
                   value={
-                    shown.deposit.amount_usd ? formatCurrencyDisplay(shown.deposit.amount_usd) : '—'
+                    shown.deposit.amount_usd ? formatCurrencyDisplay(shown.deposit.amount_usd, 'bonus.rollover') : '—'
                   }
                 />
               </>
@@ -155,7 +155,7 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
                 <Row label={t('roll.detail.bonus')} value={shown.bonus.name} />
                 <Row
                   label={t('roll.detail.bonusAmount')}
-                  value={formatCurrencyDisplay(shown.base_amount)}
+                  value={formatCurrencyDisplay(shown.base_amount, 'bonus.rollover')}
                 />
               </>
             )}
@@ -165,11 +165,11 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
             />
             <Row
               label={t('roll.detail.required')}
-              value={formatCurrencyDisplay(shown.wagering_required)}
+              value={formatCurrencyDisplay(shown.wagering_required, 'bonus.rollover')}
             />
             <Row
               label={t('roll.detail.completed')}
-              value={formatCurrencyDisplay(shown.wagering_completed)}
+              value={formatCurrencyDisplay(shown.wagering_completed, 'bonus.rollover')}
             />
             <Row label={t('roll.detail.opened')} value={formatMoment(shown.created_at)} />
             {shown.completed_at && (
@@ -211,11 +211,11 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
                     {formatMoment(progression.created_at)}
                   </span>
                   <span className="text-[12px] text-white/72">
-                    {t('roll.detail.betStake')} {formatCurrencyDisplay(progression.bet_amount)}
+                    {t('roll.detail.betStake')} {formatCurrencyDisplay(progression.bet_amount, 'bonus.rollover')}
                     {progression.wagering_progress !== progression.bet_amount && (
                       <span className="ml-2 text-[#ffe779]">
                         {t('roll.detail.betCounted')}{' '}
-                        {formatCurrencyDisplay(progression.wagering_progress)}
+                        {formatCurrencyDisplay(progression.wagering_progress, 'bonus.rollover')}
                       </span>
                     )}
                   </span>

@@ -24,7 +24,7 @@ interface Props {
 const ReferralStats: FC<Props> = ({ summary, claiming, onCollect }) => {
   const { t } = useTranslation();
   const s = summary?.stats;
-  const usd = (amount: string | undefined) => (amount ? formatRewardAmount(amount, 'USD') : '—');
+  const usd = (amount: string | undefined) => (amount ? formatRewardAmount(amount, 'USD', 'referral.commissions') : '—');
 
   const stats: { key: string; label: string; value: string }[] = [
     { key: 'earnings', label: t('aff.totalEarnings'), value: usd(s?.total_earned) },

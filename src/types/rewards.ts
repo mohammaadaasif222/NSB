@@ -45,7 +45,7 @@ export interface RewardTypeSummary {
   expires_at: string | null;
   pending_amount: string;
   /** When the pending amount turns claimable. */
-  available_at: string;
+  available_at: string | null;
   claimed_total: string;
   rate_percentage: number | null;
   split: RewardSplit | null;

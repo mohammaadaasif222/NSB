@@ -53,7 +53,7 @@ const StatisticSection: FC = () => {
   const count = (value: number | undefined): string =>
     value === undefined ? EMPTY : value.toLocaleString(locale);
   const money = (value: string | undefined): string =>
-    value === undefined ? EMPTY : formatCurrencyDisplay(value);
+    value === undefined ? EMPTY : formatCurrencyDisplay(value, 'casino.player_statistics');
   const day = (iso: string): string =>
     new Date(iso).toLocaleDateString(locale === 'en' ? 'en-GB' : locale, {
       day: '2-digit',
