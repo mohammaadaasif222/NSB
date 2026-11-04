@@ -3,6 +3,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { DISPLAY_CURRENCY_SYMBOL } from '@/components/responsible/rgContent';
 import { BUDGET_KEYS, EXPENSE_LINES, INCOME_LINES } from '@/components/responsible/budgetCopy';
 import { blocksOf, type HelpEntry } from '@/components/responsible/helpContent';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 /**
  * Budget calculator.
@@ -25,10 +26,13 @@ const num = (v: string): number => {
 };
 
 const money = (n: number): string =>
-  `${DISPLAY_CURRENCY_SYMBOL}${n.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  `${DISPLAY_CURRENCY_SYMBOL}${
+    displayDecimal(n, 'responsible_gambling.limits', 'en-US') ??
+    n.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }`;
 
 /*
  * Sizes step like the rest of the Responsible Gambling sections: the design's

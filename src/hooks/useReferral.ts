@@ -90,7 +90,7 @@ export const useReferral = (): UseReferral => {
     try {
       const res = await claimReferralCommission();
       if (res?.success && res.data) {
-        const amount = formatRewardAmount(res.data.amount, 'USD');
+        const amount = formatRewardAmount(res.data.amount, 'USD', 'referral.commissions');
         if (res.data.status === 'PENDING_REVIEW') {
           toast.info(tRef.current('ref.claimReview', { amount }));
         } else {

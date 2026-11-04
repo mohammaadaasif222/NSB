@@ -152,16 +152,16 @@ const RolloverSection: FC = () => {
             className={`text-[14px] font-semibold ${unlocked ? 'text-[#35d07f]' : 'text-[#ffe779]'}`}
           >
             {unlocked
-              ? t('roll.partial', { amount: formatCurrencyDisplay(summary.withdrawable) })
+              ? t('roll.partial', { amount: formatCurrencyDisplay(summary.withdrawable, 'bonus.rollover') })
               : t('roll.heldAll')}
           </p>
           <p className="mt-1 text-[12px] leading-relaxed text-white/64">
             {unlocked
               ? t('roll.partialBody', {
-                  remaining: formatCurrencyDisplay(summary.held_remaining),
+                  remaining: formatCurrencyDisplay(summary.held_remaining, 'bonus.rollover'),
                 })
               : t('roll.heldAllBody', {
-                  remaining: formatCurrencyDisplay(summary.held_remaining),
+                  remaining: formatCurrencyDisplay(summary.held_remaining, 'bonus.rollover'),
                 })}
           </p>
         </div>
@@ -213,23 +213,23 @@ const RolloverSection: FC = () => {
               <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
                 <Figure
                   label={t('roll.totalRequired')}
-                  value={formatCurrencyDisplay(summary.total_required)}
+                  value={formatCurrencyDisplay(summary.total_required, 'bonus.rollover')}
                 />
                 <Figure
                   label={t('roll.totalCompleted')}
-                  value={formatCurrencyDisplay(summary.total_completed)}
+                  value={formatCurrencyDisplay(summary.total_completed, 'bonus.rollover')}
                   tone="green"
                 />
                 <Figure
                   label={t('roll.totalRemaining')}
-                  value={formatCurrencyDisplay(summary.total_remaining)}
+                  value={formatCurrencyDisplay(summary.total_remaining, 'bonus.rollover')}
                   tone="gold"
                 />
                 <Figure label={t('roll.openCount')} value={String(summary.held_count)} />
-                <Figure label={t('roll.locked')} value={formatCurrencyDisplay(summary.locked)} />
+                <Figure label={t('roll.locked')} value={formatCurrencyDisplay(summary.locked, 'bonus.rollover')} />
                 <Figure
                   label={t('roll.withdrawable')}
-                  value={formatCurrencyDisplay(summary.withdrawable)}
+                  value={formatCurrencyDisplay(summary.withdrawable, 'bonus.rollover')}
                   tone="green"
                 />
               </div>

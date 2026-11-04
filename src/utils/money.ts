@@ -3,6 +3,8 @@
  * helpers only ever format them, never do arithmetic on them.
  */
 
+import { displayDecimal } from '@/utils/decimalPrecision';
+
 /**
  * Symbols for the currencies the platform actually issues wallets in. Anything
  * else falls back to its ISO code, printed after the amount — better an
@@ -31,7 +33,8 @@ export const withCurrency = (amount: string, currency: string): string => {
  * for anything else. Amounts far beyond Number.MAX_SAFE_INTEGER would lose
  * precision, which no real balance approaches.
  */
-export const formatAmount = (amount: string, digits = 2): string =>
+export const formatAmount = (amount: string, digits = 2, feature?: string): string =>
+  (feature ? displayDecimal(amount, feature) : null) ??
   Number(amount).toLocaleString(undefined, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
@@ -44,7 +47,13 @@ export const formatAmount = (amount: string, digits = 2): string =>
  * Shown to 2 places that reads as "$0.00" while something is in fact building
  * up, so a positive amount under a cent is shown to 4.
  */
-export const formatRewardAmount = (amount: string, currency: string): string => {
+export const formatRewardAmount = (
+  amount: string,
+  currency: string,
+  feature = 'rewards.amounts'
+): string => {
+  const custom = displayDecimal(amount, feature);
+  if (custom !== null) return withCurrency(custom, currency);
   const value = Number(amount);
   const digits = value > 0 && value < 0.01 ? 4 : 2;
   return withCurrency(formatAmount(amount, digits), currency);
@@ -55,10 +64,17 @@ export const formatRewardAmount = (amount: string, currency: string): string => 
  * like any other money; crypto keeps up to 8 places — "0.00012345 BTC" — since
  * two would round a small BTC credit away.
  */
-export const formatWalletAmount = (amount: string, currency: string): string =>
-  CURRENCY_SYMBOLS[currency?.toUpperCase()]
+export const formatWalletAmount = (amount: string, currency: string): string => {
+  const custom = displayDecimal(amount, 'wallet.crypto_amounts');
+  if (custom !== null) {
+    return CURRENCY_SYMBOLS[currency?.toUpperCase()]
+      ? withCurrency(custom, currency)
+      : `${custom} ${currency}`;
+  }
+  return CURRENCY_SYMBOLS[currency?.toUpperCase()]
     ? formatRewardAmount(amount, currency)
     : `${Number(amount).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 8,
       })} ${currency}`;
+};

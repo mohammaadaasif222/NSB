@@ -1,6 +1,9 @@
-import { formatRewardAmount } from '@/utils/money';
+import { formatRewardAmount as formatMoney } from '@/utils/money';
 import type { TranslationKey } from '@/i18n/locales';
 import type { WelcomeStage } from '@/types';
+
+const formatRewardAmount = (amount: string, currency: string): string =>
+  formatMoney(amount, currency, 'bonus.awards');
 
 type T = (key: TranslationKey, vars?: Record<string, string | number>) => string;
 

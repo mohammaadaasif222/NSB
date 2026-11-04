@@ -28,7 +28,7 @@ const useTierName = (): ((label: JackpotTierLabel | null, tier: number) => strin
 };
 
 const money = (value: number | string, currency: string): string =>
-  withCurrency(formatAmount(String(value)), currency);
+  withCurrency(formatAmount(String(value), 2, 'jackpots.amounts'), currency);
 
 /** Providers name jackpots like identifiers ("Brand_JackpotPlay_Test"); show them as words. */
 const jackpotName = (name: string): string => name.replace(/_+/g, ' ').trim();

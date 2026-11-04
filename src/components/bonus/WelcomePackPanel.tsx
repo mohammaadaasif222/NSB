@@ -5,9 +5,12 @@ import { STAGE_LABEL_KEYS, stageHeadline, stageTerms } from '@/components/bonus/
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useTranslation } from '@/context/I18nContext';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
-import { formatRewardAmount } from '@/utils/money';
+import { formatRewardAmount as formatMoney } from '@/utils/money';
 import type { TranslationKey } from '@/i18n/locales';
 import type { WelcomeStage, WelcomeStageReasonCode, WelcomeStageStatus } from '@/types';
+
+const formatRewardAmount = (amount: string, currency: string): string =>
+  formatMoney(amount, currency, 'bonus.awards');
 
 const STAGE_STATUS_KEYS: Record<WelcomeStageStatus, TranslationKey> = {
   UNAVAILABLE: 'bonus.unavailable',

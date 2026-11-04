@@ -27,6 +27,7 @@ import type { DiceConfig, Game } from '@/types';
 import Seo, { type JsonLd } from '@/components/seo/Seo';
 import { gameDescription } from '@/components/seo/gameMeta';
 import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
+import { displayDecimal } from '@/utils/decimalPrecision';
 
 interface Props {
   game: Game | null;
@@ -47,7 +48,9 @@ interface Props {
  * may not publish a figure, which reads as a dash rather than a misleading 0.
  */
 const money = (value: number | null, currency?: string | null): string =>
-  value === null ? '—' : `${value.toFixed(2)}${currency ? ` ${currency}` : ''}`;
+  value === null
+    ? '—'
+    : `${displayDecimal(value, 'casino.game_limits', 'en-US') ?? value.toFixed(2)}${currency ? ` ${currency}` : ''}`;
 
 const Stat: FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">

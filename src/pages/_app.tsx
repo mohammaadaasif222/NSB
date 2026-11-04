@@ -29,6 +29,7 @@ import { SITE_NAME } from '@/constants/site';
 import IntercomLauncher from '@/components/support/IntercomLauncher';
 import { EventListeners } from '@/components/listeners/EventListeners';
 import { useTracking } from '@/hooks/useTracking';
+import { useDecimalPrecisionRules } from '@/hooks/useDecimalPrecision';
 
 import '@/index.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -67,6 +68,7 @@ export default function App({ Component, pageProps }: AppProps) {
   // client-side route change; see useTracking for why mounting alone is not
   // enough in a single-page app.
   useTracking();
+  useDecimalPrecisionRules();
 
   return (
     <>
