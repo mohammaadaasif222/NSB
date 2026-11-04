@@ -7,7 +7,11 @@ import PlayerLayout from '@/layout/PlayerLayout';
 import GameRow from '@/components/player/GameRow';
 import RecentWinners from '@/components/player/RecentWinners';
 import SiteFooter from '@/components/player/SiteFooter';
-import DiceGame from '@/components/dice/DiceGame';
+// Native in-house Dice (`<DiceGame>`) is retired — the slug `dice` is
+// now a Rolluck Originals row that renders via the ported component in
+// /play/dice (see @/components/originals/registry).
+// import DiceGame from '@/components/dice/DiceGame';
+import { getOriginalsComponent, ORIGINALS_PROVIDER_NAME } from '@/components/originals/registry';
 import { CATEGORY_ICONS } from '@/components/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
@@ -189,9 +193,14 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, providerSlug }) => {
           <span className="text-[#f0f1f5] truncate">{game.title}</span>
         </nav>
 
-        {dice?.enabled ? (
-          <DiceGame game={game} config={dice} />
-        ) : (
+        {/* Legacy native in-house Dice (`<DiceGame>` from @/components/dice)
+            used to be rendered inline when the slug === 'dice' and
+            `fetchDiceConfig()` returned enabled. That path is retired:
+            `dice` is now a Rolluck Originals slug, served through the
+            same /play/<slug> wrapper + registry as mines / blackjack.
+            Every slug — including dice — shows the marketing card here
+            and launches the real game in /play. */}
+        {false /* dice?.enabled retired */ ? null : (
           <section className="grid grid-cols-1 md:grid-cols-[minmax(200px,320px)_1fr] gap-6 lg:gap-10 items-start">
             <div className="relative aspect-[3/4] w-full max-w-[320px] rounded-2xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl">
               {game.image_url ? (
@@ -356,9 +365,24 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params, re
   ]);
   const related = shelf ? shelf.data.filter((g) => g.slug !== lookup.game.slug).slice(0, 10) : [];
 
+  // Native Rolluck Originals (Mines, Dice-native, Plinko, …) are served by
+  // our own component in /play/[slug] — not by any aggregator link. The
+  // backend's `launchable` flag is wired to aggregator_games count, so a
+  // pure originals row (no aggregator link) comes back as launchable=false
+  // which would grey out the Play for real button. Force it true here so
+  // the player can actually press the button and reach /play/<slug> where
+  // the native component mounts.
+  const isNativeOriginals =
+    lookup.game.provider === ORIGINALS_PROVIDER_NAME &&
+    lookup.game.category === 'ORIGINALS' &&
+    getOriginalsComponent(lookup.game.slug) !== null;
+  const game = isNativeOriginals
+    ? { ...lookup.game, launchable: true, demo_available: lookup.game.demo_available ?? true }
+    : lookup.game;
+
   return {
     props: {
-      game: lookup.game,
+      game,
       related,
       failed: false,
       dice,
