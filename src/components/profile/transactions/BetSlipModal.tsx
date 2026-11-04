@@ -132,6 +132,7 @@ const BetSlipModal: FC<Props> = ({ open, onClose, betId }) => {
               </span>
               <button
                 type="button"
+                data-sound="transactionidClick"
                 onClick={() => {
                   void navigator.clipboard?.writeText(slip.id).then(() => {
                     setCopied(true);

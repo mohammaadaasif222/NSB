@@ -307,6 +307,7 @@ const Login: FC = () => {
 
         <button
           type="submit"
+          data-sound="loginYellow"
           disabled={loading}
           className="glass-btn h-13 mt-1 flex items-center justify-center text-[15px] font-semibold"
         >

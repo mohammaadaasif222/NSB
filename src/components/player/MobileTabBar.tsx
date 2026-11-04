@@ -236,6 +236,7 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
                 <button
                   type="button"
                   onClick={toggle}
+                  data-sound="profileClick"
                   aria-label={t('nav.profile')}
                   title={t('nav.profile')}
                   aria-haspopup="menu"

@@ -128,6 +128,7 @@ const TransactionDetailModal: FC<Props> = ({ open, onClose, transaction }) => {
               </div>
               <button
                 onClick={() => navigator.clipboard.writeText(transaction.id)}
+                data-sound="transactionidClick"
                 className="text-sm sm:text-base text-[#4ade80] hover:underline mt-2"
               >
                 {t('common.copy')}

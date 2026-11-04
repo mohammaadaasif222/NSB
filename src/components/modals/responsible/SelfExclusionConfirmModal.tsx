@@ -186,6 +186,7 @@ const SelfExclusionConfirmModal: FC<Props> = ({ option, onClose, onConfirm, savi
           </h2>
 
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('rgc.close')}

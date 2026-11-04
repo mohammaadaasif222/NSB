@@ -85,6 +85,7 @@ const RequestStatsModal: FC<Props> = ({ range, onClose }) => {
         aria-label={t('stats.requestStatistics')}
       >
         <button
+          data-sound="close"
           type="button"
           onClick={onClose}
           aria-label={t('stats.close')}

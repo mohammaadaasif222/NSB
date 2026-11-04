@@ -24,7 +24,7 @@ interface ModalHeaderProps {
   variant?: 'hero' | 'compact' | 'section' | 'title' | 'panel';
   /** Extra classes for the title, where one dialog's design sizes it apart. */
   titleClassName?: string;
-  /** A 48px close on a phone too (the auth sheets), not the usual 40. */
+  /** A 48px close and back on a phone too (the auth sheets), not the usual 40. */
   bigClose?: boolean;
 }
 
@@ -51,10 +51,13 @@ const ModalHeader: FC<ModalHeaderProps> = ({
   return (
     <div className="relative z-10 flex items-center gap-3">
       {variant !== 'panel' && (
-        // Beside a 48px close, a phone's 40px back lines up with its top.
-        <div className={`flex w-10 shrink-0 sm:w-12 ${bigClose ? 'max-sm:self-start' : ''}`}>
+        <div className={`flex shrink-0 sm:w-12 ${bigClose ? 'w-12' : 'w-10'}`}>
           {onBack && (
-            <CircleIconButton label={backLabel ?? t('auth.back')} onClick={onBack}>
+            <CircleIconButton
+              label={backLabel ?? t('auth.back')}
+              onClick={onBack}
+              className={bigClose ? 'max-sm:h-12 max-sm:w-12' : ''}
+            >
               <ChevronLeftIcon size={22} className="rtl:rotate-180" />
             </CircleIconButton>
           )}
@@ -87,6 +90,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
 
       <div className={`flex shrink-0 justify-end sm:w-12 ${bigClose ? 'w-12' : 'w-10'}`}>
         <CircleIconButton
+          data-sound="close"
           label={closeLabel}
           onClick={onClose}
           className={bigClose ? 'max-sm:h-12 max-sm:w-12' : ''}

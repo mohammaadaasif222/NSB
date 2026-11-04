@@ -142,7 +142,7 @@ const Modal: FC<ModalProps> = ({
           aria-labelledby={labelledBy}
           aria-label={labelledBy ? undefined : ariaLabel}
           tabIndex={-1}
-          className={`${surface} w-full outline-none ${
+          className={`${surface} rl-rim-top w-full outline-none ${
             page
               ? 'max-sm:max-w-none max-sm:!rounded-none max-sm:!border-0 max-sm:!bg-transparent max-sm:![box-shadow:none] max-sm:![backdrop-filter:none] max-sm:![animation:none]'
               : phoneSheet === 'fit'

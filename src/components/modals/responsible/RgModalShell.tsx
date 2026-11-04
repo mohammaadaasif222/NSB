@@ -84,6 +84,7 @@ const RgModalShell: FC<Props> = ({
           </div>
 
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('rgc.close')}

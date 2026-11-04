@@ -455,6 +455,7 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
     >
       <div className="mb-[26px] flex items-center gap-3 sm:hidden">
         <button
+          data-sound="close"
           type="button"
           onClick={onClose}
           aria-label={t('common.close')}
@@ -478,6 +479,7 @@ const ChangeAvatarModal: FC<Props> = ({ currentAvatarUrl, onClose, onSaved }) =>
       />
 
       <CircleIconButton
+        data-sound="close"
         label={t('common.close')}
         onClick={onClose}
         className="absolute right-3 top-3 z-10 max-sm:hidden sm:right-[27px] sm:top-[16px]"

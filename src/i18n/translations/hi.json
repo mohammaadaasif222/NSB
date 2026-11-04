@@ -1138,6 +1138,7 @@
   "lobby.winners.casinoWins": "कैसीनो जीत",
   "lobby.winners.casinoBets": "कैसीनो दांव",
   "lobby.winners.sportsBets": "स्पोर्ट्स दांव",
+  "lobby.winners.jackpot": "जैकपॉट",
   "lobby.winners.cardTitle": "{user} ने {game} पर {payout} जीते",
   "lobby.jackpots.title": "जैकपॉट",
   "lobby.jackpots.paused": "रुका हुआ",

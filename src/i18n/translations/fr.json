@@ -1138,6 +1138,7 @@
   "lobby.winners.casinoWins": "Gains casino",
   "lobby.winners.casinoBets": "Paris casino",
   "lobby.winners.sportsBets": "Paris sportifs",
+  "lobby.winners.jackpot": "Jackpot",
   "lobby.winners.cardTitle": "{user} a gagné {payout} sur {game}",
   "lobby.jackpots.title": "Jackpots",
   "lobby.jackpots.paused": "En pause",

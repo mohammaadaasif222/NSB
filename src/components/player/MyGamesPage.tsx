@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FC, type ReactNode } from 'react';
 import PlayerLayout from '@/layout/PlayerLayout';
 import GameTile from '@/components/player/GameTile';
-import GoldGlow from '@/components/player/GoldGlow';
+import PageGlow from '@/components/player/PageGlow';
 import PageNumbers from '@/components/player/PageNumbers';
 import ProviderRow from '@/components/player/ProviderRow';
 import RecentWinners from '@/components/player/RecentWinners';
@@ -140,7 +140,7 @@ const MyGamesPage: FC<Props> = ({
   }
 
   return (
-    <PlayerLayout backdrop={<GoldGlow />}>
+    <PlayerLayout backdrop={<PageGlow tone={surface === 'favourites' ? 'white' : 'gold'} />}>
       <Seo title={title} />
 
       <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0">

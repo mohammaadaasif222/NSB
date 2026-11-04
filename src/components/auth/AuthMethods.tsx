@@ -62,6 +62,7 @@ const AuthMethods: FC<Props> = ({ methods, onSelect, otherLabel, onSelectOther }
       <button
         key={m.id}
         type="button"
+        data-sound={m.id === 'gmail' ? 'gmailMobileIconClick' : undefined}
         onClick={() => onSelect(m.id)}
         className="glass-btn h-13 flex items-center justify-center gap-2.5 text-[15px] font-semibold"
       >

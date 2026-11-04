@@ -187,6 +187,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
               signed in the balance follows it and the bell takes the end. */}
           <Link
             href="/"
+            data-sound="rollluckClick"
             className={`flex flex-shrink-0 items-center lg:me-0 ${token ? '' : 'me-auto'}`}
             aria-label="ROLLUCK"
             title="ROLLUCK"
@@ -232,6 +233,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => setWalletOpen(true)}
+                  data-sound="walletClick"
                   aria-haspopup="dialog"
                   aria-expanded={walletOpen}
                   aria-label={t('nav.wallet')}
@@ -263,6 +265,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => openLogin()}
+                  data-sound="LOGINregisterButtonPress"
                   className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
@@ -270,6 +273,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => openRegister()}
+                  data-sound="LOGINregisterButtonPress"
                   className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-3 text-[14px] leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
@@ -392,6 +396,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                     <button
                       type="button"
                       onClick={toggle}
+                      data-sound="profileClick"
                       aria-haspopup="menu"
                       aria-expanded={open}
                       aria-controls={open ? menuId : undefined}
@@ -417,6 +422,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => openLogin()}
+                  data-sound="LOGINregisterButtonPress"
                   className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*108)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#07080a] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
@@ -424,6 +430,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                 <button
                   type="button"
                   onClick={() => openRegister()}
+                  data-sound="LOGINregisterButtonPress"
                   className="rl-cta-shine inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*148)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}

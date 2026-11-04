@@ -107,6 +107,7 @@ const RewardDetailModal: FC<Props> = ({ type, summary, currency, onClose }) => {
             <p className={`mt-0.5 ${LABEL}`}>{t(detail.subtitleKey)}</p>
           </div>
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('common.close')}

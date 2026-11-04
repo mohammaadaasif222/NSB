@@ -82,6 +82,7 @@ const ChatReportDialog: FC<Props> = ({ message, onClose, onSubmit, onReported })
             {t('chat.reportTitle')}
           </h3>
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('common.close')}

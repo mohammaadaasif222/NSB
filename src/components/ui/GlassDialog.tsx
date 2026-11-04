@@ -72,6 +72,7 @@ const GlassDialog: FC<Props> = ({
       {phoneSheet === 'page' && (
         <div className="flex items-center gap-3 sm:hidden">
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('auth.back')}

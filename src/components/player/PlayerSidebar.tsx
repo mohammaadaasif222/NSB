@@ -200,6 +200,7 @@ const RailLink: FC<RailLinkProps> = ({
     return (
       <button
         type="button"
+        data-sound="sideIconsLikeFavourites"
         onClick={() => {
           onClick();
           onSelect();
@@ -215,6 +216,7 @@ const RailLink: FC<RailLinkProps> = ({
   return (
     <Link
       href={href ?? '#'}
+      data-sound="sideIconsLikeFavourites"
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={className}
@@ -248,12 +250,15 @@ const RailGroupRow: FC<{
   const label = t(group.labelKey);
   // Lit by its rows only: the section switch above already marks /casino and /sports.
   const active = group.items.some((item) => item.href === currentPath);
+  // Original games (Dice, Limbo…) have their own sound; other groups' rows click generically.
+  const gameSound = group.id === 'originals' ? 'diceLimboLikeIcons(side)' : undefined;
 
   return (
     <div className="flex flex-shrink-0 flex-col gap-1 lg:gap-[calc(var(--u)*2)]">
       {collapsed && (
         <Link
           href={group.href}
+          data-sound={gameSound}
           onClick={onNavigate}
           title={label}
           aria-current={active ? 'page' : undefined}
@@ -264,6 +269,7 @@ const RailGroupRow: FC<{
       )}
       <button
         type="button"
+        data-sound="sideIconsLikeFavourites"
         onClick={onToggle}
         aria-expanded={open}
         className={`${ROW} ${active && !open ? ROW_ACTIVE : ROW_IDLE} ${collapsed ? 'lg:hidden' : ''}`}
@@ -288,6 +294,7 @@ const RailGroupRow: FC<{
                 {item.href ? (
                   <Link
                     href={item.href}
+                    data-sound={gameSound}
                     onClick={onNavigate}
                     aria-current={current ? 'page' : undefined}
                     className={`${SUB_ROW} ${
@@ -375,14 +382,14 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const [suggesting, setSuggesting] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [searching, setSearching] = useState(false);
-  // The phone panel opens 14 under the bar, whatever height the bar is.
+  // The phone panel opens right under the bar, whatever height the bar is.
   const [menuTop, setMenuTop] = useState(80);
 
   useEffect(() => {
     if (!open) return undefined;
     const place = (): void => {
       const bar = document.querySelector('header');
-      if (bar) setMenuTop(Math.round(bar.getBoundingClientRect().bottom) + 14);
+      if (bar) setMenuTop(Math.round(bar.getBoundingClientRect().bottom));
     };
     place();
     const onKey = (e: KeyboardEvent): void => {
@@ -457,13 +464,13 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
   return (
     <>
-      {/* On a phone this is the design's menu panel: full width, 14 under the
-          bar (which stays in view), rounded at the top, sliding up from the
-          foot; the tab bar floats over it. Its glass is the design's dark
-          one — near opaque, so the page under it does not show through. From
-          lg it is the sticky rail. */}
+      {/* On a phone this is the menu: full width and flush under the bar
+          (which stays in view), sliding up from the foot, on the stage's own
+          colour with no rim or rounded top, so it reads as the site's menu
+          rather than a sheet; the tab bar floats over it. From lg it is the
+          sticky rail. */}
       <aside
-        className={`rl-glass-deep rl-diag-rim [--rim-radius:34px] lg:[--rim-radius:calc(var(--u)*34)] [--rim-clear:80px] [--rim-fade:220px] [--tw-inset-shadow:var(--rl-tile-face)]! fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden rounded-t-[34px] transition-[transform,width] max-lg:![background:rgba(17,18,22,0.97)] duration-300 lg:![background:linear-gradient(rgba(255,255,255,0.06),rgba(255,255,255,0.06)),rgba(0,0,0,0.6)] lg:![backdrop-filter:blur(6px)] lg:![-webkit-backdrop-filter:blur(6px)] lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
+        className={`rl-glass-deep rl-diag-rim [--rim-radius:34px] lg:[--rim-radius:calc(var(--u)*34)] [--rim-clear:80px] [--rim-fade:220px] [--tw-inset-shadow:var(--rl-tile-face)]! fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden transition-[transform,width] max-lg:![background:#07080a] max-lg:![box-shadow:none] max-lg:before:!hidden duration-300 lg:![background:linear-gradient(rgba(255,255,255,0.06),rgba(255,255,255,0.06)),rgba(0,0,0,0.6)] lg:![backdrop-filter:blur(6px)] lg:![-webkit-backdrop-filter:blur(6px)] lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
           open ? 'translate-y-0' : 'max-lg:invisible max-lg:translate-y-full'
         }`}
         style={{ '--menu-top': `${menuTop}px` } as CSSProperties}

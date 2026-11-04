@@ -219,6 +219,7 @@ const GameSearchModal: FC<{ onClose: () => void }> = ({ onClose }) => {
             className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35 [&::-webkit-search-cancel-button]:hidden"
           />
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('nav.closeMenu')}

@@ -140,9 +140,12 @@ const ProviderButton: FC<{
   label: string;
   onClick: () => void;
   disabled?: boolean;
-}> = ({ icon, label, onClick, disabled }) => (
+  /** Sound key (`data-sound`); the generic click if unset. */
+  sound?: string;
+}> = ({ icon, label, onClick, disabled, sound }) => (
   <button
     type="button"
+    data-sound={sound}
     onClick={onClick}
     disabled={disabled}
     className="flex h-[calc(var(--u)*64)] flex-col items-center justify-center rounded-[calc(var(--u)*34)] bg-[#13171f] px-[calc(var(--u)*8)] transition-colors hover:bg-[#1a1f29] disabled:opacity-60 lg:h-[calc(var(--u)*99)] lg:gap-[calc(var(--u)*8)]"
@@ -270,6 +273,7 @@ const SignupTeaser: FC<{ totalRegistrations: number | null }> = ({ totalRegistra
           icon={gmailIcon}
           label={t('lobby.hero.continueWith', { method: t('auth.methodGmail') })}
           onClick={() => google.signIn()}
+          sound="gmailMobileIconClick"
           disabled={google.loading}
         />
         {/* The design draws an envelope here: the e-mail signup flow, not a

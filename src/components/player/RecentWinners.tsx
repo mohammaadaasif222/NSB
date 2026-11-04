@@ -128,7 +128,9 @@ const WinnerCard: FC<{ bet: LiveBet; fresh?: boolean; slot?: boolean }> = ({
       <Link
         href={gameHref(game.slug)}
         title={t('lobby.winners.cardTitle', { user: bet.player, payout, game: game.title })}
-        className={`group ${CARD_FRAME} ${jackpot ? 'rl-jackpot' : ''}`}
+        className={`group ${CARD_FRAME} ${slot ? 'rl-slot-window' : ''} ${
+          jackpot ? 'rl-jackpot' : ''
+        }`}
       >
         <Image
           src={game.image_url || '/images/placeholder.png'}
@@ -137,6 +139,8 @@ const WinnerCard: FC<{ bet: LiveBet; fresh?: boolean; slot?: boolean }> = ({
           sizes="(max-width: 640px) 33vw, (max-width: 1280px) 20vw, 200px"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
         />
+
+        {jackpot && <span className="rl-slot-jackpot">{t('lobby.winners.jackpot')}</span>}
 
         {/* The design's "Liquid Glass" band: the artwork blurred through a
             faint white frost, a hairline of light along its top — not a dark
@@ -156,9 +160,13 @@ const WinnerCard: FC<{ bet: LiveBet; fresh?: boolean; slot?: boolean }> = ({
             </span>
           </span>
           <span className="flex items-center justify-between gap-[calc(var(--u)*4)] text-[max(10px,7.07cqw)] leading-[1.43] tabular-nums">
-            <span className={`font-medium ${jackpot ? 'text-[#f9d028]' : 'text-[#f4fffb]'}`}>
-              <ReelText text={`${bet.multiplier}x`} spin={!!(fresh && slot)} />
-            </span>
+            {slot ? (
+              <span className="rl-slot-meter">
+                <ReelText text={`${bet.multiplier}x`} spin={!!fresh} />
+              </span>
+            ) : (
+              <span className="font-medium text-[#f4fffb]">{bet.multiplier}x</span>
+            )}
             <span className="truncate font-medium text-[#f0f1f5]">{payout}</span>
           </span>
         </span>
@@ -294,28 +302,38 @@ const RecentWinners: FC<Props> = ({ tabs = 'landing', title }) => {
 
       {/* A ticker rather than a scroller: the row moves by itself, so it
           clips instead of scrolling. The feed holds while the pointer is on
-          it, so a card stays put long enough to be clicked. */}
+          it, so a card stays put long enough to be clicked. On Active Wins
+          the row sits in a slot machine's cabinet, bulbs and payline. */}
       <div
-        className="overflow-hidden"
+        className={slot ? 'rl-slot-cabinet' : undefined}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         aria-live="off"
       >
-        <div className={`${SHELF_TRACK} !overflow-visible`}>
-          {loaded
-            ? bets.map((bet, i) => (
-                <WinnerCard
-                  key={bet.id}
-                  bet={bet}
-                  fresh={i === 0 && bet.id === fresh}
-                  slot={slot}
-                />
-              ))
-            : Array.from({ length: PLACEHOLDERS }, (_, i) => (
-                <div key={i} className="@container" aria-hidden="true">
-                  <span className={`${CARD_FRAME} animate-pulse`} />
-                </div>
-              ))}
+        {slot && (
+          <>
+            <span className="rl-slot-bulbs rl-slot-bulbs--top" aria-hidden="true" />
+            <span className="rl-slot-bulbs rl-slot-bulbs--bottom" aria-hidden="true" />
+            <span className="rl-slot-payline" aria-hidden="true" />
+          </>
+        )}
+        <div className="overflow-hidden">
+          <div className={`${SHELF_TRACK} !overflow-visible`}>
+            {loaded
+              ? bets.map((bet, i) => (
+                  <WinnerCard
+                    key={bet.id}
+                    bet={bet}
+                    fresh={i === 0 && bet.id === fresh}
+                    slot={slot}
+                  />
+                ))
+              : Array.from({ length: PLACEHOLDERS }, (_, i) => (
+                  <div key={i} className="@container" aria-hidden="true">
+                    <span className={`${CARD_FRAME} animate-pulse`} />
+                  </div>
+                ))}
+          </div>
         </div>
       </div>
     </section>

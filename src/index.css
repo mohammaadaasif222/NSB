@@ -8,7 +8,7 @@
   font-display: swap;
   font-weight: 100 900;
   src: url('/fonts/onest-cyrillic-ext-v5.woff2') format('woff2');
-  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
 }
 
 @font-face {
@@ -17,7 +17,7 @@
   font-display: swap;
   font-weight: 100 900;
   src: url('/fonts/onest-cyrillic-v5.woff2') format('woff2');
-  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 
 @font-face {
@@ -26,7 +26,10 @@
   font-display: swap;
   font-weight: 100 900;
   src: url('/fonts/onest-latin-ext-v5.woff2') format('woff2');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
 }
 
 @font-face {
@@ -35,7 +38,9 @@
   font-display: swap;
   font-weight: 100 900;
   src: url('/fonts/onest-latin-v5.woff2') format('woff2');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
@@ -44,7 +49,14 @@
   font-display: swap;
   font-weight: 300 900;
   src: url('/fonts/rubik-arabic-v5.woff2') format('woff2');
-  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC,U+102E0-102FB,U+10E60-10E7E,U+10EC2-10EC4,U+10EFC-10EFF,U+1EE00-1EE03,U+1EE05-1EE1F,U+1EE21-1EE22,U+1EE24,U+1EE27,U+1EE29-1EE32,U+1EE34-1EE37,U+1EE39,U+1EE3B,U+1EE42,U+1EE47,U+1EE49,U+1EE4B,U+1EE4D-1EE4F,U+1EE51-1EE52,U+1EE54,U+1EE57,U+1EE59,U+1EE5B,U+1EE5D,U+1EE5F,U+1EE61-1EE62,U+1EE64,U+1EE67-1EE6A,U+1EE6C-1EE72,U+1EE74-1EE77,U+1EE79-1EE7C,U+1EE7E,U+1EE80-1EE89,U+1EE8B-1EE9B,U+1EEA1-1EEA3,U+1EEA5-1EEA9,U+1EEAB-1EEBB,U+1EEF0-1EEF1;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB,
+    U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22,
+    U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49,
+    U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F,
+    U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E,
+    U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
 }
 
 @font-face {
@@ -53,7 +65,7 @@
   font-display: swap;
   font-weight: 300 900;
   src: url('/fonts/rubik-cyrillic-ext-v5.woff2') format('woff2');
-  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
 }
 
 @font-face {
@@ -62,7 +74,7 @@
   font-display: swap;
   font-weight: 300 900;
   src: url('/fonts/rubik-cyrillic-v5.woff2') format('woff2');
-  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 
 @font-face {
@@ -71,7 +83,10 @@
   font-display: swap;
   font-weight: 300 900;
   src: url('/fonts/rubik-latin-ext-v5.woff2') format('woff2');
-  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
 }
 
 @font-face {
@@ -80,7 +95,9 @@
   font-display: swap;
   font-weight: 300 900;
   src: url('/fonts/rubik-latin-v5.woff2') format('woff2');
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* Roboto sets nothing but the tournament podium's rank discs (1, 2, 3), so
@@ -817,11 +834,183 @@ html:not([data-theme='dark']) .border-blue-600 {
   animation: rl-jackpot-glow 1.2s ease-in-out infinite;
 }
 
+/* Recent Winners' Active Wins tab dressed as a slot machine: the row sits in
+   a cabinet with a gold gradient rim and chasing bulbs along its top and
+   bottom, a payline runs across the reels, each card is shaded like a
+   turning drum, and the multiplier reads off a win meter. */
+.rl-slot-cabinet {
+  --rl-slot-bulb: calc(var(--u, 1px) * 9);
+  --rl-slot-pad-y: calc(var(--u, 1px) * 26);
+  position: relative;
+  padding: var(--rl-slot-pad-y) 12px;
+  border-radius: calc(var(--u, 1px) * 28);
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(249, 208, 40, 0.1), transparent 60%),
+    linear-gradient(180deg, #1a1508 0%, #0c0b08 45%, #120f06 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 calc(var(--u, 1px) * 10) calc(var(--u, 1px) * 24) rgba(0, 0, 0, 0.55),
+    0 calc(var(--u, 1px) * 14) calc(var(--u, 1px) * 40) rgba(0, 0, 0, 0.45),
+    0 0 calc(var(--u, 1px) * 36) rgba(249, 208, 40, 0.12);
+}
+
+/* The phone's cards are small already, so the sides only widen on desktop. */
+@media (min-width: 1024px) {
+  .rl-slot-cabinet {
+    padding-inline: calc(var(--u, 1px) * 22);
+  }
+}
+
+/* The rim: a gradient stroke, so a masked pseudo-element, not a border. */
+.rl-slot-cabinet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: calc(var(--u, 1px) * 2);
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    #fff3b0 0%,
+    var(--rl-gold) 22%,
+    #8a6a0c 50%,
+    var(--rl-gold) 78%,
+    #fff3b0 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Two strips of bulbs, every other one lit, the lit ones walking along. */
+.rl-slot-bulbs {
+  position: absolute;
+  left: calc(var(--u, 1px) * 26);
+  right: calc(var(--u, 1px) * 26);
+  height: var(--rl-slot-bulb);
+  pointer-events: none;
+  background:
+    radial-gradient(circle closest-side, #fff6c8 0 35%, var(--rl-gold) 65%, transparent 100%) 0 0 /
+      calc(var(--rl-slot-bulb) * 4) 100% repeat-x,
+    radial-gradient(circle closest-side, rgba(249, 208, 40, 0.3) 0 60%, transparent 100%)
+      calc(var(--rl-slot-bulb) * 2) 0 / calc(var(--rl-slot-bulb) * 4) 100% repeat-x;
+  filter: drop-shadow(0 0 calc(var(--rl-slot-bulb) * 0.8) rgba(249, 208, 40, 0.8));
+  animation: rl-slot-chase 0.9s steps(2) infinite;
+}
+
+.rl-slot-bulbs--top {
+  top: calc((var(--rl-slot-pad-y) - var(--rl-slot-bulb)) / 2);
+}
+
+.rl-slot-bulbs--bottom {
+  bottom: calc((var(--rl-slot-pad-y) - var(--rl-slot-bulb)) / 2);
+  animation-direction: reverse;
+}
+
+@keyframes rl-slot-chase {
+  to {
+    background-position:
+      calc(var(--rl-slot-bulb) * 4) 0,
+      calc(var(--rl-slot-bulb) * 6) 0;
+  }
+}
+
+/* The payline: a faint gold line across the middle of the cards' artwork
+   (the top 60% of a card, above its glass band), with a pointer at each end
+   in the cabinet's side margins. */
+.rl-slot-payline {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: calc(var(--rl-slot-pad-y) + (100% - 2 * var(--rl-slot-pad-y)) * 0.3);
+  z-index: 2;
+  height: 0;
+  border-top: 1px dashed rgba(249, 208, 40, 0.38);
+  pointer-events: none;
+}
+
+.rl-slot-payline::before,
+.rl-slot-payline::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--u, 1px) * -7);
+  border-block: calc(var(--u, 1px) * 6.5) solid transparent;
+  filter: drop-shadow(0 0 4px rgba(249, 208, 40, 0.7));
+}
+
+.rl-slot-payline::before {
+  left: 0;
+  border-left: calc(var(--u, 1px) * 9) solid var(--rl-gold);
+}
+
+.rl-slot-payline::after {
+  right: 0;
+  border-right: calc(var(--u, 1px) * 9) solid var(--rl-gold);
+}
+
+/* A reel window: darkened at the top and bottom like a drum turning away. */
+.rl-slot-window::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0) 22%,
+    rgba(0, 0, 0, 0) 80%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(249, 208, 40, 0.18),
+    inset 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* The win meter the multiplier reads off. */
+.rl-slot-meter {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.3em;
+  border-radius: 0.35em;
+  background: linear-gradient(180deg, #050505, #1b1709);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(249, 208, 40, 0.35);
+  color: var(--rl-gold);
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(249, 208, 40, 0.6);
+}
+
+/* The ribbon a win of JACKPOT_AT or more carries. */
+.rl-slot-jackpot {
+  position: absolute;
+  top: 6cqw;
+  left: 6cqw;
+  z-index: 2;
+  padding: 1.5cqw 4.5cqw;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--rl-gold-hi), var(--rl-gold) 55%, #c79a0a);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 0 10px rgba(249, 208, 40, 0.55);
+  color: #1a1300;
+  font-size: max(9px, 5.6cqw);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rl-winner-in,
   .rl-reel-in,
   .rl-reel-strip,
-  .rl-jackpot::after {
+  .rl-jackpot::after,
+  .rl-slot-bulbs {
     animation: none;
   }
 }
@@ -1515,8 +1704,7 @@ html:not([data-theme='dark']) .border-blue-600 {
 @utility rl-menu-panel-glass {
   border: 0;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
-    rgba(0, 0, 0, 0.34);
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)), rgba(0, 0, 0, 0.34);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.1),
     0 8px 40px rgba(0, 0, 0, 0.12);
@@ -1555,8 +1743,10 @@ html:not([data-theme='dark']) .border-blue-600 {
   position: relative;
   background: rgba(255, 255, 255, 0.07);
   box-shadow:
-    inset calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 16) calc(var(--u) * -6) rgba(0, 0, 0, 0.15),
-    inset calc(var(--u) * -10) calc(var(--u) * -10) calc(var(--u) * 18) calc(var(--u) * -6) rgba(255, 255, 255, 0.03),
+    inset calc(var(--u) * 10) calc(var(--u) * 10) calc(var(--u) * 16) calc(var(--u) * -6)
+      rgba(0, 0, 0, 0.15),
+    inset calc(var(--u) * -10) calc(var(--u) * -10) calc(var(--u) * 18) calc(var(--u) * -6)
+      rgba(255, 255, 255, 0.03),
     0 8px 40px rgba(0, 0, 0, 0.2);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -1569,15 +1759,12 @@ html:not([data-theme='dark']) .border-blue-600 {
     padding: 1px;
     border-radius: inherit;
     background: conic-gradient(
-      rgba(255, 255, 255, 0.2) 0deg 25deg,
-      rgba(255, 255, 255, 0) 45deg,
-      rgba(255, 255, 255, 0.15) 65deg 115deg,
+      rgba(255, 255, 255, 0.3) 0deg,
+      rgba(255, 255, 255, 0) 40deg 95deg,
       rgba(255, 255, 255, 0.32) 135deg,
-      rgba(255, 255, 255, 0.15) 155deg 205deg,
-      rgba(255, 255, 255, 0) 225deg,
-      rgba(255, 255, 255, 0.2) 245deg 295deg,
+      rgba(255, 255, 255, 0) 175deg 265deg,
       rgba(255, 255, 255, 0.65) 315deg,
-      rgba(255, 255, 255, 0.2) 335deg 360deg
+      rgba(255, 255, 255, 0.3) 360deg
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -1667,7 +1854,8 @@ html:not([data-theme='dark']) .border-blue-600 {
    card's inset shadow; the card polish's `::before` rim is switched off on it
    (`before:hidden`). */
 :root {
-  --hero-panel-rim: inset 1px 1px 0 rgba(255, 255, 255, 0.16), inset -1px -1px 0 rgba(255, 255, 255, 0.09);
+  --hero-panel-rim:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16), inset -1px -1px 0 rgba(255, 255, 255, 0.09);
 }
 
 /* The Casino / Sports tiles' rim: a half-pixel whitish hairline on the
@@ -1680,7 +1868,14 @@ html:not([data-theme='dark']) .border-blue-600 {
    Plain CSS after the card polish, so it replaces that polish's rim. */
 .rl-diag-rim::before,
 .rl-diag-rim:not(header *, footer *, [aria-modal='true'] *)::before,
-:is(.rl-pill-rim, .rl-chip, .rl-chip-active, .rl-chip-danger, .rl-chip-success, .rl-glass-btn.rounded-full:not(header *))::before {
+:is(
+  .rl-pill-rim,
+  .rl-chip,
+  .rl-chip-active,
+  .rl-chip-danger,
+  .rl-chip-success,
+  .rl-glass-btn.rounded-full:not(header *)
+)::before {
   content: '';
   position: absolute;
   z-index: 1;
@@ -1695,14 +1890,30 @@ html:not([data-theme='dark']) .border-blue-600 {
   border-radius: calc(var(--rim-radius, 24px) * 2);
   background: var(--rim-color, rgba(255, 255, 255, 0.5));
   -webkit-mask:
-    radial-gradient(circle at 100% 0, transparent var(--rim-clear, 28px), #000 var(--rim-fade, 80px)),
-    radial-gradient(circle at 0 100%, transparent var(--rim-clear, 28px), #000 var(--rim-fade, 80px)),
+    radial-gradient(
+      circle at 100% 0,
+      transparent var(--rim-clear, 28px),
+      #000 var(--rim-fade, 80px)
+    ),
+    radial-gradient(
+      circle at 0 100%,
+      transparent var(--rim-clear, 28px),
+      #000 var(--rim-fade, 80px)
+    ),
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   -webkit-mask-composite: source-in, source-in, xor;
   mask:
-    radial-gradient(circle at 100% 0, transparent var(--rim-clear, 28px), #000 var(--rim-fade, 80px)),
-    radial-gradient(circle at 0 100%, transparent var(--rim-clear, 28px), #000 var(--rim-fade, 80px)),
+    radial-gradient(
+      circle at 100% 0,
+      transparent var(--rim-clear, 28px),
+      #000 var(--rim-fade, 80px)
+    ),
+    radial-gradient(
+      circle at 0 100%,
+      transparent var(--rim-clear, 28px),
+      #000 var(--rim-fade, 80px)
+    ),
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   mask-composite: intersect, intersect, exclude;
@@ -1714,7 +1925,14 @@ html:not([data-theme='dark']) .border-blue-600 {
    pill's radius, its two bare corners left dark. The rim is the only edge — the even white glow the
    glass button and the chips draw inside their edge would close the gaps,
    so only their depth is kept. */
-:is(.rl-pill-rim, .rl-chip, .rl-chip-active, .rl-chip-danger, .rl-chip-success, .rl-glass-btn.rounded-full:not(header *))::before {
+:is(
+  .rl-pill-rim,
+  .rl-chip,
+  .rl-chip-active,
+  .rl-chip-danger,
+  .rl-chip-success,
+  .rl-glass-btn.rounded-full:not(header *)
+)::before {
   --rim-radius: 999px;
   /* A long pill's corners sit too close for the cleared rounds: lit on a
      gradient instead, whose midline runs exactly through the top-end and
@@ -1799,7 +2017,8 @@ html:not([data-theme='dark']) .border-blue-600 {
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.095));
   box-shadow:
     inset 0 0 calc(var(--u) * 1.2) calc(var(--u) * 0.4) rgba(255, 255, 255, 0.16),
-    inset calc(var(--u) * 6) calc(var(--u) * 6) calc(var(--u) * 8) calc(var(--u) * -2) rgba(0, 0, 0, 0.18),
+    inset calc(var(--u) * 6) calc(var(--u) * 6) calc(var(--u) * 8) calc(var(--u) * -2)
+      rgba(0, 0, 0, 0.18),
     0 8px 40px rgba(0, 0, 0, 0.2);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   backdrop-filter: blur(12px) saturate(140%);
@@ -1859,7 +2078,11 @@ html:not([data-theme='dark']) .border-blue-600 {
     /* Top band, then the bottom band stopping short of the end curve, over
        the faint even rim the end keeps. */
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0) calc(var(--u) * 60)),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.17),
+        rgba(255, 255, 255, 0) calc(var(--u) * 60)
+      ),
       linear-gradient(
           270deg,
           rgba(255, 255, 255, 0) calc(var(--u) * 40),
@@ -2377,8 +2600,7 @@ html:not([data-theme='dark']) .border-blue-600 {
 
 @utility rl-table-card {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)),
-    rgba(0, 0, 0, 0.4);
+    linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)), rgba(0, 0, 0, 0.4);
   border-radius: 34px;
   box-shadow:
     inset 10px 10px 16px -6px rgba(0, 0, 0, 0.15),
@@ -2970,8 +3192,7 @@ html:not([data-theme='dark']) .border-blue-600 {
   position: relative;
   border-radius: 32px;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)),
-    rgba(0, 0, 0, 0.4);
+    linear-gradient(rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)), rgba(0, 0, 0, 0.4);
   border: 0;
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   backdrop-filter: blur(12px) saturate(180%);
@@ -3007,11 +3228,14 @@ html:not([data-theme='dark']) .border-blue-600 {
     inset: 0;
     padding: var(--rim-width, 0.5px);
     border-radius: inherit;
-    background: linear-gradient(
-      to bottom right,
-      rgba(255, 255, 255, 0.6),
-      rgba(255, 255, 255, 0) 38% 62%,
-      rgba(255, 255, 255, 0.6)
+    background: var(
+      --rim-phone,
+      linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0.6),
+        rgba(255, 255, 255, 0) 38% 62%,
+        rgba(255, 255, 255, 0.6)
+      )
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -3029,23 +3253,54 @@ html:not([data-theme='dark']) .border-blue-600 {
        clear less of each corner. */
     @media (width >= 40rem) {
       background:
-        radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) var(--rim-fade, 80px)),
-        radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) var(--rim-fade, 80px)),
+        radial-gradient(
+          circle at 0 0,
+          rgba(255, 255, 255, 0.5),
+          rgba(255, 255, 255, 0) var(--rim-fade, 80px)
+        ),
+        radial-gradient(
+          circle at 100% 100%,
+          rgba(255, 255, 255, 0.5),
+          rgba(255, 255, 255, 0) var(--rim-fade, 80px)
+        ),
         rgba(255, 255, 255, 0.3);
       -webkit-mask:
-        radial-gradient(circle at 100% 0, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
-        radial-gradient(circle at 0 100%, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(
+          circle at 100% 0,
+          transparent var(--rim-clear, 34px),
+          #000 var(--rim-fade, 80px)
+        ),
+        radial-gradient(
+          circle at 0 100%,
+          transparent var(--rim-clear, 34px),
+          #000 var(--rim-fade, 80px)
+        ),
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
       -webkit-mask-composite: source-in, source-in, xor;
       mask:
-        radial-gradient(circle at 100% 0, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
-        radial-gradient(circle at 0 100%, transparent var(--rim-clear, 34px), #000 var(--rim-fade, 80px)),
+        radial-gradient(
+          circle at 100% 0,
+          transparent var(--rim-clear, 34px),
+          #000 var(--rim-fade, 80px)
+        ),
+        radial-gradient(
+          circle at 0 100%,
+          transparent var(--rim-clear, 34px),
+          #000 var(--rim-fade, 80px)
+        ),
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
       mask-composite: intersect, intersect, exclude;
     }
   }
+}
+
+@utility rl-rim-top {
+  --rim-phone:
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 120px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 85%) top / 100% 40px
+      no-repeat;
 }
 
 /* The design's "Liquid Glass – Regular" as its dialogs draw it (the wallet):

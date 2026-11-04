@@ -1138,6 +1138,7 @@
   "lobby.winners.casinoWins": "أرباح الكازينو",
   "lobby.winners.casinoBets": "رهانات الكازينو",
   "lobby.winners.sportsBets": "الرهانات الرياضية",
+  "lobby.winners.jackpot": "جاكبوت",
   "lobby.winners.cardTitle": "{user} ربح {payout} في {game}",
   "lobby.jackpots.title": "الجاكبوت",
   "lobby.jackpots.paused": "متوقف مؤقتاً",

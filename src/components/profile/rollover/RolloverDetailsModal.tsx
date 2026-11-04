@@ -96,6 +96,7 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
             {t('roll.detail.title')}
           </h2>
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('roll.detail.close')}

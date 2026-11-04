@@ -258,6 +258,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier, liveness = fals
             </div>
           </div>
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"

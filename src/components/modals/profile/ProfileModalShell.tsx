@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from '@/context/I18nContext';
 import { useModalA11y } from '@/hooks/useModalA11y';
 import { CloseIcon } from '@/components/icons';
+import CircleIconButton from '@/components/ui/CircleIconButton';
 
 /**
  * The account dialogs' shell.
@@ -83,7 +84,7 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className={`${auth ? 'rl-modal-card rl-modal-rim' : 'rl-modal-glass'} flex max-h-[96vh] w-full max-w-[480px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7`}
+        className={`${auth ? 'rl-modal-card rl-modal-rim rl-rim-top max-sm:!rounded-b-none max-sm:!rounded-t-[34px]' : 'rl-modal-glass'} flex max-h-[96vh] w-full max-w-[480px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7`}
       >
         <div className="flex shrink-0 items-start">
           <h2
@@ -93,14 +94,26 @@ const ProfileModalShell: FC<ProfileModalShellProps> = ({
             {title}
           </h2>
 
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('common.close')}
-            className="rl-chip -mt-2 flex h-12 w-12 shrink-0 items-center justify-center text-[#f0f1f5]"
-          >
-            <CloseIcon size={18} />
-          </button>
+          {auth ? (
+            <CircleIconButton
+              data-sound="close"
+              label={t('common.close')}
+              onClick={onClose}
+              className="-mt-2 max-sm:h-12 max-sm:w-12"
+            >
+              <CloseIcon size={33} strokeWidth={1.45} />
+            </CircleIconButton>
+          ) : (
+            <button
+              data-sound="close"
+              type="button"
+              onClick={onClose}
+              aria-label={t('common.close')}
+              className="rl-chip -mt-2 flex h-12 w-12 shrink-0 items-center justify-center text-[#f0f1f5]"
+            >
+              <CloseIcon size={18} />
+            </button>
+          )}
         </div>
 
         {/* `min-h-0` is what lets this shrink and scroll instead of growing and

@@ -217,6 +217,7 @@ export const en = {
   'lobby.winners.casinoWins': 'Casino wins',
   'lobby.winners.casinoBets': 'Casino bets',
   'lobby.winners.sportsBets': 'Sports bets',
+  'lobby.winners.jackpot': 'Jackpot',
   'lobby.winners.cardTitle': '{user} won {payout} on {game}',
 
   // Provider jackpots

@@ -1138,6 +1138,7 @@
   "lobby.winners.casinoWins": "Casino kazançları",
   "lobby.winners.casinoBets": "Casino bahisleri",
   "lobby.winners.sportsBets": "Spor bahisleri",
+  "lobby.winners.jackpot": "Jackpot",
   "lobby.winners.cardTitle": "{user}, {game} oyununda {payout} kazandı",
   "lobby.jackpots.title": "Jackpotlar",
   "lobby.jackpots.paused": "Duraklatıldı",

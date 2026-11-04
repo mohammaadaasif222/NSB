@@ -129,7 +129,7 @@ const RatePromotionModal: FC<Props> = ({
         >
           {t('promo.rateTitle')}
         </h2>
-        <CircleIconButton label={t('common.close')} onClick={onClose}>
+        <CircleIconButton data-sound="close" label={t('common.close')} onClick={onClose}>
           {/* The glass dialogs' cross: 16.7px across in 2px strokes. */}
           <CloseIcon size={33} strokeWidth={1.45} />
         </CircleIconButton>

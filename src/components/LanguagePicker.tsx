@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type FC } from 'react';
+import { createPortal } from 'react-dom';
 import { useI18n } from '@/context/I18nContext';
 import CountryFlag from '@/components/flags/CountryFlag';
 import globeIcon from '@/assets/lobby/footer/lang-globe.svg';
@@ -139,12 +140,37 @@ const LanguagePicker: FC<Props> = ({
   const { locale, setLocale, meta, locales, t } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [anchor, setAnchor] = useState<CSSProperties | null>(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const place = (): void => {
+      const host = ref.current;
+      if (!host) return;
+      const { left, top, width, height } = host.getBoundingClientRect();
+      setAnchor({
+        left,
+        top,
+        width,
+        height,
+        ['--u' as string]: getComputedStyle(host).getPropertyValue('--u') || '1px',
+      });
+    };
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [open]);
 
   useEffect(() => {
     const handler = (e: MouseEvent): void => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      if (ref.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
     };
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') setOpen(false);
@@ -227,18 +253,23 @@ const LanguagePicker: FC<Props> = ({
         )}
       </button>
 
-      {open && (
-        <LanguageMenu
-          locales={locales}
-          current={locale}
-          title={t('common.language')}
-          onSelect={(code) => {
-            setLocale(code);
-            setOpen(false);
-          }}
-          className={`!absolute ${placement}`}
-        />
-      )}
+      {open &&
+        anchor &&
+        createPortal(
+          <div ref={menuRef} className="pointer-events-none fixed z-[80]" style={anchor}>
+            <LanguageMenu
+              locales={locales}
+              current={locale}
+              title={t('common.language')}
+              onSelect={(code) => {
+                setLocale(code);
+                setOpen(false);
+              }}
+              className={`pointer-events-auto !absolute ${placement}`}
+            />
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

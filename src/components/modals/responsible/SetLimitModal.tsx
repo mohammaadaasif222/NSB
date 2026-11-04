@@ -132,6 +132,7 @@ const SetLimitModal: FC<Props> = ({ limits, onClose, onSubmit, saving = false })
           </h2>
 
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('rgc.close')}

@@ -1138,6 +1138,7 @@
   "lobby.winners.casinoWins": "Выигрыши в казино",
   "lobby.winners.casinoBets": "Ставки в казино",
   "lobby.winners.sportsBets": "Ставки на спорт",
+  "lobby.winners.jackpot": "Джекпот",
   "lobby.winners.cardTitle": "{user} выиграл {payout} в {game}",
   "lobby.jackpots.title": "Джекпоты",
   "lobby.jackpots.paused": "Приостановлен",
