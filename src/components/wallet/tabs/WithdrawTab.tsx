@@ -30,6 +30,7 @@ import WalletField, {
   WALLET_VALUE,
 } from '../shared/WalletField';
 import { currencySign } from '../shared/currencySign';
+import NeedHelpLink from '@/components/auth/NeedHelpLink';
 
 /** The amount as typed: 18px bold; the "0.00" before it, 16px grey. */
 const AMOUNT_INPUT = `${WALLET_INPUT} tabular-nums placeholder:text-[16px] placeholder:font-normal placeholder:text-[#9da2b4]`;
@@ -454,7 +455,13 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                 apiMessage={kycRefusal?.message}
                 errorCode={kycRefusal?.code ?? (gatedByLevel ? 'TIER_UPGRADE_REQUIRED' : undefined)}
               />
-              <p className={HELP}>{t('acct.wallet.withdrawHelp')}</p>
+              <p className={HELP}>
+                <NeedHelpLink
+                  look="inherit"
+                  label={t('acct.wallet.withdrawHelp')}
+                  subject={t('acct.wallet.withdrawHelp')}
+                />
+              </p>
             </div>
           ) : (
             <>
@@ -624,7 +631,13 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                 {submitting ? t('acct.wallet.submitting') : t('acct.wallet.tabWithdraw')}
               </Button>
 
-              <p className={HELP}>{t('acct.wallet.withdrawHelp')}</p>
+              <p className={HELP}>
+                <NeedHelpLink
+                  look="inherit"
+                  label={t('acct.wallet.withdrawHelp')}
+                  subject={t('acct.wallet.withdrawHelp')}
+                />
+              </p>
             </>
           )}
         </>
@@ -656,7 +669,13 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
               onKycRefused={onKycRefused}
               available={{ amount: String(availableDisplay), currency: displayCurrency }}
             />
-            <p className={HELP}>{t('acct.wallet.withdrawHelp')}</p>
+            <p className={HELP}>
+              <NeedHelpLink
+                look="inherit"
+                label={t('acct.wallet.withdrawHelp')}
+                subject={t('acct.wallet.withdrawHelp')}
+              />
+            </p>
           </>
           )}
         </div>

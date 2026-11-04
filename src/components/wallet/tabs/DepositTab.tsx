@@ -18,6 +18,7 @@ import KycGateNotice from '../KycGateNotice';
 import LocalCurrencyTab from './LocalCurrencyTab';
 import SegmentedTabs from '@/components/player/SegmentedTabs';
 import { WALLET_TRACK } from '@/components/wallet/shared/WalletTabBar';
+import NeedHelpLink from '@/components/auth/NeedHelpLink';
 import { WALLET_NOTE } from '../shared/WalletField';
 
 type DepositType = 'crypto' | 'local';
@@ -278,7 +279,11 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
           </div>
 
           <p className="mt-[22px] text-center text-[16px] font-medium leading-6 text-[#f0f1f5]">
-            {t('acct.wallet.depositHelp')}
+            <NeedHelpLink
+              look="inherit"
+              label={t('acct.wallet.depositHelp')}
+              subject={t('acct.wallet.depositHelp')}
+            />
           </p>
         </>
       )}
