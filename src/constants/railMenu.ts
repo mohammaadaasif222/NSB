@@ -1,5 +1,11 @@
 import type { TranslationKey } from '@/i18n/locales';
-import { ALL_GAMES_PATH, LIVE_CASINO_HREF, categoryHref, gameHref } from '@/constants/games';
+import {
+  ALL_GAMES_PATH,
+  DROPS_WINS_PATH,
+  LIVE_CASINO_HREF,
+  categoryHref,
+  gameHref,
+} from '@/constants/games';
 import { sportHref } from '@/constants/sportsbook';
 
 /** A row inside an expandable rail group. No `href`: drawn as "Soon". */
@@ -46,7 +52,7 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
     href: '/casino',
     items: [
       { labelKey: 'lobby.rail.popularGames', href: categoryHref('popular') },
-      { labelKey: 'lobby.rail.dropsWins' },
+      { labelKey: 'lobby.rail.dropsWins', href: DROPS_WINS_PATH },
       { labelKey: 'dash.slots', href: categoryHref('slots') },
       { labelKey: 'lobby.rail.latestReleases', href: categoryHref('new') },
       { labelKey: 'lobby.rail.highRtp', href: `${ALL_GAMES_PATH}?sort=rtp` },

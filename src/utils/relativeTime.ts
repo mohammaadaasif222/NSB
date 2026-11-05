@@ -7,6 +7,14 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ['minute', 60],
 ];
 
+/** "in 3 hours", in the reader's language, in the largest unit that fits; "in 0 minutes" once past. */
+export const until = (iso: string, locale: string): string => {
+  const seconds = Math.max(0, (new Date(iso).getTime() - Date.now()) / 1000);
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'always' });
+  const [unit, size] = UNITS.find(([, s]) => seconds >= s) ?? ['minute', 60];
+  return formatter.format(Math.floor(seconds / size), unit);
+};
+
 /** "3 hours ago", in the reader's language, in the largest unit that fits. */
 export const ago = (iso: string, locale: string): string => {
   const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
