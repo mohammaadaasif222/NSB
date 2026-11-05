@@ -124,7 +124,7 @@ const SelfExclusionSection: FC<{ entry?: HelpEntry }> = ({ entry }) => {
     `rounded-full px-4 py-2 text-[15px] leading-6 transition-colors ${
       selected?.value === o.value
         ? 'rl-chip-active text-[#ffe779]'
-        : 'rl-chip text-[#9da2b4] hover:text-white'
+        : 'rl-chip font-medium text-[#e3e6ee] hover:text-white'
     }`;
 
   return (

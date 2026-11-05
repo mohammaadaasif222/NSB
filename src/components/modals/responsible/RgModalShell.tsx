@@ -73,7 +73,7 @@ const RgModalShell: FC<Props> = ({
         aria-modal="true"
         aria-labelledby="rg-modal-title"
         onClick={(e) => e.stopPropagation()}
-        className="rl-menu flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-[28px] sm:max-h-[86vh] sm:rounded-[28px]"
+        className="rl-menu flex max-h-[92dvh] w-full max-w-lg flex-col rounded-t-[28px] sm:max-h-[86dvh] sm:rounded-[28px]"
       >
         <header className="flex items-start gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
           <div className="min-w-0 flex-1">

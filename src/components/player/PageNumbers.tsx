@@ -20,18 +20,21 @@ const NUMBER =
 const NUMBER_ON = 'rl-pager-page-on';
 const NUMBER_IDLE = 'rl-pager-page';
 
+export const pageWindow = (page: number, totalPages: number, span = 5): number[] => {
+  const pages = Math.max(1, totalPages);
+  const first = Math.max(1, Math.min(page - Math.floor((span - 1) / 2), pages - span + 1));
+  return Array.from({ length: Math.min(span, pages) }, (_, i) => first + i);
+};
+
 /**
  * The design's numbered pager for a list paged in the browser: Previous, a
  * run of page numbers around the current one, Next. Spread across the width
  * on a phone, centred with 20px gaps on desktop.
  */
-const PageNumbers: FC<Props> = ({ page, totalPages, onChange, window: span = 4 }) => {
+const PageNumbers: FC<Props> = ({ page, totalPages, onChange, window: span = 5 }) => {
   const { t } = useTranslation();
   const pages = Math.max(1, totalPages);
-
-  // A run of `span` numbers containing the current page, kept inside 1…pages.
-  const first = Math.max(1, Math.min(page - Math.floor((span - 1) / 2), pages - span + 1));
-  const numbers = Array.from({ length: Math.min(span, pages) }, (_, i) => first + i);
+  const numbers = pageWindow(page, pages, span);
 
   return (
     <nav

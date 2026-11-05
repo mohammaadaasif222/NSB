@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 
 import { useTranslation } from '@/context/I18nContext';
+import { pageWindow } from '@/components/player/PageNumbers';
 
 interface Props {
   page: number;
@@ -37,7 +38,7 @@ const BlogPagination: FC<Props> = ({ page, totalPages, onPage }) => {
         {t('blogs.previous')}
       </button>
 
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+      {pageWindow(page, totalPages).map((n) => (
         <button
           key={n}
           type="button"
@@ -45,9 +46,7 @@ const BlogPagination: FC<Props> = ({ page, totalPages, onPage }) => {
           aria-current={n === page ? 'page' : undefined}
           aria-label={t('blogs.page', { page: n })}
           className={`${BASE} w-11 lg:w-[calc(var(--u)*48)] ${
-            n === page
-              ? 'rl-pager-page-on'
-              : 'rl-pager-page'
+            n === page ? 'rl-pager-page-on' : 'rl-pager-page'
           }`}
         >
           {n}

@@ -13,11 +13,6 @@ interface Props {
   title: string;
   /** `title` — 28px, centred (Wallet); `panel` — 20px at the start edge. */
   titleVariant?: 'title' | 'panel';
-  /**
-   * The pane's tint: `clear` — nearly all blur (the wallet, Select Game);
-   * `grey` — the design's lighter grey glass (the suggestion box).
-   */
-  tone?: 'clear' | 'grey';
   /** Whether the page behind is dimmed (the default) or left clear. */
   backdrop?: 'dim' | 'none';
   /**
@@ -48,7 +43,6 @@ const GlassDialog: FC<Props> = ({
   titleId,
   title,
   titleVariant = 'panel',
-  tone = 'clear',
   backdrop = 'dim',
   phoneSheet = false,
   titleClassName,
@@ -67,7 +61,7 @@ const GlassDialog: FC<Props> = ({
       style={{ zoom: scale }}
       backdrop={backdrop}
       phoneSheet={phoneSheet}
-      className={`${tone === 'grey' ? '[--dialog-fill:rgba(89,89,89,0.2)]' : ''} ${className}`}
+      className={className}
     >
       {phoneSheet === 'page' && (
         <div className="flex items-center gap-3 sm:hidden">
@@ -80,7 +74,10 @@ const GlassDialog: FC<Props> = ({
           >
             <ChevronLeftIcon size={20} className="rtl:rotate-180" />
           </button>
-          <p aria-hidden="true" className="truncate text-[24px] font-medium leading-8 text-[#f0f1f5]">
+          <p
+            aria-hidden="true"
+            className="truncate text-[24px] font-medium leading-8 text-[#f0f1f5]"
+          >
             {title}
           </p>
         </div>
@@ -95,7 +92,7 @@ const GlassDialog: FC<Props> = ({
           closeLabel={t('common.close')}
         />
       </div>
-      {children}
+      <div className="rl-modal-body">{children}</div>
     </Modal>
   );
 };

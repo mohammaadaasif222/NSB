@@ -67,7 +67,9 @@ const AuthModalShell: FC<AuthModalShellProps> = ({
               : 'max-sm:!text-[18px] max-sm:!leading-7'
         }
       />
-      <div className="relative z-10 px-px pt-[26px] sm:px-8 sm:pb-2 sm:pt-7">{children}</div>
+      <div className="rl-modal-body relative z-10 px-px pt-[26px] sm:px-8 sm:pb-2 sm:pt-7">
+        {children}
+      </div>
       {footer}
     </Modal>
   );

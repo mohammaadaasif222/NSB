@@ -104,7 +104,14 @@ interface Props {
    * the trigger sits at the start of the header.
    */
   iconOnly?: boolean;
-  /** With `iconOnly`: open the list from the trigger's end edge, for a
+  /**
+   * The top bar's picker: the globe and the current language's code with a
+   * chevron, so it reads as the language control at a glance. A phone shows
+   * the globe alone, for room. The menu hangs from the start edge, like
+   * `iconOnly`'s.
+   */
+  bar?: boolean;
+  /** With `iconOnly` or `bar`: open the list from the trigger's end edge, for a
    *  trigger at the end of its row (the phone menu's). */
   menuAlign?: 'start' | 'end';
   /**
@@ -132,6 +139,7 @@ const LanguagePicker: FC<Props> = ({
   glass = false,
   dropUp = false,
   iconOnly = false,
+  bar = false,
   menuAlign = 'start',
   shell = false,
   plain = false,
@@ -187,17 +195,19 @@ const LanguagePicker: FC<Props> = ({
     ? 'glass-pill flex h-10 items-center gap-1.5 px-2.5 font-rubik text-[14px] text-white'
     : iconOnly
       ? 'rl-glass-btn inline-flex h-10 w-10 items-center justify-center rounded-full lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]'
-      : shell
-        ? 'rl-glass-btn flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*6)] rounded-full ps-[calc(var(--u)*12)] pe-[calc(var(--u)*15)] font-rubik text-[length:max(11px,calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white'
-        : plain
-          ? 'flex items-center gap-[calc(var(--u)*10)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-white'
-          : 'flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors';
+      : bar
+        ? 'rl-glass-btn inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rounded-full font-semibold text-white lg:h-[calc(var(--u)*48)] lg:w-auto lg:ps-[calc(var(--u)*12)] lg:pe-[calc(var(--u)*14)] lg:text-[length:max(12px,calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]'
+        : shell
+          ? 'rl-glass-btn flex h-[calc(var(--u)*48)] items-center gap-[calc(var(--u)*6)] rounded-full ps-[calc(var(--u)*12)] pe-[calc(var(--u)*15)] font-rubik text-[length:max(11px,calc(var(--u)*16))] font-medium leading-[calc(var(--u)*24)] text-white'
+          : plain
+            ? 'flex items-center gap-[calc(var(--u)*10)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-white'
+            : 'flex items-center gap-2 rounded-full bg-slate-800 border border-slate-700 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors';
 
   // Where the list opens. The auth card's rises over its own trigger, as the
   // design draws it; the rest hang off their trigger on the side with room.
   const placement = glass
     ? `start-0 ${dropUp ? 'bottom-0' : 'top-0'}`
-    : iconOnly
+    : iconOnly || bar
       ? `${menuAlign === 'end' ? 'end-0' : 'start-0'} top-12 lg:top-[calc(var(--u)*56)]`
       : dropUp
         ? `end-0 ${shell ? 'bottom-[calc(100%+var(--u)*8)]' : 'bottom-11'}`
@@ -212,9 +222,23 @@ const LanguagePicker: FC<Props> = ({
         aria-expanded={open}
         aria-label={t('common.language')}
         className={triggerClass}
-        title={iconOnly ? meta.label : undefined}
+        title={iconOnly || bar ? meta.label : undefined}
       >
-        {iconOnly ? (
+        {bar ? (
+          <>
+            <img
+              src={barGlobe.src}
+              alt=""
+              className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+            />
+            <span className="hidden uppercase tracking-wide lg:inline">{locale.split('-')[0]}</span>
+            <img
+              src={chevronIcon.src}
+              alt=""
+              className={`hidden h-[calc(var(--u)*16)] w-[calc(var(--u)*16)] transition-transform lg:block ${open ? 'rotate-180' : ''}`}
+            />
+          </>
+        ) : iconOnly ? (
           <img
             src={barGlobe.src}
             alt=""

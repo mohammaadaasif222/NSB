@@ -52,8 +52,8 @@ const TransactionFilters: FC<Props> = ({ query, onQuery, filter, onFilter }) => 
               aria-pressed={selected}
               className={`flex h-[calc(var(--u)*32)] shrink-0 items-center justify-center rounded-full px-[calc(var(--u)*15)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] whitespace-nowrap ${
                 selected
-                  ? 'rl-chip-active font-medium text-[#ffe779]'
-                  : 'rl-chip font-normal text-[#9da2b4] hover:rl-chip-active hover:font-medium hover:text-[#ffe779]'
+                  ? 'rl-chip-active font-semibold text-[#ffe779]'
+                  : 'rl-chip font-medium text-[#e3e6ee] hover:rl-chip-active hover:font-semibold hover:text-[#ffe779]'
               }`}
             >
               {t(labelKey)}

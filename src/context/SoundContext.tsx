@@ -19,8 +19,11 @@ import {
  * the console (see lib/uiSound). Games run in provider iframes, whose clicks
  * never reach this document — they bring their own sound.
  *
- * On by default. The choice is per device, in localStorage like the language,
- * since `/users/me` has no field for it.
+ * Off by default: a new player hears nothing until they turn it on in the
+ * settings. The choice is per device, in localStorage like the language,
+ * since `/users/me` has no field for it. A sound switched off in the console
+ * stays silent either way. Originals games have their own switch, on by
+ * default (lib/originalsSound).
  */
 
 interface SoundContextType {
@@ -46,11 +49,15 @@ const MIN_GAP_MS = 60;
 const POPUP_GAP_MS = 250;
 
 export const SoundProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [enabled, setEnabledState] = useState(true);
+  const [enabled, setEnabledState] = useState(false);
 
   // Restored after mount so the server and first client render agree.
   useEffect(() => {
-    if (localStorage.getItem(STORAGE_KEY) === 'off') setEnabledState(false);
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === 'on') setEnabledState(true);
+    } catch {
+      // Storage blocked: stay off.
+    }
   }, []);
 
   // The list of files. Re-read when the tab comes back, so a sound replaced in
@@ -107,7 +114,11 @@ export const SoundProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, [enabled]);
 
   const setEnabled = (on: boolean): void => {
-    localStorage.setItem(STORAGE_KEY, on ? 'on' : 'off');
+    try {
+      localStorage.setItem(STORAGE_KEY, on ? 'on' : 'off');
+    } catch {
+      // Storage blocked: the choice lasts for this page only.
+    }
     setEnabledState(on);
     // The listener only attaches on the next render, so the switch's own
     // click would otherwise be silent; this confirms the sound is back.

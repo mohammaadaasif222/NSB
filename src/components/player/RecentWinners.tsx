@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC, type RefObject } from 'react';
 import Link from 'next/link';
 import Image, { type StaticImageData } from 'next/image';
 import { gameHref } from '@/constants/games';
@@ -77,6 +77,9 @@ const LiveBadge: FC = () => {
   );
 };
 
+const PLACEHOLDER_ART = '/images/placeholder.png';
+const CARD_SIZES = '(max-width: 640px) 33vw, (max-width: 1280px) 20vw, 200px';
+
 /** The card's frame, shared by a win and its loading placeholder. */
 const CARD_FRAME = 'relative block aspect-[198/261] overflow-hidden rounded-[11.1cqw] bg-[#333333]';
 
@@ -87,7 +90,11 @@ const CARD_FRAME = 'relative block aspect-[198/261] overflow-hidden rounded-[11.
  */
 const REEL_STEPS = 7;
 
-const ReelText: FC<{ text: string; spin: boolean }> = ({ text, spin }) => {
+const ReelText: FC<{ text: string; spin: boolean; start?: number }> = ({
+  text,
+  spin,
+  start = 0,
+}) => {
   if (!spin) return <>{text}</>;
   let column = 0;
   return (
@@ -95,7 +102,7 @@ const ReelText: FC<{ text: string; spin: boolean }> = ({ text, spin }) => {
       {[...text].map((char, i) => {
         if (!/\d/.test(char)) return <span key={i}>{char}</span>;
         const digit = Number(char);
-        const delay = column++ * 45;
+        const delay = start + column++ * 45;
         return (
           <span key={i} className="rl-reel">
             <span className="rl-reel-strip" style={{ animationDelay: `${delay}ms` }}>
@@ -113,10 +120,16 @@ const ReelText: FC<{ text: string; spin: boolean }> = ({ text, spin }) => {
 
 const JACKPOT_AT = 10;
 
-const WinnerCard: FC<{ bet: LiveBet; fresh?: boolean; slot?: boolean }> = ({
+/** Blurred tiles a reel runs through before it stops on its win. */
+const REEL_BLURS = 4;
+/** When the first reel stops, and how much later each one to its right does. */
+const REEL_STOP_MS = 900;
+const REEL_STAGGER_MS = 140;
+
+const WinnerCard: FC<{ bet: LiveBet; slot?: boolean; stop?: number }> = ({
   bet,
-  fresh,
   slot,
+  stop = 0,
 }) => {
   const { t } = useTranslation();
   const { game } = bet;
@@ -124,59 +137,90 @@ const WinnerCard: FC<{ bet: LiveBet; fresh?: boolean; slot?: boolean }> = ({
   const jackpot = slot && parseFloat(bet.multiplier) >= JACKPOT_AT;
 
   return (
-    <div className={`@container ${fresh ? (slot ? 'rl-reel-in' : 'rl-winner-in') : ''}`}>
-      <Link
-        href={gameHref(game.slug)}
-        title={t('lobby.winners.cardTitle', { user: bet.player, payout, game: game.title })}
-        className={`group ${CARD_FRAME} ${slot ? 'rl-slot-window' : ''} ${
-          jackpot ? 'rl-jackpot' : ''
-        }`}
-      >
-        <Image
-          src={game.image_url || '/images/placeholder.png'}
-          alt={game.title}
-          fill
-          sizes="(max-width: 640px) 33vw, (max-width: 1280px) 20vw, 200px"
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
-        />
+    <Link
+      href={gameHref(game.slug)}
+      title={t('lobby.winners.cardTitle', { user: bet.player, payout, game: game.title })}
+      className={`group ${slot ? 'relative block h-full' : CARD_FRAME} ${
+        jackpot ? 'rl-jackpot' : ''
+      }`}
+    >
+      <Image
+        src={game.image_url || PLACEHOLDER_ART}
+        alt={game.title}
+        fill
+        sizes={CARD_SIZES}
+        className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
+      />
 
-        {jackpot && <span className="rl-slot-jackpot">{t('lobby.winners.jackpot')}</span>}
+      {jackpot && <span className="rl-slot-jackpot">{t('lobby.winners.jackpot')}</span>}
 
-        {/* The design's "Liquid Glass" band: the artwork blurred through a
+      {/* The design's "Liquid Glass" band: the artwork blurred through a
             faint white frost, a hairline of light along its top — not a dark
             pane, so each card's band takes its own game's colours. */}
-        <span className="absolute inset-x-0 bottom-0 flex h-[39.5%] flex-col justify-between rounded-b-[11.1cqw] bg-black/[0.40] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-[3cqw]">
-          <span className="truncate text-[max(10px,7.07cqw)] font-semibold leading-[1.43] text-white">
-            {game.title}
-          </span>
-          <span className="flex min-w-0 items-center gap-[4.04cqw]">
-            <Image
-              src={avatarFor(bet.player)}
-              alt=""
-              className="h-[18.2cqw] w-[18.2cqw] flex-shrink-0 rounded-full object-cover"
-            />
-            <span className="truncate text-[max(10px,7.07cqw)] font-medium leading-[1.43] text-[#f0f1f5]">
-              {bet.player}
-            </span>
-          </span>
-          <span className="flex items-center justify-between gap-[calc(var(--u)*4)] text-[max(10px,7.07cqw)] leading-[1.43] tabular-nums">
-            {slot ? (
-              <span className="rl-slot-meter">
-                <ReelText text={`${bet.multiplier}x`} spin={!!fresh} />
-              </span>
-            ) : (
-              <span className="font-medium text-[#f4fffb]">{bet.multiplier}x</span>
-            )}
-            <span className="truncate font-medium text-[#f0f1f5]">{payout}</span>
+      <span className="absolute inset-x-0 bottom-0 flex h-[39.5%] flex-col justify-between rounded-b-[11.1cqw] bg-black/[0.40] px-[6.57cqw] pb-[6.57cqw] pt-[5.56cqw] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-[3cqw]">
+        <span className="truncate text-[max(10px,7.07cqw)] font-semibold leading-[1.43] text-white">
+          {game.title}
+        </span>
+        <span className="flex min-w-0 items-center gap-[4.04cqw]">
+          <Image
+            src={avatarFor(bet.player)}
+            alt=""
+            className="h-[18.2cqw] w-[18.2cqw] flex-shrink-0 rounded-full object-cover"
+          />
+          <span className="truncate text-[max(10px,7.07cqw)] font-medium leading-[1.43] text-[#f0f1f5]">
+            {bet.player}
           </span>
         </span>
-      </Link>
-    </div>
+        <span className="flex items-center justify-between gap-[calc(var(--u)*4)] text-[max(10px,7.07cqw)] leading-[1.43] tabular-nums">
+          {slot ? (
+            <span className="rl-slot-meter">
+              <ReelText text={`${bet.multiplier}x`} spin start={stop} />
+            </span>
+          ) : (
+            <span className="font-medium text-[#f4fffb]">{bet.multiplier}x</span>
+          )}
+          <span className="truncate font-medium text-[#f0f1f5]">{payout}</span>
+        </span>
+      </span>
+    </Link>
   );
 };
 
+/**
+ * A card in its reel window, for Active Wins: the strip runs down through
+ * blurred art from the row's other games and settles on the win, overshooting
+ * a touch into the tile above it. Remounted (by `spin`) for every new win, so
+ * every reel spins again, each stopping `stop` ms in.
+ */
+const ReelCard: FC<{ bet: LiveBet; blurs: string[]; spin: string; stop: number }> = ({
+  bet,
+  blurs,
+  spin,
+  stop,
+}) => (
+  <div className="@container">
+    <div className={`${CARD_FRAME} rl-slot-window`}>
+      <div key={spin} className="rl-slot-spin" style={{ animationDuration: `${stop}ms` }}>
+        <ReelBlur src={blurs[0]} />
+        <WinnerCard bet={bet} slot stop={stop} />
+        {blurs.slice(1).map((src, i) => (
+          <ReelBlur key={i} src={src} />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const ReelBlur: FC<{ src: string }> = ({ src }) => (
+  <span className="rl-slot-blur" aria-hidden="true">
+    <Image src={src} alt="" fill sizes={CARD_SIZES} className="object-cover" />
+  </span>
+);
+
 /** A new win every this many milliseconds while some are waiting — Rainbet's pace. */
 const FEED_INTERVAL = 500;
+/** Active Wins' pace: long enough for the last reel to stop before the next spin. */
+const SLOT_INTERVAL = 3000;
 /** How often the feed is asked for new wins; the backend caches it for 5 s. */
 const POLL_MS = 10_000;
 /** Cards kept: the widest row shows seven; the rest are off the end. */
@@ -198,7 +242,7 @@ interface Feed {
  * every FEED_INTERVAL, held while the pointer is over the row (so a card can
  * be clicked) and while the tab is hidden. A failed poll keeps what is shown.
  */
-const useLiveBets = (paused: boolean): Feed => {
+const useLiveBets = (paused: boolean, interval: number): Feed => {
   const [feed, setFeed] = useState<Feed>({ bets: [], fresh: null, loaded: false });
   /** Wins fetched but not yet shown, oldest first. */
   const queue = useRef<LiveBet[]>([]);
@@ -244,11 +288,52 @@ const useLiveBets = (paused: boolean): Feed => {
         bets: [bet, ...current.bets.filter((shown) => shown.id !== bet.id)].slice(0, KEPT),
         fresh: bet.id,
       }));
-    }, FEED_INTERVAL);
+    }, interval);
     return () => window.clearInterval(id);
-  }, [paused]);
+  }, [paused, interval]);
 
   return feed;
+};
+
+/** How long the reels rest before spinning again when no new win has come. */
+const IDLE_SPIN_MS = 4000;
+
+/**
+ * Active Wins' spin rounds: a new round when the row scrolls into view, so
+ * the spin is seen rather than played out below the fold on load, and every
+ * IDLE_SPIN_MS after that while the feed is quiet. Held, like the feed, while
+ * the pointer is on the row or the tab is hidden; a new win (`fresh`) spins
+ * the reels itself, so it restarts the wait.
+ */
+const useReelRounds = (
+  row: RefObject<HTMLDivElement | null>,
+  on: boolean,
+  paused: boolean,
+  fresh: string | null
+): number => {
+  const [round, setRound] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = row.current;
+    if (!on || !el) return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      setVisible(entry.isIntersecting);
+      if (entry.isIntersecting) setRound((r) => r + 1);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [row, on]);
+
+  useEffect(() => {
+    if (!on || !visible || paused) return undefined;
+    const id = window.setInterval(() => {
+      if (!document.hidden) setRound((r) => r + 1);
+    }, IDLE_SPIN_MS);
+    return () => window.clearInterval(id);
+  }, [on, visible, paused, fresh]);
+
+  return round;
 };
 
 interface Props {
@@ -262,8 +347,10 @@ const RecentWinners: FC<Props> = ({ tabs = 'landing', title }) => {
   const labels = WINNER_TABS[tabs];
   const [tab, setTab] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const { bets, fresh, loaded } = useLiveBets(hovered);
   const slot = labels[tab] === 'lobby.winners.activeWins';
+  const { bets, fresh, loaded } = useLiveBets(hovered, slot ? SLOT_INTERVAL : FEED_INTERVAL);
+  const row = useRef<HTMLDivElement>(null);
+  const round = useReelRounds(row, slot && loaded, hovered, fresh);
 
   // Nothing has paid out lately: no row rather than an empty one.
   if (loaded && bets.length === 0) {
@@ -303,37 +390,44 @@ const RecentWinners: FC<Props> = ({ tabs = 'landing', title }) => {
       {/* A ticker rather than a scroller: the row moves by itself, so it
           clips instead of scrolling. The feed holds while the pointer is on
           it, so a card stays put long enough to be clicked. On Active Wins
-          the row sits in a slot machine's cabinet, bulbs and payline. */}
+          the cards are reels instead: they stay where they are and all spin
+          again for each new win (or round), stopping left to right. */}
       <div
-        className={slot ? 'rl-slot-cabinet' : undefined}
+        ref={row}
+        className="overflow-hidden"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         aria-live="off"
       >
-        {slot && (
-          <>
-            <span className="rl-slot-bulbs rl-slot-bulbs--top" aria-hidden="true" />
-            <span className="rl-slot-bulbs rl-slot-bulbs--bottom" aria-hidden="true" />
-            <span className="rl-slot-payline" aria-hidden="true" />
-          </>
-        )}
-        <div className="overflow-hidden">
-          <div className={`${SHELF_TRACK} !overflow-visible`}>
-            {loaded
+        <div className={`${SHELF_TRACK} !overflow-visible`}>
+          {!loaded
+            ? Array.from({ length: PLACEHOLDERS }, (_, i) => (
+                <div key={i} className="@container" aria-hidden="true">
+                  <span className={`${CARD_FRAME} animate-pulse`} />
+                </div>
+              ))
+            : slot
               ? bets.map((bet, i) => (
-                  <WinnerCard
-                    key={bet.id}
+                  <ReelCard
+                    key={i}
                     bet={bet}
-                    fresh={i === 0 && bet.id === fresh}
-                    slot={slot}
+                    blurs={Array.from(
+                      { length: REEL_BLURS + 1 },
+                      (_, k) =>
+                        bets[(i + (k + 1) * 3) % bets.length].game.image_url || PLACEHOLDER_ART
+                    )}
+                    spin={`${fresh ?? 'first'}:${round}`}
+                    stop={REEL_STOP_MS + i * REEL_STAGGER_MS}
                   />
                 ))
-              : Array.from({ length: PLACEHOLDERS }, (_, i) => (
-                  <div key={i} className="@container" aria-hidden="true">
-                    <span className={`${CARD_FRAME} animate-pulse`} />
+              : bets.map((bet, i) => (
+                  <div
+                    key={bet.id}
+                    className={`@container ${i === 0 && bet.id === fresh ? 'rl-winner-in' : ''}`}
+                  >
+                    <WinnerCard bet={bet} />
                   </div>
                 ))}
-          </div>
         </div>
       </div>
     </section>

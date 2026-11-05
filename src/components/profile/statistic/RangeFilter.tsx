@@ -39,8 +39,8 @@ const RangeFilter: FC<Props> = ({ active, onSelect, rangeLabel }) => {
                sweep to `--u` because the class sits in a template literal. */
             className={`${PILL} justify-center px-[calc(var(--u)*15)] ${
               selected
-                ? 'rl-chip-active font-medium text-[#ffe779]'
-                : 'rl-chip font-normal text-[#9da2b4] hover:rl-chip-active hover:font-medium hover:text-[#ffe779]'
+                ? 'rl-chip-active font-semibold text-[#ffe779]'
+                : 'rl-chip font-medium text-[#e3e6ee] hover:rl-chip-active hover:font-semibold hover:text-[#ffe779]'
             }`}
           >
             {t(labelKey)}
@@ -58,7 +58,9 @@ const RangeFilter: FC<Props> = ({ active, onSelect, rangeLabel }) => {
           <RangeCalendarIcon />
         </span>
 
-        <span className="text-[#9da2b4] max-[369px]:text-[11px] lg:tabular-nums">{rangeLabel || '—'}</span>
+        <span className="text-[#9da2b4] max-[369px]:text-[11px] lg:tabular-nums">
+          {rangeLabel || '—'}
+        </span>
 
         <span
           title={t('common.soon')}

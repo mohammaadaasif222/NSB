@@ -181,7 +181,10 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier, liveness = fals
   const handleMessage = (type: string, _payload: unknown) => {
     if (COMPLETION_EVENTS.includes(type)) submittedHere.current = true;
 
-    if (COMPLETION_EVENTS.includes(type) || (STATUS_EVENTS.includes(type) && submittedHere.current)) {
+    if (
+      COMPLETION_EVENTS.includes(type) ||
+      (STATUS_EVENTS.includes(type) && submittedHere.current)
+    ) {
       // Level 2 only. This modal is also opened for Levels 3 and 4, and the
       // applicant has been moved onto that level by then — so a Level 2 sync
       // here asks the API to read a proof-of-address verdict into the
@@ -222,7 +225,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier, liveness = fals
         aria-modal="true"
         aria-labelledby="kyc-verify-title"
         tabIndex={-1}
-        className="rl-modal-glass relative flex max-h-[96vh] w-full max-w-2xl flex-col overflow-hidden outline-none sm:max-h-[90vh]"
+        className="rl-modal-glass relative flex max-h-[96dvh] w-full max-w-2xl flex-col overflow-hidden outline-none sm:max-h-[90dvh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -240,10 +243,10 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier, liveness = fals
                   : liveness
                     ? t('acct.verify.livenessTitle')
                     : tier === 3
-                    ? t('acct.verify.tier3Title')
-                    : tier === 4
-                      ? t('acct.verify.tier4Title')
-                      : t('acct.kycModal.identity')}
+                      ? t('acct.verify.tier3Title')
+                      : tier === 4
+                        ? t('acct.verify.tier4Title')
+                        : t('acct.kycModal.identity')}
               </h2>
               {/* Sumsub is not involved in the details form, so crediting them
                   there would be both wrong and faintly alarming — the player
@@ -261,7 +264,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier, liveness = fals
             data-sound="close"
             type="button"
             onClick={onClose}
-            className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
+            className="rl-circle-btn flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
             aria-label={t('common.close')}
           >
             <CloseIcon size={18} />
@@ -269,7 +272,7 @@ const KycVerifyModal: FC<Props> = ({ onClose, onSubmitted, tier, liveness = fals
         </div>
 
         {/* Content area */}
-        <div className="thin-scrollbar max-h-[75vh] min-h-[420px] flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="thin-scrollbar max-h-[75dvh] min-h-[420px] flex-1 overflow-y-auto p-4 sm:p-6">
           {step === 'resolving' && (
             <div className="flex h-96 flex-col items-center justify-center space-y-3 text-[#9da2b4]">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--rl-gold) border-t-transparent" />

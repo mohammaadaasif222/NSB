@@ -8,6 +8,7 @@ import walletGlyph from '@/assets/lobby/rail/bar-wallet.svg';
 import giftGlyph from '@/assets/lobby/rail/bar-gift.svg';
 import bellGlyph from '@/assets/lobby/rail/bar-bell.svg';
 import chatGlyph from '@/assets/lobby/rail/bar-chat.svg';
+import headsetGlyph from '@/assets/lobby/tabbar/headset.svg';
 import profileChevron from '@/assets/lobby/rail/bar-chevron-profile.svg';
 import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import { useAuth } from '@/context/AuthContext';
@@ -16,6 +17,7 @@ import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useAuthModal } from '@/context/AuthModalContext';
+import { useOpenSupport } from '@/hooks/useOpenSupport';
 import ProfileMenu from '@/components/player/ProfileMenu';
 import BalanceMenu from '@/components/player/BalanceMenu';
 import WalletModal from '@/components/wallet/WalletModal';
@@ -52,7 +54,7 @@ interface Props {
  * the order they are written in). Each usage supplies its own instead.
  */
 const ICON_BUTTON =
-  'rl-glass-btn h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white/80 hover:text-white lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]';
+  'rl-glass-btn h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)]';
 
 interface IconButtonProps {
   label: string;
@@ -62,6 +64,7 @@ interface IconButtonProps {
   title?: string;
   'aria-pressed'?: boolean;
   'aria-expanded'?: boolean;
+  [data: `data-${string}`]: string | undefined;
 }
 
 const IconButton: FC<IconButtonProps> = ({
@@ -109,6 +112,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const { t, locale } = useTranslation();
   const { internalChatEnabled, chatRegionalRoomsEnabled } = useSupportChat();
   const { openLogin, openRegister } = useAuthModal();
+  const openSupport = useOpenSupport();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
@@ -188,7 +192,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
           <Link
             href="/"
             data-sound="rollluckClick"
-            className={`flex flex-shrink-0 items-center lg:me-0 ${token ? '' : 'me-auto'}`}
+            className="flex flex-shrink-0 items-center"
             aria-label="ROLLUCK"
             title="ROLLUCK"
           >
@@ -197,7 +201,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
               alt="ROLLUCK"
               priority
               unoptimized
-              className="h-auto w-[125px] lg:w-[calc(var(--u)*228)]"
+              className="h-auto w-[104px] min-[400px]:w-[125px] lg:w-[calc(var(--u)*228)]"
             />
           </Link>
 
@@ -214,8 +218,11 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             />
           </IconButton>
 
-          <div className="hidden lg:block">
-            <LanguagePicker iconOnly />
+          {/* Language sits at the top on every screen, beside the wordmark —
+              signed out it takes the slack, pushing Login and Register to the
+              far end. */}
+          <div className={token ? '' : 'max-lg:me-auto'}>
+            <LanguagePicker bar />
           </div>
 
           {/* --- Centre: winners, and the wallet once signed in -----------
@@ -244,7 +251,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                     alt=""
                     className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
                   />
-                  <span className="hidden whitespace-nowrap text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] lg:block">
+                  <span className="hidden whitespace-nowrap text-[length:max(min(11px,18px),calc(var(--u)*18))] font-semibold leading-[calc(var(--u)*28)] lg:block">
                     {t('nav.wallet')}
                   </span>
                 </button>
@@ -266,7 +273,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   type="button"
                   onClick={() => openLogin()}
                   data-sound="LOGINregisterButtonPress"
-                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
+                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:transparent] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] font-semibold leading-5 text-white transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
                 </button>
@@ -274,7 +281,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   type="button"
                   onClick={() => openRegister()}
                   data-sound="LOGINregisterButtonPress"
-                  className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-3 text-[14px] leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
+                  className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-3 text-[14px] font-semibold leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
                 </button>
@@ -284,6 +291,19 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
           {/* --- Player controls ----------------------------------------- */}
           <div className="flex flex-shrink-0 items-center gap-2.5 lg:gap-[calc(var(--u)*20)]">
+            {/* Support, on every screen and signed in or out. */}
+            <IconButton
+              label={t('menu.liveSupport')}
+              onClick={openSupport}
+              className="inline-flex"
+              data-support-headset=""
+            >
+              <img
+                src={headsetGlyph.src}
+                alt=""
+                className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
+              />
+            </IconButton>
             {token && (
               <>
                 {/* Desktop: the design's black "Reward" pill. Phone: a gift
@@ -308,14 +328,14 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                         aria-haspopup="dialog"
                         aria-expanded={panel === 'rewards'}
                         aria-label={t('nav.rewards')}
-                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*6)] rl-glass-btn rounded-full text-[#f0f1f5] lg:h-[calc(var(--u)*48)] lg:w-auto lg:bg-transparent lg:bg-none lg:[--tw-inset-shadow:0_0_#0000] lg:px-[calc(var(--u)*19)]"
+                        className="inline-flex h-10 w-10 items-center justify-center gap-[calc(var(--u)*8)] rl-glass-btn rounded-full text-[#ffe779] lg:h-[calc(var(--u)*48)] lg:w-auto lg:!bg-none lg:!bg-[#ffe779]/[0.12] lg:!shadow-[inset_0_0_0_1px_rgba(255,231,121,0.55),0_0_calc(var(--u)*18)_rgba(255,231,121,0.28)] lg:px-[calc(var(--u)*20)] lg:hover:!bg-[#ffe779]/[0.2]"
                       >
                         <img
                           src={giftGlyph.src}
                           alt=""
                           className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
                         />
-                        <span className="hidden text-[length:max(min(11px,18px),calc(var(--u)*18))] leading-[calc(var(--u)*28)] lg:block">
+                        <span className="hidden text-[length:max(min(11px,18px),calc(var(--u)*18))] font-semibold leading-[calc(var(--u)*28)] lg:block">
                           {t('nav.rewards')}
                         </span>
                       </button>
@@ -423,7 +443,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   type="button"
                   onClick={() => openLogin()}
                   data-sound="LOGINregisterButtonPress"
-                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:rgba(255,255,255,0.35)] [--cta-shine:0.35] inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*108)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#07080a] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
+                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:transparent] [--cta-shine:0.35] inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*108)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#07080a] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-semibold leading-[calc(var(--u)*28)] text-white transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
                 </button>
@@ -431,7 +451,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   type="button"
                   onClick={() => openRegister()}
                   data-sound="LOGINregisterButtonPress"
-                  className="rl-cta-shine inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*148)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
+                  className="rl-cta-shine inline-flex h-[calc(var(--u)*48)] w-[calc(var(--u)*148)] items-center justify-center rounded-[calc(var(--u)*24)] bg-[#f9d028] text-[length:max(min(11px,18px),calc(var(--u)*18))] font-semibold leading-[calc(var(--u)*28)] text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
                 </button>

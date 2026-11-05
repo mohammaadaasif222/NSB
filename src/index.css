@@ -184,8 +184,6 @@
  * measurements stop being true.
  */
 :root {
-  --rail-expanded: 180px;
-
   --chat-drawer-w: 23rem;
 
   /* Body copy moves least of anything here — 14 is already near the floor for
@@ -195,7 +193,6 @@
 
 @media (width >= 96rem) {
   :root {
-    --rail-expanded: 205px;
     --text-sm: 0.875rem;
   }
 }
@@ -675,6 +672,24 @@ html:not([data-theme='dark']) .border-blue-600 {
   height: 0;
 }
 
+[aria-modal='true'] :is(.thin-scrollbar, .rl-modal-body),
+[aria-modal='true'].thin-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+[aria-modal='true'] :is(.thin-scrollbar, .rl-modal-body)::-webkit-scrollbar,
+[aria-modal='true'].thin-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.rl-modal-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 /* ------------------------------------------------------------------ */
 /* ROLLUCK loading overlay                                                 */
 /* ------------------------------------------------------------------ */
@@ -769,24 +784,6 @@ html:not([data-theme='dark']) .border-blue-600 {
   animation: rl-winner-in 130ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@keyframes rl-reel-in {
-  0% {
-    transform: translateY(-105%);
-    filter: blur(6px);
-  }
-  70% {
-    transform: translateY(4%);
-    filter: blur(0);
-  }
-  100% {
-    transform: none;
-  }
-}
-
-.rl-reel-in {
-  animation: rl-reel-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .rl-reel {
   display: inline-block;
   height: 1.43em;
@@ -834,120 +831,44 @@ html:not([data-theme='dark']) .border-blue-600 {
   animation: rl-jackpot-glow 1.2s ease-in-out infinite;
 }
 
-/* Recent Winners' Active Wins tab dressed as a slot machine: the row sits in
-   a cabinet with a gold gradient rim and chasing bulbs along its top and
-   bottom, a payline runs across the reels, each card is shaded like a
-   turning drum, and the multiplier reads off a win meter. */
-.rl-slot-cabinet {
-  --rl-slot-bulb: calc(var(--u, 1px) * 9);
-  --rl-slot-pad-y: calc(var(--u, 1px) * 26);
+/* Recent Winners' Active Wins tab: each card is a reel. The strip holds a
+   blurred tile above the card (for the overshoot to land in), the card, and
+   REEL_BLURS more blurred tiles below; it starts on the last of them and runs
+   down to the card. The component sets each reel's duration, so they stop
+   left to right. */
+.rl-slot-spin {
+  position: absolute;
+  inset-inline: 0;
+  top: -100%;
+  display: flex;
+  flex-direction: column;
+  height: 600%;
+  animation: rl-slot-spin 1s cubic-bezier(0.25, 0.7, 0.3, 1.04) both;
+}
+
+.rl-slot-spin > * {
   position: relative;
-  padding: var(--rl-slot-pad-y) 12px;
-  border-radius: calc(var(--u, 1px) * 28);
-  background:
-    radial-gradient(120% 80% at 50% 0%, rgba(249, 208, 40, 0.1), transparent 60%),
-    linear-gradient(180deg, #1a1508 0%, #0c0b08 45%, #120f06 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
-    inset 0 calc(var(--u, 1px) * 10) calc(var(--u, 1px) * 24) rgba(0, 0, 0, 0.55),
-    0 calc(var(--u, 1px) * 14) calc(var(--u, 1px) * 40) rgba(0, 0, 0, 0.45),
-    0 0 calc(var(--u, 1px) * 36) rgba(249, 208, 40, 0.12);
+  flex: 1 1 0;
+  min-height: 0;
 }
 
-/* The phone's cards are small already, so the sides only widen on desktop. */
-@media (min-width: 1024px) {
-  .rl-slot-cabinet {
-    padding-inline: calc(var(--u, 1px) * 22);
+/* The art a reel runs through, smeared as if moving. */
+.rl-slot-blur {
+  overflow: hidden;
+  filter: blur(3px) brightness(0.75) saturate(1.2);
+}
+
+@keyframes rl-slot-spin {
+  from {
+    transform: translateY(-66.6667%);
+    filter: blur(2px);
   }
-}
-
-/* The rim: a gradient stroke, so a masked pseudo-element, not a border. */
-.rl-slot-cabinet::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  padding: calc(var(--u, 1px) * 2);
-  border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    #fff3b0 0%,
-    var(--rl-gold) 22%,
-    #8a6a0c 50%,
-    var(--rl-gold) 78%,
-    #fff3b0 100%
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* Two strips of bulbs, every other one lit, the lit ones walking along. */
-.rl-slot-bulbs {
-  position: absolute;
-  left: calc(var(--u, 1px) * 26);
-  right: calc(var(--u, 1px) * 26);
-  height: var(--rl-slot-bulb);
-  pointer-events: none;
-  background:
-    radial-gradient(circle closest-side, #fff6c8 0 35%, var(--rl-gold) 65%, transparent 100%) 0 0 /
-      calc(var(--rl-slot-bulb) * 4) 100% repeat-x,
-    radial-gradient(circle closest-side, rgba(249, 208, 40, 0.3) 0 60%, transparent 100%)
-      calc(var(--rl-slot-bulb) * 2) 0 / calc(var(--rl-slot-bulb) * 4) 100% repeat-x;
-  filter: drop-shadow(0 0 calc(var(--rl-slot-bulb) * 0.8) rgba(249, 208, 40, 0.8));
-  animation: rl-slot-chase 0.9s steps(2) infinite;
-}
-
-.rl-slot-bulbs--top {
-  top: calc((var(--rl-slot-pad-y) - var(--rl-slot-bulb)) / 2);
-}
-
-.rl-slot-bulbs--bottom {
-  bottom: calc((var(--rl-slot-pad-y) - var(--rl-slot-bulb)) / 2);
-  animation-direction: reverse;
-}
-
-@keyframes rl-slot-chase {
+  70% {
+    filter: blur(0);
+  }
   to {
-    background-position:
-      calc(var(--rl-slot-bulb) * 4) 0,
-      calc(var(--rl-slot-bulb) * 6) 0;
+    transform: none;
   }
-}
-
-/* The payline: a faint gold line across the middle of the cards' artwork
-   (the top 60% of a card, above its glass band), with a pointer at each end
-   in the cabinet's side margins. */
-.rl-slot-payline {
-  position: absolute;
-  left: 2px;
-  right: 2px;
-  top: calc(var(--rl-slot-pad-y) + (100% - 2 * var(--rl-slot-pad-y)) * 0.3);
-  z-index: 2;
-  height: 0;
-  border-top: 1px dashed rgba(249, 208, 40, 0.38);
-  pointer-events: none;
-}
-
-.rl-slot-payline::before,
-.rl-slot-payline::after {
-  content: '';
-  position: absolute;
-  top: calc(var(--u, 1px) * -7);
-  border-block: calc(var(--u, 1px) * 6.5) solid transparent;
-  filter: drop-shadow(0 0 4px rgba(249, 208, 40, 0.7));
-}
-
-.rl-slot-payline::before {
-  left: 0;
-  border-left: calc(var(--u, 1px) * 9) solid var(--rl-gold);
-}
-
-.rl-slot-payline::after {
-  right: 0;
-  border-right: calc(var(--u, 1px) * 9) solid var(--rl-gold);
 }
 
 /* A reel window: darkened at the top and bottom like a drum turning away. */
@@ -1007,10 +928,9 @@ html:not([data-theme='dark']) .border-blue-600 {
 
 @media (prefers-reduced-motion: reduce) {
   .rl-winner-in,
-  .rl-reel-in,
   .rl-reel-strip,
   .rl-jackpot::after,
-  .rl-slot-bulbs {
+  .rl-slot-spin {
     animation: none;
   }
 }
@@ -1456,6 +1376,9 @@ html:not([data-theme='dark']) .border-blue-600 {
   --rl-drop-depth:
     inset 6px 6px 12px rgba(0, 0, 0, 0.35), inset -6px -6px 12px rgba(255, 255, 255, 0.03);
   --rl-drop: var(--rl-drop-rim), var(--rl-drop-depth);
+  --rl-modal-fill:
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)), rgba(0, 0, 0, 0.18);
+  --rl-modal-blur: blur(12px);
   --rl-corner-fade:
     radial-gradient(circle at 0 0, transparent 30px, #000 50px),
     radial-gradient(circle at 100% 0, transparent 30px, #000 50px),
@@ -2114,6 +2037,7 @@ html:not([data-theme='dark']) .border-blue-600 {
   --tw-inset-shadow: var(--rl-drop-glow-btn), var(--rl-drop-face);
   box-shadow: var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   transition: filter 0.18s ease;
+  @apply rl-glass-rim;
 
   &:hover {
     filter: brightness(1.35);
@@ -2135,7 +2059,7 @@ html:not([data-theme='dark']) .border-blue-600 {
     border-radius: inherit;
     padding: 1px;
     background: conic-gradient(
-      from 0deg,
+      from -90deg,
       rgba(255, 255, 255, 0.06) 0deg,
       rgba(255, 255, 255, 0.35) 25deg,
       rgba(255, 255, 255, 0.9) 45deg,
@@ -2771,7 +2695,8 @@ html:not([data-theme='dark']) .border-blue-600 {
   color: #f0f1f5;
   background: linear-gradient(180deg, rgba(249, 208, 40, 0.6), rgba(249, 208, 40, 0.67));
   border-radius: 1000px;
-  box-shadow: 0 0 14px rgba(249, 208, 40, 0.55);
+  box-shadow: 0 0 10px rgba(249, 208, 40, 0.5);
+  @apply rl-glass-rim;
 }
 
 /* And lit green — Verification's "start" actions. Same pill, third colour. */
@@ -2830,11 +2755,11 @@ html:not([data-theme='dark']) .border-blue-600 {
  * blurred — so the glass is nearly all blur and almost no fill. `rl-menu` stays
  * as it is for the dialogs that already use it. */
 @utility rl-modal-glass {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--rl-modal-fill);
   border: 1px solid transparent;
   border-radius: 34px;
-  -webkit-backdrop-filter: blur(40px) saturate(140%);
-  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: var(--rl-modal-blur);
+  backdrop-filter: var(--rl-modal-blur);
   --tw-inset-shadow: var(--rl-drop-pane);
   box-shadow:
     var(--tw-inset-shadow),
@@ -3191,11 +3116,10 @@ html:not([data-theme='dark']) .border-blue-600 {
 @utility rl-modal-card {
   position: relative;
   border-radius: 32px;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.04)), rgba(0, 0, 0, 0.4);
+  background: var(--rl-modal-fill);
   border: 0;
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: var(--rl-modal-blur);
+  backdrop-filter: var(--rl-modal-blur);
   --tw-inset-shadow:
     inset 8px 8px 16px rgba(0, 0, 0, 0.45), inset -8px -8px 16px rgba(255, 255, 255, 0.045);
   box-shadow:
@@ -3317,10 +3241,10 @@ html:not([data-theme='dark']) .border-blue-600 {
 @utility rl-dialog-glass {
   position: relative;
   border-radius: 34px;
-  background: var(--dialog-fill, rgba(255, 255, 255, 0.02));
+  background: var(--dialog-fill, var(--rl-modal-fill));
   border: var(--dialog-rim-width, 1px) solid var(--dialog-rim, rgba(255, 255, 255, 0.22));
-  -webkit-backdrop-filter: blur(40px) saturate(140%);
-  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: var(--rl-modal-blur);
+  backdrop-filter: var(--rl-modal-blur);
   --tw-inset-shadow:
     inset 8px 8px 16px rgba(0, 0, 0, 0.45), inset -8px -8px 16px rgba(255, 255, 255, 0.045);
   box-shadow: var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
@@ -3388,6 +3312,19 @@ html:not([data-theme='dark']) .border-blue-600 {
    to bottom — a white wash of 0.05 over the card, an even hairline rim at
    0.24 all the way round, and the glass catching a little more light in its
    two rounded ends (about +0.045, fading out over the first ~8% of the run). */
+@utility rl-glass-disc {
+  @apply rl-glass-btn;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0) 8%,
+      rgba(255, 255, 255, 0) 92%,
+      rgba(255, 255, 255, 0.045)
+    ),
+    rgba(255, 255, 255, 0.05);
+}
+
 @utility rl-option {
   color: #fff;
   border-radius: 9999px;
@@ -3433,6 +3370,7 @@ html:not([data-theme='dark']) .border-blue-600 {
   --tw-inset-shadow: var(--rl-drop-glow-btn), var(--rl-drop-face);
   box-shadow: var(--tw-inset-shadow), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow, 0 0 #0000);
   transition: filter 0.2s ease;
+  @apply rl-glass-rim;
 
   &:hover {
     filter: brightness(1.35);

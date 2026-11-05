@@ -20,7 +20,6 @@ import chipGameShows from '@/assets/lobby/player/chip-gameshows.svg';
 import chipNewArrivals from '@/assets/lobby/player/chip-newarrivals.svg';
 import Glyph from '@/components/player/Glyph';
 
-
 const GLASS = 'rl-glass-btn';
 
 /* ==================================================================== */
@@ -72,7 +71,7 @@ interface DropdownProps {
  */
 export const Dropdown: FC<DropdownProps> = ({
   icon,
-  label, 
+  label,
   phoneLabel,
   children,
   active = false,
@@ -405,16 +404,16 @@ const LIVE_CHIPS: Chip[] = [
 export type ChipSet = 'casino' | 'live';
 
 const CHIP =
-  'inline-flex h-[34px] flex-shrink-0 items-center gap-[5px] rounded-full px-3 text-[12px] leading-5 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+  'inline-flex h-[34px] flex-shrink-0 items-center gap-[5px] rounded-full px-3 text-[12px] leading-5 lg:h-[calc(var(--u)*48)] lg:gap-[calc(var(--u)*10)] lg:px-[calc(var(--u)*24)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)] font-medium';
 
 const CHIP_ON =
-  'font-rubik font-medium text-[#ffe779] shadow-[0_0_12px_rgba(255,231,121,0.5)] lg:shadow-[0_0_calc(var(--u)*17.6)_rgba(255,231,121,0.2)]';
+  'font-rubik font-semibold text-[#ffe779] shadow-[0_0_12px_rgba(255,231,121,0.5)] lg:shadow-[0_0_calc(var(--u)*17.6)_rgba(255,231,121,0.2)]';
 
 export const CHIP_ICON = 'h-[18px] w-[18px] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
 
 /** The lobby's chip, for any pill row elsewhere that should match it. */
 export const chipClass = (active: boolean): string =>
-  `${CHIP} ${GLASS} ${active ? CHIP_ON : 'text-[#9da2b4] hover:text-[#f0f1f5]'}`;
+  `${CHIP} ${GLASS} ${active ? CHIP_ON : 'text-[#e3e6ee] hover:text-white'}`;
 
 /**
  * One selectable chip — the casino's category chips and the sportsbook's
@@ -427,12 +426,7 @@ export const ChipButton: FC<{
   icon?: StaticImageData;
   children: ReactNode;
 }> = ({ active, onClick, icon, children }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    aria-pressed={active}
-    className={chipClass(active)}
-  >
+  <button type="button" onClick={onClick} aria-pressed={active} className={chipClass(active)}>
     {icon && <Glyph src={icon.src} className={CHIP_ICON} />}
     {children}
   </button>
@@ -464,7 +458,7 @@ export const CategoryChips: FC<{
                 key={text}
                 title={`${text} — ${t('common.soon')}`}
                 aria-disabled="true"
-                className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/50 hover:filter-none`}
+                className={`${CHIP} rl-glass-btn cursor-default text-[#9da2b4]/80 hover:filter-none`}
               >
                 {icon}
                 {text}
