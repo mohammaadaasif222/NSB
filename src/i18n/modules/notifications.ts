@@ -32,4 +32,7 @@ export const en = {
     'Wager {required} to complete the rollover on your {deposit} deposit before withdrawing it.',
   'notif.rolloverCompleted.title': 'Rollover completed',
   'notif.rolloverCompleted.body': 'The rollover on your {deposit} deposit is complete.',
+  'notif.rewardCapReached.title': 'Monthly rewards limit reached',
+  'notif.rewardCapReached.body':
+    "You have reached this month's rewards limit of {cap}. Rewards over the limit are cancelled. You can earn rewards again from {date}.",
 };

@@ -4,7 +4,7 @@ import { useTranslation } from '@/context/I18nContext';
 import { useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 import { formatOfferAmount as welcomeMoney } from '@/utils/money';
 import type { WelcomeOfferOption } from '@/types';
-import { WALLET_NOTE } from './shared/WalletField';
+import WelcomeBonusPanel from '@/components/bonus/WelcomeBonusPanel';
 
 const NONE = 'none';
 
@@ -13,15 +13,20 @@ const CARD =
 
 const WelcomeOfferPicker: FC<{ className?: string }> = ({ className = '' }) => {
   const { t } = useTranslation();
-  const { offer, saving, choose } = useWelcomeOffer();
+  const { offer, saving, choose, cancel } = useWelcomeOffer();
 
   if (!offer?.enabled) return null;
 
   if (offer.award?.status === 'ACTIVE') {
+    const award = offer.award;
     return (
-      <p className={`${WALLET_NOTE} ${className}`}>
-        {t('welcome.active', { progress: offer.award.progress })}
-      </p>
+      <WelcomeBonusPanel
+        award={award}
+        currency={offer.currency}
+        busy={saving}
+        onCancel={() => void cancel(award.id)}
+        className={className}
+      />
     );
   }
 

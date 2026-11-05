@@ -73,6 +73,10 @@ export interface UserBonus {
   credit_amount: string | null;
   is_real_money: boolean;
   max_bet_size: string | null;
+  welcome?: boolean;
+  max_convertible?: string | null;
+  released_usd?: string | null;
+  captured_usd?: string | null;
 
   forfeit_reason: string | null;
   claimed_at: string;

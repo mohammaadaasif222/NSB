@@ -6,6 +6,7 @@ import FaqAccordion from '@/components/player/FaqAccordion';
 import SiteFooter from '@/components/player/SiteFooter';
 import WalletModal from '@/components/wallet/WalletModal';
 import WelcomePackPanel from '@/components/bonus/WelcomePackPanel';
+import WelcomeBonusPanel from '@/components/bonus/WelcomeBonusPanel';
 import RegularBonusRow from '@/components/bonus/RegularBonusRow';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
@@ -58,7 +59,7 @@ const BonusesPage: FC<Props> = ({ faqs }) => {
     const shown = new Set(
       welcomeStages.map((stage) => stage.bonus_id).filter((id): id is string => !!id)
     );
-    return summary.active.filter((award) => !shown.has(award.bonus.id));
+    return summary.active.filter((award) => !award.welcome && !shown.has(award.bonus.id));
   }, [summary, welcomeStages]);
 
   if (!bonusesOn || summary?.enabled === false) {
@@ -82,6 +83,7 @@ const BonusesPage: FC<Props> = ({ faqs }) => {
 
   const pending = !summary && !error;
   const failed = !summary && !!error;
+  const welcomeAward = summary?.active.find((award) => award.welcome) ?? null;
 
   return (
     <PlayerLayout>
@@ -100,6 +102,15 @@ const BonusesPage: FC<Props> = ({ faqs }) => {
               {loading ? t('common.loading') : t('bonus.retry')}
             </button>
           </section>
+        )}
+
+        {welcomeAward && (
+          <WelcomeBonusPanel
+            award={welcomeAward}
+            currency={summary?.currency ?? 'USD'}
+            busy={busyId === welcomeAward.id}
+            onCancel={() => void forfeit(welcomeAward.id)}
+          />
         )}
 
         <WelcomePackPanel

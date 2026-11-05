@@ -14,6 +14,7 @@ export interface UseWelcomeOffer {
   saving: boolean;
   signedIn: boolean;
   choose: (bonusId: string | null) => Promise<boolean>;
+  cancel: (awardId: string) => Promise<boolean>;
 }
 
 export const showsWelcomeOffer = (offer: WelcomeOffer | null): offer is WelcomeOffer =>
@@ -88,5 +89,25 @@ export const useWelcomeOffer = (): UseWelcomeOffer => {
     }
   }, []);
 
-  return { offer, loading, saving, signedIn: !!token, choose };
+  const cancel = useCallback(async (awardId: string): Promise<boolean> => {
+    setSaving(true);
+    try {
+      const res = await apiService.post(`/bonuses/${awardId}/forfeit`);
+      if (res?.success) {
+        toast.success(tRef.current('welcome.cancelled'));
+        window.dispatchEvent(new Event(WALLET_REFRESH_EVENT));
+        window.dispatchEvent(new Event(BONUS_REFRESH_EVENT));
+        return true;
+      }
+      toast.error(res?.message || tRef.current('welcome.cancelFailed'));
+      return false;
+    } catch (err) {
+      toast.error((err as ApiError)?.message || tRef.current('welcome.cancelFailed'));
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  return { offer, loading, saving, signedIn: !!token, choose, cancel };
 };
