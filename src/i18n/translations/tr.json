@@ -2079,5 +2079,18 @@
   "welcome.cancelled": "Hoş geldin bonusun iptal edildi",
   "welcome.cancelFailed": "Bonus iptal edilemedi",
   "notif.rewardCapReached.title": "Aylık ödül limitine ulaşıldı",
-  "notif.rewardCapReached.body": "Bu ayın {cap} tutarındaki ödül limitine ulaştın. Limitin üzerindeki ödüller iptal edilir. {date} tarihinden itibaren yeniden ödül kazanabilirsin."
+  "notif.rewardCapReached.body": "Bu ayın {cap} tutarındaki ödül limitine ulaştın. Limitin üzerindeki ödüller iptal edilir. {date} tarihinden itibaren yeniden ödül kazanabilirsin.",
+  "welcome.exampleLabel": "Yatırırsan",
+  "welcome.exampleGet": "{deposit} yatır, {bonus} al",
+  "welcome.examplePlay": "{bonus} bonus · kilidini açmak için onunla {required} oyna ({wagering}×)",
+  "welcome.doneTitle": "Çevrim tamamlandı",
+  "welcome.doneBody": "Bonusun artık gerçek para. Oyna ya da çek.",
+  "welcome.doneReal": "Gerçek para",
+  "welcome.doneBonus": "Bonus",
+  "welcome.doneCaptured": "Maksimum dönüşüm üstü, silindi",
+  "welcome.doneKeepPlaying": "Oynamaya devam et",
+  "welcome.railLabel": "Hoş geldin bonusu",
+  "welcome.railAmount": "%{percent} kadar",
+  "welcome.railNote": "Kasada seç",
+  "welcome.bannerCta": "Bonusunu al"
 }

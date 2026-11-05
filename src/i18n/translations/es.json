@@ -2079,5 +2079,18 @@
   "welcome.cancelled": "Tu bono de bienvenida fue cancelado",
   "welcome.cancelFailed": "No se pudo cancelar el bono",
   "notif.rewardCapReached.title": "Límite mensual de recompensas alcanzado",
-  "notif.rewardCapReached.body": "Has alcanzado el límite de recompensas de este mes de {cap}. Las recompensas por encima del límite se cancelan. Podrás volver a ganar recompensas a partir del {date}."
+  "notif.rewardCapReached.body": "Has alcanzado el límite de recompensas de este mes de {cap}. Las recompensas por encima del límite se cancelan. Podrás volver a ganar recompensas a partir del {date}.",
+  "welcome.exampleLabel": "Si depositas",
+  "welcome.exampleGet": "Deposita {deposit}, recibe {bonus}",
+  "welcome.examplePlay": "Bono de {bonus} · juega {required} con él ({wagering}×) para desbloquearlo",
+  "welcome.doneTitle": "Requisito de apuesta completado",
+  "welcome.doneBody": "Tu bono ya es dinero real. Juégalo o retíralo.",
+  "welcome.doneReal": "Dinero real",
+  "welcome.doneBonus": "Bono",
+  "welcome.doneCaptured": "Por encima del máximo convertible, eliminado",
+  "welcome.doneKeepPlaying": "Seguir jugando",
+  "welcome.railLabel": "Bono de bienvenida",
+  "welcome.railAmount": "Hasta {percent}%",
+  "welcome.railNote": "Elígelo en la caja",
+  "welcome.bannerCta": "Consigue tu bono"
 }

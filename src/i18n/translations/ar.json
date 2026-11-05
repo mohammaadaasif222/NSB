@@ -2079,5 +2079,18 @@
   "welcome.cancelled": "تم إلغاء مكافأة الترحيب",
   "welcome.cancelFailed": "تعذّر إلغاء المكافأة",
   "notif.rewardCapReached.title": "تم بلوغ الحد الشهري للمكافآت",
-  "notif.rewardCapReached.body": "لقد بلغت حد المكافآت لهذا الشهر وقدره {cap}. تُلغى المكافآت التي تتجاوز الحد. يمكنك كسب المكافآت مجددًا اعتبارًا من {date}."
+  "notif.rewardCapReached.body": "لقد بلغت حد المكافآت لهذا الشهر وقدره {cap}. تُلغى المكافآت التي تتجاوز الحد. يمكنك كسب المكافآت مجددًا اعتبارًا من {date}.",
+  "welcome.exampleLabel": "إذا أودعت",
+  "welcome.exampleGet": "أودع {deposit}، واحصل على {bonus}",
+  "welcome.examplePlay": "مكافأة {bonus} · العب بها {required} ({wagering}×) لفتحها",
+  "welcome.doneTitle": "اكتمل شرط الرهان",
+  "welcome.doneBody": "أصبحت مكافأتك أموالًا حقيقية. العب بها أو اسحبها.",
+  "welcome.doneReal": "أموال حقيقية",
+  "welcome.doneBonus": "المكافأة",
+  "welcome.doneCaptured": "ما يتجاوز الحد الأقصى القابل للتحويل، أُزيل",
+  "welcome.doneKeepPlaying": "واصل اللعب",
+  "welcome.railLabel": "مكافأة الترحيب",
+  "welcome.railAmount": "حتى {percent}%",
+  "welcome.railNote": "اخترها من الصندوق",
+  "welcome.bannerCta": "احصل على مكافأتك"
 }

@@ -2079,5 +2079,18 @@
   "welcome.cancelled": "Приветственный бонус отменён",
   "welcome.cancelFailed": "Не удалось отменить бонус",
   "notif.rewardCapReached.title": "Достигнут месячный лимит наград",
-  "notif.rewardCapReached.body": "Вы достигли лимита наград за этот месяц: {cap}. Награды сверх лимита отменяются. Получать награды снова можно с {date}."
+  "notif.rewardCapReached.body": "Вы достигли лимита наград за этот месяц: {cap}. Награды сверх лимита отменяются. Получать награды снова можно с {date}.",
+  "welcome.exampleLabel": "Если вы пополните",
+  "welcome.exampleGet": "Пополните на {deposit}, получите {bonus}",
+  "welcome.examplePlay": "Бонус {bonus} · сыграйте им на {required} ({wagering}×), чтобы разблокировать",
+  "welcome.doneTitle": "Отыгрыш завершён",
+  "welcome.doneBody": "Ваш бонус стал реальными деньгами. Играйте или выводите.",
+  "welcome.doneReal": "Реальные деньги",
+  "welcome.doneBonus": "Бонус",
+  "welcome.doneCaptured": "Сверх максимума для вывода, списано",
+  "welcome.doneKeepPlaying": "Продолжить игру",
+  "welcome.railLabel": "Приветственный бонус",
+  "welcome.railAmount": "До {percent}%",
+  "welcome.railNote": "Выберите его в кассе",
+  "welcome.bannerCta": "Получить бонус"
 }

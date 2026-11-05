@@ -2079,5 +2079,18 @@
   "welcome.cancelled": "Votre bonus de bienvenue a été annulé",
   "welcome.cancelFailed": "Impossible d'annuler le bonus",
   "notif.rewardCapReached.title": "Limite mensuelle de récompenses atteinte",
-  "notif.rewardCapReached.body": "Vous avez atteint la limite de récompenses de ce mois, {cap}. Les récompenses au-delà de la limite sont annulées. Vous pourrez à nouveau gagner des récompenses à partir du {date}."
+  "notif.rewardCapReached.body": "Vous avez atteint la limite de récompenses de ce mois, {cap}. Les récompenses au-delà de la limite sont annulées. Vous pourrez à nouveau gagner des récompenses à partir du {date}.",
+  "welcome.exampleLabel": "Si vous déposez",
+  "welcome.exampleGet": "Déposez {deposit}, recevez {bonus}",
+  "welcome.examplePlay": "Bonus de {bonus} · jouez {required} avec ({wagering}×) pour le débloquer",
+  "welcome.doneTitle": "Conditions de mise remplies",
+  "welcome.doneBody": "Votre bonus est maintenant de l'argent réel. Jouez-le ou retirez-le.",
+  "welcome.doneReal": "Argent réel",
+  "welcome.doneBonus": "Bonus",
+  "welcome.doneCaptured": "Au-delà du maximum convertible, supprimé",
+  "welcome.doneKeepPlaying": "Continuer à jouer",
+  "welcome.railLabel": "Bonus de bienvenue",
+  "welcome.railAmount": "Jusqu'à {percent} %",
+  "welcome.railNote": "Choisissez-le à la caisse",
+  "welcome.bannerCta": "Obtenir mon bonus"
 }

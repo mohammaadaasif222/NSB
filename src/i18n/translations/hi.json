@@ -2079,5 +2079,18 @@
   "welcome.cancelled": "आपका वेलकम बोनस रद्द कर दिया गया",
   "welcome.cancelFailed": "बोनस रद्द नहीं किया जा सका",
   "notif.rewardCapReached.title": "मासिक रिवॉर्ड सीमा पूरी हुई",
-  "notif.rewardCapReached.body": "आप इस महीने की {cap} की रिवॉर्ड सीमा तक पहुँच गए हैं। सीमा से ऊपर के रिवॉर्ड रद्द कर दिए जाते हैं। आप {date} से फिर से रिवॉर्ड कमा सकते हैं।"
+  "notif.rewardCapReached.body": "आप इस महीने की {cap} की रिवॉर्ड सीमा तक पहुँच गए हैं। सीमा से ऊपर के रिवॉर्ड रद्द कर दिए जाते हैं। आप {date} से फिर से रिवॉर्ड कमा सकते हैं।",
+  "welcome.exampleLabel": "अगर आप डिपॉज़िट करें",
+  "welcome.exampleGet": "{deposit} डिपॉज़िट करें, {bonus} पाएँ",
+  "welcome.examplePlay": "{bonus} बोनस · अनलॉक करने के लिए इससे {required} खेलें ({wagering}×)",
+  "welcome.doneTitle": "वेजरिंग पूरी हुई",
+  "welcome.doneBody": "आपका बोनस अब असली पैसा है। इसे खेलें या निकालें।",
+  "welcome.doneReal": "असली पैसा",
+  "welcome.doneBonus": "बोनस",
+  "welcome.doneCaptured": "अधिकतम परिवर्तनीय से ऊपर, हटाया गया",
+  "welcome.doneKeepPlaying": "खेलते रहें",
+  "welcome.railLabel": "वेलकम बोनस",
+  "welcome.railAmount": "{percent}% तक",
+  "welcome.railNote": "कैशियर में चुनें",
+  "welcome.bannerCta": "अपना बोनस पाएँ"
 }

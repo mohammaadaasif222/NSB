@@ -15,6 +15,7 @@ export interface UseWelcomeOffer {
   signedIn: boolean;
   choose: (bonusId: string | null) => Promise<boolean>;
   cancel: (awardId: string) => Promise<boolean>;
+  refresh: () => Promise<void>;
 }
 
 export const showsWelcomeOffer = (offer: WelcomeOffer | null): offer is WelcomeOffer =>
@@ -109,5 +110,5 @@ export const useWelcomeOffer = (): UseWelcomeOffer => {
     }
   }, []);
 
-  return { offer, loading, saving, signedIn: !!token, choose, cancel };
+  return { offer, loading, saving, signedIn: !!token, choose, cancel, refresh };
 };

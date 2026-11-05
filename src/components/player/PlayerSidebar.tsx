@@ -1,3 +1,4 @@
+import { showsWelcomeOffer, useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 import { useEffect, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import type { StaticImageData } from 'next/image';
@@ -390,6 +391,11 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
     referrals: referralsOn,
   } = usePlatformFeatures();
   const { openLogin, openRegister } = useAuthModal();
+  const { offer: welcomeCandidate } = useWelcomeOffer();
+  const welcomeOffer = showsWelcomeOffer(welcomeCandidate) ? welcomeCandidate : null;
+  const welcomePercent = welcomeOffer
+    ? Math.max(...welcomeOffer.options.map((option) => option.match_percentage))
+    : 0;
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
   const [suggesting, setSuggesting] = useState(false);
@@ -569,7 +575,11 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               if (token) void push('/bonuses');
               else openRegister();
             }}
-            title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
+            title={
+              welcomeOffer
+                ? t('welcome.bannerHeadline', { percent: welcomePercent })
+                : t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })
+            }
             className={`mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rounded-[24px] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
               collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
             }`}
@@ -588,21 +598,21 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
-              {t('lobby.rail.welcomePackage')}
+              {welcomeOffer ? t('welcome.railLabel') : t('lobby.rail.welcomePackage')}
             </span>
             <span
               className={`block text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
-              $1,500
+              {welcomeOffer ? t('welcome.railAmount', { percent: welcomePercent }) : '$1,500'}
             </span>
             <span
               className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] ${
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
-              {t('lobby.rail.freeSpins', { count: 100 })}
+              {welcomeOffer ? t('welcome.railNote') : t('lobby.rail.freeSpins', { count: 100 })}
             </span>
           </button>
 
