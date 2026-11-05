@@ -13,6 +13,8 @@ import kycApi from '@/services/kyc.api';
 import type { KycErrorCode, PlayerKycProfile } from '@/types/kyc';
 import { readKycError } from '@/utils/kyc-status';
 import KycGateNotice from '../KycGateNotice';
+import WelcomeWithdrawalNotice from '../WelcomeWithdrawalNotice';
+import { useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 import type { Currency, WalletBalance } from '@/types';
 import CurrencyPicker from '../shared/CurrencyPicker';
 import NetworkPicker from '../shared/NetworkPicker';
@@ -69,6 +71,9 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   const restriction = me?.account_restriction;
   // A disposable-contact lock stays out of sight until the player asks to withdraw.
   const [contactAsked, setContactAsked] = useState(false);
+  const { offer: welcome } = useWelcomeOffer();
+  const welcomeActive = welcome?.award?.status === 'ACTIVE';
+  const [welcomeAck, setWelcomeAck] = useState(false);
   const withdrawLocked =
     !!restriction?.blocked_actions.includes('WITHDRAW') &&
     (restriction.requires !== 'CONTACT_VERIFICATION' || contactAsked);
@@ -327,6 +332,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   }, [minWithdrawal, calculatedCryptoAmount]);
 
   const canSubmit =
+    (!welcomeActive || welcomeAck) &&
     isKycApproved &&
     !belowMinimum &&
     !!currency &&
@@ -618,6 +624,14 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
                   </p>
                 )}
               </div>
+
+              {welcomeActive && (
+                <WelcomeWithdrawalNotice
+                  checked={welcomeAck}
+                  onChange={setWelcomeAck}
+                  className="mt-[22px]"
+                />
+              )}
 
               {/* The only action on this screen now. The gate above owns the
               verification route, so there is no second button competing for it. */}

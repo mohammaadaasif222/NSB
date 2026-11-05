@@ -190,3 +190,30 @@ export interface BonusClaimResult {
     usd_rate: string | null;
   } | null;
 }
+
+export interface WelcomeOfferOption {
+  id: string;
+  name: string;
+  description: string | null;
+  match_percentage: number;
+  max_bonus_amount: string | null;
+  wagering_multiplier: string;
+  max_convertible: string | null;
+}
+
+export type WelcomeChoiceStatus = 'PENDING' | 'DECLINED' | 'APPLIED';
+
+export interface WelcomeOffer {
+  enabled: boolean;
+  min_deposit: string;
+  deposit_count: number;
+  max_bet: string;
+  validity_days: number;
+  currency: string;
+  options: WelcomeOfferOption[];
+  choice: { bonus_id: string | null; status: WelcomeChoiceStatus; chosen_at: string } | null;
+  deposits_made: number;
+  eligible: boolean;
+  locked: boolean;
+  award: UserBonus | null;
+}

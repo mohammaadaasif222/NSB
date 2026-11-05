@@ -8,6 +8,8 @@ import { useSeonGuard } from '@/context/SeonGuardContext';
 import { isStepUpCancelled } from '@/lib/seon-guard';
 import { useTranslation } from '@/context/I18nContext';
 import Button from '@/components/ui/Button';
+import WelcomeWithdrawalNotice from '../WelcomeWithdrawalNotice';
+import { useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 import WalletField, {
   WALLET_INPUT,
   WALLET_NOTE,
@@ -54,6 +56,9 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused, ava
 
   // Form fields
   const [amount, setAmount] = useState('');
+  const { offer: welcome } = useWelcomeOffer();
+  const welcomeActive = welcome?.award?.status === 'ACTIVE';
+  const [welcomeAck, setWelcomeAck] = useState(false);
   const [beneficiaryName, setBeneficiaryName] = useState(me?.first_name || '');
   const [beneficiaryLastname, setBeneficiaryLastname] = useState(me?.last_name || '');
   const [documentId, setDocumentId] = useState('');
@@ -530,11 +535,19 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused, ava
           </div>
         </div>
 
+        {welcomeActive && (
+          <WelcomeWithdrawalNotice
+            checked={welcomeAck}
+            onChange={setWelcomeAck}
+            className="mt-[23px]"
+          />
+        )}
+
         <Button
           type="button"
           fullWidth
           onClick={handleSubmitWithdrawal}
-          disabled={loading}
+          disabled={loading || (welcomeActive && !welcomeAck)}
           className="mt-[23px]"
         >
           {loading ? t('acct.buy.processing') : t('acct.wallet.tabWithdraw')}

@@ -15,6 +15,7 @@ import CurrencyPicker from '../shared/CurrencyPicker';
 import NetworkPicker from '../shared/NetworkPicker';
 import AddressDisplay from '../shared/AddressDisplay';
 import KycGateNotice from '../KycGateNotice';
+import WelcomeOfferPicker from '../WelcomeOfferPicker';
 import LocalCurrencyTab from './LocalCurrencyTab';
 import SegmentedTabs from '@/components/player/SegmentedTabs';
 import { WALLET_TRACK } from '@/components/wallet/shared/WalletTabBar';
@@ -238,6 +239,8 @@ const DepositTab: FC<Props> = ({ onLeave }) => {
         label={t('acct.wallet.tabDeposit')}
         className={WALLET_TRACK}
       />
+
+      <WelcomeOfferPicker className="mt-4" />
 
       {/* CRYPTO DEPOSIT FLOW — Currency, Network and the address, 14 apart. */}
       {depositType === 'crypto' && (

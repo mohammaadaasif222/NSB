@@ -7,6 +7,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useBonuses } from '@/hooks/useBonuses';
+import { showsWelcomeOffer, useWelcomeOffer } from '@/hooks/useWelcomeOffer';
+import WelcomeOfferBanner from '@/components/bonus/WelcomeOfferBanner';
 import { donePostSignup, takePostSignup } from '@/lib/postSignup';
 import { analytics } from '@/services/analytics';
 
@@ -31,6 +33,7 @@ const WelcomeDialog: FC<DialogProps> = ({ onExplore, onDeposit, onDismiss }) => 
   const { t, locale } = useTranslation();
   const { bonuses: bonusesOn } = usePlatformFeatures();
   const { summary, error } = useBonuses();
+  const { offer: welcomeOffer, loading: welcomeLoading } = useWelcomeOffer();
   const [waited, setWaited] = useState(false);
 
   useEffect(() => {
@@ -47,8 +50,9 @@ const WelcomeDialog: FC<DialogProps> = ({ onExplore, onDeposit, onDismiss }) => 
     );
   }, [bonusesOn, summary]);
 
-  const ready = !bonusesOn || !!summary || !!error || waited;
-  const hasOffer = offer !== null;
+  const ready = !bonusesOn || ((!!summary || !!error) && !welcomeLoading) || waited;
+  const v6 = showsWelcomeOffer(welcomeOffer);
+  const hasOffer = offer !== null || v6;
 
   const shown = useRef(false);
   useEffect(() => {
@@ -81,7 +85,9 @@ const WelcomeDialog: FC<DialogProps> = ({ onExplore, onDeposit, onDismiss }) => 
           {hasOffer ? t('postSignup.offerSubtitle') : t('postSignup.subtitle')}
         </p>
 
-        {offer && (
+        {v6 && <WelcomeOfferBanner offer={welcomeOffer} large />}
+
+        {!v6 && offer && (
           <div className="rl-liquid rounded-[24px] px-5 py-5">
             <p className="text-[36px] leading-10 font-semibold tracking-[-0.02em] text-[#f9d028]">
               {stageHeadline(offer, currency, t)}

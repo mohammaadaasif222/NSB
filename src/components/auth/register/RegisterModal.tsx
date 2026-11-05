@@ -17,6 +17,8 @@ import MethodStep from '@/components/auth/register/MethodStep';
 import SignupFormStep from '@/components/auth/register/SignupFormStep';
 import OtpStep from '@/components/auth/register/OtpStep';
 import SocialStep from '@/components/auth/register/SocialStep';
+import WelcomeOfferBanner from '@/components/bonus/WelcomeOfferBanner';
+import { useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 
 import type { TranslationKey } from '@/i18n/locales';
 import type { SignupTarget } from '@/hooks/useSignupForm';
@@ -49,6 +51,7 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
   const router = useRouter();
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
+  const { offer: welcomeOffer } = useWelcomeOffer();
 
   const initialMethod = prefill?.mobile ? 'mobile' : prefill?.method;
   const [step, setStep] = useState<Step>(
@@ -122,6 +125,8 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
         )
       }
     >
+      {step === 'method' && <WelcomeOfferBanner offer={welcomeOffer} className="mb-3" />}
+
       {step === 'method' && (
         <MethodStep
           onSelectMethod={chooseMethod}
