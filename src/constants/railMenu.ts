@@ -19,6 +19,7 @@ import hiloIcon from '@/assets/lobby/rail/rail-originals-hilo.svg';
 import originalsBaccaratIcon from '@/assets/lobby/rail/rail-originals-baccarat.svg';
 import wheelIcon from '@/assets/lobby/rail/rail-originals-wheel.svg';
 import allOriginalsIcon from '@/assets/lobby/rail/rail-originals-all.svg';
+import dropsWinsIcon from '@/assets/lobby/rail/rail-casino-drops-wins.svg';
 import popularIcon from '@/assets/lobby/rail/rail-casino-popular.svg';
 import slotsIcon from '@/assets/lobby/rail/rail-casino-slots.svg';
 import latestIcon from '@/assets/lobby/rail/rail-casino-latest.svg';
@@ -89,7 +90,7 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
     href: '/casino',
     items: [
       { labelKey: 'lobby.rail.popularGames', href: categoryHref('popular'), icon: popularIcon },
-      { labelKey: 'lobby.rail.dropsWins', href: DROPS_WINS_PATH },
+      { labelKey: 'lobby.rail.dropsWins', href: DROPS_WINS_PATH, icon: dropsWinsIcon },
       { labelKey: 'dash.slots', href: categoryHref('slots'), icon: slotsIcon },
       { labelKey: 'lobby.rail.latestReleases', href: categoryHref('new'), icon: latestIcon },
       { labelKey: 'lobby.rail.highRtp', href: `${ALL_GAMES_PATH}?sort=rtp`, icon: highRtpIcon },
