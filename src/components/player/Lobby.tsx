@@ -12,6 +12,7 @@ import FavouritesShelf from '@/components/player/FavouritesShelf';
 import RecentShelf from '@/components/player/RecentShelf';
 import ComingSoonShelf from '@/components/player/ComingSoonShelf';
 import JackpotShelf from '@/components/player/JackpotShelf';
+import PrizeDropShelf from '@/components/player/PrizeDropShelf';
 import { WinnersStrip } from '@/components/player/TopWinnersTicker';
 import { DEFAULT_SECTIONS, sectionShelfKey } from '@/constants/games';
 import RecommendedShelf from '@/components/player/RecommendedShelf';
@@ -160,7 +161,7 @@ const Lobby: FC<Props> = ({
       case 'recents':
         return <RecentShelf title={title} />;
       case 'drops-wins':
-        return <ComingSoonShelf title={title ?? t('lobby.rail.dropsWins')} />;
+        return <PrizeDropShelf title={title} />;
       case 'hot':
         return <ComingSoonShelf title={title ?? t('lobby.casino.hot')} />;
       case 'sports':

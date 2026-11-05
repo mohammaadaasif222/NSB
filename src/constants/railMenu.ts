@@ -1,6 +1,12 @@
 import type { StaticImageData } from 'next/image';
 import type { TranslationKey } from '@/i18n/locales';
-import { ALL_GAMES_PATH, LIVE_CASINO_HREF, categoryHref, gameHref } from '@/constants/games';
+import {
+  ALL_GAMES_PATH,
+  DROPS_WINS_PATH,
+  LIVE_CASINO_HREF,
+  categoryHref,
+  gameHref,
+} from '@/constants/games';
 import { sportHref } from '@/constants/sportsbook';
 import plinkoIcon from '@/assets/lobby/rail/rail-originals-plinko.svg';
 import originalsBlackjackIcon from '@/assets/lobby/rail/rail-originals-blackjack.svg';
@@ -83,7 +89,7 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
     href: '/casino',
     items: [
       { labelKey: 'lobby.rail.popularGames', href: categoryHref('popular'), icon: popularIcon },
-      { labelKey: 'lobby.rail.dropsWins' },
+      { labelKey: 'lobby.rail.dropsWins', href: DROPS_WINS_PATH },
       { labelKey: 'dash.slots', href: categoryHref('slots'), icon: slotsIcon },
       { labelKey: 'lobby.rail.latestReleases', href: categoryHref('new'), icon: latestIcon },
       { labelKey: 'lobby.rail.highRtp', href: `${ALL_GAMES_PATH}?sort=rtp`, icon: highRtpIcon },
