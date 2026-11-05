@@ -31,7 +31,7 @@ const ProviderPage: FC<Props> = ({ provider, ...rest }) => {
     return (
       <PlayerLayout>
         <Seo title={t('lobby.providers.title')} noindex />
-        <div className="mx-auto max-w-[1600px] space-y-10 pb-2">
+        <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 space-y-10 pb-2">
           <p role="status" className="rl-glass rounded-2xl px-4 py-3 text-sm text-white/55">
             {t('dash.catalogueUnavailable')}
           </p>
@@ -80,7 +80,7 @@ const ProviderGames: FC<Omit<Props, 'provider'> & { provider: LobbyProvider }> =
         ])}
       />
 
-      <div className="mx-auto max-w-[1600px] space-y-4 pb-2 sm:space-y-6">
+      <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 space-y-4 pb-2 sm:space-y-6">
         <nav aria-label={t('lobby.game.breadcrumb')} className="text-xs text-white/45">
           <ol className="flex flex-wrap items-center gap-1.5">
             <li>

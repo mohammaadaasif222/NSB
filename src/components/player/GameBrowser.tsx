@@ -410,7 +410,7 @@ const GameBrowser: FC<Props> = ({
           ref={chipsRef}
           // Pinned flush to the bar's foot, so nothing scrolls past in a gap
           // between them; the padding is the breathing room instead.
-          className={`sticky top-[var(--player-bar-h,66px)] z-20 -mx-3 px-3 py-2 transition-[background-color,backdrop-filter] lg:top-[calc(var(--u)*20+var(--player-bar-h,80px))] lg:mx-0 lg:rounded-b-[calc(var(--u)*24)] lg:px-[calc(var(--u)*12)] lg:py-[calc(var(--u)*12)] ${
+          className={`sticky top-[var(--player-bar-h,66px)] z-20 -mx-3 px-3 py-2 transition-[background-color,backdrop-filter] lg:top-[calc(var(--u)*20+var(--player-bar-h,80px))] lg:-mx-[calc(var(--u)*12)] lg:rounded-b-[calc(var(--u)*24)] lg:px-[calc(var(--u)*12)] lg:py-[calc(var(--u)*12)] ${
             chipsStuck ? 'bg-[#07080b]/90 backdrop-blur-xl' : ''
           } ${chipsOnPhone ? '' : 'hidden lg:block'}`}
         >

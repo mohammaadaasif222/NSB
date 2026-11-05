@@ -19,7 +19,7 @@ const ComingSoon: FC<{ title: string; icon: FC<IconProps> }> = ({ title, icon: I
   const { t } = useTranslation();
 
   return (
-    <div className="mx-auto flex max-w-[1600px] items-center justify-center py-10">
+    <div className="mx-auto flex max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 items-center justify-center py-10">
       <section className="rl-glass flex w-full max-w-lg flex-col items-center rounded-3xl px-6 py-14 text-center sm:px-10">
         <span className="rl-glass flex h-16 w-16 items-center justify-center rounded-2xl text-white/70">
           <Icon size={30} />
@@ -60,7 +60,7 @@ export const createComingSoonPage = (titleKey: TranslationKey, icon: FC<IconProp
       <PlayerLayout>
         <Seo title={title} />
         <ComingSoon title={title} icon={icon} />
-        <div className="mx-auto mt-10 max-w-[1600px] lg:mt-[calc(var(--u)*80)]">
+        <div className="mx-auto mt-10 max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:mt-[calc(var(--u)*80)]">
           <SiteFooter />
         </div>
       </PlayerLayout>

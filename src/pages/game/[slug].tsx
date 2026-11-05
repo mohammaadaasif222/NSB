@@ -88,11 +88,7 @@ const PlayActions: FC<{ game: Game }> = ({ game }) => {
         {t('game.unavailable')}
       </span>
     ) : (
-      <button
-        type="button"
-        onClick={() => openLogin()}
-        className={PRIMARY}
-      >
+      <button type="button" onClick={() => openLogin()} className={PRIMARY}>
         {t('game.loginToPlay')}
       </button>
     );
@@ -172,7 +168,7 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, providerSlug }) => {
         jsonLd={breadcrumbs}
       />
 
-      <div className="mx-auto max-w-[1600px] space-y-6 pb-2 sm:space-y-8">
+      <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 space-y-6 pb-2 sm:space-y-8">
         {/* Breadcrumb */}
         <nav
           className="flex items-center gap-1.5 text-xs text-[#9da2b4]"
@@ -248,7 +244,9 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, providerSlug }) => {
                     {displayProvider(game.provider)}
                   </Link>
                 ) : (
-                  <span className="text-[#f0f1f5] font-medium">{displayProvider(game.provider)}</span>
+                  <span className="text-[#f0f1f5] font-medium">
+                    {displayProvider(game.provider)}
+                  </span>
                 )}
               </p>
 
