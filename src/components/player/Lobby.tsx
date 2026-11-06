@@ -174,7 +174,7 @@ const Lobby: FC<Props> = ({
       case 'streamers':
         return <StreamersRow streams={streams} title={title} />;
       case 'recent-winners':
-        return <RecentWinners tabs={player ? 'player' : 'landing'} title={title} />;
+        return <RecentWinners title={title} />;
       default:
         return null;
     }
@@ -239,7 +239,7 @@ const Lobby: FC<Props> = ({
           </>
         )}
 
-        {casino && <RecentWinners tabs="player" />}
+        {casino && <RecentWinners />}
         <FaqAccordion items={faqs} />
         <SiteFooter glow={variant === 'home' && !player} />
       </div>

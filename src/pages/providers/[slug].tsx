@@ -159,7 +159,7 @@ const ProviderGames: FC<Omit<Props, 'provider'> & { provider: LobbyProvider }> =
         )}
 
         <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
-          <RecentWinners tabs="player" />
+          <RecentWinners />
           <SiteFooter />
         </div>
       </div>

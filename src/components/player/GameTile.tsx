@@ -273,7 +273,7 @@ const InfoButton: FC<{
       aria-controls={open ? controls : undefined}
       aria-label={label}
       title={label}
-      className={`absolute end-[5.05cqw] flex h-[max(20px,12.12cqw)] w-[max(20px,12.12cqw)] items-center justify-center rounded-full border border-white/25 bg-black/45 text-[#f0f1f5] backdrop-blur-sm transition-[background-color,bottom] duration-150 hover:bg-black/65 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+      className={`absolute end-[5.05cqw] rl-glass-disc flex h-[max(20px,12.12cqw)] w-[max(20px,12.12cqw)] items-center justify-center rounded-full  text-[#f0f1f5] backdrop-blur-sm transition-[background-color,bottom] duration-150 hover:bg-black/65 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
         open ? 'bottom-[5.05cqw]' : 'bottom-[17.68cqw]'
       }`}
     >

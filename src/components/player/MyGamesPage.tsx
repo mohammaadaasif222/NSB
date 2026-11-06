@@ -182,7 +182,7 @@ const MyGamesPage: FC<Props> = ({
               viewAll={false}
             />
           )}
-          <RecentWinners tabs="player" />
+          <RecentWinners />
           <SiteFooter />
         </div>
       </div>

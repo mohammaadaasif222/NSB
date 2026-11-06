@@ -8,7 +8,6 @@ import walletGlyph from '@/assets/lobby/rail/bar-wallet.svg';
 import giftGlyph from '@/assets/lobby/rail/bar-gift.svg';
 import bellGlyph from '@/assets/lobby/rail/bar-bell.svg';
 import chatGlyph from '@/assets/lobby/rail/bar-chat.svg';
-import headsetGlyph from '@/assets/lobby/tabbar/headset.svg';
 import profileChevron from '@/assets/lobby/rail/bar-chevron-profile.svg';
 import defaultAvatar from '@/assets/lobby/player/avatar-default.webp';
 import { useAuth } from '@/context/AuthContext';
@@ -17,7 +16,6 @@ import { useMe } from '@/context/UserContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useAuthModal } from '@/context/AuthModalContext';
-import { useOpenSupport } from '@/hooks/useOpenSupport';
 import ProfileMenu from '@/components/player/ProfileMenu';
 import BalanceMenu from '@/components/player/BalanceMenu';
 import WalletModal from '@/components/wallet/WalletModal';
@@ -112,7 +110,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
   const { t, locale } = useTranslation();
   const { internalChatEnabled, chatRegionalRoomsEnabled } = useSupportChat();
   const { openLogin, openRegister } = useAuthModal();
-  const openSupport = useOpenSupport();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
@@ -291,19 +288,6 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
 
           {/* --- Player controls ----------------------------------------- */}
           <div className="flex flex-shrink-0 items-center gap-2.5 lg:gap-[calc(var(--u)*20)]">
-            {/* Support, on every screen and signed in or out. */}
-            <IconButton
-              label={t('menu.liveSupport')}
-              onClick={openSupport}
-              className="inline-flex"
-              data-support-headset=""
-            >
-              <img
-                src={headsetGlyph.src}
-                alt=""
-                className="h-5 w-5 lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
-              />
-            </IconButton>
             {token && (
               <>
                 {/* Desktop: the design's black "Reward" pill. Phone: a gift

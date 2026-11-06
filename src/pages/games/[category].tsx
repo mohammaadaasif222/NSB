@@ -152,7 +152,7 @@ const CategoryPage: FC<Props> = ({
         {pagination.totalPages > 1 && <div className="flex justify-center pt-2">{pager}</div>}
 
         <div className="mt-10 space-y-10 lg:mt-[calc(var(--u)*80)] lg:space-y-[calc(var(--u)*80)]">
-          <RecentWinners tabs="player" />
+          <RecentWinners />
           <SiteFooter />
         </div>
       </div>
