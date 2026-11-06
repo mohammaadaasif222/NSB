@@ -653,6 +653,7 @@
   "roll.retry": "Riprova",
   "roll.bonusAmount": "Bonus di {amount}",
   "roll.bonusExpires": "Scade il {date}",
+  "roll.balanceLost": "Chiuso: il tuo saldo è esaurito",
   "roll.status.NOT_STARTED": "Non iniziato",
   "roll.status.IN_PROGRESS": "In corso",
   "roll.status.COMPLETED": "Completato",

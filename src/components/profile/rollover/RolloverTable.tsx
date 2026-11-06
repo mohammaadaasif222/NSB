@@ -115,6 +115,9 @@ const RolloverTable: FC<Props> = ({ rows, locale, empty, onOpen }) => {
                 className={`${CELL} text-[12px] text-white/50 lg:text-[length:max(10px,calc(var(--u)*14))]`}
               >
                 {formatDate(row.created_at)}
+                {row.closed_reason === 'BALANCE_LOST' && (
+                  <p className={NOTE}>{t('roll.balanceLost')}</p>
+                )}
                 {row.bonus?.status === 'ACTIVE' && row.bonus.expires_at && (
                   <p className={NOTE}>
                     {t('roll.bonusExpires', { date: formatDate(row.bonus.expires_at) })}

@@ -653,6 +653,7 @@
   "roll.retry": "حاول مرة أخرى",
   "roll.bonusAmount": "مكافأة بقيمة {amount}",
   "roll.bonusExpires": "تنتهي في {date}",
+  "roll.balanceLost": "أُغلق: نفد رصيدك",
   "roll.status.NOT_STARTED": "لم يبدأ",
   "roll.status.IN_PROGRESS": "قيد التقدّم",
   "roll.status.COMPLETED": "مستوفى",

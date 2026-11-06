@@ -177,6 +177,9 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
             {shown.completed_at && (
               <Row label={t('roll.detail.cleared')} value={formatMoment(shown.completed_at)} />
             )}
+            {shown.closed_reason === 'BALANCE_LOST' && (
+              <Row label={t('roll.table.status')} value={t('roll.balanceLost')} />
+            )}
             {shown.bonus?.status === 'ACTIVE' && shown.bonus.expires_at && (
               <Row label={t('roll.detail.expires')} value={formatMoment(shown.bonus.expires_at)} />
             )}

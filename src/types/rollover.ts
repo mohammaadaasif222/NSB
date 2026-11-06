@@ -40,6 +40,7 @@ export interface DepositRollover {
   bonus: RolloverBonus | null;
 
   completed_at: string | null;
+  closed_reason: string | null;
   created_at: string;
   updated_at: string;
 }

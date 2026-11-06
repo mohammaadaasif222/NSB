@@ -795,6 +795,7 @@ const coreEn = {
   'roll.retry': 'Try again',
   'roll.bonusAmount': '{amount} bonus',
   'roll.bonusExpires': 'Expires {date}',
+  'roll.balanceLost': 'Closed: your balance ran out',
   'roll.status.NOT_STARTED': 'Not started',
   'roll.status.IN_PROGRESS': 'In progress',
   'roll.status.COMPLETED': 'Cleared',
