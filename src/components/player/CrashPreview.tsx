@@ -10,6 +10,12 @@ import { useRouter } from 'next/router';
 import { categoryHref, playHref } from '@/constants/games';
 import SelectGameModal from '@/components/player/SelectGameModal';
 import { useAuth } from '@/context/AuthContext';
+
+/**
+ * The Tequity aggregator Crash game. Launched via /games/<slug>/launch so the
+ * card iframes the real provider UI — not the native Originals `crash` slug.
+ */
+const DEFAULT_LOBBY_SLUG = 'crash-tequity';
 import { useTranslation } from '@/context/I18nContext';
 import {
   currentGameDevice,
@@ -210,27 +216,40 @@ const CrashPreview: FC = () => {
   const closeGame = (): void => setActive({ status: 'idle' });
 
   // Rehydrate the lobby card with whatever game the player last opened on
-  // it, on any device. Runs once after sign-in. A signed-out player, a
-  // never-played user, a delisted slug or any API failure all land the same
-  // way: stay on the Crash preview, silently.
+  // it, on any device. Runs once auth is hydrated.
+  //   Signed-in  → fetchLastGame() first; if none/stale, fall back to the
+  //                Tequity Crash iframe in REAL mode.
+  //   Signed-out → Tequity Crash iframe in DEMO so the card is never empty.
+  // A delisted slug or any API failure falls through to the static preview.
   useEffect(() => {
-    if (!hydrated || !user) return;
+    if (!hydrated) return;
     // Only restore when the player has not already picked something this
     // session — otherwise refetching would clobber their current game.
     if (active.status !== 'idle') return;
     let cancelled = false;
     void (async () => {
-      const pref = await fetchLastGame();
-      if (cancelled || !pref?.slug) return;
-      const game = await fetchGame(pref.slug);
-      if (cancelled || !game) return;
-      openGame(game, pref.mode);
+      const fallbackMode: GameMode = user ? 'REAL' : 'DEMO';
+      if (user) {
+        const pref = await fetchLastGame();
+        if (cancelled) return;
+        if (pref?.slug) {
+          const game = await fetchGame(pref.slug);
+          if (cancelled) return;
+          if (game) {
+            openGame(game, pref.mode);
+            return;
+          }
+        }
+      }
+      const fallback = await fetchGame(DEFAULT_LOBBY_SLUG);
+      if (cancelled || !fallback) return;
+      openGame(fallback, fallbackMode);
     })();
     return () => {
       cancelled = true;
     };
     // Intentionally keyed only to the player's identity: we restore once
-    // per sign-in, not on every state change.
+    // per sign-in (or on first landing), not on every state change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, user?.id]);
 
