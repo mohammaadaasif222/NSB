@@ -2092,5 +2092,13 @@
   "welcome.railLabel": "वेलकम बोनस",
   "welcome.railAmount": "{percent}% तक",
   "welcome.railNote": "कैशियर में चुनें",
-  "welcome.bannerCta": "अपना बोनस पाएँ"
+  "welcome.bannerCta": "अपना बोनस पाएँ",
+  "welcome.betRefused": "दांव अस्वीकार। वेलकम बोनस सक्रिय रहने तक अधिकतम दांव {maxBet} है।",
+  "welcome.gameBarTitle": "वेलकम बोनस",
+  "welcome.gameCounts": "यह गेम आपकी वेजरिंग में {percent}% गिना जाता है",
+  "welcome.gameCountsFull": "यह गेम आपकी वेजरिंग में पूरा गिना जाता है",
+  "welcome.gameNotCounting": "यह गेम आपकी वेजरिंग में नहीं गिना जाता",
+  "welcome.gameMaxBet": "अधिकतम दांव {maxBet}। इससे बड़े दांव अस्वीकार होते हैं।",
+  "welcome.tileNone": "बोनस 0%",
+  "welcome.tilePartial": "बोनस {percent}%"
 }

@@ -2092,5 +2092,13 @@
   "welcome.railLabel": "Bonus de bienvenue",
   "welcome.railAmount": "Jusqu'à {percent} %",
   "welcome.railNote": "Choisissez-le à la caisse",
-  "welcome.bannerCta": "Obtenir mon bonus"
+  "welcome.bannerCta": "Obtenir mon bonus",
+  "welcome.betRefused": "Mise refusée. Tant que votre bonus de bienvenue est actif, la mise maximale est de {maxBet}.",
+  "welcome.gameBarTitle": "Bonus de bienvenue",
+  "welcome.gameCounts": "Ce jeu compte à {percent} % pour vos conditions de mise",
+  "welcome.gameCountsFull": "Ce jeu compte à 100 % pour vos conditions de mise",
+  "welcome.gameNotCounting": "Ce jeu ne compte pas pour vos conditions de mise",
+  "welcome.gameMaxBet": "Mise max. {maxBet}. Les mises plus élevées sont refusées.",
+  "welcome.tileNone": "Bonus 0 %",
+  "welcome.tilePartial": "Bonus {percent} %"
 }

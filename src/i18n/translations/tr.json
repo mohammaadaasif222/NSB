@@ -2092,5 +2092,13 @@
   "welcome.railLabel": "Hoş geldin bonusu",
   "welcome.railAmount": "%{percent} kadar",
   "welcome.railNote": "Kasada seç",
-  "welcome.bannerCta": "Bonusunu al"
+  "welcome.bannerCta": "Bonusunu al",
+  "welcome.betRefused": "Bahis reddedildi. Hoş geldin bonusun aktifken en fazla {maxBet} bahis yapabilirsin.",
+  "welcome.gameBarTitle": "Hoş geldin bonusu",
+  "welcome.gameCounts": "Bu oyun çevrime %{percent} sayılır",
+  "welcome.gameCountsFull": "Bu oyun çevrime tam sayılır",
+  "welcome.gameNotCounting": "Bu oyun çevrime sayılmaz",
+  "welcome.gameMaxBet": "Maks. bahis {maxBet}. Daha yüksek bahisler reddedilir.",
+  "welcome.tileNone": "Bonus %0",
+  "welcome.tilePartial": "Bonus %{percent}"
 }

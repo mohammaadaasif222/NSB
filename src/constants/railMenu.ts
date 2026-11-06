@@ -62,11 +62,11 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
       { labelKey: 'lobby.rail.plinko', href: gameHref('plinko-tequity'), icon: plinkoIcon },
       {
         labelKey: 'lobby.chips.blackjack',
-        href: gameHref('blackjack'),
+        href: gameHref('blackjack-tequity'),
         icon: originalsBlackjackIcon,
       },
       { labelKey: 'lobby.rail.keno', href: gameHref('keno-tequity'), icon: kenoIcon },
-      { labelKey: 'lobby.rail.mines', href: gameHref('mines'), icon: minesIcon },
+      { labelKey: 'lobby.rail.mines', href: gameHref('mines-tequity'), icon: minesIcon },
       { labelKey: 'lobby.rail.limbo', href: gameHref('limbo-tequity'), icon: limboIcon },
       { labelKey: 'lobby.rail.dice', href: gameHref('dice-tequity'), icon: diceIcon },
       { labelKey: 'lobby.rail.crash', href: gameHref('crash-tequity'), icon: crashIcon },
@@ -76,7 +76,7 @@ export const RAIL_GROUPS: Record<RailGroupId, RailGroup> = {
         href: gameHref('baccarat-tequity'),
         icon: originalsBaccaratIcon,
       },
-      { labelKey: 'lobby.rail.wheel', href: gameHref('wheel'), icon: wheelIcon },
+      { labelKey: 'lobby.rail.wheel', href: gameHref('wheel-tequity'), icon: wheelIcon },
       {
         labelKey: 'lobby.rail.allOriginals',
         href: categoryHref('originals'),
