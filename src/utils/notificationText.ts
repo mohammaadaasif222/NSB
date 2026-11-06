@@ -1,4 +1,5 @@
 import type { TranslationKey } from '@/i18n/locales';
+import { currentLocale } from '@/i18n/translate';
 import type { PlayerNotification } from '@/services/notifications';
 
 type Translate = (key: TranslationKey, vars?: Record<string, string | number>) => string;
@@ -116,6 +117,21 @@ export const personalNoticeText = (
           deposit: amount('deposit'),
         }),
       };
+    case 'REWARD_CAP_REACHED': {
+      const resumes = new Date(text(data.resumes_at));
+      if (!data.cap_usd || Number.isNaN(resumes.getTime())) return fallback;
+      return {
+        title: t('notif.rewardCapReached.title'),
+        body: t('notif.rewardCapReached.body', {
+          cap: amount('cap_usd'),
+          date: resumes.toLocaleDateString(currentLocale(), {
+            day: 'numeric',
+            month: 'long',
+            timeZone: 'UTC',
+          }),
+        }),
+      };
+    }
     case 'ROLLOVER_COMPLETED':
       return {
         title: t('notif.rolloverCompleted.title'),

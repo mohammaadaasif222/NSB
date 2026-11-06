@@ -10,7 +10,7 @@ import GameListToolbar, { SORTS, type Sort } from '@/components/player/GameListT
 import RecentWinners from '@/components/player/RecentWinners';
 import SiteFooter from '@/components/player/SiteFooter';
 import { CATEGORY_ICONS } from '@/components/icons';
-import { CHIP_ICON, CHIP_ROW, chipClass } from '@/components/player/BrowseControls';
+import { CHIP_BAR, CHIP_ICON, CHIP_ROW, chipClass } from '@/components/player/BrowseControls';
 import { useTranslation } from '@/context/I18nContext';
 import {
   CASINO_LISTING_KEYS,
@@ -86,24 +86,26 @@ const CategoryPage: FC<Props> = ({
         path={categoryHref(def.key, pagination.page)}
       />
 
-      <div className="mx-auto max-w-[1600px] space-y-4 pb-2 sm:space-y-6">
+      <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 space-y-4 pb-2 sm:space-y-6">
         {/* Category tabs */}
-        <nav className={CHIP_ROW} aria-label={t('dash.categories')}>
-          {tabs.map(shelfFor).map((c) => {
-            const Icon = CATEGORY_ICONS[c.key];
-            const active = c.key === def.key;
-            return (
-              <Link
-                key={c.key}
-                href={categoryHref(c.key)}
-                aria-current={active ? 'page' : undefined}
-                className={`${chipClass(active)} whitespace-nowrap`}
-              >
-                <Icon className={CHIP_ICON} />
-                {t(c.titleKey)}
-              </Link>
-            );
-          })}
+        <nav className={CHIP_BAR} aria-label={t('dash.categories')}>
+          <div className={CHIP_ROW}>
+            {tabs.map(shelfFor).map((c) => {
+              const Icon = CATEGORY_ICONS[c.key];
+              const active = c.key === def.key;
+              return (
+                <Link
+                  key={c.key}
+                  href={categoryHref(c.key)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`${chipClass(active)} whitespace-nowrap`}
+                >
+                  <Icon className={CHIP_ICON} />
+                  {t(c.titleKey)}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         <header className="flex flex-wrap items-end justify-between gap-3">

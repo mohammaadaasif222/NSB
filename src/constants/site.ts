@@ -37,6 +37,7 @@ export const INDEXED_STATIC_PATHS = [
   '/providers',
   '/live-casino',
   '/promotions',
+  '/drops-wins',
   '/bonuses',
   '/rewards',
   '/terms-of-service',

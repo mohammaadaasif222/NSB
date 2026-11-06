@@ -15,6 +15,7 @@ import * as legalModule from './modules/legal';
 import * as contentModule from './modules/content';
 import * as miscModule from './modules/misc';
 import * as notificationsModule from './modules/notifications';
+import * as welcomeModule from './modules/welcome';
 
 export const LOCALES = ['en', 'ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'] as const;
 
@@ -1239,6 +1240,7 @@ const en = {
   ...contentModule.en,
   ...miscModule.en,
   ...notificationsModule.en,
+  ...welcomeModule.en,
 } as const;
 
 export type TranslationKey = keyof typeof en;

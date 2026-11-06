@@ -40,6 +40,9 @@ export const formatAmount = (amount: string, digits = 2, feature?: string): stri
     maximumFractionDigits: digits,
   });
 
+export const formatOfferAmount = (amount: string, currency: string): string =>
+  withCurrency(formatAmount(amount, Number(amount) % 1 === 0 ? 0 : 2), currency);
+
 /**
  * A reward amount with its currency.
  *

@@ -19,6 +19,7 @@ import AuthGate from '@/components/AuthGate';
 import AccountReviewNotice from '@/components/risk/AccountReviewNotice';
 import LoginPopup from '@/components/player/LoginPopup';
 import PostSignupPopup from '@/components/player/PostSignupPopup';
+import WelcomeCompletePopup from '@/components/bonus/WelcomeCompletePopup';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import RegionRestrictedModal from '@/components/modals/RegionRestrictedModal';
 import EmailVerifyPromptModal from '@/components/modals/EmailVerifyPromptModal';
@@ -118,6 +119,7 @@ export default function App({ Component, pageProps }: AppProps) {
                             <EmailVerifyPromptModal />
                             <PhoneVerifyPromptModal />
                             <PostSignupPopup />
+                            <WelcomeCompletePopup />
                             <LoginPopup />
                             {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching

@@ -1,3 +1,4 @@
+import { showsWelcomeOffer, useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 import { useEffect, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import Link from 'next/link';
 import type { StaticImageData } from 'next/image';
@@ -31,7 +32,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useOpenSupport } from '@/hooks/useOpenSupport';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
-import { RAIL_GROUPS, RAIL_OPEN_KEY, type RailGroup, type RailGroupId } from '@/constants/railMenu';
+import {
+  RAIL_GROUPS,
+  RAIL_OPEN_KEY,
+  type RailGroup,
+  type RailGroupId,
+  type RailSubItem,
+} from '@/constants/railMenu';
 import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 import GameSearchModal from '@/components/player/GameSearchModal';
@@ -248,6 +255,18 @@ const RailGroupRow: FC<{
   const label = t(group.labelKey);
   // Lit by its rows only: the section switch above already marks /casino and /sports.
   const active = group.items.some((item) => item.href === currentPath);
+  // A row without an icon keeps the empty column, so every label in the group lines up.
+  const hasIcons = group.items.some((item) => item.icon);
+  const itemIcon = (item: RailSubItem): ReactNode =>
+    hasIcons &&
+    (item.icon ? (
+      <Glyph src={item.icon.src} size={20} />
+    ) : (
+      <span
+        aria-hidden="true"
+        className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] flex-shrink-0"
+      />
+    ));
 
   return (
     <div className="flex flex-shrink-0 flex-col gap-1 lg:gap-[calc(var(--u)*2)]">
@@ -296,6 +315,7 @@ const RailGroupRow: FC<{
                         : 'text-[#9da2b4] hover:bg-white/5 hover:text-white'
                     }`}
                   >
+                    {itemIcon(item)}
                     <span className="truncate">{text}</span>
                   </Link>
                 ) : (
@@ -304,6 +324,7 @@ const RailGroupRow: FC<{
                     title={`${text} — ${t('common.soon')}`}
                     className={`${SUB_ROW} cursor-default text-[#9da2b4]/50`}
                   >
+                    {itemIcon(item)}
                     <span className="truncate">{text}</span>
                     <span className="ms-auto flex-shrink-0 rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-wide lg:px-[calc(var(--u)*8)] lg:text-[length:max(9px,calc(var(--u)*10))]">
                       {t('common.soon')}
@@ -370,6 +391,11 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
     referrals: referralsOn,
   } = usePlatformFeatures();
   const { openLogin, openRegister } = useAuthModal();
+  const { offer: welcomeCandidate } = useWelcomeOffer();
+  const welcomeOffer = showsWelcomeOffer(welcomeCandidate) ? welcomeCandidate : null;
+  const welcomePercent = welcomeOffer
+    ? Math.max(...welcomeOffer.options.map((option) => option.match_percentage))
+    : 0;
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
   const [suggesting, setSuggesting] = useState(false);
@@ -549,7 +575,11 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               if (token) void push('/bonuses');
               else openRegister();
             }}
-            title={t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })}
+            title={
+              welcomeOffer
+                ? t('welcome.bannerHeadline', { percent: welcomePercent })
+                : t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })
+            }
             className={`mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rounded-[24px] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
               collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
             }`}
@@ -568,21 +598,21 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
-              {t('lobby.rail.welcomePackage')}
+              {welcomeOffer ? t('welcome.railLabel') : t('lobby.rail.welcomePackage')}
             </span>
             <span
               className={`block text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
-              $1,500
+              {welcomeOffer ? t('welcome.railAmount', { percent: welcomePercent }) : '$1,500'}
             </span>
             <span
               className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] ${
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
-              {t('lobby.rail.freeSpins', { count: 100 })}
+              {welcomeOffer ? t('welcome.railNote') : t('lobby.rail.freeSpins', { count: 100 })}
             </span>
           </button>
 
