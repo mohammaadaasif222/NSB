@@ -2092,5 +2092,13 @@
   "welcome.railLabel": "مكافأة الترحيب",
   "welcome.railAmount": "حتى {percent}%",
   "welcome.railNote": "اخترها من الصندوق",
-  "welcome.bannerCta": "احصل على مكافأتك"
+  "welcome.bannerCta": "احصل على مكافأتك",
+  "welcome.betRefused": "تم رفض الرهان. ما دامت مكافأة الترحيب نشطة فإن الحد الأقصى للرهان هو {maxBet}.",
+  "welcome.gameBarTitle": "مكافأة الترحيب",
+  "welcome.gameCounts": "تُحتسب هذه اللعبة بنسبة {percent}% من شرط الرهان",
+  "welcome.gameCountsFull": "تُحتسب هذه اللعبة بالكامل من شرط الرهان",
+  "welcome.gameNotCounting": "لا تُحتسب هذه اللعبة من شرط الرهان",
+  "welcome.gameMaxBet": "الحد الأقصى للرهان {maxBet}. تُرفض الرهانات الأعلى.",
+  "welcome.tileNone": "المكافأة 0%",
+  "welcome.tilePartial": "المكافأة {percent}%"
 }
