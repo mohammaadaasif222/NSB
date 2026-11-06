@@ -1,3 +1,4 @@
+
 # Noida Super Bazaar: Phase-1 Wedding MVP
 
 A monorepo with a NestJS API, one Next.js app (public site and admin), and PostgreSQL. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -48,3 +49,6 @@ docker compose exec api node dist/db/seed.js    # first deploy only
 ```
 
 Caddy gets the TLS certificate automatically. The API applies database migrations each time it starts.
+=======
+
+
