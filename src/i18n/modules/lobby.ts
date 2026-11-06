@@ -237,6 +237,20 @@ export const en = {
   'lobby.jackpots.tier.GRAND': 'Grand',
   'lobby.jackpots.tierN': 'Tier {n}',
 
+  // Drops & Wins (provider prize drops)
+  'lobby.drops.pageIntro':
+    'Cash prizes drop at random on the games below. Play any of them at or above the minimum bet and any round can win one, paid straight into your balance.',
+  'lobby.drops.empty': 'No Drops & Wins campaigns are running right now. Check back soon.',
+  'lobby.drops.prizePool': 'Prize pool',
+  'lobby.drops.prizes': 'Prizes',
+  'lobby.drops.minBet': 'Min bet',
+  'lobby.drops.ends': 'Ends',
+  'lobby.drops.starts': 'Starts',
+  'lobby.drops.games': 'Games in this campaign',
+  'lobby.drops.live': 'Live casino',
+  'lobby.drops.level.NETWORK': 'Network',
+  'lobby.drops.level.BESPOKE': 'Exclusive',
+
   // Rewards tray raffle card
   'lobby.raffle.title': '{amount} WEEKLY RAFFLE',
   'lobby.raffle.active': 'Raffle Entry Active',

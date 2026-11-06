@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const APP = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const I18N = path.join(APP, 'src', 'i18n');
 const LOCALES = ['ar', 'tr', 'hi', 'fr', 'ru', 'pt', 'es', 'it'];
-const MODULES = ['lobby', 'account', 'rg', 'legal', 'content', 'misc', 'notifications'];
+const MODULES = ['lobby', 'account', 'rg', 'legal', 'content', 'misc', 'notifications', 'welcome'];
 const listMissing = process.argv.includes('--list');
 const findUnused = process.argv.includes('--unused');
 

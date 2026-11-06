@@ -252,6 +252,9 @@ export const categoryForKey = (value: string | string[] | undefined): GameShelfD
 /** Path of the Live Casino lobby. */
 export const LIVE_CASINO_HREF = '/live-casino';
 
+/** Path of the Drops & Wins page: the providers' prize drop campaigns. */
+export const DROPS_WINS_PATH = '/drops-wins';
+
 /** The category shelf for an API enum value. */
 export const categoryForEnum = (category: GameCategory): GameShelfDef =>
   GAME_CATEGORIES.find((c) => c.list.category === category) ?? GAME_SHELVES[0];

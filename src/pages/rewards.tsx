@@ -200,7 +200,7 @@ const RewardsPage: FC = () => {
     return (
       <PlayerLayout>
         <Seo title={t('rewards.title')} noindex />
-        <div className="mx-auto max-w-[1600px] pb-2">
+        <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 pb-2">
           <section className={`${PANEL} py-16 text-center`}>
             <h1 className={PANEL_TITLE}>{t('rewards.switchedOff')}</h1>
             <p className={`mx-auto mt-2 max-w-xl ${MUTED}`}>{t('rewards.switchedOffNote')}</p>

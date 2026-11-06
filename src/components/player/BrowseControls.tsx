@@ -433,6 +433,11 @@ export const ChipButton: FC<{
 );
 
 /** The chip row's scroller, bleeding to the screen edge on a phone. */
+/** The bar a page's chip row sits in, pinned under the top bar. Its padding is
+    what keeps the row's `-my-3` from pulling the next block onto the chips. */
+export const CHIP_BAR =
+  'sticky top-[var(--player-bar-h,66px)] z-20 -mx-3 bg-[#07080b]/90 px-3 py-2 backdrop-blur-xl lg:top-[calc(var(--u)*20+var(--player-bar-h,80px))] lg:-mx-[calc(var(--u)*12)] lg:rounded-b-[calc(var(--u)*24)] lg:px-[calc(var(--u)*12)] lg:py-[calc(var(--u)*12)]';
+
 export const CHIP_ROW =
   'rl-shelf -mx-4 flex gap-[7px] px-4 py-3 -my-3 lg:mx-0 lg:gap-[calc(var(--u)*15)] lg:px-0';
 

@@ -73,6 +73,10 @@ export interface UserBonus {
   credit_amount: string | null;
   is_real_money: boolean;
   max_bet_size: string | null;
+  welcome?: boolean;
+  max_convertible?: string | null;
+  released_usd?: string | null;
+  captured_usd?: string | null;
 
   forfeit_reason: string | null;
   claimed_at: string;
@@ -189,4 +193,31 @@ export interface BonusClaimResult {
     usd_amount: string;
     usd_rate: string | null;
   } | null;
+}
+
+export interface WelcomeOfferOption {
+  id: string;
+  name: string;
+  description: string | null;
+  match_percentage: number;
+  max_bonus_amount: string | null;
+  wagering_multiplier: string;
+  max_convertible: string | null;
+}
+
+export type WelcomeChoiceStatus = 'PENDING' | 'DECLINED' | 'APPLIED';
+
+export interface WelcomeOffer {
+  enabled: boolean;
+  min_deposit: string;
+  deposit_count: number;
+  max_bet: string;
+  validity_days: number;
+  currency: string;
+  options: WelcomeOfferOption[];
+  choice: { bonus_id: string | null; status: WelcomeChoiceStatus; chosen_at: string } | null;
+  deposits_made: number;
+  eligible: boolean;
+  locked: boolean;
+  award: UserBonus | null;
 }

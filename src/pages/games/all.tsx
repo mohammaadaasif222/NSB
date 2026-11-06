@@ -8,14 +8,16 @@ import GameTile from '@/components/player/GameTile';
 import Pager from '@/components/player/Pager';
 import SiteFooter from '@/components/player/SiteFooter';
 import Seo from '@/components/seo/Seo';
-import { CHIP_ROW, ChipButton, Dropdown, Option } from '@/components/player/BrowseControls';
+import {
+  CHIP_BAR,
+  CHIP_ROW,
+  ChipButton,
+  Dropdown,
+  Option,
+} from '@/components/player/BrowseControls';
 import GameListToolbar, { SORTS, type Sort } from '@/components/player/GameListToolbar';
 import { useTranslation } from '@/context/I18nContext';
-import {
-  ALL_GAMES_PATH,
-  CATEGORY_PAGE_SIZE,
-  shelfFor,
-} from '@/constants/games';
+import { ALL_GAMES_PATH, CATEGORY_PAGE_SIZE, shelfFor } from '@/constants/games';
 import { MIN_SEARCH_LENGTH } from '@/services/catalogue';
 import {
   fetchProviders,
@@ -197,7 +199,7 @@ const AllGamesPage: FC<Props> = ({ games, pagination, failed, groups, providers,
     <PlayerLayout>
       <Seo title={t('allGames.title')} description={t('allGames.meta')} path={ALL_GAMES_PATH} />
 
-      <div className="mx-auto max-w-[1600px] space-y-4 pb-2 sm:space-y-5">
+      <div className="mx-auto max-w-[1548px] px-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 space-y-4 pb-2 sm:space-y-5">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold text-white sm:text-2xl">{t('allGames.title')}</h1>
@@ -221,7 +223,7 @@ const AllGamesPage: FC<Props> = ({ games, pagination, failed, groups, providers,
         />
 
         {/* --- Kind: the chip row, pinned under the top bar as on the casino page --- */}
-        <div className="sticky top-[var(--player-bar-h,66px)] z-20 -mx-3 bg-[#07080b]/90 px-3 py-2 backdrop-blur-xl lg:top-[calc(var(--u)*20+var(--player-bar-h,80px))] lg:mx-0 lg:rounded-b-[calc(var(--u)*24)] lg:px-[calc(var(--u)*12)] lg:py-[calc(var(--u)*12)]">
+        <div className={CHIP_BAR}>
           <div className={CHIP_ROW}>
             <ChipButton active={!filters.kind} onClick={() => go({ kind: '' })} icon={chipLobby}>
               {t('allGames.allTypes')}
