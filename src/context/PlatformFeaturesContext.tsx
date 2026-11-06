@@ -12,6 +12,7 @@ import apiService from '@/services/api';
 export interface PlatformFeatures {
   bonuses: boolean;
   rewards: boolean;
+  rollover_display: boolean;
   vip_tiers: boolean;
   /** Master switch: the referral programme. */
   referrals: boolean;
@@ -42,6 +43,7 @@ export interface PlatformFeatures {
 const ALL_ON: PlatformFeatures = {
   bonuses: true,
   rewards: true,
+  rollover_display: true,
   vip_tiers: true,
   referrals: true,
   promotions: true,

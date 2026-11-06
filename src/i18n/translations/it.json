@@ -2093,5 +2093,13 @@
   "welcome.railLabel": "Bonus di benvenuto",
   "welcome.railAmount": "Fino al {percent}%",
   "welcome.railNote": "Sceglilo alla cassa",
-  "welcome.bannerCta": "Ottieni il tuo bonus"
+  "welcome.bannerCta": "Ottieni il tuo bonus",
+  "welcome.betRefused": "Puntata rifiutata. Finché il bonus di benvenuto è attivo, la puntata massima è {maxBet}.",
+  "welcome.gameBarTitle": "Bonus di benvenuto",
+  "welcome.gameCounts": "Questo gioco conta al {percent}% per il requisito di puntata",
+  "welcome.gameCountsFull": "Questo gioco conta al 100% per il requisito di puntata",
+  "welcome.gameNotCounting": "Questo gioco non conta per il requisito di puntata",
+  "welcome.gameMaxBet": "Puntata massima {maxBet}. Le puntate più alte vengono rifiutate.",
+  "welcome.tileNone": "Bonus 0%",
+  "welcome.tilePartial": "Bonus {percent}%"
 }

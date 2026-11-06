@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type FC, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
 
 import PlayerLayout from '@/layout/PlayerLayout';
@@ -66,7 +66,11 @@ const ProfilePage: FC = () => {
   const { me, loading, error, refresh, updateMe } = useMe();
   const { logout } = useAuth();
   const { t } = useTranslation();
-  const { help_center: helpCentreOn, loaded: featuresLoaded } = usePlatformFeatures();
+  const {
+    help_center: helpCentreOn,
+    rollover_display: rolloverOn,
+    loaded: featuresLoaded,
+  } = usePlatformFeatures();
   const router = useRouter();
 
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
@@ -85,14 +89,19 @@ const ProfilePage: FC = () => {
   // not a place at all: a typed or bookmarked `?section=help` is dropped from
   // the URL and the profile shows instead. Waits for the flags to arrive —
   // before that they are optimistic defaults, not an answer.
-  const helpBlocked = section === 'help' && !helpCentreOn;
+  const switchedOff = useCallback(
+    (key: AccountSection): boolean =>
+      (key === 'help' && !helpCentreOn) || (key === 'rollover' && !rolloverOn),
+    [helpCentreOn, rolloverOn]
+  );
+  const helpBlocked = switchedOff(section);
   useEffect(() => {
-    if (!featuresLoaded || helpCentreOn || !router.isReady) return;
-    if (router.query.section === 'help') {
+    if (!featuresLoaded || !router.isReady) return;
+    if (isAccountSection(router.query.section) && switchedOff(router.query.section)) {
       void router.replace({ pathname: router.pathname, query: {} }, undefined, { shallow: true });
     }
-    setSection((current) => (current === 'help' ? 'profile' : current));
-  }, [featuresLoaded, helpCentreOn, router]);
+    setSection((current) => (switchedOff(current) ? 'profile' : current));
+  }, [featuresLoaded, switchedOff, router]);
 
   const selectSection = (next: AccountSection): void => {
     setSection(next);
@@ -116,7 +125,7 @@ const ProfilePage: FC = () => {
 
     // Never render the Help Centre while it is off — or before we know whether
     // it is, when it was asked for by URL.
-    if (section === 'help' && (helpBlocked || !featuresLoaded)) {
+    if ((section === 'help' || section === 'rollover') && (helpBlocked || !featuresLoaded)) {
       return null;
     }
 

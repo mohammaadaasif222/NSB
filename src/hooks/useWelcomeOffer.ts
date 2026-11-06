@@ -21,6 +21,24 @@ export interface UseWelcomeOffer {
 export const showsWelcomeOffer = (offer: WelcomeOffer | null): offer is WelcomeOffer =>
   !!offer?.enabled && offer.eligible && offer.options.length > 0;
 
+const SHARE_MS = 3000;
+
+let shared: { path: string; at: number; request: Promise<WelcomeOffer | null> } | null = null;
+
+const loadOffer = (path: string): Promise<WelcomeOffer | null> => {
+  if (shared && shared.path === path && Date.now() - shared.at < SHARE_MS) {
+    return shared.request;
+  }
+  const request = apiService
+    .get<WelcomeOffer>(path)
+    .then((res) => (res?.success && res.data ? res.data : null));
+  shared = { path, at: Date.now(), request };
+  request.catch(() => {
+    if (shared?.request === request) shared = null;
+  });
+  return request;
+};
+
 export const useWelcomeOffer = (): UseWelcomeOffer => {
   const { token, hydrated } = useAuth();
   const { bonuses: bonusesOn } = usePlatformFeatures();
@@ -40,11 +58,9 @@ export const useWelcomeOffer = (): UseWelcomeOffer => {
     const mine = (ticket.current += 1);
     setLoading(true);
     try {
-      const res = await apiService.get<WelcomeOffer>(
-        token ? '/bonuses/welcome-offer/me' : '/bonuses/welcome-offer'
-      );
+      const data = await loadOffer(token ? '/bonuses/welcome-offer/me' : '/bonuses/welcome-offer');
       if (ticket.current === mine) {
-        setOffer(res?.success && res.data ? res.data : null);
+        setOffer(data);
       }
     } catch {
       if (ticket.current === mine) {
@@ -76,6 +92,7 @@ export const useWelcomeOffer = (): UseWelcomeOffer => {
         bonus_id: bonusId,
       });
       if (res?.success && res.data) {
+        shared = null;
         ticket.current += 1;
         setOffer(res.data);
         return true;
@@ -95,6 +112,7 @@ export const useWelcomeOffer = (): UseWelcomeOffer => {
     try {
       const res = await apiService.post(`/bonuses/${awardId}/forfeit`);
       if (res?.success) {
+        shared = null;
         toast.success(tRef.current('welcome.cancelled'));
         window.dispatchEvent(new Event(WALLET_REFRESH_EVENT));
         window.dispatchEvent(new Event(BONUS_REFRESH_EVENT));

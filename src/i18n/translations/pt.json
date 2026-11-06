@@ -2093,5 +2093,13 @@
   "welcome.railLabel": "Bónus de boas-vindas",
   "welcome.railAmount": "Até {percent}%",
   "welcome.railNote": "Escolhe-o na caixa",
-  "welcome.bannerCta": "Obtém o teu bónus"
+  "welcome.bannerCta": "Obtém o teu bónus",
+  "welcome.betRefused": "Aposta recusada. Enquanto o teu bónus de boas-vindas estiver ativo, a aposta máxima é {maxBet}.",
+  "welcome.gameBarTitle": "Bónus de boas-vindas",
+  "welcome.gameCounts": "Este jogo conta {percent}% para o requisito de apostas",
+  "welcome.gameCountsFull": "Este jogo conta a 100% para o requisito de apostas",
+  "welcome.gameNotCounting": "Este jogo não conta para o requisito de apostas",
+  "welcome.gameMaxBet": "Aposta máxima {maxBet}. Apostas maiores são recusadas.",
+  "welcome.tileNone": "Bónus 0%",
+  "welcome.tilePartial": "Bónus {percent}%"
 }

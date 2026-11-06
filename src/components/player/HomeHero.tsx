@@ -261,15 +261,21 @@ const PlayerPanel: FC = () => {
   const { summary: wallet } = useWallet();
   const [walletOpen, setWalletOpen] = useState(false);
 
+  const { rollover_display: rolloverOn } = usePlatformFeatures();
   const newPlayer = wallet?.has_deposited === false;
-  const { rollover, loaded } = useWagering(!newPlayer);
+  const showWagering = newPlayer || rolloverOn;
+  const { rollover, loaded } = useWagering(!newPlayer && rolloverOn);
   const required = Number(rollover?.total_required ?? 0);
   const wagered = Number(rollover?.total_completed ?? 0);
   const remaining = Number(rollover?.total_remaining ?? 0);
   const percent = Math.round(rollover?.progress ?? 0);
 
   return (
-    <section className="rl-liquid before:hidden [--tw-inset-shadow:var(--hero-panel-rim)]! relative overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*415)] lg:rounded-[calc(var(--u)*34)]">
+    <section
+      className={`rl-liquid before:hidden [--tw-inset-shadow:var(--hero-panel-rim)]! relative overflow-hidden rounded-[34px] lg:h-[calc(var(--u)*415)] lg:rounded-[calc(var(--u)*34)] ${
+        showWagering ? '' : 'pb-5 lg:flex lg:flex-col lg:justify-center lg:pb-0'
+      }`}
+    >
       {/* --- Identity and tiles ----------------------------------------- */}
       <div className="flex flex-col items-center px-[15px] pt-5 lg:h-[calc(var(--u)*212)] lg:flex-row lg:items-start lg:justify-between lg:px-[calc(var(--u)*20)] lg:pl-[calc(var(--u)*18)] lg:pt-[calc(var(--u)*20)]">
         <div className="flex flex-col items-center gap-1.5 lg:mt-[calc(var(--u)*42)] lg:flex-row lg:gap-[calc(var(--u)*14)]">
@@ -296,57 +302,59 @@ const PlayerPanel: FC = () => {
       </div>
 
       {/* --- Wagering --------------------------------------------------- */}
-      <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[22px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*16)]">
-        {newPlayer ? (
-          <JourneyPrompt onDeposit={() => setWalletOpen(true)} />
-        ) : (
-          <div className={`flex flex-col transition-opacity ${loaded ? '' : 'opacity-0'}`}>
-            {/* The small print here keeps the design's proportions to the 16px
-            heading when the panel is scaled down: its floor is the heading's
-            floor in the same ratio (10/16, 12/16), not the shared one, so the
-            badge and the line beside it never outgrow the heading. */}
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-[calc(var(--u)*4)]">
-                <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:font-normal lg:leading-[calc(var(--u)*24)]">
-                  {t('dash.wageringProgress')}
+      {showWagering && (
+        <div className="mt-[15px] flex flex-col bg-white/[0.07] px-[15px] pb-[22px] pt-4 lg:absolute lg:inset-x-px lg:bottom-0 lg:mt-0 lg:h-[calc(var(--u)*203)] lg:rounded-b-[calc(var(--u)*34)] lg:border-t lg:border-white/[0.08] lg:bg-[#2c2c2c]/[0.26] lg:px-[calc(var(--u)*20)] lg:pb-0 lg:pt-[calc(var(--u)*16)]">
+          {newPlayer ? (
+            <JourneyPrompt onDeposit={() => setWalletOpen(true)} />
+          ) : (
+            <div className={`flex flex-col transition-opacity ${loaded ? '' : 'opacity-0'}`}>
+              {/* The small print here keeps the design's proportions to the 16px
+              heading when the panel is scaled down: its floor is the heading's
+              floor in the same ratio (10/16, 12/16), not the shared one, so the
+              badge and the line beside it never outgrow the heading. */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-[calc(var(--u)*4)]">
+                  <span className="text-[16px] font-medium leading-6 text-white lg:text-[length:max(min(var(--tf,11px),16px),calc(var(--u)*16))] lg:font-normal lg:leading-[calc(var(--u)*24)]">
+                    {t('dash.wageringProgress')}
+                  </span>
+                  <span className="hidden items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[0.5em] text-[length:max(calc(var(--tf,11px)*0.625),calc(var(--u)*10))] leading-[calc(1.6em-2px)] text-[#03b739] lg:inline-flex">
+                    {percent}%
+                  </span>
                 </span>
-                <span className="hidden items-center rounded-full border border-[#03b739] bg-[#03b739]/10 px-[0.5em] text-[length:max(calc(var(--tf,11px)*0.625),calc(var(--u)*10))] leading-[calc(1.6em-2px)] text-[#03b739] lg:inline-flex">
-                  {percent}%
+                <span className="text-[12px] font-medium leading-5 text-white lg:hidden">
+                  {t('dash.percentComplete', { percent })}
                 </span>
-              </span>
-              <span className="text-[12px] font-medium leading-5 text-white lg:hidden">
-                {t('dash.percentComplete', { percent })}
-              </span>
-              <span className="hidden text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
-                {t('dash.wagered', { amount: usd(wagered, locale) })}
-              </span>
-            </div>
-
-            {/* Phone: the bar, with its ends and the amount so far. */}
-            <div className="mt-[15px] lg:hidden">
-              <ProgressBar percent={percent} label={t('dash.wageringProgress')} />
-              <div className="mt-[14px] flex items-center justify-between text-[12px] leading-[22px] text-[#9da2b4]">
-                <span>{usd(0, locale)}</span>
-                <span className="text-[14px] font-medium text-white">
-                  {t('dash.wageredShort', { amount: usd(wagered, locale) })}
+                <span className="hidden text-[length:max(calc(var(--tf,11px)*0.75),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] lg:block">
+                  {t('dash.wagered', { amount: usd(wagered, locale) })}
                 </span>
-                <span>{usd(required, locale)}</span>
               </div>
-              <div className="mt-4 flex justify-center">
-                <RemainingPill>
-                  {t('dash.remainingToUnlock', { amount: usd(remaining, locale) })}
-                </RemainingPill>
+
+              {/* Phone: the bar, with its ends and the amount so far. */}
+              <div className="mt-[15px] lg:hidden">
+                <ProgressBar percent={percent} label={t('dash.wageringProgress')} />
+                <div className="mt-[14px] flex items-center justify-between text-[12px] leading-[22px] text-[#9da2b4]">
+                  <span>{usd(0, locale)}</span>
+                  <span className="text-[14px] font-medium text-white">
+                    {t('dash.wageredShort', { amount: usd(wagered, locale) })}
+                  </span>
+                  <span>{usd(required, locale)}</span>
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <RemainingPill>
+                    {t('dash.remainingToUnlock', { amount: usd(remaining, locale) })}
+                  </RemainingPill>
+                </div>
+              </div>
+
+              {/* Desktop: the remaining amount on the odometer. */}
+              <div className="hidden flex-col items-center gap-[calc(var(--u)*16)] lg:mt-[calc(var(--u)*24)] lg:flex">
+                <Odometer value={Math.ceil(remaining)} />
+                <RemainingPill>{t('dash.remainingToUnlockShort')}</RemainingPill>
               </div>
             </div>
-
-            {/* Desktop: the remaining amount on the odometer. */}
-            <div className="hidden flex-col items-center gap-[calc(var(--u)*16)] lg:mt-[calc(var(--u)*24)] lg:flex">
-              <Odometer value={Math.ceil(remaining)} />
-              <RemainingPill>{t('dash.remainingToUnlockShort')}</RemainingPill>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <WalletModal open={walletOpen} onClose={() => setWalletOpen(false)} />
     </section>

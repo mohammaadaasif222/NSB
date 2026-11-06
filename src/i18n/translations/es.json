@@ -2093,5 +2093,13 @@
   "welcome.railLabel": "Bono de bienvenida",
   "welcome.railAmount": "Hasta {percent}%",
   "welcome.railNote": "Elígelo en la caja",
-  "welcome.bannerCta": "Consigue tu bono"
+  "welcome.bannerCta": "Consigue tu bono",
+  "welcome.betRefused": "Apuesta rechazada. Mientras tu bono de bienvenida esté activo, la apuesta máxima es {maxBet}.",
+  "welcome.gameBarTitle": "Bono de bienvenida",
+  "welcome.gameCounts": "Este juego cuenta un {percent}% para tu requisito de apuesta",
+  "welcome.gameCountsFull": "Este juego cuenta al 100% para tu requisito de apuesta",
+  "welcome.gameNotCounting": "Este juego no cuenta para tu requisito de apuesta",
+  "welcome.gameMaxBet": "Apuesta máxima {maxBet}. Las apuestas mayores se rechazan.",
+  "welcome.tileNone": "Bono 0%",
+  "welcome.tilePartial": "Bono {percent}%"
 }

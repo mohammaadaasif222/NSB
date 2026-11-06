@@ -10,6 +10,8 @@ import { trackGameOpen } from '@/utils/events';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useJackpots } from '@/hooks/useJackpots';
+import { useActiveWelcome } from '@/context/ActiveWelcomeContext';
+import { welcomeContribution } from '@/utils/welcomeContribution';
 import personIcon from '@/assets/lobby/person.svg';
 import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
 
@@ -357,6 +359,11 @@ const GameTile: FC<Props> = ({
   const { isFavourite, toggle } = useFavourites();
   // In a winnable provider jackpot, linked through our own game ids.
   const jackpot = useJackpots().gameIds.has(game.id);
+  const { contributions } = useActiveWelcome();
+  const counts = contributions ? welcomeContribution(contributions, game) : 100;
+  const badgeTop = ['top-[5.05cqw]', 'top-[19.7cqw]', 'top-[34.35cqw]'][
+    Number(game.is_new) + Number(jackpot)
+  ];
 
   const impressionRef = useGameImpression(game.slug, surface);
 
@@ -417,6 +424,19 @@ const GameTile: FC<Props> = ({
           }`}
         >
           {t('lobby.jackpots.badge')}
+        </span>
+      )}
+
+      {counts < 100 && (
+        <span
+          title={
+            counts === 0
+              ? t('welcome.gameNotCounting')
+              : t('welcome.gameCounts', { percent: counts })
+          }
+          className={`absolute left-[5.05cqw] flex h-[12.12cqw] items-center rounded-full border border-white/30 bg-black/60 px-[5.05cqw] text-[max(8px,6.06cqw)] font-medium leading-none text-[#f0f1f5] backdrop-blur-sm ${badgeTop}`}
+        >
+          {counts === 0 ? t('welcome.tileNone') : t('welcome.tilePartial', { percent: counts })}
         </span>
       )}
 

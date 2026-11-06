@@ -20,6 +20,7 @@ import {
 } from '@/components/originals/registry';
 import GameActionBar from '@/components/play/GameActionBar';
 import LiveStatsPanel from '@/components/play/LiveStatsPanel';
+import GameBonusBar from '@/components/play/GameBonusBar';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useFavourites } from '@/context/FavouritesContext';
@@ -490,6 +491,12 @@ const PlayPage: FC<Props> = ({ game, failed }) => {
               { currency: launch.currency, display: launch.display_currency }
             )}
           </p>
+        )}
+
+        {mode === 'REAL' && (
+          <div className="mx-auto" style={{ maxWidth: frameStyle.width ?? undefined }}>
+            <GameBonusBar game={game} />
+          </div>
         )}
 
         {frame}
