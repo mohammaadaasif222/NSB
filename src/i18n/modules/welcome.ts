@@ -14,10 +14,10 @@ export const en = {
   'welcome.saveFailed': 'Could not save your choice',
   'welcome.rules':
     'While the bonus is active: only the first {maxBet} of each bet counts toward the wagering, you have {days} days to finish it, and a withdrawal cancels the bonus.',
-  'welcome.withdrawTitle': 'Your welcome bonus will be cancelled',
+  'welcome.withdrawTitle': 'Your active bonus will be cancelled',
   'welcome.withdrawBody':
-    'Withdrawing now cancels your welcome bonus. Your bonus balance and anything won with it are removed. Your real money stays.',
-  'welcome.withdrawConfirm': 'I understand. Cancel my welcome bonus.',
+    'Withdrawing now cancels {bonuses}. The bonus balance and anything won with it are removed. Your real money stays.',
+  'welcome.withdrawConfirm': 'I understand. Cancel my bonus.',
   'welcome.bannerHeadline': 'Up to {percent}% welcome bonus',
   'welcome.bannerBody': 'Pick your bonus at the cashier on your first deposit of {min} or more.',
   'welcome.panelTitle': '{name} · {wagering}× wagering',

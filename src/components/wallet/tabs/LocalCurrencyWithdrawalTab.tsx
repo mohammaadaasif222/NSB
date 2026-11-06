@@ -57,7 +57,8 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused, ava
   // Form fields
   const [amount, setAmount] = useState('');
   const { offer: welcome } = useWelcomeOffer();
-  const welcomeActive = welcome?.award?.status === 'ACTIVE';
+  const cancelledBonuses = welcome?.withdrawal_cancels ?? [];
+  const welcomeActive = cancelledBonuses.length > 0;
   const [welcomeAck, setWelcomeAck] = useState(false);
   const [beneficiaryName, setBeneficiaryName] = useState(me?.first_name || '');
   const [beneficiaryLastname, setBeneficiaryLastname] = useState(me?.last_name || '');
@@ -537,6 +538,7 @@ const LocalCurrencyWithdrawalTab: FC<Props> = ({ onRestricted, onKycRefused, ava
 
         {welcomeActive && (
           <WelcomeWithdrawalNotice
+            bonuses={cancelledBonuses}
             checked={welcomeAck}
             onChange={setWelcomeAck}
             className="mt-[23px]"

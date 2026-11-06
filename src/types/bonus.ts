@@ -228,6 +228,7 @@ export interface WelcomeOffer {
   contributions: WelcomeContributions | null;
   texts: DisplayTexts<WelcomeOfferTextField>;
   terms_slug: string | null;
+  withdrawal_cancels: string[];
 }
 
 export interface WelcomeContributions {
