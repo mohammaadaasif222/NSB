@@ -281,20 +281,14 @@ const SignupTeaser: FC<{ totalRegistrations: number | null }> = ({ totalRegistra
         />
       </div>
 
-      <div className="mt-[calc(var(--u)*20)] flex items-center lg:mt-[calc(var(--u)*22)]">
+      <div className="mt-[calc(var(--u)*20)] flex items-center justify-center lg:mt-[calc(var(--u)*22)]">
         <SocialDisc
           icon={telegramIcon}
           label={t('auth.methodTelegram')}
           onClick={() => telegram.signIn()}
           first
         />
-        <button
-          type="button"
-          onClick={() => openRegister({ social: true })}
-          className="ms-[calc(var(--u)*7)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white lg:ms-[calc(var(--u)*15)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:font-medium lg:leading-[calc(var(--u)*24)] lg:text-[#6a7287]"
-        >
-          {t('lobby.hero.moreOptions')}
-        </button>
+        
       </div>
     </div>
   );

@@ -12,8 +12,7 @@ interface MethodStepProps {
   onSelectMethod: (method: SignupMethod) => void;
   onGoogle: () => void;
   onTelegram: () => void;
-  /** "more option": every social provider, on a step of its own. */
-  onMore: () => void;
+  onMore?: () => void;
   googleBusy?: boolean;
 }
 
@@ -22,7 +21,6 @@ const MethodStep: FC<MethodStepProps> = ({
   onSelectMethod,
   onGoogle,
   onTelegram,
-  onMore,
   googleBusy,
 }) => {
   const { t } = useTranslation();
@@ -58,8 +56,6 @@ const MethodStep: FC<MethodStepProps> = ({
 
       <SocialShortcuts
         onTelegram={onTelegram}
-        onMore={onMore}
-        moreLabel={t('registerModal.moreOptions')}
       />
     </div>
   );

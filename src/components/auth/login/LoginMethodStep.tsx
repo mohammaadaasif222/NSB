@@ -12,7 +12,7 @@ interface LoginMethodStepProps {
   onSelectMethod: (method: LoginMethod) => void;
   onGoogle: () => void;
   onTelegram: () => void;
-  onMore: () => void;
+  onMore?: () => void;
   googleBusy?: boolean;
 }
 
@@ -21,7 +21,6 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({
   onSelectMethod,
   onGoogle,
   onTelegram,
-  onMore,
   googleBusy,
 }) => {
   const { t } = useTranslation();
@@ -66,8 +65,6 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({
 
       <SocialShortcuts
         onTelegram={onTelegram}
-        onMore={onMore}
-        moreLabel={t('lobby.hero.moreOptions')}
         className="pt-[2px] sm:pt-1"
       />
     </div>
