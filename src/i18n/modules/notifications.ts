@@ -20,6 +20,7 @@ export const en = {
   'notif.bonusForfeited.player': 'You gave up {bonus}.',
   'notif.bonusForfeited.maxBet': '{bonus} was forfeited: a bet went over its {maxBet} maximum bet.',
   'notif.bonusForfeited.system': '{bonus} was forfeited.',
+  'notif.bonusForfeited.depleted': '{bonus} has ended: its bonus balance ran out.',
   'notif.bonusCancelled.title': 'Bonus cancelled',
   'notif.bonusCancelled.body': '{bonus} was cancelled. Reason: {reason}',
   'notif.rewardClaimable.title': '{reward} ready to claim',

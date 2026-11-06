@@ -16,6 +16,7 @@ const STATUS_STYLE: Record<RewardClaimStatus, string> = {
   CLAIMED: 'border-[#03b739]/40 bg-[#03b739]/10 text-[#2ed573]',
   EXPIRED: 'border-[#ef4462]/40 bg-[#ef4462]/10 text-[#ef4462]',
   ROLLED_OVER: 'border-white/15 bg-white/5 text-[#f0f1f5]',
+  CARRIED: 'border-white/15 bg-white/5 text-[#f0f1f5]',
 };
 
 /** A finished reward is remembered by what reached the wallet, or else by what it was worth. */

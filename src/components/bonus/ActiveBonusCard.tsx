@@ -109,6 +109,14 @@ const ActiveBonusCard: FC<Props> = ({ award, currency, clockOffset, busyId, onFo
             </dd>
           </div>
         )}
+        {award.max_convertible && Number(award.max_convertible) > 0 && (
+          <div className="flex items-center justify-between gap-2">
+            <dt className="text-[11px] text-white/50">{t('bonus.maxConvertible')}</dt>
+            <dd className="text-[11px] text-white/72">
+              {formatRewardAmount(award.max_convertible, currency)}
+            </dd>
+          </div>
+        )}
         {award.max_bet_size && Number(award.max_bet_size) > 0 && (
           <div className="flex items-center justify-between gap-2">
             <dt className="text-[11px] text-white/50">{t('bonus.maxBet')}</dt>

@@ -30,6 +30,7 @@ const FORFEITED_KEYS: Record<string, TranslationKey> = {
   player: 'notif.bonusForfeited.player',
   max_bet: 'notif.bonusForfeited.maxBet',
   system: 'notif.bonusForfeited.system',
+  depleted: 'notif.bonusForfeited.depleted',
 };
 
 const text = (value: unknown): string =>

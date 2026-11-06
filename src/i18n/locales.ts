@@ -1076,6 +1076,8 @@ const coreEn = {
   'rewards.desc.monthly':
     'Builds up from the rakeback, daily bonuses and cashback you claim during the month.',
   'rewards.claim': 'Claim',
+  'rewards.unlockDeposit': 'Deposit {amount} more to unlock',
+  'rewards.unlockWager': 'Wager {amount} more to unlock',
   'rewards.claimed': '{amount} {reward} added to your balance',
   'rewards.claimFailed': 'Could not claim this reward',
   'rewards.paidTo':
@@ -1159,6 +1161,7 @@ const coreEn = {
   'bonus.noWageringReal': 'Real money — yours to withdraw',
   'bonus.freeSpins': 'Free spins left',
   'bonus.maxBet': 'Max bet',
+  'bonus.maxConvertible': 'Max convertible',
   'bonus.expiresIn': 'Expires in',
   'bonus.expiringNow': 'Expiring now',
   'bonus.terms.wagering': 'Wager {multiplier}x the bonus',
@@ -1218,6 +1221,7 @@ const coreEn = {
   'rewards.status.claimed': 'Claimed',
   'rewards.status.expired': 'Expired',
   'rewards.status.rolledOver': 'Moved to Daily Bonus',
+  'rewards.status.carried': 'Added to your next period',
   'rewards.col.reward': 'Reward',
   'rewards.col.amount': 'Amount',
   'rewards.col.status': 'Status',

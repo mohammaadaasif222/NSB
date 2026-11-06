@@ -5,6 +5,7 @@ import { useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 import { formatOfferAmount as welcomeMoney } from '@/utils/money';
 import type { WelcomeOfferOption } from '@/types';
 import WelcomeBonusPanel from '@/components/bonus/WelcomeBonusPanel';
+import { displayText } from '@/utils/displayText';
 
 const NONE = 'none';
 const EXAMPLES = [50, 100, 500, 1000];
@@ -19,7 +20,7 @@ const grantFor = (option: WelcomeOfferOption, deposit: number): number => {
 };
 
 const WelcomeOfferPicker: FC<{ className?: string }> = ({ className = '' }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { offer, saving, choose, cancel } = useWelcomeOffer();
   const [example, setExample] = useState<number | null>(null);
 
@@ -58,15 +59,17 @@ const WelcomeOfferPicker: FC<{ className?: string }> = ({ className = '' }) => {
   const chosen = offer.options.find((option) => option.id === selected) ?? null;
 
   const headline = (option: WelcomeOfferOption): string =>
-    option.max_bonus_amount
+    displayText(option.texts, locale, 'title') ??
+    (option.max_bonus_amount
       ? t('welcome.optionHeadline', {
           percent: option.match_percentage,
           max: welcomeMoney(option.max_bonus_amount, offer.currency),
         })
-      : t('welcome.optionHeadlineNoCap', { percent: option.match_percentage });
+      : t('welcome.optionHeadlineNoCap', { percent: option.match_percentage }));
 
   const terms = (option: WelcomeOfferOption): string =>
     [
+      displayText(option.texts, locale, 'details'),
       t('welcome.exampleGet', { deposit: money(deposit), bonus: money(grantFor(option, deposit)) }),
       t('welcome.optionWagering', { wagering: Number(option.wagering_multiplier) }),
       option.max_convertible
@@ -113,14 +116,14 @@ const WelcomeOfferPicker: FC<{ className?: string }> = ({ className = '' }) => {
     <section className={`space-y-2.5 ${className}`} aria-labelledby="welcome-offer-title">
       <div>
         <h3 id="welcome-offer-title" className="text-[16px] font-semibold leading-6 text-[#f0f1f5]">
-          {t('welcome.pickTitle')}
+          {displayText(offer.texts, locale, 'title') ?? t('welcome.pickTitle')}
         </h3>
         <p className="text-[13px] leading-5 text-[#9da2b4]">
           {selected === NONE
             ? t('welcome.declined')
             : selected
               ? t('welcome.saved', { min })
-              : t('welcome.pickHint', { min })}
+              : (displayText(offer.texts, locale, 'hint') ?? t('welcome.pickHint', { min }))}
         </p>
       </div>
 
@@ -173,6 +176,19 @@ const WelcomeOfferPicker: FC<{ className?: string }> = ({ className = '' }) => {
           maxBet: welcomeMoney(offer.max_bet, offer.currency),
           days: offer.validity_days,
         })}
+        {offer.terms_slug && (
+          <>
+            {' '}
+            <a
+              href={`/terms-of-service#${offer.terms_slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[#f9d028] underline underline-offset-2"
+            >
+              {t('welcome.termsLink')}
+            </a>
+          </>
+        )}
       </p>
     </section>
   );

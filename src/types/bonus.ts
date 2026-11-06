@@ -203,7 +203,12 @@ export interface WelcomeOfferOption {
   max_bonus_amount: string | null;
   wagering_multiplier: string;
   max_convertible: string | null;
+  texts: DisplayTexts<'title' | 'details'>;
 }
+
+export type DisplayTexts<F extends string> = Partial<Record<string, Partial<Record<F, string>>>>;
+
+export type WelcomeOfferTextField = 'title' | 'hint' | 'banner_headline' | 'banner_body';
 
 export type WelcomeChoiceStatus = 'PENDING' | 'DECLINED' | 'APPLIED';
 
@@ -221,6 +226,8 @@ export interface WelcomeOffer {
   locked: boolean;
   award: UserBonus | null;
   contributions: WelcomeContributions | null;
+  texts: DisplayTexts<WelcomeOfferTextField>;
+  terms_slug: string | null;
 }
 
 export interface WelcomeContributions {

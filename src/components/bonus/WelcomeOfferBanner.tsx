@@ -4,6 +4,7 @@ import { useTranslation } from '@/context/I18nContext';
 import type { WelcomeOffer } from '@/types';
 import { formatOfferAmount } from '@/utils/money';
 import { showsWelcomeOffer } from '@/hooks/useWelcomeOffer';
+import { displayText } from '@/utils/displayText';
 
 interface Props {
   offer: WelcomeOffer | null;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const WelcomeOfferBanner: FC<Props> = ({ offer, className = '', large = false }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   if (!showsWelcomeOffer(offer)) return null;
 
   const percent = Math.max(...offer.options.map((option) => option.match_percentage));
@@ -26,12 +27,14 @@ const WelcomeOfferBanner: FC<Props> = ({ offer, className = '', large = false })
           large ? 'text-[32px] leading-10' : 'text-[18px] leading-6'
         }`}
       >
-        {t('welcome.bannerHeadline', { percent })}
+        {displayText(offer.texts, locale, 'banner_headline') ??
+          t('welcome.bannerHeadline', { percent })}
       </p>
       <p
         className={`${large ? 'mt-2 text-[14px]' : 'mt-0.5 text-[13px]'} leading-5 text-[#f0f1f5]`}
       >
-        {t('welcome.bannerBody', { min: formatOfferAmount(offer.min_deposit, offer.currency) })}
+        {displayText(offer.texts, locale, 'banner_body') ??
+          t('welcome.bannerBody', { min: formatOfferAmount(offer.min_deposit, offer.currency) })}
       </p>
     </div>
   );
