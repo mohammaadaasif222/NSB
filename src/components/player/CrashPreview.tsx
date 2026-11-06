@@ -26,7 +26,7 @@ import clearIcon from '@/assets/lobby/clear-x.svg';
  * /games/<slug>/launch so the card iframes the real provider UI — not a
  * native Originals component.
  */
-const DEFAULT_LOBBY_SLUG = 'crash';
+const DEFAULT_LOBBY_SLUG = 'crash-tequity';
 
 type ActiveGameState =
   | { status: 'idle' }
