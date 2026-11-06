@@ -2092,5 +2092,13 @@
   "welcome.railLabel": "Приветственный бонус",
   "welcome.railAmount": "До {percent}%",
   "welcome.railNote": "Выберите его в кассе",
-  "welcome.bannerCta": "Получить бонус"
+  "welcome.bannerCta": "Получить бонус",
+  "welcome.betRefused": "Ставка отклонена. Пока действует приветственный бонус, максимальная ставка — {maxBet}.",
+  "welcome.gameBarTitle": "Приветственный бонус",
+  "welcome.gameCounts": "Эта игра засчитывается в отыгрыш на {percent}%",
+  "welcome.gameCountsFull": "Эта игра засчитывается в отыгрыш полностью",
+  "welcome.gameNotCounting": "Эта игра не засчитывается в отыгрыш",
+  "welcome.gameMaxBet": "Макс. ставка {maxBet}. Ставки выше отклоняются.",
+  "welcome.tileNone": "Бонус 0%",
+  "welcome.tilePartial": "Бонус {percent}%"
 }

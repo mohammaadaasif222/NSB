@@ -58,7 +58,7 @@ export const GAME_SHELVES = [
   { key: 'slots', titleKey: 'dash.slots', list: { category: 'SLOTS' } },
   { key: 'live', titleKey: 'dash.liveCasino', list: { type: 'LIVE' } },
   { key: 'popular', titleKey: 'dash.mostPlayed', list: { sort: 'popular' } },
-  { key: 'trending', titleKey: 'dash.trending', list: { sort: 'trending' } },
+  { key: 'trending', titleKey: 'dash.trending', list: { category: 'SLOTS', sort: 'trending' } },
   { key: 'table', titleKey: 'dash.tableGames', list: { genre: 'table' } },
   { key: 'high-rtp', titleKey: 'lobby.rail.highRtp', list: { sort: 'rtp' } },
   { key: 'bonus-buys', titleKey: 'dash.bonusBuys', list: { buy_feature: true } },

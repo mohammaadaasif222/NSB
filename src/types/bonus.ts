@@ -220,4 +220,15 @@ export interface WelcomeOffer {
   eligible: boolean;
   locked: boolean;
   award: UserBonus | null;
+  contributions: WelcomeContributions | null;
+}
+
+export interface WelcomeContributions {
+  rules: {
+    game_id: string | null;
+    category: string | null;
+    provider: string | null;
+    contribution: number;
+  }[];
+  max_rtp: number | null;
 }

@@ -81,7 +81,7 @@ interface Props {
  */
 const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
   const { t } = useTranslation();
-  const { help_center: helpOn } = usePlatformFeatures();
+  const { help_center: helpOn, rollover_display: rolloverOn } = usePlatformFeatures();
 
   // `min-w-0` below is load-bearing under the breakpoint: the row of tabs is an
   // `overflow-x-auto` flex, and a grid item's automatic minimum is its
@@ -99,7 +99,9 @@ const AccountNav: FC<Props> = ({ active, onSelect, onLogout }) => {
       </h2>
 
       <ul className="scrollbar-none flex gap-[calc(var(--u)*14)] overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
-        {ACCOUNT_SECTIONS.filter(({ key }) => helpOn || key !== 'help').map(({ key, labelKey, icon: Icon }) => {
+        {ACCOUNT_SECTIONS.filter(
+          ({ key }) => (helpOn || key !== 'help') && (rolloverOn || key !== 'rollover')
+        ).map(({ key, labelKey, icon: Icon }) => {
           const selected = key === active;
           return (
             <li key={key} className="shrink-0 lg:shrink">

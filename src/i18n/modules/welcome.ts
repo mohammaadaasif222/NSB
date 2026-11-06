@@ -52,4 +52,13 @@ export const en = {
   'welcome.railAmount': 'Up to {percent}%',
   'welcome.railNote': 'Pick it at the cashier',
   'welcome.bannerCta': 'Get your bonus',
+  'welcome.betRefused':
+    'Bet refused. While your welcome bonus is active the most you can bet is {maxBet}.',
+  'welcome.gameBarTitle': 'Welcome bonus',
+  'welcome.gameCounts': 'This game counts {percent}% toward your wagering',
+  'welcome.gameCountsFull': 'This game counts in full toward your wagering',
+  'welcome.gameNotCounting': 'This game does not count toward your wagering',
+  'welcome.gameMaxBet': 'Max bet {maxBet}. Bigger bets are refused.',
+  'welcome.tileNone': 'Bonus 0%',
+  'welcome.tilePartial': 'Bonus {percent}%',
 } as const;
