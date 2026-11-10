@@ -46,7 +46,7 @@ export function SiteFooter({ categories, footer }: { categories: Category[]; foo
 
   return (
     <footer className="nsb-footer">
-      <div className="w fgrid">
+      <div className="ft-w fgrid">
         <div className="fb">
           <Link className="footer-logo" href="/" aria-label="Noida Super Bazaar home">
             <Image src={LOGO} alt="" width={99} height={50} />
@@ -95,7 +95,7 @@ export function SiteFooter({ categories, footer }: { categories: Category[]; foo
           </ul>
         </nav>
       </div>
-      <div className="w fbot">
+      <div className="ft-w fbot">
         <div className="soc">
           {socials.map((social) => (
             <a key={social} href={footer.socials[social].url} target="_blank" rel="noopener noreferrer" aria-label={FOOTER_SOCIAL_LABELS[social]}>

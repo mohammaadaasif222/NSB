@@ -95,6 +95,8 @@ export interface ListingSummary {
   /** Shows the blue premium card. Only a listing with a top place can be Elite. */
   isElite: boolean;
   category: Pick<Category, 'id' | 'name' | 'slug'>;
+  /** Slug of the category's parent (e.g. wedding), for the listing's address; null outside a vertical. */
+  vertical: string | null;
   /** When the listing was added (ISO timestamp). */
   createdAt: string;
   /** Always "live" on public pages; the admin list shows every status. */

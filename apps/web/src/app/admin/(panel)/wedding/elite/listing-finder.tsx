@@ -5,11 +5,14 @@ import { Plus, Search } from "lucide-react";
 import type { ListingSummary, Paginated } from "@nsb/shared";
 import { TextInput } from "@/components/admin/form";
 import { ListingThumb } from "@/components/admin/listing-thumb";
-import { useLiveSearch } from "@/components/admin/use-live-search";
-import { adminClient } from "@/lib/admin-client";
+import { useLiveSearch } from "@/components/shared/use-live-search";
+import { adminClient, RequestError } from "@/lib/admin-client";
 
 /** How many results to load at once. */
 const PAGE_SIZE = 8;
+
+/** The API's own message for a refused search. Stable, so the search hook keeps its callbacks. */
+const requestMessage = (err: unknown) => (err instanceof RequestError ? err.message : undefined);
 
 /**
  * Finds live listings of one sub-category as the admin types, for adding to its top places. It
@@ -38,7 +41,7 @@ export function ListingFinder({
     },
     [categoryId],
   );
-  const { q, change, submit, loadMore, loading, error, items, hasMore } = useLiveSearch(fetchPage);
+  const { q, change, submit, loadMore, loading, error, items, hasMore } = useLiveSearch(fetchPage, requestMessage);
   const available = useMemo(() => {
     const chosen = new Set(excludeIds);
     return items?.filter((l) => !chosen.has(l.id));

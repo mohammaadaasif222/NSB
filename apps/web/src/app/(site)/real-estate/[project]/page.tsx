@@ -144,11 +144,10 @@ export default async function ProjectPage({ params }: Props) {
     ["fq", "FAQs"],
   ].filter((t): t is [string, string] => !!t);
 
-  const tags = (
+  // Only Featured sits on the photo; Premium and the possession status go next to the name.
+  const tags = p.isFeatured && (
     <div className="re-tg">
-      {p.isPremium && <span>PREMIUM</span>}
-      {p.isFeatured && <span className="f">FEATURED</span>}
-      {p.possessionStatus && <span className="w">{p.possessionStatus}</span>}
+      <span className="f">FEATURED</span>
     </div>
   );
 
@@ -174,6 +173,8 @@ export default async function ProjectPage({ params }: Props) {
                     RERA
                   </span>
                 )}
+                {p.isPremium && <span className="re-rr">Premium</span>}
+                {p.possessionStatus && <span className="re-rr">{p.possessionStatus}</span>}
               </h1>
               <p className="re-by">
                 By <b>{p.builder}</b>

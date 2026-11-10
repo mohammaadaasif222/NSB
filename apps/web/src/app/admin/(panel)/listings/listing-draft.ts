@@ -162,5 +162,6 @@ export function listingPreview(
       ? { average: Number(values.googleRating), count: Number(values.googleReviewCount) || 0, source: "google" }
       : (listing?.rating ?? null),
     category: { id: category?.id ?? "", name: category?.name ?? "Category", slug: category?.slug ?? "" },
+    vertical: null,
   };
 }

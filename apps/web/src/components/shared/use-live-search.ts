@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Paginated } from "@nsb/shared";
-import { RequestError } from "@/lib/admin-client";
 
 const DEBOUNCE_MS = 300;
 
@@ -13,8 +12,12 @@ const requestKey = (q: string, page: number) => `${page}:${q}`;
  * Search-as-you-type over a paged list: waits for a pause in typing, cancels the request a newer
  * one replaces, and skips a request for the results already shown. `fetchPage` must be stable
  * (useCallback). `change` is for the input, `submit` searches at once, even with an empty box.
+ * `messageOf` turns a failed request into the message to show; undefined keeps the default.
  */
-export function useLiveSearch<T>(fetchPage: (q: string, page: number, signal: AbortSignal) => Promise<Paginated<T>>) {
+export function useLiveSearch<T>(
+  fetchPage: (q: string, page: number, signal: AbortSignal) => Promise<Paginated<T>>,
+  messageOf: (err: unknown) => string | undefined = () => undefined,
+) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<{ q: string; page: number; items: T[]; total: number } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -47,12 +50,12 @@ export function useLiveSearch<T>(fetchPage: (q: string, page: number, signal: Ab
       } catch (err) {
         if (controller.signal.aborted) return;
         lastKey.current = undefined;
-        setError(err instanceof RequestError ? err.message : "Could not search. Please try again.");
+        setError(messageOf(err) ?? "Could not search. Please try again.");
       } finally {
         if (inFlight.current === controller) setLoading(false);
       }
     },
-    [fetchPage],
+    [fetchPage, messageOf],
   );
 
   const change = useCallback(
@@ -76,5 +79,16 @@ export function useLiveSearch<T>(fetchPage: (q: string, page: number, signal: Ab
     if (results) void load(results.q, results.page + 1);
   }, [load, results]);
 
-  return { q, change, submit, loadMore, loading, error, items: results?.items ?? null, hasMore: !!results && results.items.length < results.total };
+  return {
+    q,
+    /** The query the shown results are for: `q` after the pause in typing, "" when cleared. */
+    searched: results?.q ?? "",
+    change,
+    submit,
+    loadMore,
+    loading,
+    error,
+    items: results?.items ?? null,
+    hasMore: !!results && results.items.length < results.total,
+  };
 }

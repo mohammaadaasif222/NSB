@@ -31,7 +31,7 @@ const PLACES: Record<number, [col: string, row: string][]> = {
 };
 
 /**
- * Up to five photos in a mosaic with the badges on the first, and "Show all photos". Desktops open
+ * Up to five photos in a mosaic with the badges on the first, and the photo count. Desktops open
  * the photo viewer (as on the wedding pages), phones the list of every photo.
  */
 export function ProjectGallery({ name, photos, tags }: { name: string; photos: string[]; tags: ReactNode }) {
@@ -67,8 +67,8 @@ export function ProjectGallery({ name, photos, tags }: { name: string; photos: s
           ))}
         </div>
         {photos.length > 1 && (
-          <button type="button" className="re-all" onClick={() => show(0)}>
-            ▦ Show all photos{photos.length > 5 ? ` (${photos.length})` : ""}
+          <button type="button" className="re-all" onClick={() => show(0)} aria-label={`Show all ${photos.length} photos`}>
+            ▦ {photos.length}
           </button>
         )}
       </div>

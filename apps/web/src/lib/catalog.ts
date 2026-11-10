@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import type { CategoryDetail, ListingDetail, ProjectDetail } from "@nsb/shared";
+import type { Category, CategoryDetail, ListingDetail, ProjectDetail } from "@nsb/shared";
+import type { SearchCategory } from "@/components/site/search-hit";
 import { api, ApiError } from "./api";
 
 /** GET that turns an API 404 into the Next.js not-found page. */
@@ -25,3 +26,15 @@ export const getProject = cache((slug: string) => getOr404<ProjectDetail>(`/proj
 
 /** A real estate project page. */
 export const projectPath = (slug: string) => `/real-estate/${slug}`;
+
+/** Every live category and sub-category, for site search. A failure leaves search to vendors and projects. */
+export const getSearchCategories = cache(async (): Promise<SearchCategory[]> => {
+  const tops = await api.get<Category[]>("/categories").catch((): Category[] => []);
+  const subs = await Promise.all(
+    tops.map((top) => api.get<Category[]>(`/categories?parent=${encodeURIComponent(top.slug)}`).catch((): Category[] => [])),
+  );
+  return tops.flatMap((top, i) => [
+    { name: top.name, href: `/${top.slug}`, parent: null },
+    ...subs[i].map((sub) => ({ name: sub.name, href: `/${top.slug}/${sub.slug}`, parent: top.name })),
+  ]);
+});

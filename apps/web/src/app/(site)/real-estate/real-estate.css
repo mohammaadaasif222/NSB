@@ -2136,11 +2136,30 @@ button.re-pl4::after {
     font-size: 13px;
   }
 
-  /* Pricing and similar projects: swipe through cards, two in view and the next peeking in. */
+  /* Pricing: one row of configuration cards, one in view and the next peeking in. */
+  .re-pt2 tbody {
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .re-pt2 tbody::-webkit-scrollbar {
+    display: none;
+  }
+  .re-pt2 tr {
+    flex: 0 0 88%;
+    scroll-snap-align: start;
+  }
+  .re-pt2 tr:only-child {
+    flex-basis: 100%;
+  }
+
+  /* Similar projects: swipe through cards, two in view and the next peeking in. */
   h3.re-pth {
     margin: 20px 0 10px;
   }
-  .re-pt2 tbody,
   .re-sim {
     display: flex;
     flex-direction: row;
@@ -2151,35 +2170,12 @@ button.re-pl4::after {
     scrollbar-width: none;
     padding-bottom: 2px;
   }
-  .re-pt2 tbody::-webkit-scrollbar,
   .re-sim::-webkit-scrollbar {
     display: none;
   }
-  .re-pt2 tr,
   .re-sim > * {
     flex: 0 0 46%;
     scroll-snap-align: start;
-  }
-  .re-pt2 tr {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 12px;
-    align-content: start;
-  }
-  .re-pt2 td,
-  .re-pt2 td.t {
-    font-size: 13px;
-  }
-  .re-pt2 td.pl {
-    grid-row: auto;
-    grid-column: auto;
-    justify-self: stretch;
-    align-self: end;
-  }
-  .re-pt2 td.pl .re-btn {
-    display: block;
-    text-align: center;
-    padding: 7px 8px;
   }
   .re-sc .i {
     height: 96px;
