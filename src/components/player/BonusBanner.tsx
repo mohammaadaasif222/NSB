@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { showsWelcomeOffer, useWelcomeOffer } from '@/hooks/useWelcomeOffer';
 import { formatOfferAmount } from '@/utils/money';
+import { displayText } from '@/utils/displayText';
 
 /**
  * The welcome-offer strip: copy on the left, artwork fading in from the
@@ -32,7 +33,7 @@ const ART =
   'pointer-events-none absolute inset-y-0 right-0 -z-10 h-full w-[56.3%] object-cover [mask-image:linear-gradient(to_right,transparent,#000)]';
 
 const BonusBanner: FC<{ className?: string }> = ({ className = '' }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [copied, setCopied] = useState(false);
   const { token } = useAuth();
   const { openRegister } = useAuthModal();
@@ -65,16 +66,22 @@ const BonusBanner: FC<{ className?: string }> = ({ className = '' }) => {
           {t('lobby.bonus.eyebrow')}
         </p>
         <h2 className="mt-[9px] max-w-[150px] text-[16px] font-medium leading-6 tracking-[-0.02em] text-[#f2f5f9] lg:mt-[0.9cqw] lg:max-w-none lg:text-[max(20px,2.07cqw)] lg:font-bold lg:leading-[1.25]">
-          {welcome ? t('welcome.bannerHeadline', { percent }) : t('dash.unlockBonus')}
+          {welcome
+            ? (displayText(welcome.texts, locale, 'banner_headline') ??
+              t('welcome.bannerHeadline', { percent }))
+            : t('dash.unlockBonus')}
         </h2>
 
         {welcome ? (
           <button
             type="button"
             onClick={() => (token ? void router.push('/wallet') : openRegister())}
-            title={t('welcome.bannerBody', {
-              min: formatOfferAmount(welcome.min_deposit, welcome.currency),
-            })}
+            title={
+              displayText(welcome.texts, locale, 'banner_body') ??
+              t('welcome.bannerBody', {
+                min: formatOfferAmount(welcome.min_deposit, welcome.currency),
+              })
+            }
             className="mt-3 inline-flex h-9 items-center rounded-[20px] bg-[#ffe779] px-[15px] text-[12px] font-semibold leading-5 text-[#13171f] transition-opacity hover:opacity-90 lg:mt-[1.74cqw] lg:h-[max(32px,2.91cqw)] lg:rounded-[12px] lg:px-[max(12px,1.1cqw)] lg:text-[max(12px,1.03cqw)]"
           >
             {t('welcome.bannerCta')}
@@ -84,7 +91,7 @@ const BonusBanner: FC<{ className?: string }> = ({ className = '' }) => {
             type="button"
             onClick={copy}
             title={t('lobby.bonus.copy', { code: PROMO_CODE })}
-            className="mt-3 inline-flex h-9 items-center gap-2.5 rounded-[20px] border border-dashed border-[#ffe779] bg-[#13171f] px-[13px] text-[12px] font-medium leading-5 text-[#ffe779] transition-colors hover:bg-[#ffe779]/10 lg:mt-[1.74cqw] lg:h-[max(32px,2.91cqw)] lg:rounded-[12px] lg:px-[max(12px,1.1cqw)] lg:text-[max(12px,1.03cqw)] lg:font-normal lg:leading-[1.5]"
+            className="hidden! mt-3 inline-flex h-9 items-center gap-2.5 rounded-[20px] border border-dashed border-[#ffe779] bg-[#13171f] px-[13px] text-[12px] font-medium leading-5 text-[#ffe779] transition-colors hover:bg-[#ffe779]/10 lg:mt-[1.74cqw] lg:h-[max(32px,2.91cqw)] lg:rounded-[12px] lg:px-[max(12px,1.1cqw)] lg:text-[max(12px,1.03cqw)] lg:font-normal lg:leading-[1.5]"
           >
             {copied && <CheckIcon size={14} />}
             {PROMO_CODE}

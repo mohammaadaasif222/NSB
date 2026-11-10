@@ -10,6 +10,7 @@ import { useRewards } from '@/hooks/useRewards';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
 import { REWARD_TITLE_KEYS } from '@/constants/rewards';
 import { formatRewardAmount } from '@/utils/money';
+import { unlockText } from '@/utils/rewardUnlock';
 import type { RewardType, RewardTypeSummary } from '@/types';
 
 /**
@@ -80,8 +81,12 @@ const RewardRow: FC<RowProps> = ({ reward, currency, clockOffset, claiming, onCl
   const expiresIn = useCountdown(claimable ? reward.expires_at : null, clockOffset);
   const availableIn = useCountdown(claimable ? null : reward.available_at, clockOffset);
 
+  const locked = claimable && reward.unlock !== null;
+
   let detail: string;
-  if (claimable) {
+  if (locked && reward.unlock) {
+    detail = `${formatRewardAmount(reward.claimable_amount, currency)} · ${unlockText(t, reward.unlock, currency)}`;
+  } else if (claimable) {
     detail = `${formatRewardAmount(reward.claimable_amount, currency)} · ${t('rewards.expiresIn', {
       time: formatCountdown(expiresIn ?? 0),
     })}`;
@@ -115,7 +120,7 @@ const RewardRow: FC<RowProps> = ({ reward, currency, clockOffset, claiming, onCl
         <button
           type="button"
           onClick={() => onClaim(reward.type)}
-          disabled={claiming !== null}
+          disabled={claiming !== null || locked}
           className={`${GOLD} flex-shrink-0 transition-[filter] hover:brightness-125 disabled:opacity-60`}
         >
           {claiming === reward.type ? <ButtonLoader /> : t('rewards.claim')}

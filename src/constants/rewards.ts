@@ -30,6 +30,7 @@ export const REWARD_STATUS_KEYS: Record<RewardClaimStatus, TranslationKey> = {
   CLAIMED: 'rewards.status.claimed',
   EXPIRED: 'rewards.status.expired',
   ROLLED_OVER: 'rewards.status.rolledOver',
+  CARRIED: 'rewards.status.carried',
 };
 
 /** The URL segment the claim endpoint takes: POST /rewards/claim/rakeback. */

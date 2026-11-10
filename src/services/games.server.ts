@@ -16,6 +16,7 @@ import {
   shelfFor,
   type ShelfListQuery,
 } from '@/constants/games';
+import type { PrizeDrop } from '@/services/prizeDrops';
 
 /**
  * Server-side catalogue fetching, for getServerSideProps.
@@ -210,6 +211,17 @@ export async function fetchShelfProviders(list: ShelfListQuery): Promise<string[
     return Array.isArray(data?.providers) ? data.providers.map((p) => p.name) : null;
   } catch (error) {
     logFailure(`Shelf providers ${query} fetch`, error);
+    return null;
+  }
+}
+
+/** The Drops & Wins campaigns running now (`GET /prize-drops`); null when the request failed. */
+export async function fetchPrizeDropsServer(): Promise<PrizeDrop[] | null> {
+  try {
+    const data = await getJson<PrizeDrop[]>('/prize-drops');
+    return Array.isArray(data) ? data : null;
+  } catch (error) {
+    logFailure('Prize drops fetch', error);
     return null;
   }
 }

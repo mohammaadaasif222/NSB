@@ -7,6 +7,7 @@ import RewardDetailModal from '@/components/rewards/RewardDetailModal';
 import RewardInfoButton from '@/components/rewards/RewardInfoButton';
 import TierCard from '@/components/rewards/TierCard';
 import RewardHistory from '@/components/rewards/RewardHistory';
+import PromotionsList from '@/components/rewards/PromotionsList';
 import VipTierTable from '@/components/rewards/VipTierTable';
 import { REWARD_ICONS } from '@/components/icons';
 import apiService from '@/services/api';
@@ -181,6 +182,8 @@ const RewardsPage: FC = () => {
               ))}
           </div>
         </div>
+
+        <PromotionsList />
 
         <RewardHistory currency={summary.currency} />
       </>

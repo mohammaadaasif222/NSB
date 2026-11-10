@@ -38,6 +38,8 @@ export interface ShelfListQuery {
   max_win_min?: number;
   /** Released within this many days. */
   released_within_days?: number;
+  /** A prize drop campaign's id (GET /prize-drops): only the games it drops on. */
+  prize_drop?: string;
 }
 
 /**
@@ -254,6 +256,25 @@ export const LIVE_CASINO_HREF = '/live-casino';
 
 /** Path of the Drops & Wins page: the providers' prize drop campaigns. */
 export const DROPS_WINS_PATH = '/drops-wins';
+
+/**
+ * A Drops & Wins listing, as categoryHref builds a category's: `drop` picks
+ * the campaign when more than one runs (the first one when left out).
+ */
+export const dropsWinsHref = (
+  drop: string | null,
+  page = 1,
+  filters: CategoryFilters = {}
+): string => {
+  const query = new URLSearchParams();
+  if (drop) query.set('drop', drop);
+  if (filters.q) query.set('q', filters.q);
+  if (filters.provider) query.set('provider', filters.provider);
+  if (filters.sort) query.set('sort', filters.sort);
+  if (page > 1) query.set('page', String(page));
+  const qs = query.toString();
+  return qs ? `${DROPS_WINS_PATH}?${qs}` : DROPS_WINS_PATH;
+};
 
 /** The category shelf for an API enum value. */
 export const categoryForEnum = (category: GameCategory): GameShelfDef =>

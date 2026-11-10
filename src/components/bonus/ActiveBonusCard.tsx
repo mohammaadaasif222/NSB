@@ -1,6 +1,7 @@
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 
 import ButtonLoader from '@/components/ButtonLoader';
+import BonusTrailModal from '@/components/bonus/BonusTrailModal';
 import { TicketIcon } from '@/components/icons';
 import { useTranslation } from '@/context/I18nContext';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
@@ -32,6 +33,9 @@ const ActiveBonusCard: FC<Props> = ({ award, currency, clockOffset, busyId, onFo
   const { t } = useTranslation();
 
   const busy = busyId === award.id;
+  const [trailOpen, setTrailOpen] = useState(false);
+  const locked = award.category === 'LOCKED';
+  const stepsTotal = award.steps_total ?? 0;
   const expiresIn = useCountdown(award.expires_at, clockOffset);
   const hasRequirement = Number(award.wagering_required) > 0;
 
@@ -99,13 +103,46 @@ const ActiveBonusCard: FC<Props> = ({ award, currency, clockOffset, busyId, onFo
         </p>
       )}
 
+      {locked && (
+        <p className="mt-3 rounded-xl bg-white/5 px-3 py-2 text-[12px] leading-relaxed text-white/72">
+          {t('bonus.lockedHint')}
+        </p>
+      )}
+      {award.comment && (
+        <p className="mt-3 text-[12px] leading-relaxed text-white/64">{award.comment}</p>
+      )}
+
       {/* The two terms that end an award early, stated plainly. */}
       <dl className="mt-3 space-y-1">
+        {award.release_mode === 'STEPS' && stepsTotal > 0 && (
+          <div className="flex items-center justify-between gap-2">
+            <dt className="text-[11px] text-white/50">{t('bonus.stepsReleased')}</dt>
+            <dd className="text-[11px] text-white/72">
+              {t('bonus.stepsOf', { done: award.steps_released ?? 0, total: stepsTotal })}
+            </dd>
+          </div>
+        )}
+        {award.release_mode === 'CONTINUOUS' && (
+          <div className="flex items-center justify-between gap-2">
+            <dt className="text-[11px] text-white/50">{t('bonus.releasedSoFar')}</dt>
+            <dd className="text-[11px] text-white/72">
+              {formatRewardAmount(award.released_usd ?? '0', currency)}
+            </dd>
+          </div>
+        )}
         {award.free_spins_awarded > 0 && (
           <div className="flex items-center justify-between gap-2">
             <dt className="text-[11px] text-white/50">{t('bonus.freeSpins')}</dt>
             <dd className="text-[11px] text-white/72">
               {award.free_spins_awarded - award.free_spins_used} / {award.free_spins_awarded}
+            </dd>
+          </div>
+        )}
+        {award.max_convertible && Number(award.max_convertible) > 0 && (
+          <div className="flex items-center justify-between gap-2">
+            <dt className="text-[11px] text-white/50">{t('bonus.maxConvertible')}</dt>
+            <dd className="text-[11px] text-white/72">
+              {formatRewardAmount(award.max_convertible, currency)}
             </dd>
           </div>
         )}
@@ -126,6 +163,19 @@ const ActiveBonusCard: FC<Props> = ({ award, currency, clockOffset, busyId, onFo
           </div>
         )}
       </dl>
+
+      {hasRequirement && (
+        <button
+          type="button"
+          onClick={() => setTrailOpen(true)}
+          className="mt-4 flex h-10 w-full items-center justify-center rounded-full bg-white/8 text-[12px] font-semibold text-white/80 transition-colors hover:bg-white/12"
+        >
+          {t('bonus.trailOpen')}
+        </button>
+      )}
+      {trailOpen && (
+        <BonusTrailModal award={award} currency={currency} onClose={() => setTrailOpen(false)} />
+      )}
 
       <button
         type="button"

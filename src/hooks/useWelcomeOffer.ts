@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import apiService from '@/services/api';
+import { analytics } from '@/services/analytics';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
@@ -95,6 +96,7 @@ export const useWelcomeOffer = (): UseWelcomeOffer => {
         shared = null;
         ticket.current += 1;
         setOffer(res.data);
+        analytics.bonus.optionSelected(bonusId, 'WELCOME');
         return true;
       }
       toast.error(res?.message || tRef.current('welcome.saveFailed'));

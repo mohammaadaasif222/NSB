@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 
 import ButtonLoader from '@/components/ButtonLoader';
 import { TicketIcon } from '@/components/icons';
@@ -30,6 +30,7 @@ interface Props {
   /** The band across the middle: what the bonus is worth — "Win up to 1 BTC". */
   worth: { label: string; value?: string };
   action: BonusCardAction;
+  footnote?: ReactNode;
 }
 
 /* The design's band behind the worth line: the stage colour washing in from
@@ -53,7 +54,7 @@ const PILL =
  * card keeps the design's proportions on a narrower desktop instead of
  * reflowing. On a phone the column is one card wide and plain px apply.
  */
-const BonusGlassCard: FC<Props> = ({ imageUrl, title, subtitle, worth, action }) => (
+const BonusGlassCard: FC<Props> = ({ imageUrl, title, subtitle, worth, action, footnote }) => (
   <article className="rl-glass-deep max-lg:rl-glass-clear flex flex-col rounded-[24px] px-5 pb-4 pt-5 lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*24)] lg:pb-[calc(var(--u)*16)] lg:pt-[calc(var(--u)*31)]">
     <div className="flex items-center gap-3 lg:gap-[calc(var(--u)*12)]">
       <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#252937] text-white/30 lg:h-[calc(var(--u)*66.5)] lg:w-[calc(var(--u)*66.5)]">
@@ -100,6 +101,11 @@ const BonusGlassCard: FC<Props> = ({ imageUrl, title, subtitle, worth, action })
       >
         {action.busy ? <ButtonLoader /> : action.label}
       </button>
+    )}
+    {footnote && (
+      <div className="mt-2 text-center text-[12px] leading-4 text-white/56 lg:mt-[calc(var(--u)*8)] lg:text-[length:max(10px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]">
+        {footnote}
+      </div>
     )}
   </article>
 );

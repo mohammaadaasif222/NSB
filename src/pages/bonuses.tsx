@@ -11,6 +11,9 @@ import RegularBonusRow from '@/components/bonus/RegularBonusRow';
 import { useTranslation } from '@/context/I18nContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useBonuses } from '@/hooks/useBonuses';
+import BonusHistoryTable from '@/components/bonus/BonusHistoryTable';
+import BonusMovementsTable from '@/components/bonus/BonusMovementsTable';
+import StreamerGivePanel from '@/components/bonus/StreamerGivePanel';
 import Seo from '@/components/seo/Seo';
 import { fetchFaqsServer } from '@/services/faqs.server';
 import type { FaqItem } from '@/services/faqs';
@@ -28,7 +31,8 @@ const Section: FC<{ title: string; children: ReactNode }> = ({ title, children }
   </section>
 );
 
-const PANEL = 'rl-glass-deep max-lg:rl-glass-clear rounded-[24px] px-5 py-16 text-center lg:rounded-[calc(var(--u)*34)]';
+const PANEL =
+  'rl-glass-deep max-lg:rl-glass-clear rounded-[24px] px-5 py-16 text-center lg:rounded-[calc(var(--u)*34)]';
 
 const COLUMN =
   'mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0';
@@ -38,10 +42,22 @@ interface Props {
 }
 
 const BonusesPage: FC<Props> = ({ faqs }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { bonuses: bonusesOn } = usePlatformFeatures();
-  const { summary, loading, error, busyId, signedIn, clockOffset, refresh, claim, forfeit } =
-    useBonuses();
+  const {
+    summary,
+    loading,
+    error,
+    busyId,
+    signedIn,
+    clockOffset,
+    refresh,
+    claim,
+    forfeit,
+    optIn,
+    optOut,
+    reject,
+  } = useBonuses();
 
   const [walletOpen, setWalletOpen] = useState(false);
 
@@ -140,8 +156,29 @@ const BonusesPage: FC<Props> = ({ faqs }) => {
             onClaim={(bonusId) => void claim({ bonusId })}
             onForfeit={(awardId) => void forfeit(awardId)}
             onDeposit={() => setWalletOpen(true)}
+            onOptIn={(bonusId) => void optIn(bonusId)}
+            onOptOut={(bonusId) => void optOut(bonusId)}
+            onReject={(bonusId) => void reject(bonusId)}
           />
         </Section>
+
+        {signedIn && (summary?.history.length ?? 0) > 0 && (
+          <Section title={t('bonus.historyTitle')}>
+            <BonusHistoryTable
+              awards={summary?.history ?? []}
+              currency={summary?.currency ?? 'USD'}
+              locale={locale}
+            />
+          </Section>
+        )}
+
+        {signedIn && <StreamerGivePanel currency={summary?.currency ?? 'USD'} />}
+
+        {signedIn && (
+          <Section title={t('bonus.movementsTitle')}>
+            <BonusMovementsTable currency={summary?.currency ?? 'USD'} />
+          </Section>
+        )}
 
         <FaqAccordion items={faqs} />
         <SiteFooter />

@@ -241,7 +241,7 @@ export const en = {
 
   // Drops & Wins (provider prize drops)
   'lobby.drops.pageIntro':
-    'Cash prizes drop at random on the games below. Play any of them at or above the minimum bet and any round can win one, paid straight into your balance.',
+    'Prizes drop at random on the games below, from cash to free spins. Play any of them at or above the minimum bet and any round can win one; cash prizes go straight into your balance.',
   'lobby.drops.empty': 'No Drops & Wins campaigns are running right now. Check back soon.',
   'lobby.drops.prizePool': 'Prize pool',
   'lobby.drops.prizes': 'Prizes',

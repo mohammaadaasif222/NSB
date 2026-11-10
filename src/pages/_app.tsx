@@ -20,7 +20,8 @@ import AccountReviewNotice from '@/components/risk/AccountReviewNotice';
 import LoginPopup from '@/components/player/LoginPopup';
 import PostSignupPopup from '@/components/player/PostSignupPopup';
 import WelcomeCompletePopup from '@/components/bonus/WelcomeCompletePopup';
-import { ActiveWelcomeProvider } from '@/context/ActiveWelcomeContext';
+import GroupChoicePopup from '@/components/bonus/GroupChoicePopup';
+import { ActiveBonusProvider } from '@/context/ActiveBonusContext';
 import SeonAgentWarmup from '@/components/SeonAgentWarmup';
 import RegionRestrictedModal from '@/components/modals/RegionRestrictedModal';
 import EmailVerifyPromptModal from '@/components/modals/EmailVerifyPromptModal';
@@ -99,7 +100,7 @@ export default function App({ Component, pageProps }: AppProps) {
                         <SeonGuardProvider>
                           <AuthModalProvider>
                             {/* Inside AuthModalProvider: hearting signed out opens login. */}
-                            <ActiveWelcomeProvider>
+                            <ActiveBonusProvider>
                               <FavouritesProvider>
                                 {/* Above the pages, so sportsbook picks survive moving between them. */}
                                 <BetslipProvider>
@@ -107,7 +108,7 @@ export default function App({ Component, pageProps }: AppProps) {
                                   <Component {...pageProps} />
                                 </BetslipProvider>
                               </FavouritesProvider>
-                            </ActiveWelcomeProvider>
+                            </ActiveBonusProvider>
                             <SeonAgentWarmup />
                             <RegionRestrictedModal />
                             {/* A bar at the top edge, not an overlay: a link
@@ -123,6 +124,7 @@ export default function App({ Component, pageProps }: AppProps) {
                             <PhoneVerifyPromptModal />
                             <PostSignupPopup />
                             <WelcomeCompletePopup />
+                            <GroupChoicePopup />
                             <LoginPopup />
                             {/* Outside the page so the bubble survives route changes,
                           and inside SupportChatProvider so an operator switching

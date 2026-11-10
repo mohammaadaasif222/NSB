@@ -5,6 +5,7 @@ import { REWARD_ICONS } from '@/components/icons';
 import { formatCountdown, useCountdown } from '@/hooks/useCountdown';
 import { REWARD_TITLE_KEYS } from '@/constants/rewards';
 import { formatRewardAmount } from '@/utils/money';
+import { unlockText } from '@/utils/rewardUnlock';
 import type { RewardType, RewardTypeSummary } from '@/types';
 import RewardDetailModal from './RewardDetailModal';
 import RewardInfoButton from './RewardInfoButton';
@@ -37,6 +38,7 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
   const [infoOpen, setInfoOpen] = useState(false);
 
   const claimable = reward.claimable_count > 0;
+  const locked = claimable && reward.unlock !== null;
   const accruing = Number(reward.pending_amount) > 0;
   const expiresIn = useCountdown(claimable ? reward.expires_at : null, clockOffset);
   const availableIn = useCountdown(reward.available_at, clockOffset);
@@ -88,6 +90,9 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
               ? accrualNote
               : t('rewards.nothingYet')}
         </p>
+        {locked && reward.unlock && (
+          <p className={`mt-0.5 tabular-nums ${LABEL}`}>{unlockText(t, reward.unlock, currency)}</p>
+        )}
         {claimable && accruing && (
           <p className={`mt-0.5 tabular-nums ${LABEL}`}>
             {t('rewards.pending', { amount: formatRewardAmount(reward.pending_amount, currency) })}{' '}
@@ -99,7 +104,7 @@ const RewardCard: FC<Props> = ({ reward, currency, clockOffset, claiming, onClai
       <button
         type="button"
         onClick={() => onClaim(reward.type)}
-        disabled={!claimable || claiming !== null}
+        disabled={!claimable || locked || claiming !== null}
         className={`mt-4 w-full ${claimable ? GOLD_BUTTON : GHOST_BUTTON}`}
       >
         {claiming === reward.type ? <ButtonLoader /> : t('rewards.claim')}

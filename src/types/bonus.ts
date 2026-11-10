@@ -40,6 +40,27 @@ export interface AvailableBonus {
   reason: string | null;
   /** True when claiming needs a qualifying deposit this player does not have. */
   needs_deposit: boolean;
+  claim_by?: string | null;
+  claim_mode?: 'AUTOMATIC' | 'ON_CLAIM' | 'OPT_IN';
+  opt_in?: { status: 'OPTED_IN' | 'OPTED_OUT'; expires_at: string | null } | null;
+  provider_shares?: { provider: string; share: number }[];
+  blocked_products?: ('CASINO' | 'ORIGINALS' | 'SPORTSBOOK')[];
+  texts?: DisplayTexts<RegularBonusTextField>;
+  terms_slug?: string | null;
+  group?: {
+    id: string;
+    name: string;
+    max_per_player: number;
+    pick_mode: 'PLAYER_PICKS' | 'AUTOMATIC';
+  } | null;
+}
+
+export interface RedeemResult {
+  kind: 'BONUS' | 'PROMOTION';
+  bonus_id: string | null;
+  program_id?: string;
+  award_id: string | null;
+  opted_in: boolean;
 }
 
 /** One award the player holds, or once held. */
@@ -77,6 +98,14 @@ export interface UserBonus {
   max_convertible?: string | null;
   released_usd?: string | null;
   captured_usd?: string | null;
+  category?: 'PLAYABLE' | 'LOCKED';
+  release_mode?: 'ALL_AT_ONCE' | 'STEPS' | 'CONTINUOUS';
+  steps_total?: number;
+  steps_released?: number;
+  next_step_at?: string | null;
+  locked_amount?: string;
+  sticky?: boolean;
+  comment?: string | null;
 
   forfeit_reason: string | null;
   claimed_at: string;
@@ -203,7 +232,12 @@ export interface WelcomeOfferOption {
   max_bonus_amount: string | null;
   wagering_multiplier: string;
   max_convertible: string | null;
+  texts: DisplayTexts<'title' | 'details'>;
 }
+
+export type DisplayTexts<F extends string> = Partial<Record<string, Partial<Record<F, string>>>>;
+
+export type WelcomeOfferTextField = 'title' | 'hint' | 'banner_headline' | 'banner_body';
 
 export type WelcomeChoiceStatus = 'PENDING' | 'DECLINED' | 'APPLIED';
 
@@ -221,6 +255,9 @@ export interface WelcomeOffer {
   locked: boolean;
   award: UserBonus | null;
   contributions: WelcomeContributions | null;
+  texts: DisplayTexts<WelcomeOfferTextField>;
+  terms_slug: string | null;
+  withdrawal_cancels: string[];
 }
 
 export interface WelcomeContributions {
@@ -231,4 +268,86 @@ export interface WelcomeContributions {
     contribution: number;
   }[];
   max_rtp: number | null;
+}
+
+export type RegularBonusTextField = 'name' | 'description' | 'terms';
+
+export interface BonusTrail {
+  award_id: string;
+  rollover_id: string | null;
+  bets: {
+    bet_id: string | null;
+    source: string;
+    game_id: string | null;
+    game: string | null;
+    bet_amount: string;
+    counted_amount: string | null;
+    contribution: number;
+    wagering_progress: string;
+    penalty_added: string | null;
+    created_at: string;
+  }[];
+}
+
+export type BonusMovementKind =
+  'CREDITED' | 'FREE_SPINS' | 'RELEASED' | 'CAPTURED' | 'EXPIRED' | 'FORFEITED';
+
+export interface BonusMovement {
+  award_id: string;
+  bonus_id: string;
+  bonus: string;
+  kind: BonusMovementKind;
+  wallet: 'REAL' | 'BONUS';
+  amount: string | null;
+  at: string;
+  note: string | null;
+}
+
+export interface BonusMovementsPage {
+  data: BonusMovement[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export interface ActiveBonusTerms {
+  game_id: string | null;
+  bonuses: {
+    award_id: string;
+    name: string;
+    welcome: boolean;
+    stakes_counted: string;
+    progress: number;
+    wagering_remaining: string;
+    max_bet: string | null;
+    expires_at: string | null;
+    rules: WelcomeContributions['rules'];
+    exact_rules: boolean;
+    max_rtp: number | null;
+    game: { contribution: number; eligible: boolean } | null;
+  }[];
+}
+
+export interface DepositBonusOffer {
+  id: string;
+  name: string;
+  type: BonusType;
+  match_percentage: number | null;
+  min_deposit_amount: string | null;
+  max_deposit_amount: string | null;
+  max_bonus_amount: string | null;
+  wagering_multiplier: string | null;
+  max_bet_size: string | null;
+  max_convertible: string | null;
+  expiry_hours: number | null;
+  estimated_amount: string | null;
+  available: boolean;
+  reason: string | null;
+  texts: DisplayTexts<RegularBonusTextField>;
+  terms_slug: string | null;
+  payment_methods: string[];
+  deposit_currencies: string[];
+}
+
+export interface DepositBonusOffers {
+  choice: { bonus_id: string; status: string; chosen_at: string; reason: string | null } | null;
+  offers: DepositBonusOffer[];
 }

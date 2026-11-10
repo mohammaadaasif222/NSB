@@ -583,7 +583,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
                 ? t('welcome.bannerHeadline', { percent: welcomePercent })
                 : t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })
             }
-            className={`mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rounded-[24px] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
+            className={`hidden! mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rounded-[24px] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
               collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
             }`}
           >
