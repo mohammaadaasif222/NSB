@@ -413,32 +413,32 @@ export function EventListeners() {
         demoTimeoutRef.current = null;
       }
 
-      toast.success(
-        <div>
-          {/* <div className="font-semibold">✅ {translate('misc.realtime.okTitle')}</div> */}
-          <div className="font-semibold">{data.message}</div>
-          {/* <div className="text-sm mt-2">{data.message}</div> */}
-          <div className="text-xs mt-1 opacity-75">
-            {translate('misc.realtime.random', { value: data.randomNumber })} •{' '}
-            {new Date(data.timestamp).toLocaleTimeString(currentLocale())}
-          </div>
-        </div>,
-        { position: 'bottom-right', autoClose: 5000 }
-      );
+      // toast.success(
+      //   <div>
+      //     {/* <div className="font-semibold">✅ {translate('misc.realtime.okTitle')}</div> */}
+      //     <div className="font-semibold">{data.message}</div>
+      //     {/* <div className="text-sm mt-2">{data.message}</div> */}
+      //     <div className="text-xs mt-1 opacity-75">
+      //       {translate('misc.realtime.random', { value: data.randomNumber })} •{' '}
+      //       {new Date(data.timestamp).toLocaleTimeString(currentLocale())}
+      //     </div>
+      //   </div>,
+      //   { position: 'bottom-right', autoClose: 5000 }
+      // );
     };
 
     // Store timeout function for demo request
     const startDemoTimeout = () => {
       demoTimeoutRef.current = setTimeout(() => {
         console.error('[DEMO-MESSAGE-TIMEOUT] Demo message not received within 5 seconds');
-        toast.error(
-          <div>
-            <div className="font-semibold">⚠️ {translate('misc.realtime.issueTitle')}</div>
-            <div className="text-sm mt-2">{translate('misc.realtime.issueBody')}</div>
-            <div className="text-xs mt-1 opacity-75">{translate('misc.realtime.issueHint')}</div>
-          </div>,
-          { position: 'bottom-right', autoClose: 7000 }
-        );
+        // toast.error(
+        //   <div>
+        //     <div className="font-semibold">⚠️ {translate('misc.realtime.issueTitle')}</div>
+        //     <div className="text-sm mt-2">{translate('misc.realtime.issueBody')}</div>
+        //     <div className="text-xs mt-1 opacity-75">{translate('misc.realtime.issueHint')}</div>
+        //   </div>,
+        //   { position: 'bottom-right', autoClose: 7000 }
+        // );
       }, 5000);
     };
 
