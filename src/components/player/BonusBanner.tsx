@@ -91,7 +91,7 @@ const BonusBanner: FC<{ className?: string }> = ({ className = '' }) => {
             type="button"
             onClick={copy}
             title={t('lobby.bonus.copy', { code: PROMO_CODE })}
-            className="mt-3 inline-flex h-9 items-center gap-2.5 rounded-[20px] border border-dashed border-[#ffe779] bg-[#13171f] px-[13px] text-[12px] font-medium leading-5 text-[#ffe779] transition-colors hover:bg-[#ffe779]/10 lg:mt-[1.74cqw] lg:h-[max(32px,2.91cqw)] lg:rounded-[12px] lg:px-[max(12px,1.1cqw)] lg:text-[max(12px,1.03cqw)] lg:font-normal lg:leading-[1.5]"
+            className="hidden! mt-3 inline-flex h-9 items-center gap-2.5 rounded-[20px] border border-dashed border-[#ffe779] bg-[#13171f] px-[13px] text-[12px] font-medium leading-5 text-[#ffe779] transition-colors hover:bg-[#ffe779]/10 lg:mt-[1.74cqw] lg:h-[max(32px,2.91cqw)] lg:rounded-[12px] lg:px-[max(12px,1.1cqw)] lg:text-[max(12px,1.03cqw)] lg:font-normal lg:leading-[1.5]"
           >
             {copied && <CheckIcon size={14} />}
             {PROMO_CODE}
