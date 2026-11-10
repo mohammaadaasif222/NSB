@@ -20,6 +20,9 @@ const CHIP_PICKED = `${CHIP_GLASS} bg-[#ffe779]/[0.16] font-rubik font-medium te
 export const WALLET_TRACK =
   'rl-diag-rim [--rim-radius:28px] [--rim-clear:56px] [--rim-fade:112px] lg:[--rim-radius:calc(var(--u)*28)] !bg-white/[0.02] [--tw-inset-shadow:inset_4px_4px_8px_rgba(0,0,0,0.4),inset_-4px_-4px_8px_rgba(255,255,255,0.04)]!';
 
+/** Tabs with their own sound (`depositWidrawBuy`); the rest play the generic click. */
+const MONEY_TABS: ReadonlySet<string> = new Set(['deposit', 'withdraw', 'buy']);
+
 export interface WalletTabItem<K extends string> {
   id: K;
   label: string;
@@ -70,6 +73,7 @@ const WalletTabBar = <K extends string>({ tabs, active, onChange, label }: Props
             role="tab"
             aria-selected={on}
             onClick={() => onChange(tab.id)}
+            data-sound={MONEY_TABS.has(tab.id) ? 'depositWidrawBuy' : undefined}
             className={`inline-flex h-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-5 text-[16px] leading-6 sm:min-w-0 sm:flex-auto sm:px-3 ${
               on ? CHIP_PICKED : CHIP_IDLE
             }`}

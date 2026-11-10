@@ -135,6 +135,7 @@ const HeaderPopover: FC<Props> = ({
               ref={sheetRef}
               role="dialog"
               aria-modal="true"
+              data-sound-popup="off"
               aria-label={label}
               className="thin-scrollbar fixed inset-x-0 bottom-0 top-[var(--player-bar-h,0px)] z-[31] overflow-y-auto bg-[#07080a]"
             >

@@ -72,7 +72,8 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
   // A disposable-contact lock stays out of sight until the player asks to withdraw.
   const [contactAsked, setContactAsked] = useState(false);
   const { offer: welcome } = useWelcomeOffer();
-  const welcomeActive = welcome?.award?.status === 'ACTIVE';
+  const cancelledBonuses = welcome?.withdrawal_cancels ?? [];
+  const welcomeActive = cancelledBonuses.length > 0;
   const [welcomeAck, setWelcomeAck] = useState(false);
   const withdrawLocked =
     !!restriction?.blocked_actions.includes('WITHDRAW') &&
@@ -627,6 +628,7 @@ const WithdrawTab: FC<Props> = ({ onLeave }) => {
 
               {welcomeActive && (
                 <WelcomeWithdrawalNotice
+                  bonuses={cancelledBonuses}
                   checked={welcomeAck}
                   onChange={setWelcomeAck}
                   className="mt-[22px]"

@@ -42,7 +42,6 @@ import {
 import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 import GameSearchModal from '@/components/player/GameSearchModal';
-import LanguagePicker from '@/components/LanguagePicker';
 import { useSocialLinks } from '@/hooks/useSocialLinks';
 
 interface Props {
@@ -82,7 +81,7 @@ const SectionTab: FC<SectionProps> = ({ href, art, glow, label, active, collapse
     className={`group/section flex flex-1 flex-col items-center justify-center rounded-[calc(var(--u)*24)] transition-colors ${
       active
         ? 'rl-drop rl-diag-rim relative [--tw-inset-shadow:var(--rl-drop-depth)]! [--rim-radius:calc(var(--u)*24)] [--rim-clear:48px] [--rim-fade:120px] [--rim-color:rgba(255,255,255,0.35)] bg-white/[0.12] text-white hover:bg-white/[0.16]'
-        : 'text-[#9da2b4] hover:bg-white/[0.06] hover:text-white'
+        : 'text-[#d5d8e2] hover:bg-white/[0.06] hover:text-white'
     } ${collapsed ? 'lg:py-[calc(var(--u)*10)]' : ''}`}
   >
     {/* The design's 58px render with its glow round it — a 34px shadow at
@@ -109,7 +108,7 @@ const SectionTab: FC<SectionProps> = ({ href, art, glow, label, active, collapse
       />
     </span>
     <span
-      className={`text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] ${
+      className={`text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold leading-[calc(var(--u)*20)] ${
         collapsed ? 'lg:hidden' : ''
       }`}
     >
@@ -156,12 +155,12 @@ const PhoneSectionCard: FC<{
 /* A phone draws every row as its own 48px glass pill, 10 apart, the icon 24
    in; the desktop rail's rows are bare until hovered or current. */
 const ROW =
-  'flex h-12 w-full flex-shrink-0 items-center gap-2.5 rounded-full px-6 text-[16px] leading-6 transition-colors max-lg:shadow-[0_8px_40px_rgba(0,0,0,0.12)] lg:h-[calc(var(--u)*44)] lg:gap-[calc(var(--u)*11)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*15)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)]';
+  'flex h-12 w-full flex-shrink-0 items-center gap-2.5 rounded-full px-6 text-[16px] leading-6 transition-colors max-lg:shadow-[0_8px_40px_rgba(0,0,0,0.12)] lg:h-[calc(var(--u)*44)] lg:gap-[calc(var(--u)*11)] lg:rounded-[calc(var(--u)*34)] lg:px-[calc(var(--u)*15)] lg:text-[length:max(min(11px,16px),calc(var(--u)*16))] lg:leading-[calc(var(--u)*24)] font-medium';
 /* The current row wears every pill's rim: whitish on the diagonal, clear
    round the top-end and bottom-start corners (`rl-pill-rim`). */
-const ROW_ACTIVE = 'rl-drop rl-pill-rim relative bg-white/10 text-white';
+const ROW_ACTIVE = 'rl-drop rl-pill-rim relative bg-white/10 font-semibold text-white';
 const ROW_IDLE =
-  'text-[#9da2b4] max-lg:bg-white/5 hover:bg-white/5 hover:text-white max-lg:hover:bg-white/10';
+  'text-[#d5d8e2] max-lg:bg-white/5 hover:bg-white/5 hover:text-white max-lg:hover:bg-white/10';
 
 interface RailLinkProps {
   href?: string;
@@ -207,6 +206,7 @@ const RailLink: FC<RailLinkProps> = ({
     return (
       <button
         type="button"
+        data-sound="sideIconsLikeFavourites"
         onClick={() => {
           onClick();
           onSelect();
@@ -222,6 +222,7 @@ const RailLink: FC<RailLinkProps> = ({
   return (
     <Link
       href={href ?? '#'}
+      data-sound="sideIconsLikeFavourites"
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={className}
@@ -234,7 +235,7 @@ const RailLink: FC<RailLinkProps> = ({
 
 /* A group's rows hang under its icon column, smaller and without the phone's pill. */
 const SUB_ROW =
-  'flex h-10 w-full items-center gap-2 rounded-full ps-[58px] pe-6 text-[15px] leading-6 transition-colors lg:h-[calc(var(--u)*36)] lg:gap-[calc(var(--u)*8)] lg:rounded-[calc(var(--u)*34)] lg:ps-[calc(var(--u)*50)] lg:pe-[calc(var(--u)*15)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]';
+  'flex h-10 w-full items-center gap-2 rounded-full ps-[58px] pe-6 text-[15px] leading-6 transition-colors lg:h-[calc(var(--u)*36)] lg:gap-[calc(var(--u)*8)] lg:rounded-[calc(var(--u)*34)] lg:ps-[calc(var(--u)*50)] lg:pe-[calc(var(--u)*15)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)] font-medium';
 
 /**
  * An expandable rail group (Originals, Casino, Live Casino, Sportsbook): the
@@ -267,12 +268,15 @@ const RailGroupRow: FC<{
         className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] flex-shrink-0"
       />
     ));
+  // Original games (Dice, Limbo…) have their own sound; other groups' rows click generically.
+  const gameSound = group.id === 'originals' ? 'diceLimboLikeIcons(side)' : undefined;
 
   return (
     <div className="flex flex-shrink-0 flex-col gap-1 lg:gap-[calc(var(--u)*2)]">
       {collapsed && (
         <Link
           href={group.href}
+          data-sound={gameSound}
           onClick={onNavigate}
           title={label}
           aria-current={active ? 'page' : undefined}
@@ -283,6 +287,7 @@ const RailGroupRow: FC<{
       )}
       <button
         type="button"
+        data-sound="sideIconsLikeFavourites"
         onClick={onToggle}
         aria-expanded={open}
         className={`${ROW} ${active && !open ? ROW_ACTIVE : ROW_IDLE} ${collapsed ? 'lg:hidden' : ''}`}
@@ -292,7 +297,7 @@ const RailGroupRow: FC<{
         <Glyph
           src={chevronGlyph.src}
           size={16}
-          className={`opacity-60 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`opacity-90 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open && (
@@ -307,12 +312,13 @@ const RailGroupRow: FC<{
                 {item.href ? (
                   <Link
                     href={item.href}
+                    data-sound={gameSound}
                     onClick={onNavigate}
                     aria-current={current ? 'page' : undefined}
                     className={`${SUB_ROW} ${
                       current
-                        ? 'bg-white/10 text-white'
-                        : 'text-[#9da2b4] hover:bg-white/5 hover:text-white'
+                        ? 'bg-white/10 font-semibold text-white'
+                        : 'text-[#c9cdd9] hover:bg-white/5 hover:text-white'
                     }`}
                   >
                     {itemIcon(item)}
@@ -322,11 +328,11 @@ const RailGroupRow: FC<{
                   <span
                     aria-disabled="true"
                     title={`${text} — ${t('common.soon')}`}
-                    className={`${SUB_ROW} cursor-default text-[#9da2b4]/50`}
+                    className={`${SUB_ROW} cursor-default text-[#9da2b4]/80`}
                   >
                     {itemIcon(item)}
                     <span className="truncate">{text}</span>
-                    <span className="ms-auto flex-shrink-0 rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-wide lg:px-[calc(var(--u)*8)] lg:text-[length:max(9px,calc(var(--u)*10))]">
+                    <span className="ms-auto flex-shrink-0 rounded-full bg-[#ffe779]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#ffe779] lg:px-[calc(var(--u)*8)] lg:text-[length:max(9px,calc(var(--u)*10))]">
                       {t('common.soon')}
                     </span>
                   </span>
@@ -342,7 +348,7 @@ const RailGroupRow: FC<{
 
 /** The footer pill — Suggestion Box: the design's 228×44 dark pill. */
 const RAIL_BUTTON =
-  'flex h-[calc(var(--u)*44)] w-full min-w-0 items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-white';
+  'flex h-[calc(var(--u)*44)] w-full min-w-0 items-center justify-center gap-[calc(var(--u)*6)] rounded-[calc(var(--u)*34)] border border-[#1b1f29] bg-[#0e1218] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] font-medium text-[#e3e6ee] transition-colors hover:border-[#2c3242] hover:text-white';
 
 const RailButton: FC<{
   icon: StaticImageData;
@@ -367,14 +373,14 @@ const RailButton: FC<{
 /* ==================================================================== */
 
 /**
- * Category rail, as the design draws it: a 260px dark glass panel floating
+ * Category rail: a 280px dark glass panel (76 collapsed, to its icons) floating
  * down the left from the top of the page — the bar sits beside it, not above.
  *
  * Casino and Sports sit up top as the two site sections, then the
  * welcome-package teaser, then the menu in a list that scrolls on its own
  * (the Casino Manager sheet's "Final" order, with the expandable groups from
  * constants/railMenu), and the socials and contact pills pinned at the foot.
- * Language stays in the top bar, and beside search on a phone. Sports pages swap the casino's rows for the Sportsbook group.
+ * Language stays in the top bar, on a phone as on desktop. Sports pages swap the casino's rows for the Sportsbook group.
  *
  * Sized in `--u` (see PlayerLayout), so it shrinks with the page on a
  * narrower desktop; on a phone it is the slide-in drawer at its design size.
@@ -401,14 +407,14 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const [suggesting, setSuggesting] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [searching, setSearching] = useState(false);
-  // The phone panel opens 14 under the bar, whatever height the bar is.
+  // The phone panel opens right under the bar, whatever height the bar is.
   const [menuTop, setMenuTop] = useState(80);
 
   useEffect(() => {
     if (!open) return undefined;
     const place = (): void => {
       const bar = document.querySelector('header');
-      if (bar) setMenuTop(Math.round(bar.getBoundingClientRect().bottom) + 14);
+      if (bar) setMenuTop(Math.round(bar.getBoundingClientRect().bottom));
     };
     place();
     const onKey = (e: KeyboardEvent): void => {
@@ -483,13 +489,13 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
   return (
     <>
-      {/* On a phone this is the design's menu panel: full width, 14 under the
-          bar (which stays in view), rounded at the top, sliding up from the
-          foot; the tab bar floats over it. Its glass is the design's dark
-          one — near opaque, so the page under it does not show through. From
-          lg it is the sticky rail. */}
+      {/* On a phone this is the menu: full width and flush under the bar
+          (which stays in view), sliding up from the foot, on the stage's own
+          colour with no rim or rounded top, so it reads as the site's menu
+          rather than a sheet; the tab bar floats over it. From lg it is the
+          sticky rail. */}
       <aside
-        className={`rl-glass-deep rl-diag-rim [--rim-radius:34px] lg:[--rim-radius:calc(var(--u)*34)] [--rim-clear:80px] [--rim-fade:220px] [--tw-inset-shadow:var(--rl-tile-face)]! fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden rounded-t-[34px] transition-[transform,width] max-lg:![background:rgba(17,18,22,0.97)] duration-300 lg:![background:linear-gradient(rgba(255,255,255,0.06),rgba(255,255,255,0.06)),rgba(0,0,0,0.6)] lg:![backdrop-filter:blur(6px)] lg:![-webkit-backdrop-filter:blur(6px)] lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[min(calc(var(--u)*824),calc(100vh-var(--u)*40))] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
+        className={`rl-glass-deep rl-diag-rim [--rim-radius:34px] lg:[--rim-radius:calc(var(--u)*34)] [--rim-clear:80px] [--rim-fade:220px] [--tw-inset-shadow:var(--rl-tile-face)]! fixed inset-x-0 bottom-0 top-[var(--menu-top)] z-[29] flex flex-shrink-0 flex-col overflow-hidden transition-[transform,width] max-lg:![background:#07080a] max-lg:![box-shadow:none] max-lg:before:!hidden duration-300 lg:![background:linear-gradient(rgba(255,255,255,0.06),rgba(255,255,255,0.06)),rgba(0,0,0,0.6)] lg:![backdrop-filter:blur(6px)] lg:![-webkit-backdrop-filter:blur(6px)] lg:sticky lg:inset-x-auto lg:bottom-auto lg:top-[calc(var(--u)*20)] lg:z-[26] lg:h-[calc(100vh-var(--u)*40)] lg:w-[var(--rail)] lg:translate-y-0 lg:overflow-visible lg:rounded-[calc(var(--u)*34)] lg:p-[calc(var(--u)*16)] ${
           open ? 'translate-y-0' : 'max-lg:invisible max-lg:translate-y-full'
         }`}
         style={{ '--menu-top': `${menuTop}px` } as CSSProperties}
@@ -499,7 +505,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             rounded glass left a stray edge where its first screen ended. From
             lg the wrapper drops out and the rail lays out as before. */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-28 pt-6 lg:contents">
-          {/* --- Phone: search and language -------------------------------- */}
+          {/* --- Phone: search (language is in the top bar, above the drawer) - */}
           <div className="flex flex-shrink-0 items-center gap-4 lg:hidden">
             <button
               type="button"
@@ -509,9 +515,6 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             >
               <img src={searchGlyph.src} alt="" className="h-6 w-6" />
             </button>
-            <div className="[&>div>button]:!h-12 [&>div>button]:!w-12 [&>div>button>img]:!h-6 [&>div>button>img]:!w-6">
-              <LanguagePicker iconOnly menuAlign="end" />
-            </div>
           </div>
 
           {/* --- Phone: Casino and Sports ----------------------------------- */}
@@ -594,7 +597,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               />
             )}
             <span
-              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] uppercase leading-[calc(var(--u)*20)] text-[#9da2b4] ${
+              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold uppercase leading-[calc(var(--u)*20)] text-[#d5d8e2] ${
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
@@ -608,7 +611,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               {welcomeOffer ? t('welcome.railAmount', { percent: welcomePercent }) : '$1,500'}
             </span>
             <span
-              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] ${
+              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-medium leading-[calc(var(--u)*20)] text-[#d5d8e2] ${
                 collapsed ? 'lg:hidden' : ''
               }`}
             >
@@ -617,7 +620,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           </button>
 
           {/* --- Shortcuts ------------------------------------------------- */}
-          <nav className="scrollbar-none -mx-1 mt-[18px] flex flex-shrink-0 flex-col gap-2.5 px-1 lg:mt-[calc(var(--u)*12)] lg:min-h-0 lg:flex-1 lg:flex-shrink lg:gap-[calc(var(--u)*4)] lg:overflow-y-auto">
+          <nav className="thin-scrollbar -mx-1 mt-[18px] flex flex-shrink-0 flex-col gap-2.5 px-1 lg:mt-[calc(var(--u)*12)] lg:min-h-0 lg:flex-1 lg:flex-shrink lg:gap-[calc(var(--u)*4)] lg:overflow-y-auto">
             {/* Each section keeps its own menu: sports pages list the
                 sportsbook, every other page the casino's rows. The rows
                 after the casino's are shared. */}
@@ -757,9 +760,10 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
           {/* --- Socials and contact pills --------------------------------- */}
           <div className="mt-[67px] flex-shrink-0 border-t border-white/[0.08] pt-4 lg:mt-0 lg:border-0 lg:pt-[calc(var(--u)*13)]">
             {socialLinks.length > 0 && (
+              // Collapsed, the socials step aside so every menu row keeps its place on screen.
               <div
                 className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
-                  collapsed ? 'lg:flex-col' : ''
+                  collapsed ? 'lg:hidden' : ''
                 }`}
               >
                 {socialLinks.map(({ icon: mark, label, href }) => (

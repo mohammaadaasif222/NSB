@@ -89,6 +89,7 @@ const BalanceMenu: FC = () => {
         <button
           type="button"
           onClick={() => (open ? close() : setOpen(true))}
+          data-sound="moneyNearWallet"
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-label={t('lobby.balance.label')}
@@ -130,6 +131,7 @@ const BalanceMenu: FC = () => {
             <button
               type="button"
               onClick={() => setView('currencies')}
+              data-sound="displayCurrency"
               aria-label={`${t('acct.wallet.displayCurrency')}: ${displayCurrency}`}
               className="flex h-8 items-center gap-1 rounded-full bg-[#f0f1f5] pl-3 pr-2 text-[14px] font-medium leading-5 text-[#07080a] transition-[filter] hover:brightness-95 lg:h-[calc(var(--u)*32)] lg:gap-[calc(var(--u)*5)] lg:pl-[calc(var(--u)*13)] lg:pr-[calc(var(--u)*9)] lg:text-[length:max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)]"
             >

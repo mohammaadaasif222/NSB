@@ -13,11 +13,11 @@ export const en = {
   'welcome.declined': 'You are depositing without a welcome bonus.',
   'welcome.saveFailed': 'Could not save your choice',
   'welcome.rules':
-    'While the bonus is active: bets above {maxBet} are refused, you have {days} days to finish the wagering, and a withdrawal cancels the bonus.',
-  'welcome.withdrawTitle': 'Your welcome bonus will be cancelled',
+    'While the bonus is active: only the first {maxBet} of each bet counts toward the wagering, you have {days} days to finish it, and a withdrawal cancels the bonus.',
+  'welcome.withdrawTitle': 'Your active bonus will be cancelled',
   'welcome.withdrawBody':
-    'Withdrawing now cancels your welcome bonus. Your bonus balance and anything won with it are removed. Your real money stays.',
-  'welcome.withdrawConfirm': 'I understand. Cancel my welcome bonus.',
+    'Withdrawing now cancels {bonuses}. The bonus balance and anything won with it are removed. Your real money stays.',
+  'welcome.withdrawConfirm': 'I understand. Cancel my bonus.',
   'welcome.bannerHeadline': 'Up to {percent}% welcome bonus',
   'welcome.bannerBody': 'Pick your bonus at the cashier on your first deposit of {min} or more.',
   'welcome.panelTitle': '{name} · {wagering}× wagering',
@@ -52,13 +52,12 @@ export const en = {
   'welcome.railAmount': 'Up to {percent}%',
   'welcome.railNote': 'Pick it at the cashier',
   'welcome.bannerCta': 'Get your bonus',
-  'welcome.betRefused':
-    'Bet refused. While your welcome bonus is active the most you can bet is {maxBet}.',
   'welcome.gameBarTitle': 'Welcome bonus',
   'welcome.gameCounts': 'This game counts {percent}% toward your wagering',
   'welcome.gameCountsFull': 'This game counts in full toward your wagering',
   'welcome.gameNotCounting': 'This game does not count toward your wagering',
-  'welcome.gameMaxBet': 'Max bet {maxBet}. Bigger bets are refused.',
+  'welcome.termsLink': 'Bonus terms',
+  'welcome.gameMaxBet': 'Max bet {maxBet}: bigger bets are accepted, but only {maxBet} counts.',
   'welcome.tileNone': 'Bonus 0%',
   'welcome.tilePartial': 'Bonus {percent}%',
 } as const;

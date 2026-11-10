@@ -25,6 +25,7 @@ const SocialShortcuts: FC<SocialShortcutsProps> = ({
           colour="text-[#2aabee]"
           onClick={onTelegram}
           first
+          glass
         >
           <TelegramMark size={18} />
         </SocialDot>

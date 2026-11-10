@@ -771,6 +771,7 @@ const ChatPanel: FC<PanelProps> = ({ onClose, room, rooms, onRoomChange }) => {
           </button>
 
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('nav.closeMenu')}

@@ -142,11 +142,11 @@ const Modal: FC<ModalProps> = ({
           aria-labelledby={labelledBy}
           aria-label={labelledBy ? undefined : ariaLabel}
           tabIndex={-1}
-          className={`${surface} w-full outline-none ${
+          className={`${surface} rl-rim-top scrollbar-none flex max-h-[calc(100dvh-48px)] w-full flex-col overflow-y-auto overscroll-contain outline-none ${
             page
-              ? 'max-sm:max-w-none max-sm:!rounded-none max-sm:!border-0 max-sm:!bg-transparent max-sm:![box-shadow:none] max-sm:![backdrop-filter:none] max-sm:![animation:none]'
+              ? 'max-sm:max-h-none max-sm:max-w-none max-sm:overflow-visible max-sm:!rounded-none max-sm:!border-0 max-sm:!bg-transparent max-sm:![box-shadow:none] max-sm:![backdrop-filter:none] max-sm:![animation:none]'
               : phoneSheet === 'fit'
-                ? 'max-sm:max-h-[calc(100dvh-24px)] max-sm:max-w-none max-sm:overflow-y-auto max-sm:!rounded-b-none'
+                ? 'max-sm:max-h-[calc(100dvh-24px)] max-sm:max-w-none max-sm:!rounded-b-none'
                 : phoneSheet
                   ? 'max-sm:flex max-sm:h-[calc(100dvh-140px)] max-sm:max-w-none max-sm:flex-col max-sm:!rounded-b-none'
                   : ''

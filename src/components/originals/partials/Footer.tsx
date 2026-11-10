@@ -15,13 +15,13 @@ const FairplayImg = "/assets/img/Fairplay.png";
 import { BiRectangle } from "react-icons/bi";
 
 // import { usePathname, useSearchParams } from "next/navigation";
-import { setGlobalVolume } from "@/lib/originalsSound";
+import { getGlobalVolume, isSoundMuted, muteSound, setGlobalVolume, unmuteSound } from "@/lib/originalsSound";
 import { toggleFavoriteService } from "@/services/originalsFavorites";
 import { useAuth } from "@/lib/originalsAuthBridge";
 
 
 // ✅ Popup Component
-function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, audioRef, hotkeysEnabled, setHotkeysEnabled, setShowAnimation, ShowAnimation, playFast, setplayFast, gameHotKeys, isAnyModalOpen, setIsAnyModalOpen }) {
+function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, soundOn, setSoundOn, audioRef, hotkeysEnabled, setHotkeysEnabled, setShowAnimation, ShowAnimation, playFast, setplayFast, gameHotKeys, isAnyModalOpen, setIsAnyModalOpen }) {
   const [showGameInfo, setshowGameInfo] = useState(false);
   const [showHotkeyModal, setShowHotkeyModal] = useState(false);
   const handleVolumeChange = (e) => {
@@ -30,8 +30,15 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
     setGlobalVolume(newVolume)
   };
 
+  // Game sound on/off, saved on this device (on unless the player turns it off).
+  const toggleSound = () => {
+    if (soundOn) muteSound();
+    else unmuteSound();
+    setSoundOn(!soundOn);
+  };
+
   let VolumeIcon;
-  if (volume === 0) VolumeIcon = VolumeX;      // muted
+  if (!soundOn || volume === 0) VolumeIcon = VolumeX;      // muted
   else if (volume <= 0.6) VolumeIcon = Volume1; // low
   else if (volume <= 0.7) VolumeIcon = Volume2; // medium
   else VolumeIcon = Volume2;
@@ -41,9 +48,20 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
       {/* Arrow */}
       {/* <div className="absolute -top-2 left-4 w-4 h-4 bg-gray-800 rotate-45"></div> */}
 
+      {/* Sound on/off */}
+      <div
+        role="switch"
+        aria-checked={soundOn}
+        onClick={toggleSound}
+        className={`flex items-center space-x-3  p-2 rounded-full cursor-pointer transition-colors ${soundOn ? 'text-[#F9D028]' : ''}`}
+      >
+        <VolumeIcon size={18} className="" />
+        <span className="">Sound</span>
+      </div>
+
       {/* Volume Control */}
-      <div className="flex items-center space-x-3 p-2 rounded-full cursor-pointer transition-colors">
-        <VolumeIcon size={18} className="text-[#F9D028]" />
+      <div className={`flex items-center space-x-3 p-2 rounded-full transition-colors ${soundOn ? 'cursor-pointer' : 'opacity-40'}`}>
+        <Volume1 size={18} className="text-[#F9D028]" />
         <input
           type="range"
           min={0}
@@ -51,7 +69,9 @@ function ShowSettingPopup({ ShowMAxBetBTN, setShowMAxBetBTN, setVolume, volume, 
           step={0.01}
           value={volume}
           onChange={handleVolumeChange}
-          className="w-full h-2 bg-gray-600 rounded-full appearance-none cursor-pointer slider"
+          disabled={!soundOn}
+          aria-label="Volume"
+          className="w-full h-2 bg-gray-600 rounded-full appearance-none cursor-pointer slider disabled:cursor-not-allowed"
           style={{
             background: `linear-gradient(to right, #F9D028 0%, #F9D028 ${volume * 100}%, #333333 ${volume * 100}%, #333333 100%)`
           }}
@@ -326,6 +346,12 @@ function Footer({ stats, setStats, gameData, setShowMAxBetBTN, ShowMAxBetBTN, ho
 
   const popupRef = useRef(null);
   const [volume, setVolume] = useState(1); // 1 = 100%
+  const [soundOn, setSoundOn] = useState(true);
+  // The saved choice, read after mount so the server and first client render agree.
+  useEffect(() => {
+    setVolume(getGlobalVolume());
+    setSoundOn(!isSoundMuted());
+  }, []);
   const audioRef = useRef(null);
   useEffect(() => {
     function handleClickOutside(event) {
@@ -360,7 +386,7 @@ function Footer({ stats, setStats, gameData, setShowMAxBetBTN, ShowMAxBetBTN, ho
             </IconButton>
             {showSetting && (
               <span ref={popupRef}>
-                <ShowSettingPopup setplayFast={setplayFast} playFast={playFast} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} audioRef={audioRef} setVolume={setVolume} volume={volume} gameHotKeys={gameHotKeys} isAnyModalOpen={isAnyModalOpen} setIsAnyModalOpen={setIsAnyModalOpen} />
+                <ShowSettingPopup setplayFast={setplayFast} playFast={playFast} setHotkeysEnabled={setHotkeysEnabled} hotkeysEnabled={hotkeysEnabled} ShowMAxBetBTN={ShowMAxBetBTN} setShowMAxBetBTN={setShowMAxBetBTN} setShowAnimation={setShowAnimation} ShowAnimation={ShowAnimation} audioRef={audioRef} setVolume={setVolume} volume={volume} soundOn={soundOn} setSoundOn={setSoundOn} gameHotKeys={gameHotKeys} isAnyModalOpen={isAnyModalOpen} setIsAnyModalOpen={setIsAnyModalOpen} />
               </span>
             )}
           </div>

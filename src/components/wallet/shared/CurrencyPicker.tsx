@@ -27,6 +27,7 @@ const CurrencyPicker: FC<Props> = ({ label, currencies, value, onChange }) => {
         value={value}
         onChange={onChange}
         placeholder={t('acct.wallet.selectCurrency')}
+        optionSound="currencySelect"
       />
     </WalletField>
   );

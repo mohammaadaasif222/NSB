@@ -5,7 +5,6 @@ import { useTranslation } from '@/context/I18nContext';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useAuth } from '@/context/AuthContext';
 import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
-import { useAuthModal } from '@/context/AuthModalContext';
 import Glyph from '@/components/player/Glyph';
 import ProfileMenu from '@/components/player/ProfileMenu';
 import GameSearchModal from '@/components/player/GameSearchModal';
@@ -16,7 +15,6 @@ import giftIcon from '@/assets/lobby/tabbar/gift.svg';
 import chatIcon from '@/assets/lobby/tabbar/chat.svg';
 import profileIcon from '@/assets/lobby/tabbar/profile.svg';
 import backIcon from '@/assets/lobby/tabbar/back.svg';
-import headsetIcon from '@/assets/lobby/tabbar/headset.svg';
 import roulette from '@/assets/lobby/tabbar/roulette.webp';
 import ball from '@/assets/lobby/tabbar/ball.webp';
 
@@ -75,7 +73,6 @@ const SectionArt: FC<{ section: Section; className: string }> = ({ section, clas
   />
 );
 
-
 const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
   menuOpen,
   onToggleMenu,
@@ -84,8 +81,7 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
   const { t } = useTranslation();
   const { token } = useAuth();
   const { rewards: rewardsOn } = usePlatformFeatures();
-  const { openIntercom, intercomEnabled, internalChatEnabled } = useSupportChat();
-  const { openLogin } = useAuthModal();
+  const { openIntercom, internalChatEnabled } = useSupportChat();
   const [mode, setMode] = useState<Mode>('bar');
   const [searching, setSearching] = useState(false);
   const lastY = useRef(0);
@@ -96,13 +92,6 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
     if (internalChatEnabled && token) window.dispatchEvent(new Event(CHAT_TOGGLE_EVENT));
     else openIntercom();
   };
-
-  const openSupport = (): void => {
-    if (intercomEnabled) openIntercom();
-    else if (!token) openLogin();
-    else window.dispatchEvent(new Event(CHAT_TOGGLE_EVENT));
-  };
-  const supportOn = intercomEnabled || internalChatEnabled;
 
   const section: Section = pathname.startsWith('/sports') ? 'sports' : 'casino';
   const profile = pathname.startsWith('/profile');
@@ -236,6 +225,7 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
                 <button
                   type="button"
                   onClick={toggle}
+                  data-sound="profileClick"
                   aria-label={t('nav.profile')}
                   title={t('nav.profile')}
                   aria-haspopup="menu"
@@ -282,17 +272,7 @@ const MobileTabBar: FC<{ menuOpen: boolean; onToggleMenu: () => void }> = ({
       >
         {content}
       </nav>
-      {supportOn && !menuOpen && (
-        <button
-          type="button"
-          onClick={openSupport}
-          aria-label={t('nav.liveChat')}
-          title={t('nav.liveChat')}
-          className={`${DISC} fixed bottom-[87px] end-4 z-30 !h-[60px] !w-[60px] lg:hidden [body:has([data-chat-drawer=open])_&]:hidden [body:has([data-profile-sheet])_&]:hidden`}
-        >
-          <Glyph src={headsetIcon.src} className="h-[30px] w-[30px]" />
-        </button>
-      )}
+      {/* Support is the headset in the top bar, on a phone as on desktop. */}
       {searching && <GameSearchModal onClose={() => setSearching(false)} />}
     </>
   );

@@ -23,8 +23,8 @@ type Notice = { kind: 'error' | 'info'; text: string } | null;
 const chip = (selected: boolean): string =>
   `flex h-[calc(var(--u)*32)] shrink-0 items-center justify-center rounded-full px-[calc(var(--u)*15)] text-[length:max(min(11px,12px),calc(var(--u)*12))] leading-[1.67] whitespace-nowrap ${
     selected
-      ? 'rl-chip-active font-medium text-[#ffe779]'
-      : 'rl-chip font-normal text-[#9da2b4] hover:rl-chip-active hover:font-medium hover:text-[#ffe779]'
+      ? 'rl-chip-active font-semibold text-[#ffe779]'
+      : 'rl-chip font-medium text-[#e3e6ee] hover:rl-chip-active hover:font-semibold hover:text-[#ffe779]'
   }`;
 
 const download = (filename: string, text: string): void => {
@@ -115,7 +115,7 @@ const MyBetsView: FC = () => {
       }
       void router.replace({ pathname: router.pathname, query: q }, undefined, { shallow: true });
     },
-    [router],
+    [router]
   );
 
   const exportCsv = async () => {
@@ -141,7 +141,7 @@ const MyBetsView: FC = () => {
       { value: '', label: t('bets.allGames') },
       ...games.map((g) => ({ value: g.slug, label: g.title })),
     ],
-    [games, t],
+    [games, t]
   );
   const sortOptions = useMemo(
     () => [
@@ -149,7 +149,7 @@ const MyBetsView: FC = () => {
       { value: 'payout', label: t('bets.sortPayout') },
       { value: 'multiplier', label: t('bets.sortMultiplier') },
     ],
-    [t],
+    [t]
   );
 
   const filtered = query !== '' || game !== '';
@@ -167,7 +167,17 @@ const MyBetsView: FC = () => {
             disabled={exporting || loading || failed}
             className="rl-chip flex h-[40px] shrink-0 items-center gap-2 rounded-full px-4 text-[14px] font-medium text-[#ffe779] disabled:cursor-not-allowed disabled:opacity-50 lg:h-[calc(var(--u)*40)]"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M12 3v12" />
               <path d="m7 10 5 5 5-5" />
               <path d="M5 21h14" />
@@ -251,7 +261,9 @@ const MyBetsView: FC = () => {
             />
           </div>
 
-          <div className={`mt-5 transition-opacity lg:mt-[calc(var(--u)*14)] ${loading ? 'opacity-60' : ''}`}>
+          <div
+            className={`mt-5 transition-opacity lg:mt-[calc(var(--u)*14)] ${loading ? 'opacity-60' : ''}`}
+          >
             {failed ? (
               <div className="rounded-2xl bg-white/5 px-6 py-12 text-center">
                 <p className="text-[14px] text-[#9da2b4]">{t('bets.loadFailed')}</p>
@@ -273,7 +285,11 @@ const MyBetsView: FC = () => {
           </div>
 
           <div className="mt-[34px] lg:mt-[calc(var(--u)*33)]">
-            <TablePager page={Math.min(page, totalPages)} totalPages={totalPages} onPage={setPage} />
+            <TablePager
+              page={Math.min(page, totalPages)}
+              totalPages={totalPages}
+              onPage={setPage}
+            />
           </div>
         </>
       )}

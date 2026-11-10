@@ -138,6 +138,7 @@ const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void; nested?: boolean
         href={leaf.href}
         role="menuitem"
         onClick={() => onAction(leaf)}
+        data-sound="iconsInsideProfile"
         className={`${ROW} ${surface} ${ROW_IDLE}`}
       >
         {face}
@@ -149,6 +150,7 @@ const LeafRow: FC<{ leaf: Leaf; onAction: (leaf: Leaf) => void; nested?: boolean
       type="button"
       role="menuitem"
       onClick={() => onAction(leaf)}
+      data-sound="iconsInsideProfile"
       className={`${ROW} ${surface} ${ROW_IDLE}`}
     >
       {face}
@@ -168,6 +170,7 @@ const GroupRow: FC<{ group: Group; onAction: (leaf: Leaf) => void }> = ({ group,
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        data-sound="iconsInsideProfile"
         aria-expanded={open}
         aria-controls={listId}
         className={`${ROW} ${open ? SURFACE.open : `${SURFACE.face} ${ROW_IDLE}`}`}
@@ -341,6 +344,7 @@ const ProfileMenu: FC<Props> = ({ placement, trigger, className = '' }) => {
                 <button
                   type="button"
                   role="menuitem"
+                  data-sound="iconsInsideProfile"
                   onClick={() => {
                     setOpen(false);
                     setLogoutOpen(true);

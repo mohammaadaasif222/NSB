@@ -33,6 +33,7 @@ const D24CheckoutModal: FC<Props> = ({ redirectUrl, onClose }) => {
           {/* Close Button - Positioned above iframe */}
           <div className="absolute top-4 right-4 z-50 pointer-events-auto">
             <button
+              data-sound="close"
               onClick={() => {
                 console.log('[D24CheckoutModal] Close button clicked');
                 onClose();

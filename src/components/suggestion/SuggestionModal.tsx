@@ -83,7 +83,6 @@ const SuggestionModal: FC<Props> = ({ open, onClose }) => {
       onClose={close}
       titleId={TITLE_ID}
       title={sent ? t('suggest.thanksTitle') : t('suggest.title')}
-      tone="grey"
       // A phone's title is the design's 16px, 8 under the close's top.
       titleClassName="max-sm:!text-[16px] max-sm:!leading-6"
       // The design's insets, less the rim's pixel: 14 / 24 / 26 on a phone,

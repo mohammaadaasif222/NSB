@@ -4,7 +4,13 @@ import type { PaginationMeta } from './api';
 
 export type RewardType = 'RAKEBACK' | 'CASHBACK' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
 
-export type RewardClaimStatus = 'PENDING' | 'CLAIMABLE' | 'CLAIMED' | 'EXPIRED' | 'ROLLED_OVER';
+export type RewardClaimStatus =
+  | 'PENDING'
+  | 'CLAIMABLE'
+  | 'CLAIMED'
+  | 'EXPIRED'
+  | 'ROLLED_OVER'
+  | 'CARRIED';
 
 /** GET /vip-levels. Rates and shares are percentages. */
 export interface VipTier {
@@ -49,6 +55,13 @@ export interface RewardTypeSummary {
   claimed_total: string;
   rate_percentage: number | null;
   split: RewardSplit | null;
+  unlock: RewardUnlock | null;
+}
+
+export interface RewardUnlock {
+  activity: 'DEPOSIT' | 'WAGER';
+  required: string;
+  done: string;
 }
 
 /** The wallet a claim is paid into: the player's active currency and network. */

@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type FC, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type FC, type ReactNode } from 'react';
 import PlayerSidebar from '@/components/player/PlayerSidebar';
 import PlayerTopBar from '@/components/player/PlayerTopBar';
 import MobileTabBar from '@/components/player/MobileTabBar';
@@ -14,16 +14,15 @@ interface Props {
 }
 
 /**
- * Rail widths, shared with the backdrop through the `--rail` custom property.
- *
- * Only the collapsed width is a number here. The expanded one is
- * `--rail-expanded` in index.css, because it is not one number: 205 is the
- * design's, and a laptop steps it to 180 along with the rest of the chrome —
- * see the laptop-scale note at the top of that file. Keeping it in CSS is what
- * lets a media query reach it; a constant in this module could not be.
+ * Rail widths in design pixels, shared with the backdrop through the `--rail`
+ * custom property. Both scale with `--u`, so a narrower desktop narrows the
+ * rail along with the rest of the chrome.
  */
 const RAIL_COLLAPSED = 76;
-const RAIL_EXPANDED = 260;
+const RAIL_EXPANDED = 280;
+
+/** Where the rail's collapsed state is remembered between visits. */
+const RAIL_COLLAPSED_KEY = 'rl_rail_collapsed';
 
 /* The rail does NOT collapse itself on a laptop. It was tried, and it is the
    wrong lever: sites of this shape keep their navigation open at 1280 and buy
@@ -51,7 +50,27 @@ const RAIL_EXPANDED = 260;
  */
 const PlayerLayout: FC<Props> = ({ children, backdrop }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  // Starts expanded on the server and the first client render, then picks up
+  // the saved state, so hydration always matches.
   const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(RAIL_COLLAPSED_KEY) === '1') setCollapsed(true);
+    } catch {
+      // Storage blocked: the rail just starts expanded.
+    }
+  }, []);
+
+  const toggleCollapsed = (): void =>
+    setCollapsed((was) => {
+      try {
+        window.localStorage.setItem(RAIL_COLLAPSED_KEY, was ? '0' : '1');
+      } catch {
+        // Storage blocked: the choice lasts until the page is left.
+      }
+      return !was;
+    });
 
   const rail = {
     '--rail': `calc(var(--u) * ${collapsed ? RAIL_COLLAPSED : RAIL_EXPANDED})`,
@@ -78,7 +97,7 @@ const PlayerLayout: FC<Props> = ({ children, backdrop }) => {
         <PlayerSidebar open={menuOpen} onClose={() => setMenuOpen(false)} collapsed={collapsed} />
 
         <div className="min-w-0 flex-1">
-          <PlayerTopBar collapsed={collapsed} onToggleCollapsed={() => setCollapsed((v) => !v)} />
+          <PlayerTopBar collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
           {/* Room under the phone's tab bar so the page's foot clears it. */}
           <main className="min-w-0 px-3 pb-28 pt-3 lg:px-0 lg:pb-0 lg:pt-[calc(var(--u)*16)]">
             {children}

@@ -125,7 +125,7 @@ const Fold: FC<{ group: Group; soon: string }> = ({ group, soon }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rl-liquid rounded-[calc(var(--u)*28)]">
+    <div className="rl-liquid rl-modal-rim relative rounded-[calc(var(--u)*28)] [--tw-inset-shadow:var(--rl-drop-depth)]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

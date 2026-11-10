@@ -18,8 +18,9 @@ import { ChatIcon } from '@/components/icons';
  * that with both switched on a player sees two clearly separate things instead
  * of two chat icons side by side.
  *
- * On a phone page with the tab bar it is hidden: the bar brings its own
- * support button (MobileTabBar), shown whichever chat is switched on.
+ * Hidden wherever the player top bar's headset is on the page (it opens
+ * Intercom too), so a player never sees two support buttons at once; the
+ * bubble remains for pages outside the player shell.
  */
 const IntercomLauncher: FC = () => {
   const { intercomEnabled, openIntercom } = useSupportChat();
@@ -42,7 +43,7 @@ const IntercomLauncher: FC = () => {
       // tests; distinguishing them for screen readers needs a second i18n
       // string, which is a copy decision rather than a code one.
       data-testid="intercom-launcher"
-      className="rl-glass rl-glass-hover fixed bottom-5 end-5 z-[90] flex h-13 w-13 items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg shadow-black/40 backdrop-blur transition-[transform,inset-inline-end] duration-300 ease-out hover:scale-105 max-lg:[body:has([data-mobile-tabbar])_&]:hidden max-sm:[body:has([data-chat-drawer=open])_&]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fcd535] sm:bottom-6 sm:end-6 sm:[body:has([data-chat-drawer=open])_&]:end-[calc(var(--chat-drawer-w)+1.5rem)]"
+      className="rl-glass-btn rl-glass-hover fixed bottom-23 end-5 z-[90] flex h-13 w-13 items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg shadow-black/40 backdrop-blur transition-[transform,inset-inline-end] duration-300 ease-out hover:scale-105 [body:has([data-support-headset])_&]:hidden max-sm:[body:has([data-chat-drawer=open])_&]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fcd535] sm:bottom-6 sm:end-6 sm:[body:has([data-chat-drawer=open])_&]:end-[calc(var(--chat-drawer-w)+1.5rem)]"
     >
       <ChatIcon size={22} />
     </button>

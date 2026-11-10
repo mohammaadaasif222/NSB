@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import Link from 'next/link';
 
 import BonusGlassCard, { type BonusCardAction } from '@/components/bonus/BonusGlassCard';
 import { useTranslation } from '@/context/I18nContext';
@@ -16,6 +17,7 @@ interface Props {
   busyId: string | null;
   onClaim: (bonusId: string) => void;
   onDeposit?: () => void;
+  onOptIn?: (bonusId: string) => void;
 }
 
 /**
@@ -32,7 +34,7 @@ interface Props {
  * spend — so it gets it, rather than the list of every term that the design
  * leaves no room for.
  */
-const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit }) => {
+const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit, onOptIn }) => {
   const { t } = useTranslation();
 
   const wagering = Number(bonus.wagering_multiplier ?? 0);
@@ -53,22 +55,53 @@ const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit
           ? { label: t('bonus.youGet'), value: `${bonus.match_percentage}%` }
           : { label: t('bonus.youGet'), value: '—' };
 
-  const action: BonusCardAction = bonus.claimable
-    ? {
-        kind: 'gold',
-        label: t('bonus.claim'),
-        busy: busyId === bonus.id,
-        disabled: busyId !== null,
-        onClick: () => onClaim(bonus.id),
-      }
-    : bonus.needs_deposit && onDeposit
-      ? { kind: 'ghost', label: t('bonus.needsDeposit'), onClick: onDeposit }
-      : {
-          kind: 'status',
-          label: bonus.needs_deposit
-            ? t('bonus.needsDeposit')
-            : (bonus.reason ?? t('bonus.unavailable')),
-        };
+  const optedIn = bonus.opt_in?.status === 'OPTED_IN';
+  const optInAction: BonusCardAction | null =
+    bonus.claim_mode === 'OPT_IN' && onOptIn
+      ? optedIn
+        ? { kind: 'status', label: t('bonus.optedIn') }
+        : {
+            kind: 'gold',
+            label: t('bonus.optIn'),
+            busy: busyId === bonus.id,
+            disabled: busyId !== null,
+            onClick: () => onOptIn(bonus.id),
+          }
+      : null;
+  const blocked = (bonus.blocked_products ?? [])
+    .map((product) => t(`bonus.product.${product}`))
+    .join(', ');
+  const footnote = (
+    <>
+      {blocked && <span>{t('bonus.blockedProducts', { products: blocked })} · </span>}
+      {(bonus.provider_shares ?? []).length > 0 && <span>{t('bonus.providerShares')} · </span>}
+      <Link
+        href={`/bonus-terms/${bonus.id}`}
+        className="underline underline-offset-2 hover:text-white"
+      >
+        {t('bonus.termsLink')}
+      </Link>
+    </>
+  );
+
+  const action: BonusCardAction =
+    optInAction ??
+    (bonus.claimable
+      ? {
+          kind: 'gold',
+          label: t('bonus.claim'),
+          busy: busyId === bonus.id,
+          disabled: busyId !== null,
+          onClick: () => onClaim(bonus.id),
+        }
+      : bonus.needs_deposit && onDeposit
+        ? { kind: 'ghost', label: t('bonus.needsDeposit'), onClick: onDeposit }
+        : {
+            kind: 'status',
+            label: bonus.needs_deposit
+              ? t('bonus.needsDeposit')
+              : (bonus.reason ?? t('bonus.unavailable')),
+          });
 
   return (
     <BonusGlassCard
@@ -80,6 +113,7 @@ const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit
       }}
       worth={worth}
       action={action}
+      footnote={footnote}
     />
   );
 };

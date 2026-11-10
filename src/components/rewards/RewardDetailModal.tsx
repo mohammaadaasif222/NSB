@@ -91,7 +91,7 @@ const RewardDetailModal: FC<Props> = ({ type, summary, currency, onClose }) => {
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="rl-modal-glass flex max-h-[92vh] w-full max-w-[520px] flex-col p-5 outline-none sm:p-7"
+        className="rl-modal-glass flex max-h-[92dvh] w-full max-w-[520px] flex-col p-5 outline-none sm:p-7"
       >
         <div className="flex shrink-0 items-start gap-3">
           <span className={ICON_WELL(false)} aria-hidden="true">
@@ -107,10 +107,11 @@ const RewardDetailModal: FC<Props> = ({ type, summary, currency, onClose }) => {
             <p className={`mt-0.5 ${LABEL}`}>{t(detail.subtitleKey)}</p>
           </div>
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('common.close')}
-            className="rl-chip flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
+            className="rl-circle-btn flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
             <CloseIcon size={16} />
           </button>

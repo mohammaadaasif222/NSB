@@ -39,9 +39,30 @@ const kenoAutoPick = "/assets/sound/keno autopick play for each box.ogg";
 const kenoClearTable = "/assets/sound/keno clear table.ogg";
 const kenoGemOpen = "/assets/sound/keno gem open in box.ogg";
 const kenoNormalReveal = "/assets/sound/keno normal number revealing.ogg";
-let globalVolume = 1; // 0 = muted, 1 = full
+// The player's choice, kept on this device. Sound is on unless they switched
+// it off in the game's settings; it is separate from the site's interface
+// sounds, which start off.
+const MUTE_KEY = 'originals_sound'; // 'off' = muted
+const VOLUME_KEY = 'originals_volume';
+const readStored = (key) => {
+  try {
+    return typeof window === 'undefined' ? null : window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const writeStored = (key, value) => {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Private mode or blocked storage: the choice lasts for this page only.
+  }
+};
+const storedVolume = parseFloat(readStored(VOLUME_KEY) ?? '');
 
-let isMuted = false;
+let globalVolume = Number.isFinite(storedVolume) ? Math.max(0, Math.min(1, storedVolume)) : 1; // 0 = muted, 1 = full
+
+let isMuted = readStored(MUTE_KEY) === 'off';
 let soundQueue = [];
 let isPlayingQueue = false;
 let soundCooldown = {};
@@ -54,7 +75,9 @@ const activeLoops = {}; // store active loop sources by id
 
 export const setGlobalVolume = (value) => {
   globalVolume = Math.max(0, Math.min(1, value)); // clamp between 0-1
+  writeStored(VOLUME_KEY, String(globalVolume));
 };
+export const getGlobalVolume = () => globalVolume;
 
 
 // 🔹 Preload all sounds into memory
@@ -525,11 +548,15 @@ export const playMultipleSounds = (sounds) => {
 // ---- Mute controls ----
 export const muteSound = () => {
   isMuted = true;
+  writeStored(MUTE_KEY, 'off');
   stopAllSounds();
 };
-export const unmuteSound = () => { isMuted = false; };
+export const unmuteSound = () => {
+  isMuted = false;
+  writeStored(MUTE_KEY, 'on');
+};
 export const toggleMute = () => {
-  isMuted = !isMuted;
-  if (isMuted) stopAllSounds();
+  if (isMuted) unmuteSound();
+  else muteSound();
 };
 export const isSoundMuted = () => isMuted;

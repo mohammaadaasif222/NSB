@@ -76,8 +76,8 @@ const BlogsPage: FC = () => {
               aria-pressed={category === null}
               className={`${CHIP} ${
                 category === null
-                  ? 'rl-chip-active font-rubik font-medium text-[#ffe779]'
-                  : 'rl-chip text-[#9da2b4] hover:text-[#f0f1f5]'
+                  ? 'rl-chip-active font-rubik font-semibold text-[#ffe779]'
+                  : 'rl-chip font-medium text-[#e3e6ee] hover:text-white'
               }`}
             >
               {t('blogs.all')}
@@ -91,8 +91,8 @@ const BlogsPage: FC = () => {
                 aria-pressed={category === c}
                 className={`${CHIP} ${
                   category === c
-                    ? 'rl-chip-active font-rubik font-medium text-[#ffe779]'
-                    : 'rl-chip text-[#9da2b4] hover:text-[#f0f1f5]'
+                    ? 'rl-chip-active font-rubik font-semibold text-[#ffe779]'
+                    : 'rl-chip font-medium text-[#e3e6ee] hover:text-white'
                 }`}
               >
                 {t(BLOG_CATEGORY_LABELS[c])}

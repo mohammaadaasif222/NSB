@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FC } from 'react';
-import { ShieldCheck, X } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import ButtonLoader from '@/components/ButtonLoader';
+import { CloseIcon } from '@/components/icons';
+import CircleIconButton from '@/components/ui/CircleIconButton';
 import { useTranslation } from '@/context/I18nContext';
 import type { TranslationKey } from '@/i18n/locales';
 import type { SeonStepUpChallenge } from '@/lib/seon-guard';
@@ -63,6 +65,14 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
     }
   }, [error]);
 
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
   // Escape cancels, like every other dialog in the app.
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -90,15 +100,16 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-[100] flex items-end justify-center p-0 sm:items-center sm:p-4"
       role="presentation"
     >
+      <div aria-hidden className="rl-modal-overlay pointer-events-none fixed inset-0" />
       {/* Narrower than the 581 the other dialogs take — this one holds a
           sentence and six digits, and a wide card around that reads as more
           ceremony than a security prompt should have. Everything else is the
           design's: the glass, the 34 radius, the chip, the stacked actions. */}
       <div
-        className="rl-modal-glass w-full max-w-[420px] p-5 sm:p-7"
+        className="rl-modal-card rl-modal-rim rl-rim-top scrollbar-none max-h-[calc(100dvh-24px)] w-full max-w-[420px] overflow-y-auto overscroll-contain p-5 max-sm:!rounded-b-none max-sm:!rounded-t-[34px] sm:max-h-[calc(100dvh-32px)] sm:p-7"
         role="dialog"
         aria-modal="true"
         aria-labelledby="stepup-title"
@@ -112,15 +123,15 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
               {t('acct.stepup.title')}
             </h2>
           </div>
-          <button
-            type="button"
+          <CircleIconButton
+            data-sound="close"
+            label={t('acct.stepup.cancelAria')}
             onClick={onCancel}
             disabled={submitting}
-            aria-label={t('acct.stepup.cancelAria')}
-            className="rl-chip -mt-1 flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5] disabled:opacity-40"
+            className="-mt-1 max-sm:h-12 max-sm:w-12 disabled:opacity-40"
           >
-            <X size={16} />
-          </button>
+            <CloseIcon size={33} strokeWidth={1.45} />
+          </CircleIconButton>
         </div>
 
         <p className="mt-4 text-sm leading-6 text-[#9da2b4]">
@@ -163,7 +174,7 @@ const SeonStepUpModal: FC<Props> = ({ challenge, error, submitting, onSubmit, on
           type="button"
           onClick={onCancel}
           disabled={submitting}
-          className={`${BUTTON} mt-2.5 bg-white/10 text-[#f0f1f5] hover:bg-white/15 disabled:opacity-40`}
+          className={`${BUTTON} rl-option mt-2.5 disabled:opacity-40`}
         >
           {t('common.cancel')}
         </button>

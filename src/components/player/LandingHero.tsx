@@ -140,9 +140,12 @@ const ProviderButton: FC<{
   label: string;
   onClick: () => void;
   disabled?: boolean;
-}> = ({ icon, label, onClick, disabled }) => (
+  /** Sound key (`data-sound`); the generic click if unset. */
+  sound?: string;
+}> = ({ icon, label, onClick, disabled, sound }) => (
   <button
     type="button"
+    data-sound={sound}
     onClick={onClick}
     disabled={disabled}
     className="flex h-[calc(var(--u)*64)] flex-col items-center justify-center rounded-[calc(var(--u)*34)] bg-[#13171f] px-[calc(var(--u)*8)] transition-colors hover:bg-[#1a1f29] disabled:opacity-60 lg:h-[calc(var(--u)*99)] lg:gap-[calc(var(--u)*8)]"
@@ -173,8 +176,9 @@ const SocialDisc: FC<{
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`rl-glass-btn relative flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full transition-[transform,filter] [--rl-btn-base:#121317] hover:z-10 hover:-translate-y-0.5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] ${first ? '' : '-ms-[calc(var(--u)*14.5)] lg:-ms-[calc(var(--u)*12)]'
-      }`}
+    className={`rl-glass-disc relative flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full transition-[transform,filter] hover:z-10 hover:-translate-y-0.5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] ${
+      first ? '' : '-ms-[calc(var(--u)*14.5)] lg:-ms-[calc(var(--u)*12)]'
+    }`}
   >
     <img
       src={icon.src}
@@ -270,6 +274,7 @@ const SignupTeaser: FC<{ totalRegistrations: number | null }> = ({ totalRegistra
           icon={gmailIcon}
           label={t('lobby.hero.continueWith', { method: t('auth.methodGmail') })}
           onClick={() => google.signIn()}
+          sound="gmailMobileIconClick"
           disabled={google.loading}
         />
         {/* The design draws an envelope here: the e-mail signup flow, not a
@@ -392,11 +397,10 @@ const SectionCard: FC<{
       />
     </span>
 
-    <span className={`relative flex  px-[calc(var(--u)*16)]  lg:px-[4.06cqw] 
-    ${subtitle
-        ? "block pt-[calc(var(--u)*10)] lg:pt-[2.49cqw]"
-        : "h-full items-center"
-      }`}>
+    <span
+      className={`relative flex  px-[calc(var(--u)*16)]  lg:px-[4.06cqw] 
+    ${subtitle ? 'block pt-[calc(var(--u)*10)] lg:pt-[2.49cqw]' : 'h-full items-center'}`}
+    >
       <span className="block text-[length:max(min(11px,18px),calc(var(--u)*18))] font-medium leading-[calc(var(--u)*24)] text-white lg:text-[max(20px,4.19cqw)] lg:font-bold lg:leading-[1.25] lg:tracking-[-0.02em] lg:text-[#f2f5f9]">
         {title}
       </span>

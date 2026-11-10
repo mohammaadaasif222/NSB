@@ -1,6 +1,7 @@
 import { useMemo, useState, type FC } from 'react';
 
 import PlayerLayout from '@/layout/PlayerLayout';
+import PageGlow from '@/components/player/PageGlow';
 import LobbyBanner from '@/components/player/LobbyBanner';
 import SiteFooter from '@/components/player/SiteFooter';
 import { SportsShelf } from '@/components/player/SportsRow';
@@ -46,7 +47,7 @@ const SampleLobby: FC = () => {
   const empty = Object.values(sections).every((list) => list.length === 0);
 
   return (
-    <PlayerLayout>
+    <PlayerLayout backdrop={<PageGlow tone="grey" />}>
       <Seo title={t('nav.sports')} />
 
       <div className="mx-auto max-w-[1548px] px-1 pt-1 lg:max-w-[calc(var(--u)*1548)] lg:px-0 lg:pt-[calc(var(--u)*4)]">

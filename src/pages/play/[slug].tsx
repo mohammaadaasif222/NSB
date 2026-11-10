@@ -573,7 +573,11 @@ const PlayRoute: FC<Props> = (props) => {
     const OriginalsComponent = getOriginalsComponent(g.slug)!;
     return (
       <PlayerLayout>
-        <OriginalsComponent />
+        {/* The game plays its own sounds (on by default, switched in its
+            settings), so the site's interface clicks stay out of it. */}
+        <div data-sound="off" className="contents">
+          <OriginalsComponent />
+        </div>
       </PlayerLayout>
     );
   }

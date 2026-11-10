@@ -3,6 +3,7 @@ import type { FC, ReactNode } from 'react';
 import PlayerLayout from '@/layout/PlayerLayout';
 import HomeHero from '@/components/player/HomeHero';
 import LandingHero, { LandingBackdrop } from '@/components/player/LandingHero';
+import PageGlow from '@/components/player/PageGlow';
 import GameBrowser, { type ShelfInsert } from '@/components/player/GameBrowser';
 import LobbyBanner from '@/components/player/LobbyBanner';
 import CrashPreview from '@/components/player/CrashPreview';
@@ -173,7 +174,7 @@ const Lobby: FC<Props> = ({
       case 'streamers':
         return <StreamersRow streams={streams} title={title} />;
       case 'recent-winners':
-        return <RecentWinners tabs={player ? 'player' : 'landing'} title={title} />;
+        return <RecentWinners title={title} />;
       default:
         return null;
     }
@@ -195,7 +196,11 @@ const Lobby: FC<Props> = ({
   );
 
   return (
-    <PlayerLayout backdrop={player ? undefined : <LandingBackdrop />}>
+    <PlayerLayout
+      backdrop={
+        variant === 'casino' ? <PageGlow tone="grey" /> : player ? undefined : <LandingBackdrop />
+      }
+    >
       <Seo {...seo} jsonLd={jsonLd} />
 
       {/* The design's 1548px content column, centred in the space beside the
@@ -234,9 +239,9 @@ const Lobby: FC<Props> = ({
           </>
         )}
 
-        {casino && <RecentWinners tabs="player" />}
+        {casino && <RecentWinners />}
         <FaqAccordion items={faqs} />
-        <SiteFooter glow={variant === 'home'} />
+        <SiteFooter glow={variant === 'home' && !player} />
       </div>
     </PlayerLayout>
   );

@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
+import { pageWindow } from '@/components/player/PageNumbers';
 
 interface Props {
   page: number;
@@ -57,18 +58,7 @@ const TablePager: FC<Props> = ({ page, totalPages, onPage }) => {
       </button>
 
       <div className="flex items-center gap-4 lg:contents">
-        {pagerSlots(page, totalPages).map((n) => {
-          if (typeof n !== 'number') {
-            return (
-              <span
-                key={n}
-                aria-hidden="true"
-                className={`${slot} hidden items-center justify-center text-white/50 lg:inline-flex`}
-              >
-                …
-              </span>
-            );
-          }
+        {pageWindow(page, totalPages).map((n) => {
           const current = n === page;
           return (
             <button

@@ -15,7 +15,7 @@ import { WALLET_INPUT, WALLET_PILL } from '../shared/WalletField';
  */
 const RedeemTab: FC = () => {
   const { t } = useTranslation();
-  const { claim, busyId } = useBonuses();
+  const { redeem, busyId } = useBonuses();
   const [code, setCode] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const couponCode = code.trim().toUpperCase();
@@ -29,7 +29,7 @@ const RedeemTab: FC = () => {
       inputRef.current?.focus();
       return;
     }
-    if (await claim({ couponCode })) setCode('');
+    if (await redeem(couponCode, 'CASHIER')) setCode('');
   };
 
   return (

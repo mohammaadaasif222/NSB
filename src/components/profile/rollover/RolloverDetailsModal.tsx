@@ -86,7 +86,7 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
-        className="rl-modal-glass flex max-h-[96vh] w-full max-w-[520px] flex-col p-5 outline-none sm:max-h-[92vh] sm:p-7"
+        className="rl-modal-glass flex max-h-[96dvh] w-full max-w-[520px] flex-col p-5 outline-none sm:max-h-[92dvh] sm:p-7"
       >
         <div className="flex shrink-0 items-start">
           <h2
@@ -96,10 +96,11 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
             {t('roll.detail.title')}
           </h2>
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('roll.detail.close')}
-            className="rl-chip -mt-1 flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
+            className="rl-circle-btn -mt-1 flex h-10 w-10 shrink-0 items-center justify-center text-[#f0f1f5]"
           >
             <CloseIcon size={16} />
           </button>
@@ -144,7 +145,9 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
                 <Row
                   label={t('roll.detail.depositValue')}
                   value={
-                    shown.deposit.amount_usd ? formatCurrencyDisplay(shown.deposit.amount_usd, 'bonus.rollover') : '—'
+                    shown.deposit.amount_usd
+                      ? formatCurrencyDisplay(shown.deposit.amount_usd, 'bonus.rollover')
+                      : '—'
                   }
                 />
               </>
@@ -173,6 +176,9 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
             <Row label={t('roll.detail.opened')} value={formatMoment(shown.created_at)} />
             {shown.completed_at && (
               <Row label={t('roll.detail.cleared')} value={formatMoment(shown.completed_at)} />
+            )}
+            {shown.closed_reason === 'BALANCE_LOST' && (
+              <Row label={t('roll.table.status')} value={t('roll.balanceLost')} />
             )}
             {shown.bonus?.status === 'ACTIVE' && shown.bonus.expires_at && (
               <Row label={t('roll.detail.expires')} value={formatMoment(shown.bonus.expires_at)} />
@@ -210,7 +216,8 @@ const RolloverDetailsModal: FC<Props> = ({ rollover, locale, onClose }) => {
                     {formatMoment(progression.created_at)}
                   </span>
                   <span className="text-[12px] text-white/72">
-                    {t('roll.detail.betStake')} {formatCurrencyDisplay(progression.bet_amount, 'bonus.rollover')}
+                    {t('roll.detail.betStake')}{' '}
+                    {formatCurrencyDisplay(progression.bet_amount, 'bonus.rollover')}
                     {progression.wagering_progress !== progression.bet_amount && (
                       <span className="ml-2 text-[#ffe779]">
                         {t('roll.detail.betCounted')}{' '}

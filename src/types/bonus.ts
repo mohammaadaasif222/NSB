@@ -40,6 +40,18 @@ export interface AvailableBonus {
   reason: string | null;
   /** True when claiming needs a qualifying deposit this player does not have. */
   needs_deposit: boolean;
+  claim_by?: string | null;
+  claim_mode?: 'AUTOMATIC' | 'ON_CLAIM' | 'OPT_IN';
+  opt_in?: { status: 'OPTED_IN' | 'OPTED_OUT'; expires_at: string | null } | null;
+  provider_shares?: { provider: string; share: number }[];
+  blocked_products?: ('CASINO' | 'ORIGINALS' | 'SPORTSBOOK')[];
+}
+
+export interface RedeemResult {
+  kind: 'BONUS';
+  bonus_id: string;
+  award_id: string | null;
+  opted_in: boolean;
 }
 
 /** One award the player holds, or once held. */
@@ -203,7 +215,12 @@ export interface WelcomeOfferOption {
   max_bonus_amount: string | null;
   wagering_multiplier: string;
   max_convertible: string | null;
+  texts: DisplayTexts<'title' | 'details'>;
 }
+
+export type DisplayTexts<F extends string> = Partial<Record<string, Partial<Record<F, string>>>>;
+
+export type WelcomeOfferTextField = 'title' | 'hint' | 'banner_headline' | 'banner_body';
 
 export type WelcomeChoiceStatus = 'PENDING' | 'DECLINED' | 'APPLIED';
 
@@ -221,6 +238,9 @@ export interface WelcomeOffer {
   locked: boolean;
   award: UserBonus | null;
   contributions: WelcomeContributions | null;
+  texts: DisplayTexts<WelcomeOfferTextField>;
+  terms_slug: string | null;
+  withdrawal_cancels: string[];
 }
 
 export interface WelcomeContributions {

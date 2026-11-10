@@ -103,7 +103,13 @@ const LoginFormStep: FC<LoginFormStepProps> = ({
         </button>
       </div>
 
-      <Button type="submit" fullWidth loading={submitting} className="max-sm:!mt-[10px] sm:!mt-6">
+      <Button
+        type="submit"
+        data-sound="loginYellow"
+        fullWidth
+        loading={submitting}
+        className="max-sm:!mt-[10px] sm:!mt-6"
+      >
         {t('loginModal.submit')}
       </Button>
 

@@ -74,7 +74,7 @@ const ChatReportDialog: FC<Props> = ({ message, onClose, onSubmit, onReported })
         aria-modal="true"
         aria-label={t('chat.reportTitle')}
         onSubmit={submit}
-        className="w-full rounded-2xl border border-slate-700 bg-[#1a2330] p-4 shadow-2xl"
+        className="scrollbar-none max-h-[calc(100dvh-32px)] w-full overflow-y-auto overscroll-contain rounded-2xl border border-slate-700 bg-[#1a2330] p-4 shadow-2xl"
       >
         <div className="flex items-center justify-between gap-2">
           <h3 className="flex items-center gap-2 text-[15px] font-bold text-white">
@@ -82,6 +82,7 @@ const ChatReportDialog: FC<Props> = ({ message, onClose, onSubmit, onReported })
             {t('chat.reportTitle')}
           </h3>
           <button
+            data-sound="close"
             type="button"
             onClick={onClose}
             aria-label={t('common.close')}

@@ -33,6 +33,14 @@ const RequestStatsModal: FC<Props> = ({ range, onClose }) => {
   // The old profile modals have no key handling; Escape is expected of a
   // dialog and costs one listener.
   useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         onClose();
@@ -64,8 +72,12 @@ const RequestStatsModal: FC<Props> = ({ range, onClose }) => {
         toast.error(res?.message || t('stats.sendFailed'));
       }
     } catch (err) {
-      setError(fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed'));
-      toast.error(fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed'));
+      setError(
+        fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed')
+      );
+      toast.error(
+        fieldErrorMessage(err) || (err as { message?: string })?.message || t('stats.sendFailed')
+      );
     } finally {
       // Open on a failure, so the error shows beside the email and it can be retried.
       setSending(false);
@@ -79,13 +91,14 @@ const RequestStatsModal: FC<Props> = ({ range, onClose }) => {
       role="presentation"
     >
       <div
-        className="rl-menu relative w-full max-w-md rounded-[calc(var(--u)*24)] p-[calc(var(--u)*24)] sm:p-[calc(var(--u)*28)]"
+        className="rl-menu scrollbar-none relative max-h-[calc(100dvh-32px)] w-full max-w-md overflow-y-auto overscroll-contain rounded-[calc(var(--u)*24)] p-[calc(var(--u)*24)] sm:p-[calc(var(--u)*28)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={t('stats.requestStatistics')}
       >
         <button
+          data-sound="close"
           type="button"
           onClick={onClose}
           aria-label={t('stats.close')}

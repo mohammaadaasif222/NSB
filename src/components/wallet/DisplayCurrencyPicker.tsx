@@ -57,6 +57,7 @@ const DisplayCurrencyPicker: FC<Props> = ({ currencies, value, onPick, onBack })
                 role="option"
                 aria-selected={on}
                 onClick={() => onPick(c.code)}
+                data-sound="currencySelect"
                 title={c.name}
                 className={`flex h-[46px] w-full items-center gap-1.5 rounded-full border border-white/20 px-4 text-[14px] leading-5 text-[#f0f1f5] transition-colors lg:h-[calc(var(--u)*46)] lg:gap-[calc(var(--u)*6)] lg:px-[calc(var(--u)*16)] lg:text-[length:max(11px,calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)] ${
                   on ? 'bg-white/[0.16]' : 'bg-white/5 hover:bg-white/10'

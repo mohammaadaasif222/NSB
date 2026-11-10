@@ -21,6 +21,8 @@ interface Props<V extends string> {
   placeholder: string;
   /** Grey text before the chevron — the design's "USD" / "$0.00". */
   trailing?: ReactNode;
+  /** Sound key for choosing an option (`data-sound`); the generic click if unset. */
+  optionSound?: string;
 }
 
 /**
@@ -35,6 +37,7 @@ const WalletSelect = <V extends string>({
   onChange,
   placeholder,
   trailing,
+  optionSound,
 }: Props<V>) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -89,6 +92,7 @@ const WalletSelect = <V extends string>({
                 type="button"
                 role="option"
                 aria-selected={on}
+                data-sound={optionSound}
                 onClick={() => {
                   onChange(o.value);
                   setOpen(false);

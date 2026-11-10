@@ -1,22 +1,56 @@
-import type { FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import type { StaticImageData } from 'next/image';
 import alice from '@/assets/lobby/rail/winner-alice.webp';
 import mark from '@/assets/lobby/rail/winner-mark.webp';
 import rey from '@/assets/lobby/rail/winner-rey.webp';
+import zeus from '@/assets/profile/avatars/zeus.webp';
+import lion from '@/assets/profile/avatars/lion.webp';
+import dragon from '@/assets/profile/avatars/dragon.webp';
+import pharaoh from '@/assets/profile/avatars/pharaoh.webp';
+import { fetchTopWins, type TopWin } from '@/services/topWins';
+import { formatAmount, withCurrency } from '@/utils/money';
 
 /**
- * Illustrative "big winners" chips — in the top bar, the phone hero's strip
- * and the signed-in lobby's row.
+ * The "top wins" chips — in the top bar, the phone hero's strip and the
+ * signed-in lobby's row.
  *
- * There is no leaderboard API yet, so this is static sample data rather than a
- * live feed — purely decorative chrome until a real endpoint exists. Names,
- * amounts and avatars are the design's placeholders, not real accounts.
+ * Real settled wins of players on the platform (GET /top-wins), which
+ * operators load and curate on the console's Top wins screen. Names come
+ * masked; while there are no wins the strip is not drawn.
  */
-export const SAMPLE_WINNERS: { name: string; amount: string; avatar: StaticImageData }[] = [
-  { name: 'Alice Twister', amount: '$15,750', avatar: alice },
-  { name: 'Mark Jenga', amount: '$12,401', avatar: mark },
-  { name: 'Rey Solstice', amount: '$8,930', avatar: rey },
-];
+
+/** Players who never uploaded a picture keep one picked from their name. */
+const AVATARS: StaticImageData[] = [alice, mark, rey, zeus, lion, dragon, pharaoh];
+
+const avatarFor = (win: TopWin): string => {
+  if (win.avatar_url) return win.avatar_url;
+  let hash = 0;
+  for (const char of win.player + win.id) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return AVATARS[hash % AVATARS.length].src;
+};
+
+/**
+ * The strips on a page (the top bar's and the lobby's) mount together and
+ * share the one read in flight; the next page asks again (the backend caches).
+ */
+let inFlight: Promise<TopWin[] | null> | null = null;
+
+const useTopWins = (): TopWin[] => {
+  const [wins, setWins] = useState<TopWin[]>([]);
+  useEffect(() => {
+    let alive = true;
+    const read = (inFlight ??= fetchTopWins().finally(() => {
+      inFlight = null;
+    }));
+    void read.then((result) => {
+      if (alive && result) setWins(result);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return wins;
+};
 
 /**
  * The two sizes the designs draw a chip at: `bar` — 42px, 16px type, the
@@ -39,31 +73,38 @@ const SIZES = {
 
 type ChipSize = keyof typeof SIZES;
 
-/** One winner: avatar, name, amount, on the design's #13171f pill. */
-const Chip: FC<(typeof SAMPLE_WINNERS)[number] & { size: ChipSize }> = ({
-  name,
-  amount,
-  avatar,
-  size,
-}) => {
+/** One winner: avatar, masked name, amount, on the design's #13171f pill. */
+const Chip: FC<{ win: TopWin; size: ChipSize }> = ({ win, size }) => {
   const s = SIZES[size];
   return (
-    <span className={`inline-flex flex-shrink-0 items-center rounded-full bg-[#13171f] ${s.chip}`}>
+    <span
+      className={`inline-flex flex-shrink-0 items-center rounded-full bg-[#13171f] ${s.chip}`}
+      title={win.game.title}
+    >
       <img
-        src={avatar.src}
+        src={avatarFor(win)}
         alt=""
         className={`rounded-full bg-[#464e61] object-cover ${s.avatar}`}
       />
-      <span className={`whitespace-nowrap text-[#9da2b4] ${s.name}`}>{name}</span>
-      <span className={`whitespace-nowrap font-medium tabular-nums text-[#f0f1f5] ${s.amount}`}>
-        {amount}
+      <span className={`whitespace-nowrap font-medium text-[#c9cdd9] ${s.name}`}>{win.player}</span>
+      <span className={`whitespace-nowrap font-semibold tabular-nums text-white ${s.amount}`}>
+        {withCurrency(formatAmount(win.payout_usd, 2, 'casino.bets'), 'USD')}
       </span>
     </span>
   );
 };
 
-/** Enough chips to run past the edge of the widest row the designs draw. */
-const ROW = Array.from({ length: 8 }, (_, i) => ({ ...SAMPLE_WINNERS[i % 3], id: `w${i}` }));
+/**
+ * Enough chips to run past the edge of the widest row the designs draw: a
+ * short list repeats until the row is this long.
+ */
+const MIN_CHIPS = 8;
+
+const rowOf = (wins: TopWin[]): { key: string; win: TopWin }[] =>
+  Array.from({ length: Math.max(wins.length, MIN_CHIPS) }, (_, i) => ({
+    key: `${wins[i % wins.length].id}-${i}`,
+    win: wins[i % wins.length],
+  }));
 
 /**
  * A row of chips that runs on its own, like a live feed.
@@ -79,23 +120,28 @@ const Marquee: FC<{ size: ChipSize; gap: string; seconds: number; className?: st
   gap,
   seconds,
   className = '',
-}) => (
-  <div
-    className={`rl-marquee min-w-0 [mask-image:linear-gradient(to_right,transparent_0,#000_16px,#000_calc(100%-16px),transparent_100%)] ${className}`}
-    style={{ ['--rl-marquee-duration' as string]: `${seconds}s` }}
-    aria-hidden="true"
-  >
-    <div className="rl-marquee-track flex w-max">
-      {[0, 1].map((copy) => (
-        <div key={copy} className={`flex ${gap}`} style={{ paddingInlineEnd: 'var(--rl-gap)' }}>
-          {ROW.map((w) => (
-            <Chip key={w.id} {...w} size={size} />
-          ))}
-        </div>
-      ))}
+}) => {
+  const wins = useTopWins();
+  if (wins.length === 0) return null;
+  const row = rowOf(wins);
+  return (
+    <div
+      className={`rl-marquee min-w-0 [mask-image:linear-gradient(to_right,transparent_0,#000_16px,#000_calc(100%-16px),transparent_100%)] ${className}`}
+      style={{ ['--rl-marquee-duration' as string]: `${seconds}s` }}
+      aria-hidden="true"
+    >
+      <div className="rl-marquee-track flex w-max">
+        {[0, 1].map((copy) => (
+          <div key={copy} className={`flex ${gap}`} style={{ paddingInlineEnd: 'var(--rl-gap)' }}>
+            {row.map(({ key, win }) => (
+              <Chip key={key} win={win} size={size} />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /**
  * The phone and tablet row: the design's small 26px chips, 8 apart, running
@@ -117,19 +163,23 @@ const TopWinnersTicker: FC = () => (
  * running edge to edge under the bar, the desktop's 42px chips across the
  * content column.
  */
-export const WinnersStrip: FC = () => (
-  <div>
-    {/* Phones and tablets get the same running row the signed-out hero does. */}
-    <div className="lg:hidden">
-      <WinnersRow />
+export const WinnersStrip: FC = () => {
+  // No wins: no row, rather than an empty slot in the page's spacing.
+  if (useTopWins().length === 0) return null;
+  return (
+    <div>
+      {/* Phones and tablets get the same running row the signed-out hero does. */}
+      <div className="lg:hidden">
+        <WinnersRow />
+      </div>
+      <Marquee
+        size="bar"
+        gap="gap-[var(--rl-gap)] [--rl-gap:calc(var(--u)*10)]"
+        seconds={40}
+        className="hidden lg:block"
+      />
     </div>
-    <Marquee
-      size="bar"
-      gap="gap-[var(--rl-gap)] [--rl-gap:calc(var(--u)*10)]"
-      seconds={40}
-      className="hidden lg:block"
-    />
-  </div>
-);
+  );
+};
 
 export default TopWinnersTicker;

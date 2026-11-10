@@ -152,6 +152,7 @@ const SignupFormStep: FC<SignupFormStepProps> = ({
 
       <Button
         type="submit"
+        data-sound="loginYellow"
         fullWidth
         loading={submitting}
         // `space-y` leaves 14 under each row; the phone design puts Continue

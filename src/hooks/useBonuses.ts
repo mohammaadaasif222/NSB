@@ -8,6 +8,7 @@ import { useWallet } from '@/context/WalletContext';
 import { BONUS_REFRESH_EVENT, WALLET_REFRESH_EVENT } from '@/constants/events';
 import { formatWalletAmount } from '@/utils/money';
 import type { ApiError, BonusClaimResult, BonusSummary, BonusesView, PublicBonuses } from '@/types';
+import type { RedeemResult } from '@/types/bonus';
 
 export interface UseBonuses {
   summary: BonusesView | null;
@@ -20,6 +21,8 @@ export interface UseBonuses {
   refresh: () => Promise<void>;
   claim: (input: { bonusId?: string; couponCode?: string }) => Promise<BonusClaimResult | null>;
   forfeit: (awardId: string) => Promise<boolean>;
+  redeem: (code: string, place?: 'REDEEM' | 'CASHIER') => Promise<RedeemResult | null>;
+  optIn: (bonusId: string) => Promise<boolean>;
 }
 
 /**
@@ -178,6 +181,53 @@ export const useBonuses = (): UseBonuses => {
     [refresh]
   );
 
+  const redeem = useCallback(
+    async (code: string, place: 'REDEEM' | 'CASHIER' = 'REDEEM'): Promise<RedeemResult | null> => {
+      setBusyId(code);
+      try {
+        const res = await apiService.post<RedeemResult>('/bonuses/redeem', { code, place });
+        if (res?.success && res.data) {
+          toast.success(
+            tRef.current(res.data.opted_in ? 'bonus.codeOptedIn' : 'bonus.codeRedeemed')
+          );
+          void refreshWalletRef.current();
+          window.dispatchEvent(new Event(WALLET_REFRESH_EVENT));
+          await refresh();
+          return res.data;
+        }
+        toast.error(res?.message || tRef.current('bonus.redeemFailed'));
+      } catch (err) {
+        toast.error((err as ApiError)?.message || tRef.current('bonus.redeemFailed'));
+      } finally {
+        setBusyId(null);
+      }
+      return null;
+    },
+    [refresh]
+  );
+
+  const optIn = useCallback(
+    async (bonusId: string): Promise<boolean> => {
+      setBusyId(bonusId);
+      try {
+        const res = await apiService.post(`/bonuses/${bonusId}/opt-in`);
+        if (res?.success) {
+          toast.success(tRef.current('bonus.optedInToast'));
+          await refresh();
+          return true;
+        }
+        toast.error(res?.message || tRef.current('bonus.optInFailed'));
+      } catch (err) {
+        toast.error((err as ApiError)?.message || tRef.current('bonus.optInFailed'));
+      } finally {
+        setBusyId(null);
+      }
+      await refresh();
+      return false;
+    },
+    [refresh]
+  );
+
   const forfeit = useCallback(
     async (awardId: string): Promise<boolean> => {
       setBusyId(awardId);
@@ -212,5 +262,7 @@ export const useBonuses = (): UseBonuses => {
     refresh,
     claim,
     forfeit,
+    redeem,
+    optIn,
   };
 };

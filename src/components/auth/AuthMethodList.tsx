@@ -22,8 +22,9 @@ interface AuthMethodListProps {
 }
 
 /** One full-width method row: icon, label, and an optional badge. */
-const MethodRow: FC<AuthMethodOption> = ({ icon, label, onClick, badge, disabled }) => (
+const MethodRow: FC<AuthMethodOption> = ({ id, icon, label, onClick, badge, disabled }) => (
   <Button
+    data-sound={id === 'gmail' ? 'gmailMobileIconClick' : undefined}
     variant="option"
     size="row"
     fullWidth
