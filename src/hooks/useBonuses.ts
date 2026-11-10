@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import apiService from '@/services/api';
+import { analytics } from '@/services/analytics';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { useWallet } from '@/context/WalletContext';
@@ -155,6 +156,12 @@ export const useBonuses = (): UseBonuses => {
 
         if (res?.success && res.data) {
           const credited = res.data.credited;
+          analytics.bonus.claimed(
+            res.data.award.bonus.id,
+            res.data.award.bonus.type,
+            credited ? Number(credited.usd_amount) : undefined,
+            'USD'
+          );
           toast.success(
             credited
               ? tRef.current('bonus.claimed', {
@@ -169,8 +176,16 @@ export const useBonuses = (): UseBonuses => {
           return res.data;
         }
         toast.error(res?.message || tRef.current('bonus.claimFailed'));
+        analytics.bonus.claimFailed(
+          input.bonusId ?? input.couponCode ?? '',
+          res?.message ?? 'refused'
+        );
       } catch (err) {
         toast.error((err as ApiError)?.message || tRef.current('bonus.claimFailed'));
+        analytics.bonus.claimFailed(
+          input.bonusId ?? input.couponCode ?? '',
+          (err as ApiError)?.message ?? 'error'
+        );
       } finally {
         setBusyId(null);
       }
@@ -214,6 +229,7 @@ export const useBonuses = (): UseBonuses => {
       try {
         const res = await apiService.post(`/bonuses/${bonusId}/opt-in`);
         if (res?.success) {
+          analytics.bonus.optIn(bonusId);
           toast.success(tRef.current('bonus.optedInToast'));
           await refresh();
           return true;
@@ -242,6 +258,8 @@ export const useBonuses = (): UseBonuses => {
       try {
         const res = await apiService.post(`/bonuses/${bonusId}/${path}`);
         if (res?.success) {
+          if (path === 'reject') analytics.bonus.rejected(bonusId);
+          else analytics.bonus.optOut(bonusId);
           toast.success(tRef.current(done));
           ok = true;
         } else {
@@ -275,6 +293,7 @@ export const useBonuses = (): UseBonuses => {
       try {
         const res = await apiService.post(`/bonuses/${awardId}/forfeit`);
         if (res?.success) {
+          analytics.bonus.cancelledByPlayer(awardId);
           toast.success(tRef.current('bonus.forfeited'));
           void refreshWalletRef.current();
           window.dispatchEvent(new Event(WALLET_REFRESH_EVENT));

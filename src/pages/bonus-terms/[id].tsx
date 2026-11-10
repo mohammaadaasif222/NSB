@@ -7,6 +7,7 @@ import PlayerLayout from '@/layout/PlayerLayout';
 import SiteFooter from '@/components/player/SiteFooter';
 import Seo from '@/components/seo/Seo';
 import apiService from '@/services/api';
+import { analytics } from '@/services/analytics';
 import { useTranslation } from '@/context/I18nContext';
 
 const BonusTermsPage: FC = () => {
@@ -24,8 +25,10 @@ const BonusTermsPage: FC = () => {
       .get<{ html: string }>(`/bonuses/${id}/terms`, { locale })
       .then((res) => {
         if (!live) return;
-        if (res?.success && res.data) setHtml(DOMPurify.sanitize(res.data.html));
-        else setFailed(true);
+        if (res?.success && res.data) {
+          setHtml(DOMPurify.sanitize(res.data.html));
+          analytics.bonus.termsViewed(id);
+        } else setFailed(true);
       })
       .catch(() => live && setFailed(true));
     return () => {

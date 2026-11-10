@@ -2280,5 +2280,12 @@
   "bonus.groupTitle": "Escolha o seu bónus",
   "bonus.groupHintOne": "O seu depósito é elegível para estes bónus. Pode escolher um; os outros desaparecem.",
   "bonus.groupHintMany": "O seu depósito é elegível para estes bónus. Pode escolher até {count}; os outros desaparecem.",
-  "bonus.groupLater": "Decidir mais tarde"
+  "bonus.groupLater": "Decidir mais tarde",
+  "bonus.streamerTitle": "Bónus que pode oferecer",
+  "bonus.streamerHint": "Ofereça estes bónus ao seu público por nome de utilizador ou email. Cada jogador recebe-os com as regras do próprio bónus.",
+  "bonus.streamerPlaceholder": "Utilizador ou email",
+  "bonus.streamerGive": "Oferecer",
+  "bonus.streamerGiven": "{bonus} oferecido a {player}",
+  "bonus.streamerFailed": "Não foi possível oferecer o bónus",
+  "bonus.streamerGivenCount": "oferecido {count} vezes"
 }

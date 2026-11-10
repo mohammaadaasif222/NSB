@@ -2280,5 +2280,12 @@
   "bonus.groupTitle": "Выберите бонус",
   "bonus.groupHintOne": "Ваш депозит подходит для этих бонусов. Можно взять один, остальные пропадут.",
   "bonus.groupHintMany": "Ваш депозит подходит для этих бонусов. Можно взять до {count}, остальные пропадут.",
-  "bonus.groupLater": "Решить позже"
+  "bonus.groupLater": "Решить позже",
+  "bonus.streamerTitle": "Бонусы, которые вы можете дарить",
+  "bonus.streamerHint": "Дарите эти бонусы своей аудитории по имени пользователя или email. Каждый игрок получает их по правилам бонуса.",
+  "bonus.streamerPlaceholder": "Имя пользователя или email",
+  "bonus.streamerGive": "Подарить",
+  "bonus.streamerGiven": "{bonus} подарен игроку {player}",
+  "bonus.streamerFailed": "Не удалось подарить бонус",
+  "bonus.streamerGivenCount": "подарено: {count}"
 }

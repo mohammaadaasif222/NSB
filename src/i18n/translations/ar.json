@@ -2280,5 +2280,12 @@
   "bonus.groupTitle": "اختر مكافأتك",
   "bonus.groupHintOne": "إيداعك مؤهل لهذه المكافآت. يمكنك أخذ واحدة؛ وتختفي البقية.",
   "bonus.groupHintMany": "إيداعك مؤهل لهذه المكافآت. يمكنك أخذ حتى {count}؛ وتختفي البقية.",
-  "bonus.groupLater": "القرار لاحقًا"
+  "bonus.groupLater": "القرار لاحقًا",
+  "bonus.streamerTitle": "مكافآت يمكنك منحها",
+  "bonus.streamerHint": "امنح هذه المكافآت لجمهورك باسم المستخدم أو البريد الإلكتروني. يحصل كل لاعب عليها وفق قواعد المكافأة نفسها.",
+  "bonus.streamerPlaceholder": "اسم المستخدم أو البريد",
+  "bonus.streamerGive": "امنح",
+  "bonus.streamerGiven": "مُنحت {bonus} إلى {player}",
+  "bonus.streamerFailed": "تعذّر منح المكافأة",
+  "bonus.streamerGivenCount": "مُنحت {count} مرة"
 }

@@ -2280,5 +2280,12 @@
   "bonus.groupTitle": "अपना बोनस चुनें",
   "bonus.groupHintOne": "आपकी जमा इन बोनस के लिए योग्य है। आप एक ले सकते हैं; बाकी हट जाएँगे।",
   "bonus.groupHintMany": "आपकी जमा इन बोनस के लिए योग्य है। आप {count} तक ले सकते हैं; बाकी हट जाएँगे।",
-  "bonus.groupLater": "बाद में तय करें"
+  "bonus.groupLater": "बाद में तय करें",
+  "bonus.streamerTitle": "बोनस जो आप दे सकते हैं",
+  "bonus.streamerHint": "यूज़रनेम या ईमेल से अपने दर्शकों को ये बोनस दें। हर खिलाड़ी को ये बोनस के अपने नियमों के साथ मिलते हैं।",
+  "bonus.streamerPlaceholder": "यूज़रनेम या ईमेल",
+  "bonus.streamerGive": "दें",
+  "bonus.streamerGiven": "{bonus} {player} को दिया गया",
+  "bonus.streamerFailed": "बोनस नहीं दिया जा सका",
+  "bonus.streamerGivenCount": "{count} बार दिया गया"
 }

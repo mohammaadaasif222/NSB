@@ -56,8 +56,9 @@ export interface AvailableBonus {
 }
 
 export interface RedeemResult {
-  kind: 'BONUS';
-  bonus_id: string;
+  kind: 'BONUS' | 'PROMOTION';
+  bonus_id: string | null;
+  program_id?: string;
   award_id: string | null;
   opted_in: boolean;
 }

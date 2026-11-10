@@ -2280,5 +2280,12 @@
   "bonus.groupTitle": "Choisissez votre bonus",
   "bonus.groupHintOne": "Votre dépôt donne droit à ces bonus. Vous pouvez en prendre un ; les autres disparaissent.",
   "bonus.groupHintMany": "Votre dépôt donne droit à ces bonus. Vous pouvez en prendre jusqu'à {count} ; les autres disparaissent.",
-  "bonus.groupLater": "Décider plus tard"
+  "bonus.groupLater": "Décider plus tard",
+  "bonus.streamerTitle": "Bonus que vous pouvez offrir",
+  "bonus.streamerHint": "Offrez ces bonus à votre audience par pseudo ou e-mail. Chaque joueur les reçoit selon les règles du bonus.",
+  "bonus.streamerPlaceholder": "Pseudo ou e-mail",
+  "bonus.streamerGive": "Offrir",
+  "bonus.streamerGiven": "{bonus} offert à {player}",
+  "bonus.streamerFailed": "Impossible d'offrir le bonus",
+  "bonus.streamerGivenCount": "offert {count} fois"
 }

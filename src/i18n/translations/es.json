@@ -2280,5 +2280,12 @@
   "bonus.groupTitle": "Elige tu bono",
   "bonus.groupHintOne": "Tu depósito califica para estos bonos. Puedes elegir uno; los demás desaparecen.",
   "bonus.groupHintMany": "Tu depósito califica para estos bonos. Puedes elegir hasta {count}; los demás desaparecen.",
-  "bonus.groupLater": "Decidir más tarde"
+  "bonus.groupLater": "Decidir más tarde",
+  "bonus.streamerTitle": "Bonos que puedes regalar",
+  "bonus.streamerHint": "Regala estos bonos a tu audiencia por nombre de usuario o email. Cada jugador los recibe con las reglas del propio bono.",
+  "bonus.streamerPlaceholder": "Usuario o email",
+  "bonus.streamerGive": "Regalar",
+  "bonus.streamerGiven": "{bonus} regalado a {player}",
+  "bonus.streamerFailed": "No se pudo regalar el bono",
+  "bonus.streamerGivenCount": "regalado {count} veces"
 }

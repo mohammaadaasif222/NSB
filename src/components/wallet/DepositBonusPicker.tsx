@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { toast } from 'react-toastify';
 
 import apiService from '@/services/api';
+import { analytics } from '@/services/analytics';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { BONUS_REFRESH_EVENT } from '@/constants/events';
@@ -46,6 +47,7 @@ const DepositBonusPicker: FC<{ className?: string }> = ({ className = '' }) => {
       });
       if (res?.success && res.data) {
         setData(res.data);
+        analytics.bonus.optionSelected(bonusId, 'DEPOSIT');
         toast.success(bonusId ? t('bonus.depositPicked') : t('bonus.depositNone'));
         window.dispatchEvent(new Event(BONUS_REFRESH_EVENT));
       } else {

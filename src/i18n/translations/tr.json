@@ -2280,5 +2280,12 @@
   "bonus.groupTitle": "Bonusunu seç",
   "bonus.groupHintOne": "Yatırımın bu bonuslara uygun. Birini alabilirsin; diğerleri kaybolur.",
   "bonus.groupHintMany": "Yatırımın bu bonuslara uygun. En fazla {count} tane alabilirsin; diğerleri kaybolur.",
-  "bonus.groupLater": "Sonra karar ver"
+  "bonus.groupLater": "Sonra karar ver",
+  "bonus.streamerTitle": "Verebileceğin bonuslar",
+  "bonus.streamerHint": "Bu bonusları kullanıcı adı veya e-postayla izleyicilerine ver. Her oyuncu bonusun kendi kurallarıyla alır.",
+  "bonus.streamerPlaceholder": "Kullanıcı adı veya e-posta",
+  "bonus.streamerGive": "Ver",
+  "bonus.streamerGiven": "{bonus}, {player} oyuncusuna verildi",
+  "bonus.streamerFailed": "Bonus verilemedi",
+  "bonus.streamerGivenCount": "{count} kez verildi"
 }

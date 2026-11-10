@@ -13,6 +13,7 @@ import { toast } from 'react-toastify';
 
 import apiService from '@/services/api';
 import { realtimeService } from '@/services/realtimeService';
+import { analytics } from '@/services/analytics';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
 import { BONUS_REFRESH_EVENT, WALLET_REFRESH_EVENT } from '@/constants/events';
@@ -22,6 +23,14 @@ import { welcomeContribution } from '@/utils/welcomeContribution';
 import type { ActiveBonusTerms, Game } from '@/types';
 
 const BET_REFUSED_EVENT = 'bonus.bet_refused';
+const NOTIFICATION_EVENT = 'notification.new';
+
+const OUTCOME_EVENTS: Record<string, () => void> = {
+  BONUS_PROGRESS: () => analytics.bonus.wageringProgress(),
+  BONUS_STEP_RELEASED: () => analytics.bonus.stepReleased(),
+  BONUS_COMPLETED: () => analytics.bonus.completed(),
+  BONUS_FORFEITED: () => analytics.bonus.forfeited(),
+};
 const MIN_REFRESH_MS = 15_000;
 
 type ActiveTermsBonus = ActiveBonusTerms['bonuses'][number];
@@ -109,8 +118,16 @@ export const ActiveBonusProvider: FC<{ children: ReactNode }> = ({ children }) =
         { toastId: `bonus-bet-refused-${data?.reason}` }
       );
     };
+    const onNotice = (data: { kind?: string } | null): void => {
+      const send = data?.kind ? OUTCOME_EVENTS[data.kind] : undefined;
+      if (send) send();
+    };
     realtimeService.on(BET_REFUSED_EVENT, onRefused);
-    return () => realtimeService.off(BET_REFUSED_EVENT, onRefused);
+    realtimeService.on(NOTIFICATION_EVENT, onNotice);
+    return () => {
+      realtimeService.off(BET_REFUSED_EVENT, onRefused);
+      realtimeService.off(NOTIFICATION_EVENT, onNotice);
+    };
   }, [token, t, bonuses]);
 
   const value = useMemo<ActiveBonus>(() => {

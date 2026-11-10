@@ -1,5 +1,6 @@
-import { useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import Link from 'next/link';
+import { analytics } from '@/services/analytics';
 
 import BonusGlassCard, { type BonusCardAction } from '@/components/bonus/BonusGlassCard';
 import { useTranslation } from '@/context/I18nContext';
@@ -48,6 +49,9 @@ const BonusOfferCard: FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   const [confirmOptOut, setConfirmOptOut] = useState(false);
+  useEffect(() => {
+    analytics.bonus.offerViewed(bonus.id, bonus.type);
+  }, [bonus.id, bonus.type]);
 
   const wagering = Number(bonus.wagering_multiplier ?? 0);
 

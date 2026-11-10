@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 
 import apiService from '@/services/api';
+import { analytics } from '@/services/analytics';
 import { useAuth } from '@/context/AuthContext';
 import { useActiveBonus } from '@/context/ActiveBonusContext';
 import { useTranslation } from '@/context/I18nContext';
@@ -18,6 +19,7 @@ const GameBonusBar: FC<{ game: Game; className?: string }> = ({ game, className 
   const { primary } = useActiveBonus();
   const [bonus, setBonus] = useState<TermsBonus | null>(null);
   const refreshedAt = useRef(0);
+  const reminded = useRef(false);
   const active = !!token && !!primary;
 
   const load = useCallback(async (): Promise<void> => {
@@ -26,7 +28,14 @@ const GameBonusBar: FC<{ game: Game; className?: string }> = ({ game, className 
       const res = await apiService.get<ActiveBonusTerms>('/bonuses/active/terms', {
         game_id: game.id,
       });
-      if (res?.success && res.data) setBonus(res.data.bonuses[0] ?? null);
+      if (res?.success && res.data) {
+        const first = res.data.bonuses[0] ?? null;
+        setBonus(first);
+        if (first?.max_bet && !reminded.current) {
+          reminded.current = true;
+          analytics.bonus.maxBetReminderShown(first.award_id, game.id);
+        }
+      }
     } catch {
       return;
     }

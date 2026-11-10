@@ -13,6 +13,7 @@ import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
 import { useBonuses } from '@/hooks/useBonuses';
 import BonusHistoryTable from '@/components/bonus/BonusHistoryTable';
 import BonusMovementsTable from '@/components/bonus/BonusMovementsTable';
+import StreamerGivePanel from '@/components/bonus/StreamerGivePanel';
 import Seo from '@/components/seo/Seo';
 import { fetchFaqsServer } from '@/services/faqs.server';
 import type { FaqItem } from '@/services/faqs';
@@ -170,6 +171,8 @@ const BonusesPage: FC<Props> = ({ faqs }) => {
             />
           </Section>
         )}
+
+        {signedIn && <StreamerGivePanel currency={summary?.currency ?? 'USD'} />}
 
         {signedIn && (
           <Section title={t('bonus.movementsTitle')}>

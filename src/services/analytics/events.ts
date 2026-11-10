@@ -275,20 +275,42 @@ const bonus = {
   /** The rewards tray was opened. */
   panelViewed: (): void => track('bonus_panel_viewed'),
 
-  /** NOT WIRED YET — the rewards list is static until the endpoint lands. */
   offerViewed: (bonusId: string, bonusType?: string): void =>
     track('bonus_offer_viewed', { bonus_id: bonusId, bonus_type: bonusType }),
 
   /** NOT WIRED YET. */
   claimStarted: (bonusId: string): void => track('bonus_claim_started', { bonus_id: bonusId }),
 
-  /** NOT WIRED YET. */
   claimed: (bonusId: string, bonusType?: string, value?: number, currency?: string): void =>
     track('bonus_claimed', { bonus_id: bonusId, bonus_type: bonusType, value, currency }),
 
-  /** NOT WIRED YET. */
   claimFailed: (bonusId: string, reason: string): void =>
     track('bonus_claim_failed', { bonus_id: bonusId, reason }),
+
+  optionSelected: (bonusId: string | null, place: 'WELCOME' | 'DEPOSIT'): void =>
+    track('bonus_option_selected', { bonus_id: bonusId ?? 'none', place }),
+
+  rejected: (bonusId: string): void => track('bonus_rejected', { bonus_id: bonusId }),
+
+  optIn: (bonusId: string): void => track('bonus_opt_in', { bonus_id: bonusId }),
+
+  optOut: (bonusId: string): void => track('bonus_opt_out', { bonus_id: bonusId }),
+
+  cancelledByPlayer: (awardId: string): void =>
+    track('bonus_cancelled_by_player', { award_id: awardId }),
+
+  termsViewed: (bonusId: string): void => track('bonus_terms_viewed', { bonus_id: bonusId }),
+
+  maxBetReminderShown: (awardId: string, gameId: string): void =>
+    track('max_bet_reminder_shown', { award_id: awardId, game_id: gameId }),
+
+  wageringProgress: (): void => track('wagering_progress'),
+
+  stepReleased: (): void => track('bonus_step_released'),
+
+  completed: (): void => track('bonus_completed'),
+
+  forfeited: (): void => track('bonus_forfeited'),
 };
 
 /* ----------------------------------------------------------- promotion -- */
