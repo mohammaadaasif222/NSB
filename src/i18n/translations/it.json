@@ -1272,7 +1272,7 @@
   "lobby.jackpots.tier.MAJOR": "Major",
   "lobby.jackpots.tier.GRAND": "Grand",
   "lobby.jackpots.tierN": "Livello {n}",
-  "lobby.drops.pageIntro": "Premi in denaro cadono a caso sui giochi qui sotto. Gioca a uno qualsiasi con la puntata minima o superiore e ogni giro può vincerne uno, accreditato direttamente sul tuo saldo.",
+  "lobby.drops.pageIntro": "I premi cadono a caso sui giochi qui sotto, dal denaro ai giri gratuiti. Gioca a uno qualsiasi con la puntata minima o superiore e ogni giro può vincerne uno; i premi in denaro vanno direttamente sul tuo saldo.",
   "lobby.drops.empty": "Nessuna campagna Drops & Wins attiva al momento. Torna presto.",
   "lobby.drops.prizePool": "Montepremi",
   "lobby.drops.prizes": "Premi",

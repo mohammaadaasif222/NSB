@@ -1272,7 +1272,7 @@
   "lobby.jackpots.tier.MAJOR": "Major",
   "lobby.jackpots.tier.GRAND": "Grand",
   "lobby.jackpots.tierN": "Seviye {n}",
-  "lobby.drops.pageIntro": "Aşağıdaki oyunlarda rastgele nakit ödüller düşer. Herhangi birini minimum bahis veya üzerinde oynayın; her tur bir ödül kazandırabilir ve ödül doğrudan bakiyenize eklenir.",
+  "lobby.drops.pageIntro": "Aşağıdaki oyunlarda nakitten bedava dönüşlere kadar rastgele ödüller düşer. Herhangi birini minimum bahis veya üzerinde oynayın; her tur bir ödül kazandırabilir ve nakit ödüller doğrudan bakiyenize eklenir.",
   "lobby.drops.empty": "Şu anda aktif Drops & Wins kampanyası yok. Yakında tekrar bakın.",
   "lobby.drops.prizePool": "Ödül havuzu",
   "lobby.drops.prizes": "Ödüller",

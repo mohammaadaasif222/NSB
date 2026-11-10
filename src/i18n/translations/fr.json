@@ -1272,7 +1272,7 @@
   "lobby.jackpots.tier.MAJOR": "Major",
   "lobby.jackpots.tier.GRAND": "Grand",
   "lobby.jackpots.tierN": "Niveau {n}",
-  "lobby.drops.pageIntro": "Des prix en espèces tombent au hasard sur les jeux ci-dessous. Jouez à l'un d'eux avec la mise minimale ou plus et n'importe quel tour peut en gagner un, versé directement sur votre solde.",
+  "lobby.drops.pageIntro": "Des prix tombent au hasard sur les jeux ci-dessous, de l'argent aux tours gratuits. Jouez à l'un d'eux avec la mise minimale ou plus et n'importe quel tour peut en gagner un ; les prix en argent sont versés directement sur votre solde.",
   "lobby.drops.empty": "Aucune campagne Drops & Wins en cours pour le moment. Revenez bientôt.",
   "lobby.drops.prizePool": "Cagnotte",
   "lobby.drops.prizes": "Prix",

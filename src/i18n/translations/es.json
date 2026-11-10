@@ -1272,7 +1272,7 @@
   "lobby.jackpots.tier.MAJOR": "Major",
   "lobby.jackpots.tier.GRAND": "Grand",
   "lobby.jackpots.tierN": "Nivel {n}",
-  "lobby.drops.pageIntro": "Premios en efectivo caen al azar en los juegos de abajo. Juega a cualquiera de ellos con la apuesta mínima o más y cualquier ronda puede ganar uno, pagado directamente a tu saldo.",
+  "lobby.drops.pageIntro": "Los premios caen al azar en los juegos de abajo, desde dinero en efectivo hasta giros gratis. Juega a cualquiera de ellos con la apuesta mínima o más y cualquier ronda puede ganar uno; los premios en efectivo van directamente a tu saldo.",
   "lobby.drops.empty": "No hay campañas de Drops & Wins activas en este momento. Vuelve pronto.",
   "lobby.drops.prizePool": "Bote de premios",
   "lobby.drops.prizes": "Premios",
