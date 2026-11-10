@@ -47,7 +47,6 @@ const SocialShortcuts: FC<SocialShortcutsProps> = ({
             colour=""
             onClick={clickFor(provider)!}
             first={index === 0}
-            glass
           >
             <DiscMark provider={provider} className="h-6 w-6 sm:h-[22px] sm:w-[22px]" />
           </SocialDot>

@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState, type FC, type ReactNode } from 'react';
 import type { StaticImageData } from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from '@/context/I18nContext';
+import { usePlatformFeatures } from '@/context/PlatformFeaturesContext';
+import { useOpenSupport } from '@/hooks/useOpenSupport';
+import { useSidebarMenus } from '@/hooks/useSidebarMenus';
+import { routeFeatureFlag, type LobbyChip } from '@/constants/sidebarMenu';
+import type { SidebarIcon } from '@/components/sidebar/iconRegistry';
+import { EN_DICTIONARY } from '@/i18n/locales';
 import { gameMatches } from '@/services/catalogue';
 import type { Game, GameShelfKey } from '@/types';
 import type { TranslationKey } from '@/i18n/locales';
@@ -424,13 +432,29 @@ export const ChipButton: FC<{
   onClick: () => void;
   /** An icon, tinted with the label. */
   icon?: StaticImageData;
+  /** A ready-drawn icon instead of `icon` (see ChipIcon). */
+  glyph?: ReactNode;
   children: ReactNode;
-}> = ({ active, onClick, icon, children }) => (
+}> = ({ active, onClick, icon, glyph, children }) => (
   <button type="button" onClick={onClick} aria-pressed={active} className={chipClass(active)}>
-    {icon && <Glyph src={icon.src} className={CHIP_ICON} />}
+    {glyph ?? (icon && <Glyph src={icon.src} className={CHIP_ICON} />)}
     {children}
   </button>
 );
+
+/** A chip's icon from the shared registry: a tinted glyph, a stroke icon or an uploaded image. */
+const ChipIcon: FC<{ icon: SidebarIcon }> = ({ icon }) => {
+  if (icon.kind === 'glyph') return <Glyph src={icon.src} className={CHIP_ICON} />;
+  if (icon.kind === 'image') {
+    return <img src={icon.src} alt="" className={`${CHIP_ICON} flex-shrink-0 object-contain`} />;
+  }
+  const { Icon } = icon;
+  return (
+    <span className={`${CHIP_ICON} flex flex-shrink-0 items-center justify-center`}>
+      <Icon size={16} strokeWidth={1.6} />
+    </span>
+  );
+};
 
 /** The chip row's scroller, bleeding to the screen edge on a phone. */
 /** The bar a page's chip row sits in, pinned under the top bar. Its padding is
@@ -448,6 +472,13 @@ export const CategoryChips: FC<{
 }> = ({ active, onChange, set = 'casino' }) => {
   const { t } = useTranslation();
   const { token } = useAuth();
+  // The bar as arranged in CRM -> Sidebar menus; null: the built-in one below.
+  const { chips } = useSidebarMenus();
+  const managed = chips[set];
+
+  if (managed) {
+    return <ManagedChips chips={managed} active={active} onChange={onChange} set={set} />;
+  }
 
   return (
     <div className={CHIP_ROW}>
@@ -483,6 +514,117 @@ export const CategoryChips: FC<{
             </ChipButton>
           );
         })}
+    </div>
+  );
+};
+
+/**
+ * The chip bar as the console arranges it: built-in chips (with a `key`)
+ * filter the lobby in place exactly as the built-in bar's do, in the
+ * console's order, under its label and icon when set; any other chip is a
+ * link — a side menu entry shown here too, or a plain link. A chip hides as
+ * its side menu row would: sign-in only for guests, or behind a platform
+ * switch that is off.
+ */
+const ManagedChips: FC<{
+  chips: LobbyChip[];
+  active: ChipKey;
+  onChange: (key: ChipKey) => void;
+  set: ChipSet;
+}> = ({ chips, active, onChange, set }) => {
+  const { t, locale } = useTranslation();
+  const { token } = useAuth();
+  const { asPath } = useRouter();
+  const features = usePlatformFeatures();
+  const openSupport = useOpenSupport();
+  const builtIns = set === 'live' ? LIVE_CHIPS : CHIPS;
+  const currentPath = asPath.split(/[?#]/)[0];
+
+  const text = (chip: LobbyChip, fallback?: TranslationKey): string => {
+    const key = chip.labelKey;
+    const translated =
+      key && Object.prototype.hasOwnProperty.call(EN_DICTIONARY, key)
+        ? t(key as TranslationKey)
+        : '';
+    return (
+      chip.labelTranslations?.[locale]?.trim() ||
+      chip.label?.trim() ||
+      translated ||
+      (fallback ? t(fallback) : '') ||
+      key ||
+      ''
+    );
+  };
+  const flagOff = (flag: string | undefined): boolean =>
+    Boolean(flag) && (features as unknown as Record<string, unknown>)[flag as string] === false;
+
+  return (
+    <div className={CHIP_ROW}>
+      {chips.map((chip) => {
+        if (chip.key) {
+          const def = builtIns.find((b) => b.key === chip.key);
+          // A key this bar does not know (retired since) draws nothing.
+          if (!def?.key || (def.signedIn && !token)) return null;
+          const key = def.key;
+          return (
+            <ChipButton
+              key={chip.id}
+              active={active === key}
+              onClick={() => onChange(key)}
+              glyph={chip.icon ? <ChipIcon icon={chip.icon} /> : undefined}
+              icon={def.icon}
+            >
+              {text(chip, def.labelKey)}
+            </ChipButton>
+          );
+        }
+
+        if (chip.requireAuth && !token) return null;
+        if (flagOff(chip.featureFlag) || flagOff(routeFeatureFlag(chip.href))) return null;
+        const label = text(chip);
+        const glyph = chip.icon && <ChipIcon icon={chip.icon} />;
+
+        if (chip.action === 'openSupport') {
+          return (
+            <button
+              key={chip.id}
+              type="button"
+              onClick={openSupport}
+              className={`${chipClass(false)} whitespace-nowrap`}
+            >
+              {glyph}
+              {label}
+            </button>
+          );
+        }
+        if (!chip.href) return null;
+        if (/^https?:\/\//.test(chip.href)) {
+          return (
+            <a
+              key={chip.id}
+              href={chip.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${chipClass(false)} whitespace-nowrap`}
+            >
+              {glyph}
+              {label}
+            </a>
+          );
+        }
+        const here = currentPath === chip.href;
+        return (
+          <Link
+            key={chip.id}
+            href={chip.href}
+            aria-current={here ? 'page' : undefined}
+            className={`${chipClass(here)} whitespace-nowrap`}
+          >
+            {glyph}
+            {label}
+          </Link>
+        );
+      })}
     </div>
   );
 };

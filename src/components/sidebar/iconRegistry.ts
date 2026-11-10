@@ -39,6 +39,14 @@ import liveBlackjackIcon from '@/assets/lobby/rail/rail-live-blackjack.svg';
 import rouletteIcon from '@/assets/lobby/rail/rail-live-roulette.svg';
 import liveBaccaratIcon from '@/assets/lobby/rail/rail-live-baccarat.svg';
 import gameShowsIcon from '@/assets/lobby/rail/rail-live-game-shows.svg';
+import chipLobbyIcon from '@/assets/lobby/player/chip-lobby.svg';
+import chipOriginalsIcon from '@/assets/lobby/player/chip-originals.svg';
+import chipSlotsIcon from '@/assets/lobby/player/chip-slots.svg';
+import chipRouletteIcon from '@/assets/lobby/player/chip-roulette.svg';
+import chipBaccaratIcon from '@/assets/lobby/player/chip-baccarat.svg';
+import chipGameShowsIcon from '@/assets/lobby/player/chip-gameshows.svg';
+import chipNewArrivalsIcon from '@/assets/lobby/player/chip-newarrivals.svg';
+import chipBonusBuysIcon from '@/assets/lobby/player/chip-bonusbuys.svg';
 
 /**
  * How a side menu icon is drawn.
@@ -100,6 +108,15 @@ export const SIDEBAR_ICONS: Record<string, SidebarIcon> = {
   'live-roulette': glyph(rouletteIcon),
   'live-baccarat': glyph(liveBaccaratIcon),
   'live-game-shows': glyph(gameShowsIcon),
+  // The lobby chip bar's own glyphs (its Live chip is `live` above).
+  'chip-lobby': glyph(chipLobbyIcon),
+  'chip-originals': glyph(chipOriginalsIcon),
+  'chip-slots': glyph(chipSlotsIcon),
+  'chip-roulette': glyph(chipRouletteIcon),
+  'chip-baccarat': glyph(chipBaccaratIcon),
+  'chip-gameshows': glyph(chipGameShowsIcon),
+  'chip-newarrivals': glyph(chipNewArrivalsIcon),
+  'chip-bonusbuys': glyph(chipBonusBuysIcon),
 };
 
 /** Drawn for a top-level row whose key is unknown (e.g. retired since it was picked). */

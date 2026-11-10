@@ -12,7 +12,7 @@ import bonusesIcon from '@/assets/lobby/rail/nav-bonuses.svg';
 import supportIcon from '@/assets/lobby/rail/tab-chat.svg';
 import { CoinIcon, HandshakeIcon } from '@/components/icons';
 import type { SidebarIcon } from '@/components/sidebar/iconRegistry';
-import type { Locale } from '@/i18n/locales';
+import { LOCALES, type Locale } from '@/i18n/locales';
 import { RAIL_GROUPS, type RailGroup, type RailGroupId } from '@/constants/railMenu';
 
 /** Client actions a row can run instead of navigating. Mirrors the backend's SIDEBAR_ACTIONS. */
@@ -76,6 +76,14 @@ export const ROUTE_FEATURE_FLAGS: Record<string, string> = {
   '/promotions': 'promotions',
   '/rewards': 'rewards',
   '/referral': 'referrals',
+};
+
+/** The platform switch a link's page sits behind, if any (locale prefix ignored). */
+export const routeFeatureFlag = (href: string | undefined): string | undefined => {
+  if (!href) return undefined;
+  const path = href.split(/[?#]/)[0];
+  const bare = path.replace(new RegExp(`^/(?:${LOCALES.join('|')})(?=/|$)`), '') || '/';
+  return ROUTE_FEATURE_FLAGS[bare];
 };
 
 const glyph = (asset: { src: string }): SidebarIcon => ({ kind: 'glyph', src: asset.src });
@@ -201,3 +209,25 @@ export const DEFAULT_SIDEBAR_BLOCKS: SidebarBlocks = {
   socials: { enabled: true },
   suggestion: { enabled: true },
 };
+
+/** `casino`: the casino lobby's chip bar. `live`: the Live Casino lobby's. */
+export type LobbyChipSet = 'casino' | 'live';
+
+/**
+ * A chip of a lobby chip bar, from CRM -> Sidebar menus. A built-in chip has
+ * a `key` and filters the lobby in place, as it always has; any other chip
+ * opens `href` (or runs `action`).
+ */
+export interface LobbyChip {
+  id: string;
+  key?: string;
+  labelKey?: string;
+  label?: string;
+  labelTranslations?: Partial<Record<Locale, string>>;
+  /** Unset: a built-in chip keeps its own glyph. */
+  icon?: SidebarIcon;
+  href?: string;
+  action?: SidebarAction;
+  requireAuth?: boolean;
+  featureFlag?: string;
+}

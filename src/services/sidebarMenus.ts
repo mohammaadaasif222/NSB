@@ -36,10 +36,27 @@ export interface PublicSidebarBlock {
   note: string | null;
 }
 
+/** A lobby chip, resolved by the API; `key` is set for built-in chips only. */
+export interface PublicLobbyChip {
+  id: string;
+  key: string | null;
+  label_key: string | null;
+  label: string | null;
+  label_translations: Record<string, string> | null;
+  icon_key: string | null;
+  icon_url: string | null;
+  link: string | null;
+  action: string | null;
+  require_auth: boolean;
+  feature_flag: string | null;
+}
+
 export interface PublicSidebarMenu {
   /** Empty: the rail draws its built-in menu. */
   groups: PublicSidebarGroup[];
   blocks: PublicSidebarBlock[];
+  /** Empty or missing lists: the lobby draws its built-in chips. */
+  chips?: Partial<Record<'casino' | 'live', PublicLobbyChip[]>>;
 }
 
 /** Console edits reach players within this long, without a reload. */
@@ -56,7 +73,11 @@ const normalise = (data: unknown): PublicSidebarMenu | null => {
   if (Array.isArray(data)) return { groups: data as PublicSidebarGroup[], blocks: [] };
   if (data && typeof data === 'object' && Array.isArray((data as PublicSidebarMenu).groups)) {
     const menu = data as PublicSidebarMenu;
-    return { groups: menu.groups, blocks: Array.isArray(menu.blocks) ? menu.blocks : [] };
+    return {
+      groups: menu.groups,
+      blocks: Array.isArray(menu.blocks) ? menu.blocks : [],
+      chips: menu.chips && typeof menu.chips === 'object' ? menu.chips : {},
+    };
   }
   return null;
 };

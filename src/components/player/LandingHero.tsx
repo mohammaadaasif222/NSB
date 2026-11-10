@@ -28,6 +28,7 @@ import {
   SOCIAL_PROVIDER_UI,
   useSocialProviderClick,
 } from '@/components/auth/socialProviders';
+import { SOCIAL_DISC } from '@/components/auth/SocialDot';
 import BonusBanner from '@/components/player/BonusBanner';
 import { WinnersRow } from '@/components/player/TopWinnersTicker';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
@@ -183,7 +184,7 @@ const SocialDisc: FC<{
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`rl-glass-disc relative flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full transition-[transform,filter] hover:z-10 hover:-translate-y-0.5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] ${
+    className={`${SOCIAL_DISC} relative flex h-[calc(var(--u)*40)] w-[calc(var(--u)*40)] items-center justify-center rounded-full transition-[transform,filter] hover:z-10 hover:-translate-y-0.5 lg:h-[calc(var(--u)*48)] lg:w-[calc(var(--u)*48)] ${
       first ? '' : '-ms-[calc(var(--u)*14.5)] lg:-ms-[calc(var(--u)*12)]'
     }`}
   >

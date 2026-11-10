@@ -4,6 +4,8 @@ import { resolveSidebarIcon } from '@/components/sidebar/iconRegistry';
 import {
   DEFAULT_SIDEBAR_BLOCKS,
   SIDEBAR_ACTIONS,
+  type LobbyChip,
+  type LobbyChipSet,
   type SidebarAction,
   type SidebarBlocks,
   type SidebarGroup,
@@ -13,6 +15,7 @@ import {
 import {
   getPublicSidebarMenus,
   peekSidebarMenus,
+  type PublicLobbyChip,
   type PublicSidebarGroup,
   type PublicSidebarItem,
   type PublicSidebarMenu,
@@ -69,16 +72,35 @@ const toBlocks = (menu: PublicSidebarMenu | null): SidebarBlocks => {
   return blocks;
 };
 
+const toChips = (rows: PublicLobbyChip[] | undefined): LobbyChip[] | null => {
+  if (!rows || rows.length === 0) return null;
+  return rows.map((row) => ({
+    id: row.id,
+    key: row.key ?? undefined,
+    labelKey: row.label_key ?? undefined,
+    label: row.label ?? undefined,
+    labelTranslations: row.label_translations ?? undefined,
+    icon: row.icon_key || row.icon_url ? resolveSidebarIcon(row.icon_key, row.icon_url) : undefined,
+    href: row.link ?? undefined,
+    action: action(row.action),
+    requireAuth: row.require_auth,
+    featureFlag: row.feature_flag ?? undefined,
+  }));
+};
+
 export interface SidebarMenus {
   /** null: draw the built-in DEFAULT_SIDEBAR_MENU. */
   groups: SidebarGroup[] | null;
   /** Always set: the API's, or the built-in DEFAULT_SIDEBAR_BLOCKS. */
   blocks: SidebarBlocks;
+  /** Per bar; null: draw that bar's built-in chips. */
+  chips: Record<LobbyChipSet, LobbyChip[] | null>;
 }
 
 const toMenus = (menu: PublicSidebarMenu | null): SidebarMenus => ({
   groups: toGroups(menu?.groups),
   blocks: toBlocks(menu),
+  chips: { casino: toChips(menu?.chips?.casino), live: toChips(menu?.chips?.live) },
 });
 
 /**

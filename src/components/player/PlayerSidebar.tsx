@@ -23,14 +23,14 @@ import { RAIL_OPEN_KEY } from '@/constants/railMenu';
 import {
   DEFAULT_SIDEBAR_MENU,
   RAIL_ID_BY_TITLE_KEY,
-  ROUTE_FEATURE_FLAGS,
+  routeFeatureFlag,
   type SidebarAction,
   type SidebarGroup,
   type SidebarItem,
   type SidebarSection,
 } from '@/constants/sidebarMenu';
 import type { SidebarIcon } from '@/components/sidebar/iconRegistry';
-import { EN_DICTIONARY, LOCALES, type TranslationKey } from '@/i18n/locales';
+import { EN_DICTIONARY, type TranslationKey } from '@/i18n/locales';
 import { GiftIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 import GameSearchModal from '@/components/player/GameSearchModal';
@@ -516,12 +516,7 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
 
   const flagOff = (flag: string | undefined): boolean =>
     Boolean(flag) && (features as unknown as Record<string, unknown>)[flag as string] === false;
-  const routeFlag = (href: string | undefined): string | undefined => {
-    if (!href) return undefined;
-    const path = href.split(/[?#]/)[0];
-    const bare = path.replace(new RegExp(`^/(?:${LOCALES.join('|')})(?=/|$)`), '') || '/';
-    return ROUTE_FEATURE_FLAGS[bare];
-  };
+  const routeFlag = routeFeatureFlag;
   const inSection = (section: SidebarSection): boolean =>
     section === 'all' || (section === 'sports') === sportsActive;
 
