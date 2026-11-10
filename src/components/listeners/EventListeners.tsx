@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useRealtimeEvents } from '@/hooks/useRealtimeEvents';
 import { useWallet } from '@/context/WalletContext';
-import { currentLocale, translate } from '@/i18n/translate';
 
 type DepositStatus = 'DEPOSIT_DETECTED' | 'DEPOSIT_CONFIRMED' | 'DEPOSIT_FAILED';
 type WithdrawalStatus = 'WITHDRAW_PENDING_RISK' | 'WITHDRAW_RISK_APPROVED' | 'WITHDRAW_APPROVED' | 'WITHDRAW_PROCESSING' | 'WITHDRAW_COMPLETED' | 'WITHDRAW_REJECTED' | 'WITHDRAW_FAILED';
