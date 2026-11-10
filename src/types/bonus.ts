@@ -40,6 +40,18 @@ export interface AvailableBonus {
   reason: string | null;
   /** True when claiming needs a qualifying deposit this player does not have. */
   needs_deposit: boolean;
+  claim_by?: string | null;
+  claim_mode?: 'AUTOMATIC' | 'ON_CLAIM' | 'OPT_IN';
+  opt_in?: { status: 'OPTED_IN' | 'OPTED_OUT'; expires_at: string | null } | null;
+  provider_shares?: { provider: string; share: number }[];
+  blocked_products?: ('CASINO' | 'ORIGINALS' | 'SPORTSBOOK')[];
+}
+
+export interface RedeemResult {
+  kind: 'BONUS';
+  bonus_id: string;
+  award_id: string | null;
+  opted_in: boolean;
 }
 
 /** One award the player holds, or once held. */

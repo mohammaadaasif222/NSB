@@ -28,7 +28,8 @@ const Section: FC<{ title: string; children: ReactNode }> = ({ title, children }
   </section>
 );
 
-const PANEL = 'rl-glass-deep max-lg:rl-glass-clear rounded-[24px] px-5 py-16 text-center lg:rounded-[calc(var(--u)*34)]';
+const PANEL =
+  'rl-glass-deep max-lg:rl-glass-clear rounded-[24px] px-5 py-16 text-center lg:rounded-[calc(var(--u)*34)]';
 
 const COLUMN =
   'mx-auto max-w-[1548px] space-y-10 px-1 lg:max-w-[calc(var(--u)*1548)] lg:space-y-[calc(var(--u)*80)] lg:px-0';
@@ -40,7 +41,7 @@ interface Props {
 const BonusesPage: FC<Props> = ({ faqs }) => {
   const { t } = useTranslation();
   const { bonuses: bonusesOn } = usePlatformFeatures();
-  const { summary, loading, error, busyId, signedIn, clockOffset, refresh, claim, forfeit } =
+  const { summary, loading, error, busyId, signedIn, clockOffset, refresh, claim, forfeit, optIn } =
     useBonuses();
 
   const [walletOpen, setWalletOpen] = useState(false);
@@ -140,6 +141,7 @@ const BonusesPage: FC<Props> = ({ faqs }) => {
             onClaim={(bonusId) => void claim({ bonusId })}
             onForfeit={(awardId) => void forfeit(awardId)}
             onDeposit={() => setWalletOpen(true)}
+            onOptIn={(bonusId) => void optIn(bonusId)}
           />
         </Section>
 
