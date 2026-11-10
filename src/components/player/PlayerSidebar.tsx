@@ -8,20 +8,7 @@ import sportsArt from '@/assets/lobby/rail/rail-sports.webp';
 import casinoCardArt from '@/assets/casino-roulette-mobile.webp';
 import sportsCardArt from '@/assets/sports-ball-glass-mobile.webp';
 import searchGlyph from '@/assets/lobby/rail/bar-search.svg';
-import oathIcon from '@/assets/lobby/rail/nav-oath.svg';
-import recentIcon from '@/assets/lobby/rail/nav-recent.svg';
-import favouritesIcon from '@/assets/lobby/rail/nav-favourites.svg';
-import originalsIcon from '@/assets/lobby/rail/nav-originals.svg';
-import casinoIcon from '@/assets/lobby/rail/tab-casino.svg';
-import sportsIcon from '@/assets/lobby/rail/tab-sports.svg';
-import liveIcon from '@/assets/lobby/player/chip-live.svg';
-import supportIcon from '@/assets/lobby/rail/tab-chat.svg';
 import chevronGlyph from '@/assets/lobby/rail/bar-chevron.svg';
-// import themeIcon from '@/assets/lobby/rail/nav-theme.svg';
-import vipIcon from '@/assets/lobby/rail/nav-vip.svg';
-import tournamentsIcon from '@/assets/lobby/rail/nav-tournaments.svg';
-import promotionIcon from '@/assets/lobby/rail/nav-promotion.svg';
-import bonusesIcon from '@/assets/lobby/rail/nav-bonuses.svg';
 import suggestionIcon from '@/assets/lobby/rail/rail-suggestion.svg';
 import { useTheme } from '@/context/ThemeContext';
 import { useMe } from '@/context/UserContext';
@@ -32,17 +19,23 @@ import { useAuth } from '@/context/AuthContext';
 import { useOpenSupport } from '@/hooks/useOpenSupport';
 import ThemeModal from '@/components/modals/profile/ThemeModal';
 import Glyph from '@/components/player/Glyph';
+import { RAIL_OPEN_KEY } from '@/constants/railMenu';
 import {
-  RAIL_GROUPS,
-  RAIL_OPEN_KEY,
-  type RailGroup,
-  type RailGroupId,
-  type RailSubItem,
-} from '@/constants/railMenu';
-import { GiftIcon, CoinIcon, HandshakeIcon } from '@/components/icons';
+  DEFAULT_SIDEBAR_MENU,
+  RAIL_ID_BY_TITLE_KEY,
+  ROUTE_FEATURE_FLAGS,
+  type SidebarAction,
+  type SidebarGroup,
+  type SidebarItem,
+  type SidebarSection,
+} from '@/constants/sidebarMenu';
+import type { SidebarIcon } from '@/components/sidebar/iconRegistry';
+import { EN_DICTIONARY, LOCALES, type TranslationKey } from '@/i18n/locales';
+import { GiftIcon } from '@/components/icons';
 import SuggestionModal from '@/components/suggestion/SuggestionModal';
 import GameSearchModal from '@/components/player/GameSearchModal';
 import { useSocialLinks } from '@/hooks/useSocialLinks';
+import { useSidebarMenus } from '@/hooks/useSidebarMenus';
 
 interface Props {
   /** Mobile drawer state. Ignored at lg and above, where the rail is static. */
@@ -162,9 +155,35 @@ const ROW_ACTIVE = 'rl-drop rl-pill-rim relative bg-white/10 font-semibold text-
 const ROW_IDLE =
   'text-[#d5d8e2] max-lg:bg-white/5 hover:bg-white/5 hover:text-white max-lg:hover:bg-white/10';
 
+/**
+ * A menu entry's icon in a `size` design-pixel box: a masked glyph that takes
+ * the row's colour, a line icon, or an operator's upload drawn as-is (fixed
+ * box, `object-contain`, so any upload size is safe). No icon keeps the box
+ * empty, so labels still line up.
+ */
+const MenuIcon: FC<{ icon?: SidebarIcon; size: number }> = ({ icon, size }) => {
+  const box: CSSProperties = { width: `calc(var(--u)*${size})`, height: `calc(var(--u)*${size})` };
+  if (!icon) return <span aria-hidden="true" className="flex-shrink-0" style={box} />;
+  if (icon.kind === 'glyph') return <Glyph src={icon.src} size={size} />;
+  if (icon.kind === 'image') {
+    return <img src={icon.src} alt="" className="flex-shrink-0 object-contain" style={box} />;
+  }
+  const { Icon } = icon;
+  return (
+    <span className="flex flex-shrink-0 items-center justify-center" style={box}>
+      <Icon size={Math.round(size * 0.75)} strokeWidth={1.6} />
+    </span>
+  );
+};
+
+const SOON_BADGE =
+  'ms-auto flex-shrink-0 rounded-full bg-[#ffe779]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#ffe779] lg:px-[calc(var(--u)*8)] lg:text-[length:max(9px,calc(var(--u)*10))]';
+
 interface RailLinkProps {
   href?: string;
   onSelect?: () => void;
+  /** Set to the "Soon" text for a row with nowhere to go yet: drawn disabled. */
+  soonLabel?: string;
   active: boolean;
   icon: ReactNode;
   onClick: () => void;
@@ -183,6 +202,7 @@ interface RailLinkProps {
 const RailLink: FC<RailLinkProps> = ({
   href,
   onSelect,
+  soonLabel,
   active,
   icon,
   onClick,
@@ -201,6 +221,19 @@ const RailLink: FC<RailLinkProps> = ({
   );
 
   const title = collapsed ? String(children) : undefined;
+
+  if (soonLabel) {
+    return (
+      <span
+        aria-disabled="true"
+        title={`${String(children)} — ${soonLabel}`}
+        className={`${ROW} ${collapsed ? 'lg:justify-center lg:px-[calc(var(--u)*8)]' : ''} cursor-default text-[#9da2b4]/80 max-lg:bg-white/5`}
+      >
+        {body}
+        <span className={`${SOON_BADGE} ${collapsed ? 'lg:hidden' : ''}`}>{soonLabel}</span>
+      </span>
+    );
+  }
 
   if (onSelect) {
     return (
@@ -238,45 +271,52 @@ const SUB_ROW =
   'flex h-10 w-full items-center gap-2 rounded-full ps-[58px] pe-6 text-[15px] leading-6 transition-colors lg:h-[calc(var(--u)*36)] lg:gap-[calc(var(--u)*8)] lg:rounded-[calc(var(--u)*34)] lg:ps-[calc(var(--u)*50)] lg:pe-[calc(var(--u)*15)] lg:text-[length:max(min(11px,14px),calc(var(--u)*14))] lg:leading-[calc(var(--u)*20)] font-medium';
 
 /**
- * An expandable rail group (Originals, Casino, Live Casino, Sportsbook): the
- * row toggles its list, and a destination that is not built yet shows "Soon".
- * The collapsed rail has no room for the list, so there the icon links to the
- * group's own page instead.
+ * An expandable rail group (Originals, Casino, Live Casino, Sportsbook, or one
+ * an operator made): the row toggles its list, and a row with nowhere to go
+ * yet shows "Soon". The collapsed rail has no room for the list, so there the
+ * icon links to the group's own page instead.
  */
 const RailGroupRow: FC<{
-  group: RailGroup;
-  icon: ReactNode;
+  group: SidebarGroup;
+  label: string;
+  itemText: (item: SidebarItem) => string;
+  onAction: (action: SidebarAction) => void;
+  /** Original games (Dice, Limbo…) have their own sound; other groups' rows click generically. */
+  sound?: string;
   open: boolean;
   onToggle: () => void;
   currentPath: string;
   onNavigate: () => void;
   collapsed: boolean;
-}> = ({ group, icon, open, onToggle, currentPath, onNavigate, collapsed }) => {
+}> = ({
+  group,
+  label,
+  itemText,
+  onAction,
+  sound,
+  open,
+  onToggle,
+  currentPath,
+  onNavigate,
+  collapsed,
+}) => {
   const { t } = useTranslation();
-  const label = t(group.labelKey);
+  const icon = <MenuIcon icon={group.icon} size={24} />;
   // Lit by its rows only: the section switch above already marks /casino and /sports.
   const active = group.items.some((item) => item.href === currentPath);
   // A row without an icon keeps the empty column, so every label in the group lines up.
   const hasIcons = group.items.some((item) => item.icon);
-  const itemIcon = (item: RailSubItem): ReactNode =>
-    hasIcons &&
-    (item.icon ? (
-      <Glyph src={item.icon.src} size={20} />
-    ) : (
-      <span
-        aria-hidden="true"
-        className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] flex-shrink-0"
-      />
-    ));
-  // Original games (Dice, Limbo…) have their own sound; other groups' rows click generically.
-  const gameSound = group.id === 'originals' ? 'diceLimboLikeIcons(side)' : undefined;
+  const itemIcon = (item: SidebarItem): ReactNode =>
+    hasIcons && <MenuIcon icon={item.icon} size={20} />;
+  const railHref = group.href ?? group.items.find((item) => item.href)?.href ?? '#';
+  const idle = 'text-[#c9cdd9] hover:bg-white/5 hover:text-white';
 
   return (
     <div className="flex flex-shrink-0 flex-col gap-1 lg:gap-[calc(var(--u)*2)]">
       {collapsed && (
         <Link
-          href={group.href}
-          data-sound={gameSound}
+          href={railHref}
+          data-sound={sound}
           onClick={onNavigate}
           title={label}
           aria-current={active ? 'page' : undefined}
@@ -305,21 +345,31 @@ const RailGroupRow: FC<{
           className={`flex flex-col gap-1 lg:gap-[calc(var(--u)*2)] ${collapsed ? 'lg:hidden' : ''}`}
         >
           {group.items.map((item) => {
-            const text = t(item.labelKey);
-            const current = item.href === currentPath;
+            const text = itemText(item);
+            const current = Boolean(item.href) && item.href === currentPath;
+            const { action } = item;
             return (
-              <li key={item.labelKey}>
-                {item.href ? (
+              <li key={item.id}>
+                {action ? (
+                  <button
+                    type="button"
+                    data-sound={sound}
+                    onClick={() => {
+                      onNavigate();
+                      onAction(action);
+                    }}
+                    className={`${SUB_ROW} ${idle}`}
+                  >
+                    {itemIcon(item)}
+                    <span className="truncate">{text}</span>
+                  </button>
+                ) : item.href ? (
                   <Link
                     href={item.href}
-                    data-sound={gameSound}
+                    data-sound={sound}
                     onClick={onNavigate}
                     aria-current={current ? 'page' : undefined}
-                    className={`${SUB_ROW} ${
-                      current
-                        ? 'bg-white/10 font-semibold text-white'
-                        : 'text-[#c9cdd9] hover:bg-white/5 hover:text-white'
-                    }`}
+                    className={`${SUB_ROW} ${current ? 'bg-white/10 font-semibold text-white' : idle}`}
                   >
                     {itemIcon(item)}
                     <span className="truncate">{text}</span>
@@ -332,9 +382,7 @@ const RailGroupRow: FC<{
                   >
                     {itemIcon(item)}
                     <span className="truncate">{text}</span>
-                    <span className="ms-auto flex-shrink-0 rounded-full bg-[#ffe779]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#ffe779] lg:px-[calc(var(--u)*8)] lg:text-[length:max(9px,calc(var(--u)*10))]">
-                      {t('common.soon')}
-                    </span>
+                    <span className={SOON_BADGE}>{t('common.soon')}</span>
                   </span>
                 )}
               </li>
@@ -390,18 +438,32 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const socialLinks = useSocialLinks();
   const { token } = useAuth();
   const openSupport = useOpenSupport();
-  const { t } = useTranslation();
-  const {
-    rewards: rewardsOn,
-    promotions: promotionsOn,
-    referrals: referralsOn,
-  } = usePlatformFeatures();
+  const { t, locale } = useTranslation();
+  const features = usePlatformFeatures();
+  // The menu written in CRM -> Sidebar menus (null groups: the built-in one),
+  // and its fixed blocks: Welcome card, social icons, Suggestion Box.
+  const { groups: dbGroups, blocks } = useSidebarMenus();
   const { openLogin, openRegister } = useAuthModal();
   const { offer: welcomeCandidate } = useWelcomeOffer();
   const welcomeOffer = showsWelcomeOffer(welcomeCandidate) ? welcomeCandidate : null;
   const welcomePercent = welcomeOffer
     ? Math.max(...welcomeOffer.options.map((option) => option.match_percentage))
     : 0;
+  // The Welcome card: a live offer's own texts, otherwise the console's (with
+  // the built-in translations for blank ones). With no offer and no amount
+  // there is nothing to advertise, so the card stays away.
+  const welcomeBlock = blocks.welcome;
+  const welcomeAmount = welcomeBlock.amount?.trim() ?? '';
+  const showWelcome = welcomeBlock.enabled && (Boolean(welcomeOffer) || welcomeAmount !== '');
+  const welcomeHeading =
+    welcomeBlock.labelTranslations?.[locale]?.trim() ||
+    welcomeBlock.label?.trim() ||
+    t('lobby.rail.welcomePackage');
+  const welcomeNote = welcomeBlock.note?.trim() || t('lobby.rail.freeSpins', { count: 100 });
+  const suggestionLabel =
+    blocks.suggestion.labelTranslations?.[locale]?.trim() ||
+    blocks.suggestion.label?.trim() ||
+    t('lobby.rail.suggestionBox');
   const { theme, applyTheme } = useTheme();
   const { updateMe } = useMe();
   const [suggesting, setSuggesting] = useState(false);
@@ -433,10 +495,71 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   const sportsActive = pathname.startsWith('/sports');
   const currentPath = asPath.split(/[?#]/)[0];
 
+  /* --- The menu: from the console, or the built-in one ------------------ */
+
+  const known = (key: string | undefined): key is TranslationKey =>
+    Boolean(key) && Object.prototype.hasOwnProperty.call(EN_DICTIONARY, key as string);
+  /**
+   * The player's language first, then the operator's literal text (which
+   * overrides a built-in label), then the built-in translation, then the key.
+   */
+  const resolveText = (
+    translations: Partial<Record<string, string>> | undefined,
+    literal: string | undefined,
+    key: string | undefined
+  ): string =>
+    translations?.[locale]?.trim() || literal?.trim() || (known(key) ? t(key) : '') || key || '';
+  const itemText = (item: SidebarItem): string =>
+    resolveText(item.labelTranslations, item.label, item.labelKey);
+  const groupText = (group: SidebarGroup): string =>
+    resolveText(undefined, group.title, group.titleKey);
+
+  const flagOff = (flag: string | undefined): boolean =>
+    Boolean(flag) && (features as unknown as Record<string, unknown>)[flag as string] === false;
+  const routeFlag = (href: string | undefined): string | undefined => {
+    if (!href) return undefined;
+    const path = href.split(/[?#]/)[0];
+    const bare = path.replace(new RegExp(`^/(?:${LOCALES.join('|')})(?=/|$)`), '') || '/';
+    return ROUTE_FEATURE_FLAGS[bare];
+  };
+  const inSection = (section: SidebarSection): boolean =>
+    section === 'all' || (section === 'sports') === sportsActive;
+
+  // Each section keeps its own menu: sports pages list the sportsbook, every
+  // other page the casino's rows. Guests do not see sign-in-only rows, and a
+  // row whose platform switch is off (its own flag or its route's) is hidden.
+  const menuGroups = (dbGroups ?? DEFAULT_SIDEBAR_MENU)
+    .filter((group) => inSection(group.section))
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) =>
+          inSection(item.section) &&
+          !(item.requireAuth && !token) &&
+          !flagOff(item.featureFlag) &&
+          !flagOff(routeFlag(item.href))
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const runAction = (action: SidebarAction): void => {
+    if (action === 'openSupport') openSupport();
+    else if (action === 'openSearch') setSearching(true);
+    // Suggestions are tied to an account, so a guest signs in first.
+    else if (action === 'openSuggestions') {
+      if (token) setSuggesting(true);
+      else openLogin();
+    }
+  };
+
   // A group the player has not opened or closed starts open when it holds the
   // current page. The sportsbook opens on every visit to the sports pages and
-  // is not remembered, so the player always lands on the sports list.
-  const [openGroups, setOpenGroups] = useState<Partial<Record<RailGroupId, boolean>>>({});
+  // is not remembered, so the player always lands on the sports list. The
+  // built-in groups keep their ids (originals, casino, live) when they come
+  // from the console, so what the player left open stays open.
+  const openKey = (group: SidebarGroup): string =>
+    (group.titleKey && RAIL_ID_BY_TITLE_KEY[group.titleKey]) || group.id;
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   useEffect(() => {
     try {
       setOpenGroups(JSON.parse(localStorage.getItem(RAIL_OPEN_KEY) ?? '{}'));
@@ -448,16 +571,16 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
   useEffect(() => {
     if (sportsActive) setSportsOpen(true);
   }, [sportsActive]);
-  const groupOpen = (id: RailGroupId): boolean =>
-    id === 'sports'
+  const groupOpen = (group: SidebarGroup): boolean =>
+    group.section === 'sports'
       ? sportsOpen
-      : (openGroups[id] ?? RAIL_GROUPS[id].items.some((item) => item.href === currentPath));
-  const toggleGroup = (id: RailGroupId): void => {
-    if (id === 'sports') {
+      : (openGroups[openKey(group)] ?? group.items.some((item) => item.href === currentPath));
+  const toggleGroup = (group: SidebarGroup): void => {
+    if (group.section === 'sports') {
       setSportsOpen((open) => !open);
       return;
     }
-    const next = { ...openGroups, [id]: !groupOpen(id) };
+    const next = { ...openGroups, [openKey(group)]: !groupOpen(group) };
     setOpenGroups(next);
     try {
       localStorage.setItem(RAIL_OPEN_KEY, JSON.stringify(next));
@@ -466,25 +589,40 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
     }
   };
 
-  const icon = (src: StaticImageData): ReactNode => <Glyph src={src.src} size={24} />;
-
-  const groupIcons: Record<RailGroupId, StaticImageData> = {
-    originals: originalsIcon,
-    casino: casinoIcon,
-    live: liveIcon,
-    sports: sportsIcon,
-  };
-  const groupRow = (id: RailGroupId): ReactNode => (
-    <RailGroupRow
-      key={id}
-      group={RAIL_GROUPS[id]}
-      icon={icon(groupIcons[id])}
-      open={groupOpen(id)}
-      onToggle={() => toggleGroup(id)}
-      currentPath={currentPath}
-      onNavigate={onClose}
-      collapsed={collapsed}
-    />
+  const menuRows = menuGroups.map((group) =>
+    group.layout === 'flat' ? (
+      group.items.map((item) => {
+        const { action } = item;
+        return (
+          <RailLink
+            key={item.id}
+            href={item.href}
+            onSelect={action ? () => runAction(action) : undefined}
+            soonLabel={!action && !item.href ? t('common.soon') : undefined}
+            active={Boolean(item.href) && item.href === currentPath}
+            icon={<MenuIcon icon={item.icon} size={24} />}
+            onClick={onClose}
+            collapsed={collapsed}
+          >
+            {itemText(item)}
+          </RailLink>
+        );
+      })
+    ) : (
+      <RailGroupRow
+        key={group.id}
+        group={group}
+        label={groupText(group)}
+        itemText={itemText}
+        onAction={runAction}
+        sound={openKey(group) === 'originals' ? 'diceLimboLikeIcons(side)' : undefined}
+        open={groupOpen(group)}
+        onToggle={() => toggleGroup(group)}
+        currentPath={currentPath}
+        onNavigate={onClose}
+        collapsed={collapsed}
+      />
+    )
   );
 
   return (
@@ -569,197 +707,72 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
             />
           </div>
 
-          {/* --- Welcome package ------------------------------------------ */}
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              // Signed in, the offer lives on the bonuses page.
-              if (token) void push('/bonuses');
-              else openRegister();
-            }}
-            title={
-              welcomeOffer
-                ? t('welcome.bannerHeadline', { percent: welcomePercent })
-                : t('lobby.rail.welcomeTitle', { amount: '$1,500', count: 100 })
-            }
-            className={`hidden! mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rounded-[24px] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
-              collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
-            }`}
-          >
-            {/* Collapsed, the rail is 76 wide and the amount does not fit: the
+          {/* --- Welcome package (CRM -> Sidebar menus, fixed blocks) ------ */}
+          {showWelcome && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                // Signed in, the offer lives on the bonuses page.
+                if (token) void push('/bonuses');
+                else openRegister();
+              }}
+              title={
+                welcomeOffer
+                  ? t('welcome.bannerHeadline', { percent: welcomePercent })
+                  : `${welcomeHeading}: ${welcomeAmount} ${welcomeNote}`
+              }
+              className={`mt-[18px] flex flex-shrink-0 flex-col gap-1.5 rounded-[24px] bg-[#1b1f29] px-4 pb-[15px] pt-[18px] text-start lg:mt-[calc(var(--u)*24)] lg:gap-[calc(var(--u)*6)] lg:rounded-[calc(var(--u)*16.25)] lg:px-[calc(var(--u)*16.25)] lg:py-[calc(var(--u)*17.5)] transition-colors hover:bg-[#222735] ${
+                collapsed ? 'lg:items-center lg:px-0 lg:text-center' : ''
+              }`}
+            >
+              {/* Collapsed, the rail is 76 wide and the amount does not fit: the
               package becomes a gold gift, like the rows below becoming their
               icons. The full offer stays in the title. */}
-            {collapsed && (
-              <GiftIcon
-                size={24}
-                className="hidden h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] text-[#ffe779] lg:block"
-              />
-            )}
-            <span
-              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold uppercase leading-[calc(var(--u)*20)] text-[#d5d8e2] ${
-                collapsed ? 'lg:hidden' : ''
-              }`}
-            >
-              {welcomeOffer ? t('welcome.railLabel') : t('lobby.rail.welcomePackage')}
-            </span>
-            <span
-              className={`block text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
-                collapsed ? 'lg:hidden' : ''
-              }`}
-            >
-              {welcomeOffer ? t('welcome.railAmount', { percent: welcomePercent }) : '$1,500'}
-            </span>
-            <span
-              className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-medium leading-[calc(var(--u)*20)] text-[#d5d8e2] ${
-                collapsed ? 'lg:hidden' : ''
-              }`}
-            >
-              {welcomeOffer ? t('welcome.railNote') : t('lobby.rail.freeSpins', { count: 100 })}
-            </span>
-          </button>
+              {collapsed && (
+                <GiftIcon
+                  size={24}
+                  className="hidden h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] text-[#ffe779] lg:block"
+                />
+              )}
+              <span
+                className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-semibold uppercase leading-[calc(var(--u)*20)] text-[#d5d8e2] ${
+                  collapsed ? 'lg:hidden' : ''
+                }`}
+              >
+                {welcomeOffer ? t('welcome.railLabel') : welcomeHeading}
+              </span>
+              <span
+                className={`block text-[length:max(min(11px,28px),calc(var(--u)*28))] font-bold leading-[calc(var(--u)*36)] tracking-[-0.02em] text-[#f0f1f5] ${
+                  collapsed ? 'lg:hidden' : ''
+                }`}
+              >
+                {welcomeOffer
+                  ? t('welcome.railAmount', { percent: welcomePercent })
+                  : welcomeAmount}
+              </span>
+              <span
+                className={`block text-[length:max(min(11px,14px),calc(var(--u)*14))] font-medium leading-[calc(var(--u)*20)] text-[#d5d8e2] ${
+                  collapsed ? 'lg:hidden' : ''
+                }`}
+              >
+                {welcomeOffer ? t('welcome.railNote') : welcomeNote}
+              </span>
+            </button>
+          )}
 
           {/* --- Shortcuts ------------------------------------------------- */}
           <nav className="thin-scrollbar -mx-1 mt-[18px] flex flex-shrink-0 flex-col gap-2.5 px-1 lg:mt-[calc(var(--u)*12)] lg:min-h-0 lg:flex-1 lg:flex-shrink lg:gap-[calc(var(--u)*4)] lg:overflow-y-auto">
-            {/* Each section keeps its own menu: sports pages list the
-                sportsbook, every other page the casino's rows. The rows
-                after the casino's are shared. */}
-            {sportsActive && groupRow('sports')}
-            <RailLink
-              href="/rolluck-oath"
-              active={pathname === '/rolluck-oath'}
-              icon={icon(oathIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.rolluckOath')}
-            </RailLink>
-            {!sportsActive && (
-              <>
-                <RailLink
-                  href="/recents"
-                  active={pathname === '/recents'}
-                  icon={icon(recentIcon)}
-                  onClick={onClose}
-                  collapsed={collapsed}
-                >
-                  {t('nav.recents')}
-                </RailLink>
-                <RailLink
-                  href="/favourites"
-                  active={pathname === '/favourites'}
-                  icon={icon(favouritesIcon)}
-                  onClick={onClose}
-                  collapsed={collapsed}
-                >
-                  {t('nav.favourites')}
-                </RailLink>
-                {groupRow('originals')}
-                {groupRow('casino')}
-                {groupRow('live')}
-              </>
-            )}
-            {/* <RailLink
-            onSelect={() => setThemeOpen(true)}
-            active={false}
-            icon={icon(themeIcon)}
-            onClick={onClose}
-            collapsed={collapsed}
-          >
-            {t('nav.theme')}
-          </RailLink> */}
-            <RailLink
-              href="/vip-club"
-              active={pathname === '/vip-club'}
-              icon={icon(vipIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.vipClub')}
-            </RailLink>
-            {!sportsActive && (
-              <RailLink
-                href="/tournaments"
-                active={pathname === '/tournaments'}
-                icon={icon(tournamentsIcon)}
-                onClick={onClose}
-                collapsed={collapsed}
-              >
-                {t('nav.tournaments')}
-              </RailLink>
-            )}
-            {promotionsOn && (
-              <RailLink
-                href="/promotions"
-                active={pathname === '/promotions'}
-                icon={icon(promotionIcon)}
-                onClick={onClose}
-                collapsed={collapsed}
-              >
-                {t('nav.promotions')}
-              </RailLink>
-            )}
-            <RailLink
-              href="/bonuses"
-              active={pathname === '/bonuses'}
-              icon={icon(bonusesIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('nav.bonuses')}
-            </RailLink>
-
-            {/* Built features the design's list leaves out, kept at the end and
-              below its fold so nothing becomes unreachable. Neither has a
-              `nav-*.svg` beside the rows above, because the design never drew
-              them a row — they take a line icon at the same 24 box instead.
-
-              Rewards and Referral are hidden while switched off
-              platform-wide, since their pages render nothing in that state. */}
-            {rewardsOn && (
-              <RailLink
-                href="/rewards"
-                active={pathname === '/rewards'}
-                icon={
-                  <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
-                    <CoinIcon size={18} strokeWidth={1.6} />
-                  </span>
-                }
-                onClick={onClose}
-                collapsed={collapsed}
-              >
-                {t('nav.rewards')}
-              </RailLink>
-            )}
-            {referralsOn && (
-              <RailLink
-                href="/referral"
-                active={pathname === '/referral'}
-                icon={
-                  <span className="flex h-[calc(var(--u)*24)] w-[calc(var(--u)*24)] flex-shrink-0 items-center justify-center">
-                    <HandshakeIcon size={18} strokeWidth={1.6} />
-                  </span>
-                }
-                onClick={onClose}
-                collapsed={collapsed}
-              >
-                {t('aff.title')}
-              </RailLink>
-            )}
-            <RailLink
-              onSelect={openSupport}
-              active={false}
-              icon={icon(supportIcon)}
-              onClick={onClose}
-              collapsed={collapsed}
-            >
-              {t('lobby.rail.liveSupport')}
-            </RailLink>
+            {/* The console's menu (CRM -> Sidebar menus), or the built-in one
+                (constants/sidebarMenu) when it has none or cannot be reached.
+                Sports pages list the sportsbook, other pages the casino's rows;
+                rows behind a switched-off platform feature are left out. */}
+            {menuRows}
           </nav>
 
           {/* --- Socials and contact pills --------------------------------- */}
           <div className="mt-[67px] flex-shrink-0 border-t border-white/[0.08] pt-4 lg:mt-0 lg:border-0 lg:pt-[calc(var(--u)*13)]">
-            {socialLinks.length > 0 && (
+            {blocks.socials.enabled && socialLinks.length > 0 && (
               // Collapsed, the socials step aside so every menu row keeps its place on screen.
               <div
                 className={`flex items-center justify-center gap-3.5 lg:gap-[calc(var(--u)*18)] lg:py-[calc(var(--u)*6)] ${
@@ -782,15 +795,17 @@ const PlayerSidebar: FC<Props> = ({ open, onClose, collapsed }) => {
               </div>
             )}
 
-            <div className="mt-5 lg:mt-[calc(var(--u)*11)]">
-              <RailButton
-                icon={suggestionIcon}
-                label={t('lobby.rail.suggestionBox')}
-                // Suggestions are tied to an account, so a guest signs in first.
-                onClick={() => (token ? setSuggesting(true) : openLogin())}
-                collapsed={collapsed}
-              />
-            </div>
+            {blocks.suggestion.enabled && (
+              <div className="mt-5 lg:mt-[calc(var(--u)*11)]">
+                <RailButton
+                  icon={suggestionIcon}
+                  label={suggestionLabel}
+                  // Suggestions are tied to an account, so a guest signs in first.
+                  onClick={() => (token ? setSuggesting(true) : openLogin())}
+                  collapsed={collapsed}
+                />
+              </div>
+            )}
           </div>
         </div>
       </aside>
