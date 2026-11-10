@@ -31,7 +31,7 @@ import type { DiceConfig, Game } from '@/types';
 import Seo, { type JsonLd } from '@/components/seo/Seo';
 import { gameDescription } from '@/components/seo/gameMeta';
 import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
-import { displayDecimal } from '@/utils/decimalPrecision';
+import { useBetLimits } from '@/hooks/useBetLimits';
 
 interface Props {
   game: Game | null;
@@ -47,21 +47,52 @@ interface Props {
   providerSlug: string | null;
 }
 
-/**
- * Deterministic, so the server and client render the same string. Synced games
- * may not publish a figure, which reads as a dash rather than a misleading 0.
- */
-const money = (value: number | null, currency?: string | null): string =>
-  value === null
-    ? '—'
-    : `${displayDecimal(value, 'casino.game_limits', 'en-US') ?? value.toFixed(2)}${currency ? ` ${currency}` : ''}`;
-
 const Stat: FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
     <dt className="text-[11px] uppercase tracking-wide text-[#9da2b4]">{label}</dt>
     <dd className="mt-1 text-base font-semibold text-[#f0f1f5] tabular-nums">{value}</dd>
   </div>
 );
+
+/**
+ * The game's published figures. Synced games do not always carry every one
+ * (Tequity's catalogue reports no RTP or bet limits), and a figure the game
+ * does not have is left out, label and all, rather than shown as a dash.
+ * Bet limits read in the player's display currency.
+ */
+const GameStats: FC<{ game: Game }> = ({ game }) => {
+  const { t } = useTranslation();
+  const limits = useBetLimits(game);
+  const maxWin = maxWinLabel(game);
+
+  const stats: { label: string; value: string }[] = [];
+  if (game.rtp !== null) stats.push({ label: t('game.rtp'), value: `${game.rtp.toFixed(2)}%` });
+  if (limits.min) stats.push({ label: t('game.minBet'), value: limits.min });
+  if (limits.max) stats.push({ label: t('game.maxBet'), value: limits.max });
+  if (game.volatility) {
+    stats.push({ label: t('game.volatility'), value: t(`game.vol.${game.volatility}`) });
+  }
+  if (maxWin) stats.push({ label: t('game.maxWin'), value: maxWin });
+  if (game.release_date) {
+    stats.push({
+      label: t('game.released'),
+      value: new Date(`${game.release_date}T00:00:00Z`).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
+      }),
+    });
+  }
+
+  if (stats.length === 0) return null;
+  return (
+    <dl className="mt-6 grid grid-cols-3 gap-3 max-w-md">
+      {stats.map((stat) => (
+        <Stat key={stat.label} label={stat.label} value={stat.value} />
+      ))}
+    </dl>
+  );
+};
 
 const PRIMARY =
   'rl-btn-gold inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold';
@@ -250,31 +281,7 @@ const GamePage: FC<Props> = ({ game, related, failed, dice, providerSlug }) => {
                 )}
               </p>
 
-              <dl className="mt-6 grid grid-cols-3 gap-3 max-w-md">
-                <Stat
-                  label={t('game.rtp')}
-                  value={game.rtp === null ? '—' : `${game.rtp.toFixed(2)}%`}
-                />
-                <Stat label={t('game.minBet')} value={money(game.min_bet, game.bet_currency)} />
-                <Stat label={t('game.maxBet')} value={money(game.max_bet, game.bet_currency)} />
-                {game.volatility && (
-                  <Stat label={t('game.volatility')} value={t(`game.vol.${game.volatility}`)} />
-                )}
-                {maxWinLabel(game) && <Stat label={t('game.maxWin')} value={maxWinLabel(game)!} />}
-                {game.release_date && (
-                  <Stat
-                    label={t('game.released')}
-                    value={new Date(`${game.release_date}T00:00:00Z`).toLocaleDateString(
-                      undefined,
-                      {
-                        year: 'numeric',
-                        month: 'short',
-                        timeZone: 'UTC',
-                      }
-                    )}
-                  />
-                )}
-              </dl>
+              <GameStats game={game} />
               {featureKeys(game).length > 0 && (
                 <ul aria-label={t('game.features')} className="mt-3 flex max-w-md flex-wrap gap-2">
                   {featureKeys(game).map((key) => (
