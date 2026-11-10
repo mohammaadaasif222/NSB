@@ -89,6 +89,12 @@ export interface Game {
   max_bet: number | null;
   /** Currency of the bet limits; null means the platform currency. */
   bet_currency: string | null;
+  /**
+   * USD per one unit of bet_currency (1 for USD), so the limits can be shown
+   * in the player's display currency; null when no rate is known. Use
+   * useBetLimits rather than reading the limits directly.
+   */
+  bet_currency_rate: number | null;
   /** Height as a percentage of width (56.25 = 16:9); sizes the game frame. */
   display_ratio: number | null;
   demo_available: boolean;

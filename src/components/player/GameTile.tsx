@@ -13,6 +13,7 @@ import { useJackpots } from '@/hooks/useJackpots';
 import { useActiveBonus } from '@/context/ActiveBonusContext';
 import personIcon from '@/assets/lobby/person.svg';
 import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
+import { useBetLimits } from '@/hooks/useBetLimits';
 
 interface Props {
   game: Game;
@@ -169,14 +170,6 @@ const VOLATILITY_KEY: Record<GameVolatility, TranslationKey> = {
   HIGH: 'game.vol.HIGH',
 };
 
-/** The bet limits as one figure — "0.1 – 100 USD" — or null when the game publishes neither. */
-const betLimits = (game: Game): string | null => {
-  if (game.min_bet === null && game.max_bet === null) return null;
-  const limit = (value: number | null): string => (value === null ? '—' : String(value));
-  const currency = game.bet_currency ? ` ${game.bet_currency}` : '';
-  return `${limit(game.min_bet)} – ${limit(game.max_bet)}${currency}`;
-};
-
 /**
  * The tile's info face: what a player wants before opening a game — studio,
  * RTP, volatility, genre, bet limits — over the art, in the card's own shape,
@@ -188,6 +181,7 @@ const betLimits = (game: Game): string | null => {
  */
 const InfoFace: FC<{ game: Game; id: string; surface?: string }> = ({ game, id, surface }) => {
   const { t } = useTranslation();
+  const limits = useBetLimits(game);
 
   const rows: { label: string; value: string }[] = [
     { label: t('game.provider'), value: game.provider },
@@ -198,8 +192,14 @@ const InfoFace: FC<{ game: Game; id: string; surface?: string }> = ({ game, id, 
   }
   const maxWin = maxWinLabel(game);
   if (maxWin) rows.push({ label: t('game.maxWin'), value: maxWin });
-  const limits = betLimits(game);
-  if (limits) rows.push({ label: t('game.betLimits'), value: limits });
+  // One "min – max" row; a game that publishes only one limit gets that row alone.
+  if (limits.min && limits.max) {
+    rows.push({ label: t('game.betLimits'), value: `${limits.min} – ${limits.max}` });
+  } else if (limits.min) {
+    rows.push({ label: t('game.minBet'), value: limits.min });
+  } else if (limits.max) {
+    rows.push({ label: t('game.maxBet'), value: limits.max });
+  }
   // The genre only while there is room; the features below say more.
   const features = featureKeys(game);
   if (game.genre && rows.length < 5 && features.length === 0) {
@@ -446,9 +446,12 @@ const GameTile: FC<Props> = ({
           <img src={personIcon.src} alt="" className="h-[6.06cqw] w-[6.06cqw]" />
           {playersOn(game.id)}
         </FootPill>
-        <FootPill>
-          {t('game.rtp')}: {game.rtp}
-        </FootPill>
+        {/* Synced games may not publish an RTP; no figure, no pill. */}
+        {game.rtp !== null && (
+          <FootPill>
+            {t('game.rtp')}: {game.rtp}
+          </FootPill>
+        )}
       </span>
     </div>
   );
@@ -482,7 +485,7 @@ const GameTile: FC<Props> = ({
             // the only point that knows WHICH shelf the player came from, and
             // that is half of what makes the impression figure readable.
             onClick={() => trackGameOpen(game.slug, surface)}
-            title={`${game.title} — ${game.provider} · ${t('game.rtp')} ${game.rtp}`}
+            title={`${game.title} — ${game.provider}${game.rtp !== null ? ` · ${t('game.rtp')} ${game.rtp}` : ''}`}
             className="rl-card-shape block text-left focus:outline-none focus-visible:brightness-110"
           >
             {art}
