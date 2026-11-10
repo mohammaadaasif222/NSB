@@ -157,7 +157,7 @@ const StreamersRow: FC<{ streams: LiveStream[]; title?: string }> = ({ streams, 
 
   return (
     <section className="space-y-[calc(var(--u)*14)] lg:space-y-[calc(var(--u)*45)]">
-      <h2 className="text-center text-[length:max(min(11px,24px),calc(var(--u)*24))] font-semibold leading-[calc(var(--u)*32)] tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(min(11px,36px),calc(var(--u)*36))] lg:font-bold lg:leading-[calc(var(--u)*44)] lg:text-[#f2f5f9]">
+      <h2 className="overflow-hidden text-ellipsis whitespace-nowrap text-center text-[length:min(24px,calc((100vw-40px)/15))] font-semibold leading-[calc(var(--u)*32)] tracking-[-0.02em] text-[#f0f1f5] lg:text-[length:max(min(11px,36px),calc(var(--u)*36))] lg:font-bold lg:leading-[calc(var(--u)*44)] lg:text-[#f2f5f9]">
         {title ?? t('dash.liveStreamers')}
       </h2>
 

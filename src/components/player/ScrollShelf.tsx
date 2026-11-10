@@ -34,6 +34,8 @@ interface Props {
    * dissolve and the items run in the ordinary single row.
    */
   paged?: boolean;
+  /** Rows in each phone page of a `paged` shelf. */
+  pageRows?: number;
   /** A row between the heading and the track — the sportsbook's sport chips. */
   toolbar?: ReactNode;
   /** Classes for the heading's end cluster, e.g. to drop it on desktop. */
@@ -55,8 +57,8 @@ interface Props {
   children: ReactNode;
 }
 
-/** Items per phone page in a `paged` shelf: three across, two down. */
-const PAGE_SIZE = 6;
+/** Items across each phone page of a `paged` shelf. */
+const PAGE_COLS = 3;
 
 /** Start loading the next batch while this many viewports of items are still ahead. */
 const PREFETCH_VIEWPORTS = 2;
@@ -115,6 +117,7 @@ const ScrollShelf: FC<Props> = ({
   id,
   track = SHELF_TRACK,
   paged = false,
+  pageRows = 2,
   toolbar,
   endClassName,
   tight = false,
@@ -268,7 +271,7 @@ const ScrollShelf: FC<Props> = ({
         // Room above and below for the tiles' drop shadows, which the
         // scroller would otherwise clip.
         <div ref={ref} className={`${paged ? PAGED_TRACK : track} -my-4 py-[calc(var(--u)*16)]`}>
-          {paged ? <Pages>{children}</Pages> : children}
+          {paged ? <Pages size={PAGE_COLS * pageRows}>{children}</Pages> : children}
         </div>
       )}
     </section>
@@ -277,12 +280,12 @@ const ScrollShelf: FC<Props> = ({
 
 const keyOf = (node: ReactNode): Key => (isValidElement(node) && node.key !== null ? node.key : '');
 
-/** Splits a paged shelf's items into phone pages of PAGE_SIZE. */
-const Pages: FC<{ children: ReactNode }> = ({ children }) => {
+/** Splits a paged shelf's items into phone pages of `size`. */
+const Pages: FC<{ size: number; children: ReactNode }> = ({ size, children }) => {
   const items = Children.toArray(children);
   const pages: ReactNode[][] = [];
-  for (let i = 0; i < items.length; i += PAGE_SIZE) {
-    pages.push(items.slice(i, i + PAGE_SIZE));
+  for (let i = 0; i < items.length; i += size) {
+    pages.push(items.slice(i, i + size));
   }
 
   return (

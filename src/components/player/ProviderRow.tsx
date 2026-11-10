@@ -136,6 +136,8 @@ interface Props {
    * lists: the player's favourites.
    */
   viewAll?: boolean;
+  /** Rows in each phone page: one signed out, two signed in, as the design draws them. */
+  pageRows?: number;
 }
 
 /**
@@ -154,6 +156,7 @@ const ProviderRow: FC<Props> = ({
   title,
   titleKey = 'dash.providers',
   viewAll = true,
+  pageRows,
 }) => {
   const { t } = useTranslation();
 
@@ -162,7 +165,12 @@ const ProviderRow: FC<Props> = ({
   }
 
   return (
-    <ScrollShelf title={title ?? t(titleKey)} href={viewAll ? PROVIDERS_PATH : undefined} paged>
+    <ScrollShelf
+      title={title ?? t(titleKey)}
+      href={viewAll ? PROVIDERS_PATH : undefined}
+      paged
+      pageRows={pageRows}
+    >
       {providers.map((provider) => (
         <ProviderCard key={provider.id} provider={provider} />
       ))}

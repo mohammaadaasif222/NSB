@@ -14,6 +14,8 @@ export interface LiveBet {
   /** payout / bet, 2 decimals. */
   multiplier: string;
   settled_at: string;
+  /** Put on the row by an operator, not played: shown with a Demo badge. */
+  is_demo?: boolean;
 }
 
 /** Null when the request failed, so a caller can keep what it last showed. */

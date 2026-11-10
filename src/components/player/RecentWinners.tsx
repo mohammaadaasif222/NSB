@@ -134,12 +134,15 @@ const WinnerCard: FC<{ bet: LiveBet; slot?: boolean; stop?: number }> = ({
   const { t } = useTranslation();
   const { game } = bet;
   const payout = withCurrency(formatAmount(bet.payout_usd, 2, 'casino.bets'), 'USD');
-  const jackpot = slot && parseFloat(bet.multiplier) >= JACKPOT_AT;
+  // Only real play earns the jackpot frame; a demo win stays a plain card.
+  const jackpot = slot && !bet.is_demo && parseFloat(bet.multiplier) >= JACKPOT_AT;
 
   return (
     <Link
       href={gameHref(game.slug)}
-      title={t('lobby.winners.cardTitle', { user: bet.player, payout, game: game.title })}
+      title={`${t('lobby.winners.cardTitle', { user: bet.player, payout, game: game.title })}${
+        bet.is_demo ? ` · ${t('lobby.winners.demoTitle')}` : ''
+      }`}
       className={`group ${slot ? 'relative block h-full' : CARD_FRAME} ${
         jackpot ? 'rl-jackpot' : ''
       }`}
@@ -170,6 +173,16 @@ const WinnerCard: FC<{ bet: LiveBet; slot?: boolean; stop?: number }> = ({
           <span className="truncate text-[max(10px,7.07cqw)] font-medium leading-[1.43] text-[#f0f1f5]">
             {bet.player}
           </span>
+          {/* An operator's demo win, never passed off as play: a quiet
+              word after the name, so the card otherwise reads as any other. */}
+          {bet.is_demo && (
+            <span
+              title={t('lobby.winners.demoTitle')}
+              className="ml-[-2cqw] flex-shrink-0 text-[max(9px,6cqw)] leading-[1.43] text-white/50"
+            >
+              · {t('lobby.winners.demo').toLowerCase()}
+            </span>
+          )}
         </span>
         <span className="flex items-center justify-between gap-[calc(var(--u)*4)] text-[max(10px,7.07cqw)] leading-[1.43] tabular-nums">
           {slot ? (

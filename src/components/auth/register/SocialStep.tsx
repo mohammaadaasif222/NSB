@@ -1,10 +1,15 @@
 import type { FC, ReactNode } from 'react';
 import { useTranslation } from '@/context/I18nContext';
-import { TelegramMark } from '@/components/brand';
 import Button from '@/components/ui/Button';
+import {
+  SOCIAL_PROVIDER_UI,
+  useSocialProviderClick,
+  type SocialLoginActions,
+} from '@/components/auth/socialProviders';
+import { useSocialLoginProviders } from '@/hooks/useSocialLoginProviders';
 
 interface SocialStepProps {
-  onTelegram: () => void;
+  actions: SocialLoginActions;
 }
 
 /** One provider: its mark beside its name, centred in the design's 56px pill. */
@@ -24,19 +29,30 @@ const ProviderButton: FC<{
 
 /**
  * "Register with": the social providers, one full-width pill each — what
- * "more option" opens. Telegram is the one provider here today.
+ * "more option" opens. Which ones, and their order, come from the admin
+ * console (CRM → Social login).
  */
-const SocialStep: FC<SocialStepProps> = ({ onTelegram }) => {
+const SocialStep: FC<SocialStepProps> = ({ actions }) => {
   const { t } = useTranslation();
+  const { order } = useSocialLoginProviders();
+  const clickFor = useSocialProviderClick(actions);
 
   return (
     <div className="flex flex-col gap-3.5 pb-5">
-      <ProviderButton
-        icon={<TelegramMark size={20} />}
-        colour="text-[#2aabee]"
-        label={t('auth.methodTelegram')}
-        onClick={onTelegram}
-      />
+      {order
+        .filter((provider) => clickFor(provider))
+        .map((provider) => {
+          const { label, colour, Mark } = SOCIAL_PROVIDER_UI[provider];
+          return (
+            <ProviderButton
+              key={provider}
+              icon={<Mark size={20} />}
+              colour={colour}
+              label={t(label)}
+              onClick={clickFor(provider)!}
+            />
+          );
+        })}
     </div>
   );
 };

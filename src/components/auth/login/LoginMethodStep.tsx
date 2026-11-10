@@ -4,6 +4,8 @@ import { GmailMark } from '@/components/brand';
 import { MailIcon, PhoneIcon, UserIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
 import SocialShortcuts from '@/components/auth/SocialShortcuts';
+import type { SocialLoginActions } from '@/components/auth/socialProviders';
+import { useSocialLoginProviders } from '@/hooks/useSocialLoginProviders';
 import { useTotalRegistrationsLabel } from '@/hooks/useTotalRegistrations';
 
 import type { LoginMethod } from '@/types';
@@ -11,7 +13,8 @@ import type { LoginMethod } from '@/types';
 interface LoginMethodStepProps {
   onSelectMethod: (method: LoginMethod) => void;
   onGoogle: () => void;
-  onTelegram: () => void;
+  /** Handlers for the round provider shortcuts; which show is set by the admin. */
+  socialActions: SocialLoginActions;
   onMore?: () => void;
   googleBusy?: boolean;
 }
@@ -20,11 +23,13 @@ interface LoginMethodStepProps {
 const LoginMethodStep: FC<LoginMethodStepProps> = ({
   onSelectMethod,
   onGoogle,
-  onTelegram,
+  socialActions,
+  onMore,
   googleBusy,
 }) => {
   const { t } = useTranslation();
   const totalRegistrations = useTotalRegistrationsLabel();
+  const { isEnabled } = useSocialLoginProviders();
 
   return (
     <div className="space-y-3">
@@ -32,14 +37,19 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({
         tab={t('loginModal.suggestion')}
         phoneTab={totalRegistrations}
         methods={[
-          {
-            id: 'gmail',
-            icon: <GmailMark size={28} />,
-            label: t('auth.methodGmail'),
-            badge: t('registerModal.recommended'),
-            onClick: onGoogle,
-            disabled: googleBusy,
-          },
+          // Switched off in the admin console → no Gmail button at all.
+          ...(isEnabled('google')
+            ? [
+                {
+                  id: 'gmail',
+                  icon: <GmailMark size={28} />,
+                  label: t('auth.methodGmail'),
+                  badge: t('registerModal.recommended'),
+                  onClick: onGoogle,
+                  disabled: googleBusy,
+                },
+              ]
+            : []),
           {
             id: 'username',
             icon: <UserIcon size={28} strokeWidth={1.5} />,
@@ -63,10 +73,7 @@ const LoginMethodStep: FC<LoginMethodStepProps> = ({
         ]}
       />
 
-      <SocialShortcuts
-        onTelegram={onTelegram}
-        className="pt-[2px] sm:pt-1"
-      />
+      <SocialShortcuts actions={socialActions} onMore={onMore} className="pt-[2px] sm:pt-1" />
     </div>
   );
 };

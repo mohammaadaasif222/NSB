@@ -168,7 +168,7 @@ const Lobby: FC<Props> = ({
       case 'sports':
         return <SportsShelf viewAll="/sports" paged={false} title={title} />;
       case 'providers':
-        return <ProviderRow providers={providers} title={title} />;
+        return <ProviderRow providers={providers} title={title} pageRows={player ? 2 : 1} />;
       case 'jackpots':
         return <JackpotShelf title={title} />;
       case 'streamers':

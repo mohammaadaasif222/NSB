@@ -4,6 +4,8 @@ import { GmailMark } from '@/components/brand';
 import { MailIcon, PhoneIcon } from '@/components/icons';
 import AuthMethodList from '@/components/auth/AuthMethodList';
 import SocialShortcuts from '@/components/auth/SocialShortcuts';
+import type { SocialLoginActions } from '@/components/auth/socialProviders';
+import { useSocialLoginProviders } from '@/hooks/useSocialLoginProviders';
 import { useTotalRegistrationsLabel } from '@/hooks/useTotalRegistrations';
 
 import type { SignupMethod } from '@/types';
@@ -11,7 +13,8 @@ import type { SignupMethod } from '@/types';
 interface MethodStepProps {
   onSelectMethod: (method: SignupMethod) => void;
   onGoogle: () => void;
-  onTelegram: () => void;
+  /** Handlers for the round provider shortcuts; which show is set by the admin. */
+  socialActions: SocialLoginActions;
   onMore?: () => void;
   googleBusy?: boolean;
 }
@@ -20,25 +23,32 @@ interface MethodStepProps {
 const MethodStep: FC<MethodStepProps> = ({
   onSelectMethod,
   onGoogle,
-  onTelegram,
+  socialActions,
+  onMore,
   googleBusy,
 }) => {
   const { t } = useTranslation();
   const totalRegistrations = useTotalRegistrationsLabel();
+  const { isEnabled } = useSocialLoginProviders();
 
   return (
     <div className="space-y-3">
       <AuthMethodList
         tab={totalRegistrations}
         methods={[
-          {
-            id: 'gmail',
-            icon: <GmailMark size={28} />,
-            label: t('auth.methodGmail'),
-            badge: t('registerModal.recommended'),
-            onClick: onGoogle,
-            disabled: googleBusy,
-          },
+          // Switched off in the admin console → no Gmail button at all.
+          ...(isEnabled('google')
+            ? [
+                {
+                  id: 'gmail',
+                  icon: <GmailMark size={28} />,
+                  label: t('auth.methodGmail'),
+                  badge: t('registerModal.recommended'),
+                  onClick: onGoogle,
+                  disabled: googleBusy,
+                },
+              ]
+            : []),
           {
             id: 'mobile',
             icon: <PhoneIcon size={26} strokeWidth={1.5} />,
@@ -54,9 +64,7 @@ const MethodStep: FC<MethodStepProps> = ({
         ]}
       />
 
-      <SocialShortcuts
-        onTelegram={onTelegram}
-      />
+      <SocialShortcuts actions={socialActions} onMore={onMore} />
     </div>
   );
 };

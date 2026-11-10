@@ -76,6 +76,16 @@ export const TelegramMark: FC<{ size?: number }> = ({ size = 16 }) => (
   </svg>
 );
 
+export const SteamMark: FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.6" />
+    <circle cx="8.5" cy="15" r="2.2" fill="currentColor" />
+    <circle cx="15" cy="8.5" r="2.8" stroke="currentColor" strokeWidth="1.6" />
+    <circle cx="15" cy="8.5" r="1" fill="currentColor" />
+    <path d="M8.9 14.2 12.8 10.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
 export const FacebookMark: FC<{ size?: number }> = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.2c-.3 0-1.3-.2-2.5-.2-2.5 0-4.2 1.5-4.2 4.3v2.2H7.6v3.7h2.7V22H14v-9.8h2.8l.4-3.7z" />

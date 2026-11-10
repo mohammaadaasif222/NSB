@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type FC, type FormEvent } from 'react';
+import { useState, type CSSProperties, type FC, type FormEvent, type ReactNode } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image, { getImageProps, type StaticImageData } from 'next/image';
@@ -12,7 +12,6 @@ import casinoRoulette from '@/assets/casino-roulette-mobile.webp';
 import sportsBall from '@/assets/sports-ball-glass-mobile.webp';
 import gmailIcon from '@/assets/lobby/gmail.svg';
 import mailIcon from '@/assets/lobby/mail.svg';
-import telegramIcon from '@/assets/lobby/telegram.svg';
 import chevronDown from '@/assets/lobby/chevron-down.svg';
 import trustPrivacy from '@/assets/lobby/trust-privacy.svg';
 import trustFair from '@/assets/lobby/trust-fair.svg';
@@ -22,6 +21,13 @@ import { useTranslation } from '@/context/I18nContext';
 import { useAuthModal } from '@/context/AuthModalContext';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import { useSteamAuth } from '@/hooks/useSteamAuth';
+import { useSocialLoginProviders } from '@/hooks/useSocialLoginProviders';
+import {
+  DiscMark,
+  SOCIAL_PROVIDER_UI,
+  useSocialProviderClick,
+} from '@/components/auth/socialProviders';
 import BonusBanner from '@/components/player/BonusBanner';
 import { WinnersRow } from '@/components/player/TopWinnersTicker';
 import { DIAL_CODES, MOBILE_PATTERN } from '@/constants/auth';
@@ -142,13 +148,14 @@ const ProviderButton: FC<{
   disabled?: boolean;
   /** Sound key (`data-sound`); the generic click if unset. */
   sound?: string;
-}> = ({ icon, label, onClick, disabled, sound }) => (
+  className?: string;
+}> = ({ icon, label, onClick, disabled, sound, className = '' }) => (
   <button
     type="button"
     data-sound={sound}
     onClick={onClick}
     disabled={disabled}
-    className="flex h-[calc(var(--u)*64)] flex-col items-center justify-center rounded-[calc(var(--u)*34)] bg-[#13171f] px-[calc(var(--u)*8)] transition-colors hover:bg-[#1a1f29] disabled:opacity-60 lg:h-[calc(var(--u)*99)] lg:gap-[calc(var(--u)*8)]"
+    className={`flex h-[calc(var(--u)*64)] flex-col items-center justify-center rounded-[calc(var(--u)*34)] bg-[#13171f] px-[calc(var(--u)*8)] transition-colors hover:bg-[#1a1f29] disabled:opacity-60 lg:h-[calc(var(--u)*99)] lg:gap-[calc(var(--u)*8)] ${className}`}
   >
     <img
       src={icon.src}
@@ -166,11 +173,11 @@ const ProviderButton: FC<{
  * dark glass, each one tucked 12px under the one before it.
  */
 const SocialDisc: FC<{
-  icon: StaticImageData;
   label: string;
   onClick: () => void;
   first?: boolean;
-}> = ({ icon, label, onClick, first }) => (
+  children: ReactNode;
+}> = ({ label, onClick, first, children }) => (
   <button
     type="button"
     onClick={onClick}
@@ -180,13 +187,13 @@ const SocialDisc: FC<{
       first ? '' : '-ms-[calc(var(--u)*14.5)] lg:-ms-[calc(var(--u)*12)]'
     }`}
   >
-    <img
-      src={icon.src}
-      alt=""
-      className="h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]"
-    />
+    {children}
   </button>
 );
+
+/** The size every disc's mark is drawn at. */
+const DISC_MARK =
+  'h-[calc(var(--u)*20)] w-[calc(var(--u)*20)] lg:h-[calc(var(--u)*24)] lg:w-[calc(var(--u)*24)]';
 
 /**
  * The signed-out call to action: a mobile number straight into signup, with
@@ -202,6 +209,17 @@ const SignupTeaser: FC<{ totalRegistrations: number | null }> = ({ totalRegistra
   const registeredLabel = useTotalRegistrationsLabel(totalRegistrations);
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
+  const steam = useSteamAuth();
+  // Which providers show, and in what order, is set in the admin console.
+  const { order, isEnabled } = useSocialLoginProviders();
+  // Facebook and WhatsApp have no handler here: they answer "coming soon".
+  const clickFor = useSocialProviderClick({
+    telegram: () => telegram.signIn(),
+    steam: () => steam.signIn(),
+  });
+  // Google is the big "Continue with Gmail" button above, not a disc.
+  const discs = order.filter((p) => p !== 'google' && clickFor(p));
+  const showGoogle = isEnabled('google');
 
   const [dial, setDial] = useState(DIAL_CODES[0].code);
   const [mobile, setMobile] = useState('');
@@ -270,31 +288,46 @@ const SignupTeaser: FC<{ totalRegistrations: number | null }> = ({ totalRegistra
       </form>
 
       <div className="mt-[calc(var(--u)*20)] grid w-full grid-cols-2 gap-[calc(var(--u)*20)] lg:mt-[calc(var(--u)*13)] lg:gap-[calc(var(--u)*10)]">
-        <ProviderButton
-          icon={gmailIcon}
-          label={t('lobby.hero.continueWith', { method: t('auth.methodGmail') })}
-          onClick={() => google.signIn()}
-          sound="gmailMobileIconClick"
-          disabled={google.loading}
-        />
+        {showGoogle && (
+          <ProviderButton
+            icon={gmailIcon}
+            label={t('lobby.hero.continueWith', { method: t('auth.methodGmail') })}
+            onClick={() => google.signIn()}
+            sound="gmailMobileIconClick"
+            disabled={google.loading}
+          />
+        )}
         {/* The design draws an envelope here: the e-mail signup flow, not a
             second Google button. */}
         <ProviderButton
           icon={mailIcon}
           label={t('lobby.hero.continueWithEmail')}
           onClick={() => openRegister({ method: 'email' })}
+          className={showGoogle ? '' : 'col-span-2'}
         />
       </div>
 
-      <div className="mt-[calc(var(--u)*20)] flex items-center justify-center lg:mt-[calc(var(--u)*22)]">
-        <SocialDisc
-          icon={telegramIcon}
-          label={t('auth.methodTelegram')}
-          onClick={() => telegram.signIn()}
-          first
-        />
-        
-      </div>
+      {discs.length > 0 && (
+        <div className="mt-[calc(var(--u)*20)] flex items-center justify-center lg:mt-[calc(var(--u)*22)]">
+          {discs.map((provider, index) => (
+            <SocialDisc
+              key={provider}
+              label={t(SOCIAL_PROVIDER_UI[provider].label)}
+              onClick={clickFor(provider)!}
+              first={index === 0}
+            >
+              <DiscMark provider={provider} className={DISC_MARK} />
+            </SocialDisc>
+          ))}
+          <button
+            type="button"
+            onClick={() => openRegister({ social: true })}
+            className="ms-[calc(var(--u)*14)] text-[length:max(min(11px,14px),calc(var(--u)*14))] leading-[calc(var(--u)*20)] text-[#9da2b4] transition-colors hover:text-[#f0f1f5] lg:ms-[calc(var(--u)*16)] lg:text-[length:max(min(11px,18px),calc(var(--u)*18))] lg:leading-[calc(var(--u)*24)]"
+          >
+            {t('registerModal.moreOptions')}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

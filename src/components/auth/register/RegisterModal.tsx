@@ -11,6 +11,7 @@ import { trackSignupComplete } from '@/utils/events';
 import { markPostSignup } from '@/lib/postSignup';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import { useSteamAuth } from '@/hooks/useSteamAuth';
 import AuthModalShell from '@/components/auth/AuthModalShell';
 import AuthModalFooter from '@/components/auth/AuthModalFooter';
 import MethodStep from '@/components/auth/register/MethodStep';
@@ -51,6 +52,9 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
   const router = useRouter();
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
+  const steam = useSteamAuth();
+  const socialActions = { telegram: telegram.signIn, steam: steam.signIn };
+  const startGoogle = google.signIn;
   const { offer: welcomeOffer } = useWelcomeOffer();
 
   const initialMethod = prefill?.mobile ? 'mobile' : prefill?.method;
@@ -131,16 +135,12 @@ const RegisterModal: FC<RegisterModalProps> = ({ onClose, onSwitchToLogin, prefi
         <MethodStep
           onSelectMethod={chooseMethod}
           onGoogle={google.signIn}
-          onTelegram={telegram.signIn}
+          socialActions={socialActions}
           onMore={() => setStep('social')}
           googleBusy={google.loading}
         />
       )}
-      {step === 'social' && (
-        <SocialStep
-          onTelegram={telegram.signIn}
-        />
-      )}
+      {step === 'social' && <SocialStep actions={{ ...socialActions, google: startGoogle }} />}
 
       {(step === 'form' || step === 'otp') && (
         <div hidden={step === 'otp'}>

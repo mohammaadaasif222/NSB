@@ -218,6 +218,8 @@ export const en = {
   'lobby.winners.casinoBets': 'Casino bets',
   'lobby.winners.sportsBets': 'Sports bets',
   'lobby.winners.jackpot': 'Jackpot',
+  'lobby.winners.demo': 'Demo',
+  'lobby.winners.demoTitle': 'Demo win, added by the casino, not real play',
   'lobby.winners.cardTitle': '{user} won {payout} on {game}',
 
   // Provider jackpots

@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { useSupportChat } from '@/context/SupportChatContext';
 import { useTranslation } from '@/context/I18nContext';
-import { ChatIcon } from '@/components/icons';
+import headsetIcon from '@/assets/lobby/support-headset.svg';
 
 /**
  * The Intercom bubble.
@@ -43,9 +43,9 @@ const IntercomLauncher: FC = () => {
       // tests; distinguishing them for screen readers needs a second i18n
       // string, which is a copy decision rather than a code one.
       data-testid="intercom-launcher"
-      className="rl-glass-btn rl-glass-hover fixed bottom-23 end-5 z-[90] flex h-13 w-13 items-center justify-center rounded-full bg-slate-900/90 text-white shadow-lg shadow-black/40 backdrop-blur transition-[transform,inset-inline-end] duration-300 ease-out hover:scale-105 [body:has([data-support-headset])_&]:hidden max-sm:[body:has([data-chat-drawer=open])_&]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fcd535] sm:bottom-6 sm:end-6 sm:[body:has([data-chat-drawer=open])_&]:end-[calc(var(--chat-drawer-w)+1.5rem)]"
+      className="rl-menu-rim fixed bottom-[87px] end-4 z-[90] flex h-15 w-15 items-center sm:h-13 sm:w-13 justify-center rounded-full bg-black/45 text-white shadow-[0_8px_40px_rgba(0,0,0,0.12)] backdrop-blur-xl transition-[transform,inset-inline-end] duration-300 ease-out hover:scale-105 [body:has([data-support-headset])_&]:hidden max-sm:[body:has([data-chat-drawer=open])_&]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fcd535] sm:bottom-6 sm:end-6 sm:[body:has([data-chat-drawer=open])_&]:end-[calc(var(--chat-drawer-w)+1.5rem)]"
     >
-      <ChatIcon size={22} />
+      <img src={headsetIcon.src} alt="" className="h-[30px] w-[30px] sm:h-6 sm:w-6" />
     </button>
   );
 };

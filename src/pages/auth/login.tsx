@@ -20,6 +20,7 @@ import AuthMethods, { type AuthMethodId } from '@/components/auth/AuthMethods';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
 import { useSteamAuth } from '@/hooks/useSteamAuth';
+import { useSocialLoginProviders } from '@/hooks/useSocialLoginProviders';
 import { useTwoFactorLogin, type TwoFactorChallenge } from '@/hooks/useTwoFactorLogin';
 import OtpVerification from '@/components/auth/OtpVerification';
 
@@ -49,6 +50,7 @@ const Login: FC = () => {
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
   const steam = useSteamAuth();
+  const socialLogin = useSocialLoginProviders();
 
   const twoFactor = useTwoFactorLogin({
     onLoggedIn: () => void router.push('/'),
@@ -148,11 +150,15 @@ const Login: FC = () => {
     { id: 'username' as const, label: t('auth.methodUsername') },
   ];
 
-  const OTHER_METHODS = [
-    { id: 'gmail' as const, label: t('auth.methodGmail') },
-    { id: 'telegram' as const, label: t('auth.methodTelegram') },
-    { id: 'steam' as const, label: t('auth.methodSteam') },
-  ];
+  // The social providers switched on in the admin console, in its order.
+  const SOCIAL_METHOD = {
+    google: { id: 'gmail' as const, label: t('auth.methodGmail') },
+    telegram: { id: 'telegram' as const, label: t('auth.methodTelegram') },
+    facebook: { id: 'facebook' as const, label: t('auth.methodFacebook') },
+    whatsapp: { id: 'whatsapp' as const, label: t('auth.methodWhatsapp') },
+    steam: { id: 'steam' as const, label: t('auth.methodSteam') },
+  };
+  const OTHER_METHODS = socialLogin.order.map((provider) => SOCIAL_METHOD[provider]);
 
   // Mail, Phone and Username all reach the same endpoint; Gmail, Telegram
   // and Steam hand off to their own popups and come back with a session.
@@ -180,9 +186,10 @@ const Login: FC = () => {
       setStep(id);
       return;
     }
-    // Every method this screen offers is handled above. This only fires if a
-    // new entry is added without a branch here.
-    toast.info(t('auth.methodSoon', { method: String(id) }));
+    // Facebook and WhatsApp are buttons only for now (set in the admin
+    // console); anything else without a branch above lands here too.
+    const label = OTHER_METHODS.find((m) => m.id === id)?.label ?? String(id);
+    toast.info(t('auth.methodSoon', { method: label }));
   };
 
   // What the single credential field looks like for the chosen method. Only
@@ -248,7 +255,7 @@ const Login: FC = () => {
         <AuthMethods
           methods={PRIMARY_METHODS}
           onSelect={handleMethod}
-          otherLabel={t('auth.methodOther')}
+          otherLabel={OTHER_METHODS.length > 0 ? t('auth.methodOther') : undefined}
           onSelectOther={() => setStep('other')}
         />
       </AuthShell>
@@ -264,10 +271,7 @@ const Login: FC = () => {
         action={{ href: REGISTER_HREF, label: t('login.register') }}
         legal={t('auth.legal')}
       >
-        <AuthMethods
-          methods={OTHER_METHODS}
-          onSelect={handleMethod}
-        />
+        <AuthMethods methods={OTHER_METHODS} onSelect={handleMethod} />
       </AuthShell>
     );
   }

@@ -82,6 +82,8 @@ const coreEn = {
   'auth.methodGmail': 'Gmail',
   'auth.methodTelegram': 'Telegram',
   'auth.methodSteam': 'Steam',
+  'auth.methodFacebook': 'Facebook',
+  'auth.methodWhatsapp': 'WhatsApp',
   'auth.methodPhone': 'Phone Number',
   'auth.methodMail': 'Mail',
   'auth.methodUsername': 'Username',
@@ -429,7 +431,8 @@ const coreEn = {
   'games.page': 'Page {page} of {total}',
   'games.prev': 'Previous',
   'allGames.title': 'All games',
-  'allGames.meta': 'Browse every game at ROLLUCK and combine filters: provider, RTP, volatility, Bonus Buy, jackpots and more.',
+  'allGames.meta':
+    'Browse every game at ROLLUCK and combine filters: provider, RTP, volatility, Bonus Buy, jackpots and more.',
   'allGames.sort.popular': 'Most popular',
   'allGames.sort.trending': 'Trending',
   'allGames.sort.new': 'Newest',
@@ -1021,7 +1024,8 @@ const coreEn = {
   'bets.exportCsv': 'Export as CSV',
   'bets.exporting': 'Exporting…',
   'bets.exportFailed': 'We could not export your bets. Please try again.',
-  'bets.exportTruncated': 'Your export holds the first 5,000 bets. Narrow the filters to get the rest.',
+  'bets.exportTruncated':
+    'Your export holds the first 5,000 bets. Narrow the filters to get the rest.',
   'bets.exportEmpty': 'There are no bets to export.',
   'bets.noMatch': 'No bets match your search.',
   'bets.loadFailed': 'We could not load your bets. Please try again.',
@@ -1145,7 +1149,8 @@ const coreEn = {
   'bonus.deposit1': '1st Deposit Bonus',
   'postSignup.title': 'Welcome aboard!',
   'postSignup.subtitle': 'Your account is ready. Where would you like to start?',
-  'postSignup.offerSubtitle': 'Your account is ready. Make your first deposit to unlock your welcome bonus.',
+  'postSignup.offerSubtitle':
+    'Your account is ready. Make your first deposit to unlock your welcome bonus.',
   'postSignup.explore': 'Explore Platform',
   'postSignup.deposit': 'Deposit Now',
   'postSignup.depositBonus': 'Deposit & Claim Bonus',

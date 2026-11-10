@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import { MailIcon, PhoneIcon, UserIcon } from '@/components/auth/AuthField';
+import { FacebookMark, WhatsappMark } from '@/components/brand';
 
 /**
  * The "Register with" / "Login with" method picker.
@@ -10,7 +11,8 @@ import { MailIcon, PhoneIcon, UserIcon } from '@/components/auth/AuthField';
  * reads the way it will once the providers are wired up.
  */
 
-export type AuthMethodId = 'gmail' | 'telegram' | 'steam' | 'phone' | 'mail' | 'username';
+export type AuthMethodId =
+  'gmail' | 'telegram' | 'facebook' | 'whatsapp' | 'steam' | 'phone' | 'mail' | 'username';
 
 export interface AuthMethod {
   id: AuthMethodId;
@@ -50,6 +52,8 @@ const SteamIcon: FC<{ size?: number }> = ({ size = 16 }) => (
 const ICONS: Record<AuthMethodId, ReactNode> = {
   gmail: <GoogleIcon />,
   telegram: <TelegramIcon size={17} />,
+  facebook: <FacebookMark size={17} />,
+  whatsapp: <WhatsappMark size={17} />,
   steam: <SteamIcon size={18} />,
   phone: <PhoneIcon />,
   mail: <MailIcon />,

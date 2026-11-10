@@ -3,6 +3,7 @@ import { useState, type FC } from 'react';
 import { useTranslation } from '@/context/I18nContext';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useTelegramAuth } from '@/hooks/useTelegramAuth';
+import { useSteamAuth } from '@/hooks/useSteamAuth';
 import { useTwoFactorLogin, type TwoFactorChallenge } from '@/hooks/useTwoFactorLogin';
 import { usePasswordReset, type ResetTarget } from '@/hooks/usePasswordReset';
 import { analytics } from '@/services/analytics';
@@ -58,6 +59,12 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
   const { t } = useTranslation();
   const google = useGoogleAuth();
   const telegram = useTelegramAuth();
+  const steam = useSteamAuth();
+  const socialActions = { telegram: telegram.signIn, steam: steam.signIn };
+  const startGoogle = (): void => {
+    analytics.auth.loginStarted('google');
+    google.signIn();
+  };
   const reset = usePasswordReset();
 
   const [step, setStep] = useState<Step>(entry);
@@ -141,20 +148,13 @@ const LoginModal: FC<LoginModalProps> = ({ onClose, onSwitchToRegister, entry = 
       {step === 'method' && (
         <LoginMethodStep
           onSelectMethod={chooseMethod}
-          onGoogle={() => {
-            analytics.auth.loginStarted('google');
-            google.signIn();
-          }}
-          onTelegram={telegram.signIn}
+          onGoogle={startGoogle}
+          socialActions={socialActions}
           onMore={() => setStep('social')}
           googleBusy={google.loading}
         />
       )}
-      {step === 'social' && (
-        <SocialStep
-          onTelegram={telegram.signIn}
-        />
-      )}
+      {step === 'social' && <SocialStep actions={{ ...socialActions, google: startGoogle }} />}
 
       {formOpened && step !== 'method' && step !== 'social' && (
         <div hidden={step !== 'form'}>

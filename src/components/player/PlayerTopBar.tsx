@@ -215,10 +215,9 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
             />
           </IconButton>
 
-          {/* Language sits at the top on every screen, beside the wordmark —
-              signed out it takes the slack, pushing Login and Register to the
-              far end. */}
-          <div className={token ? '' : 'max-lg:me-auto'}>
+          {/* Language sits beside the wordmark on desktop; a phone's bar has
+              none, as drawn — it is in the menu. */}
+          <div className="max-lg:hidden">
             <LanguagePicker bar />
           </div>
 
@@ -270,7 +269,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   type="button"
                   onClick={() => openLogin()}
                   data-sound="LOGINregisterButtonPress"
-                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:transparent] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-3.5 text-[14px] font-semibold leading-5 text-white transition-colors hover:bg-[#15171c]"
+                  className="rl-cta-shine [--cta-delay:7s] [--cta-glow:transparent] [--cta-shine:0.35] inline-flex h-10 items-center rounded-full bg-[#07080a] px-[15px] text-[14px] leading-5 text-[#f0f1f5] transition-colors hover:bg-[#15171c]"
                 >
                   {t('account.login')}
                 </button>
@@ -278,7 +277,7 @@ const PlayerTopBar: FC<Props> = ({ collapsed, onToggleCollapsed }) => {
                   type="button"
                   onClick={() => openRegister()}
                   data-sound="LOGINregisterButtonPress"
-                  className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-3 text-[14px] font-semibold leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
+                  className="rl-cta-shine inline-flex h-10 items-center rounded-full bg-[#f9d028] px-3 text-[14px] leading-5 text-[#07080a] transition-[filter] hover:brightness-110"
                 >
                   {t('account.register')}
                 </button>

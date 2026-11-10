@@ -224,7 +224,7 @@ const MyBetsView: FC = () => {
       ) : (
         <>
           <div className="mt-5 flex flex-col gap-3 lg:mt-[calc(var(--u)*20)] lg:flex-row lg:items-center lg:gap-[calc(var(--u)*16)]">
-            <label className="rl-chip flex h-[46px] min-w-0 flex-1 items-center gap-[calc(var(--u)*10)] ps-[calc(var(--u)*12)] pe-[calc(var(--u)*20)] lg:h-[calc(var(--u)*48)]">
+            <label className="rl-chip flex h-[46px] min-w-0 flex-none items-center lg:flex-1 gap-[calc(var(--u)*10)] ps-[calc(var(--u)*12)] pe-[calc(var(--u)*20)] lg:h-[calc(var(--u)*48)]">
               <SearchIcon size={24} strokeWidth={1.5} className="shrink-0 text-[#f0f1f5]" />
               <input
                 type="search"
