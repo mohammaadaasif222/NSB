@@ -23,6 +23,8 @@ export interface UseBonuses {
   forfeit: (awardId: string) => Promise<boolean>;
   redeem: (code: string, place?: 'REDEEM' | 'CASHIER') => Promise<RedeemResult | null>;
   optIn: (bonusId: string) => Promise<boolean>;
+  optOut: (bonusId: string) => Promise<boolean>;
+  reject: (bonusId: string) => Promise<boolean>;
 }
 
 /**
@@ -228,6 +230,45 @@ export const useBonuses = (): UseBonuses => {
     [refresh]
   );
 
+  const simplePost = useCallback(
+    async (
+      bonusId: string,
+      path: 'opt-out' | 'reject',
+      done: 'bonus.optedOutToast' | 'bonus.rejectedToast',
+      failed: 'bonus.optOutFailed' | 'bonus.rejectFailed'
+    ): Promise<boolean> => {
+      setBusyId(bonusId);
+      let ok = false;
+      try {
+        const res = await apiService.post(`/bonuses/${bonusId}/${path}`);
+        if (res?.success) {
+          toast.success(tRef.current(done));
+          ok = true;
+        } else {
+          toast.error(res?.message || tRef.current(failed));
+        }
+      } catch (err) {
+        toast.error((err as ApiError)?.message || tRef.current(failed));
+      } finally {
+        setBusyId(null);
+      }
+      await refresh();
+      return ok;
+    },
+    [refresh]
+  );
+
+  const optOut = useCallback(
+    (bonusId: string) =>
+      simplePost(bonusId, 'opt-out', 'bonus.optedOutToast', 'bonus.optOutFailed'),
+    [simplePost]
+  );
+
+  const reject = useCallback(
+    (bonusId: string) => simplePost(bonusId, 'reject', 'bonus.rejectedToast', 'bonus.rejectFailed'),
+    [simplePost]
+  );
+
   const forfeit = useCallback(
     async (awardId: string): Promise<boolean> => {
       setBusyId(awardId);
@@ -264,5 +305,7 @@ export const useBonuses = (): UseBonuses => {
     forfeit,
     redeem,
     optIn,
+    optOut,
+    reject,
   };
 };

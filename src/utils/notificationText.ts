@@ -102,6 +102,37 @@ export const personalNoticeText = (
         body: t('notif.rewardClaimable.body', { reward: name, amount: amount('amount') }),
       };
     }
+    case 'BONUS_PROGRESS':
+      if (data.percent === undefined || data.percent === null) return fallback;
+      return {
+        title: t('notif.bonusProgress.title', { percent: text(data.percent) }),
+        body: t('notif.bonusProgress.body', { bonus, percent: text(data.percent) }),
+      };
+    case 'BONUS_EXPIRING':
+      return {
+        title: t('notif.bonusExpiring.title'),
+        body: t('notif.bonusExpiring.body', { bonus }),
+      };
+    case 'BONUS_STEP_RELEASED':
+      if (data.custom === true) return fallback;
+      return {
+        title: t('notif.bonusStepReleased.title'),
+        body: t('notif.bonusStepReleased.body', { bonus, amount: amount('amount') }),
+      };
+    case 'BONUS_OFFERED':
+      if (data.custom === true) return { title: t('notif.bonusOffered.title'), body: item.body };
+      return {
+        title: t('notif.bonusOffered.title'),
+        body: t('notif.bonusOffered.body', { bonus }),
+      };
+    case 'REWARD_CLAIM_EXPIRING': {
+      const name = reward();
+      if (!name) return fallback;
+      return {
+        title: t('notif.rewardClaimExpiring.title', { reward: name }),
+        body: t('notif.rewardClaimExpiring.body', { reward: name, amount: amount('amount') }),
+      };
+    }
     case 'REWARD_CLAIMED': {
       const name = reward();
       if (!name) return fallback;
@@ -145,7 +176,7 @@ export const personalNoticeText = (
 
 export const personalNoticeHref = (item: PlayerNotification): string | null => {
   const ref = item.ref_type ?? '';
-  if (ref === 'bonus_award') return '/bonuses';
+  if (ref === 'bonus_award' || ref === 'bonus_offer') return '/bonuses';
   if (ref.startsWith('reward_')) return '/rewards';
   if (ref === 'rollover') return '/profile?section=rollover';
   return null;

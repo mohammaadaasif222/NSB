@@ -10,8 +10,7 @@ import { trackGameOpen } from '@/utils/events';
 import FavouriteHeart from '@/components/player/FavouriteHeart';
 import { useFavourites } from '@/context/FavouritesContext';
 import { useJackpots } from '@/hooks/useJackpots';
-import { useActiveWelcome } from '@/context/ActiveWelcomeContext';
-import { welcomeContribution } from '@/utils/welcomeContribution';
+import { useActiveBonus } from '@/context/ActiveBonusContext';
 import personIcon from '@/assets/lobby/person.svg';
 import { featureKeys, maxWinLabel } from '@/utils/gameFacts';
 
@@ -96,12 +95,14 @@ const PickedVeil: FC<{
 
   // When the lobby's featured card wants to host the game itself, Play and
   // Play DEMO become buttons that bubble the choice up — no navigation.
-  const inline = (mode: GameMode) => (e: React.MouseEvent): void => {
-    e.preventDefault();
-    e.stopPropagation();
-    open();
-    onPlayInline?.(game, mode);
-  };
+  const inline =
+    (mode: GameMode) =>
+    (e: React.MouseEvent): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      open();
+      onPlayInline?.(game, mode);
+    };
 
   const playCommonClass =
     'absolute left-1/2 top-[61.6cqw] flex h-[31.3cqw] w-[31.3cqw] -translate-x-1/2 items-center justify-center rounded-full bg-[#f9d028] transition-[filter] hover:brightness-110';
@@ -359,8 +360,8 @@ const GameTile: FC<Props> = ({
   const { isFavourite, toggle } = useFavourites();
   // In a winnable provider jackpot, linked through our own game ids.
   const jackpot = useJackpots().gameIds.has(game.id);
-  const { contributions } = useActiveWelcome();
-  const counts = contributions ? welcomeContribution(contributions, game) : 100;
+  const { contribution } = useActiveBonus();
+  const counts = contribution(game) ?? 100;
   const badgeTop = ['top-[5.05cqw]', 'top-[19.7cqw]', 'top-[34.35cqw]'][
     Number(game.is_new) + Number(jackpot)
   ];

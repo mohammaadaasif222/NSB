@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 import Link from 'next/link';
 
 import BonusGlassCard, { type BonusCardAction } from '@/components/bonus/BonusGlassCard';
@@ -18,6 +18,8 @@ interface Props {
   onClaim: (bonusId: string) => void;
   onDeposit?: () => void;
   onOptIn?: (bonusId: string) => void;
+  onOptOut?: (bonusId: string) => void;
+  onReject?: (bonusId: string) => void;
 }
 
 /**
@@ -34,8 +36,18 @@ interface Props {
  * spend — so it gets it, rather than the list of every term that the design
  * leaves no room for.
  */
-const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit, onOptIn }) => {
+const BonusOfferCard: FC<Props> = ({
+  bonus,
+  currency,
+  busyId,
+  onClaim,
+  onDeposit,
+  onOptIn,
+  onOptOut,
+  onReject,
+}) => {
   const { t } = useTranslation();
+  const [confirmOptOut, setConfirmOptOut] = useState(false);
 
   const wagering = Number(bonus.wagering_multiplier ?? 0);
 
@@ -71,6 +83,8 @@ const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit
   const blocked = (bonus.blocked_products ?? [])
     .map((product) => t(`bonus.product.${product}`))
     .join(', ');
+  const canReject = !!onReject && bonus.claim_mode !== 'OPT_IN' && bonus.claimable;
+  const canOptOut = !!onOptOut && optedIn;
   const footnote = (
     <>
       {blocked && <span>{t('bonus.blockedProducts', { products: blocked })} · </span>}
@@ -81,6 +95,39 @@ const BonusOfferCard: FC<Props> = ({ bonus, currency, busyId, onClaim, onDeposit
       >
         {t('bonus.termsLink')}
       </Link>
+      {canReject && (
+        <>
+          {' · '}
+          <button
+            type="button"
+            disabled={busyId !== null}
+            onClick={() => onReject?.(bonus.id)}
+            className="underline underline-offset-2 hover:text-white disabled:opacity-50"
+          >
+            {t('bonus.reject')}
+          </button>
+        </>
+      )}
+      {canOptOut && (
+        <>
+          {' · '}
+          <button
+            type="button"
+            disabled={busyId !== null}
+            onClick={() => {
+              if (!confirmOptOut) {
+                setConfirmOptOut(true);
+                return;
+              }
+              setConfirmOptOut(false);
+              onOptOut?.(bonus.id);
+            }}
+            className={`underline underline-offset-2 hover:text-white disabled:opacity-50 ${confirmOptOut ? 'text-[#ef4462]' : ''}`}
+          >
+            {confirmOptOut ? t('bonus.optOutConfirm') : t('bonus.optOut')}
+          </button>
+        </>
+      )}
     </>
   );
 

@@ -21,6 +21,8 @@ interface Props {
   onForfeit: (awardId: string) => void;
   onDeposit: () => void;
   onOptIn?: (bonusId: string) => void;
+  onOptOut?: (bonusId: string) => void;
+  onReject?: (bonusId: string) => void;
 }
 
 const RegularBonusRow: FC<Props> = ({
@@ -36,6 +38,8 @@ const RegularBonusRow: FC<Props> = ({
   onForfeit,
   onDeposit,
   onOptIn,
+  onOptOut,
+  onReject,
 }) => {
   const { t } = useTranslation();
 
@@ -75,6 +79,8 @@ const RegularBonusRow: FC<Props> = ({
           onClaim={onClaim}
           onDeposit={onDeposit}
           onOptIn={onOptIn}
+          onOptOut={onOptOut}
+          onReject={onReject}
         />
       ))}
     </div>
