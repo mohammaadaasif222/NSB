@@ -69,6 +69,9 @@ const leadCount = sql<number>`(select count(*) from ${enquiries} where ${enquiri
 /** Sectors are typed by hand, so "Sector 150" and " sector 150" are the same place. */
 const localityKey = sql<string>`lower(btrim(${projects.locality}))`;
 
+/** Photos in a card's slider on phones. */
+const CARD_PHOTOS = 5;
+
 const toSummary = (p: CardRow): ProjectSummary => ({
   id: p.id,
   slug: p.slug,
@@ -90,6 +93,7 @@ const toSummary = (p: CardRow): ProjectSummary => ({
     .slice(0, CARD_CONFIGURATIONS)
     .map((c) => ({ title: c.title, superArea: c.superArea })),
   coverImageUrl: p.photos[0] ?? null,
+  photoPreview: p.photos.slice(0, CARD_PHOTOS),
   status: p.status,
   createdAt: p.createdAt.toISOString(),
 });

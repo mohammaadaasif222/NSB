@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type Category, FOOTER_SOCIAL_LABELS, FOOTER_SOCIALS, type FooterSettings } from "@nsb/shared";
+import { manrope } from "@/lib/fonts";
 import { Icon } from "./nsb-home/bits";
 import { CATEGORY_LOOK, DEFAULT_LOOK, ICON, LOGO } from "./nsb-home/content";
 import "./site-footer.css";
@@ -45,65 +46,74 @@ export function SiteFooter({ categories, footer }: { categories: Category[]; foo
   ].filter(({ id }) => (CATEGORY_LOOK[id] ?? DEFAULT_LOOK).live);
 
   return (
-    <footer className="nsb-footer">
-      <div className="ft-w fgrid">
-        <div className="fb">
-          <Link className="footer-logo" href="/" aria-label="Noida Super Bazaar home">
-            <Image src={LOGO} alt="" width={99} height={50} />
-          </Link>
-          <ul className="chk">
-            <li>Trusted hyperlocal platform for Noida</li>
-            <li>Verified local businesses &amp; services</li>
-          </ul>
-          {footer.showPhone && footer.phone && (
-            <a className="fph" href={telHref(footer.phone)}>
-              {footer.phone}
-            </a>
-          )}
+    <footer className={`nsb-footer ${manrope.variable}`}>
+      {/* The white card of the phone design; no box of its own on wider screens. */}
+      <div className="ft-card">
+        <div className="ft-w fgrid">
+          <div className="fb">
+            <Link className="footer-logo" href="/" aria-label="Noida Super Bazaar home">
+              <Image src={LOGO} alt="" width={99} height={50} />
+            </Link>
+            <ul className="chk">
+              <li>Trusted hyperlocal platform for Noida</li>
+              <li>Verified local businesses &amp; services</li>
+            </ul>
+            {footer.showPhone && footer.phone && (
+              <a className="fph" href={telHref(footer.phone)}>
+                {footer.phone}
+              </a>
+            )}
+          </div>
+          <nav aria-label="Company">
+            <h4>Company</h4>
+            <ul className="fl">
+              {companyLinks.map(({ label, href }) => (
+                <li key={label}>
+                  <FooterLink href={href}>{label}</FooterLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label="Categories">
+            <h4>Categories</h4>
+            <ul className="fl">
+              {liveCategories.map((category) => (
+                <li key={category.id}>
+                  <FooterLink href={category.href}>{category.label}</FooterLink>
+                </li>
+              ))}
+              <li>
+                <span>More opening soon</span>
+              </li>
+            </ul>
+          </nav>
+          <nav aria-label="Help and legal">
+            <h4>Help &amp; Legal</h4>
+            <ul className="fl">
+              {legalLinks.map(({ label, href }) => (
+                <li key={label}>
+                  <FooterLink href={href}>{label}</FooterLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
-        <nav aria-label="Company">
-          <h4>Company</h4>
-          <ul className="fl">
-            {companyLinks.map(({ label, href }) => (
-              <li key={label}>
-                <FooterLink href={href}>{label}</FooterLink>
-              </li>
+        <div className="ft-w fbot">
+          <div className="soc">
+            {socials.map((social) => (
+              <a
+                key={social}
+                href={footer.socials[social].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={FOOTER_SOCIAL_LABELS[social]}
+              >
+                <Icon d={ICON[social]} size={20} stroke={1.8} />
+              </a>
             ))}
-          </ul>
-        </nav>
-        <nav aria-label="Categories">
-          <h4>Categories</h4>
-          <ul className="fl">
-            {liveCategories.map((category) => (
-              <li key={category.id}>
-                <FooterLink href={category.href}>{category.label}</FooterLink>
-              </li>
-            ))}
-            <li>
-              <span>More opening soon</span>
-            </li>
-          </ul>
-        </nav>
-        <nav aria-label="Help and legal">
-          <h4>Help &amp; Legal</h4>
-          <ul className="fl">
-            {legalLinks.map(({ label, href }) => (
-              <li key={label}>
-                <FooterLink href={href}>{label}</FooterLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-      <div className="ft-w fbot">
-        <div className="soc">
-          {socials.map((social) => (
-            <a key={social} href={footer.socials[social].url} target="_blank" rel="noopener noreferrer" aria-label={FOOTER_SOCIAL_LABELS[social]}>
-              <Icon d={ICON[social]} size={20} stroke={1.8} />
-            </a>
-          ))}
+          </div>
+          <span>© {new Date().getFullYear()} Noida Super Bazaar. All rights reserved.</span>
         </div>
-        <span>© {new Date().getFullYear()} Noida Super Bazaar. All rights reserved.</span>
       </div>
     </footer>
   );

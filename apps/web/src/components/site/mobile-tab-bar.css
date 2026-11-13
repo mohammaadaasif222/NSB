@@ -1,0 +1,34 @@
+/*
+ * Phones: the floating tab bar of the phone designs (real-estate-listing-mobile-page.html): a white
+ * rounded bar inset 16px from the edges and 10px off the bottom, over the grey page. Unlayered, so it
+ * wins over the bar's Tailwind classes, which stay as the tablet look.
+ */
+@media (max-width: 600px) {
+  /* At the page end the bar sits over the footer's grey bottom, which keeps room for it. */
+  body:has(.mtb) .nsb-footer {
+    padding-bottom: calc(16px + 64px + 10px + env(safe-area-inset-bottom, 0px));
+  }
+  .mtb {
+    box-sizing: border-box;
+    height: 64px;
+    width: calc(100% - 32px);
+    max-width: 448px;
+    margin: calc(-64px - 10px - env(safe-area-inset-bottom, 0px)) auto calc(10px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 8px 6px;
+    border: 1px solid #e1e4ec;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(23, 0, 214, 0.16);
+    font-family: var(--font-manrope), Manrope, system-ui, sans-serif;
+  }
+  .mtb a {
+    color: #66697f;
+  }
+  .mtb a[aria-current="page"] {
+    color: #1700d6;
+  }
+  .mtb a[aria-current="page"] > span {
+    background: #e9e6fc;
+  }
+}

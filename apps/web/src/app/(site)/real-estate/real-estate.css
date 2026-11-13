@@ -1787,7 +1787,7 @@ button.re-pl4::after {
 }
 @media (max-width: 600px) {
   :root:has(.re-search) {
-    --site-header-h: calc(57px + env(safe-area-inset-top, 0px));
+    --site-header-h: calc(52px + env(safe-area-inset-top, 0px));
   }
   :root:has(.re-search) .nsb-hd .bar {
     grid-template-rows: 38px;

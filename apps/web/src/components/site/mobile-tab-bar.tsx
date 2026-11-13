@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Heart, Home, LayoutGrid, type LucideIcon, MessageCircle } from "lucide-react";
+import "./mobile-tab-bar.css";
 
 interface Tab {
   label: string;
@@ -32,7 +33,7 @@ export function MobileTabBar({ whatsappHref }: { whatsappHref: string | null }) 
   return (
     <nav
       aria-label="Quick links"
-      className="sticky bottom-0 z-40 border-t border-line bg-white/95 px-1.5 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] backdrop-blur-md backdrop-saturate-150 lg:hidden"
+      className="mtb sticky bottom-0 z-40 border-t border-line bg-white/95 px-1.5 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] backdrop-blur-md backdrop-saturate-150 lg:hidden"
     >
       <ul className="flex">
         {tabs.map(({ label, href, Icon, active, external }) => {

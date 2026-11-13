@@ -10,7 +10,7 @@
 }
 @media (max-width: 600px) {
   :root {
-    --site-header-h: calc(109px + env(safe-area-inset-top, 0px));
+    --site-header-h: calc(100px + env(safe-area-inset-top, 0px));
   }
 }
 
@@ -312,10 +312,19 @@
   }
 }
 
-/* Phones: a compact app bar. */
+/*
+ * Phones: the app bar of the phone designs (Makeup-Vendor-Page.html, real-estate-listing-mobile-page.html),
+ * the same on every page: on the grey page, a small logo, the location pill and a plain menu icon,
+ * with a white search box below.
+ */
 @media (max-width: 600px) {
   .nsb-hd {
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    --hd-line: #e1e4ec;
+    --hd-ink: #14162b;
+    --hd-mute: #66697f;
+    background: #eef0f4;
+    border-bottom: 0;
+    font-family: var(--font-manrope), Manrope, system-ui, sans-serif;
   }
   .nsb-hd .hw {
     padding: 0 16px;
@@ -323,17 +332,25 @@
   .nsb-hd .bar {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-rows: 38px 42px;
-    gap: 10px 8px;
-    padding-block: 8px 10px;
+    grid-template-rows: 38px 40px;
+    gap: 8px;
+    padding-block: 10px 4px;
   }
   .nsb-hd .sb {
     grid-column: 1 / -1;
-    height: 42px;
-    border-radius: 999px;
+    height: 40px;
+    gap: 8px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .nsb-hd .sb > svg {
+    width: 17px;
+    height: 17px;
+    color: var(--hd-blue);
   }
   .nsb-hd .sb input {
-    font-size: 16px;
+    font-size: 16px; /* 16px stops iOS zooming into the field */
   }
   .nsb-hd .loc {
     min-width: 0;
@@ -343,12 +360,24 @@
   }
   .nsb-hd .lb {
     max-width: 100%;
-    padding: 8px 10px;
-    gap: 5px;
+    height: 38px;
+    padding: 0 12px 0 10px;
+    gap: 6px;
     font-size: 13px;
+    font-weight: 700;
   }
   .nsb-hd .lb svg {
     flex: none;
+  }
+  .nsb-hd .lb svg:first-child {
+    width: 18px;
+    height: 18px;
+    color: #e00606;
+  }
+  .nsb-hd .lb svg:last-child {
+    width: 12px;
+    height: 12px;
+    stroke-width: 2.6;
   }
   .nsb-hd .lb span {
     min-width: 0;
@@ -357,7 +386,8 @@
     white-space: nowrap;
   }
   .nsb-hd .logo img {
-    height: 36px;
+    height: 34px;
+    mix-blend-mode: multiply;
   }
   /* Login lives in the menu on phones. */
   .nsb-hd .lg {
@@ -365,5 +395,10 @@
   }
   .nsb-hd .mn {
     display: grid;
+    width: 34px;
+    border: 0;
+  }
+  .nsb-hd .mn svg {
+    stroke-width: 2.4;
   }
 }

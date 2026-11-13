@@ -5,18 +5,26 @@ import { Search } from "lucide-react";
 import { redirect } from "next/navigation";
 import { pageParam } from "@/lib/paging";
 import { oneTrimmed, pageCountOf } from "@/lib/search-params";
-import { POSSESSION_STATUSES, type Paginated, type ProjectLocality, type ProjectSummary, REAL_ESTATE_SLUG } from "@nsb/shared";
+import {
+  type Category,
+  POSSESSION_STATUSES,
+  type Paginated,
+  type ProjectLocality,
+  type ProjectSummary,
+  REAL_ESTATE_SLUG,
+} from "@nsb/shared";
 import { BackButton } from "@/components/site/back-button";
 import { pageItems } from "@/components/site/pagination";
 import { LeadButton, LeadProvider } from "@/components/site/real-estate/lead-dialog";
+import { RealEstateListingMobile } from "@/components/site/real-estate/listing-mobile";
 import { FilterSelect, SortSelect } from "@/components/site/real-estate/listing-widgets";
 import { AdStrip, ProjectCard, PromoStrip, ShortsStrip } from "@/components/site/real-estate/project-card";
 import { api } from "@/lib/api";
 import { getCategory } from "@/lib/catalog";
 import { COMING_SOON_METADATA, CATEGORY_PAGES_ENABLED } from "@/lib/flags";
 import { locationPlace, withLocation } from "@/lib/location";
-import { getSiteLocation } from "@/lib/location-server";
-import { getSiteSettings } from "@/lib/site-settings";
+import { getListingCounts, getSiteLocation } from "@/lib/location-server";
+import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
 
 /** Real estate listing page, as in the NSB Live Demo: filter chips, project cards and a sidebar. */
 
@@ -57,10 +65,13 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
   if (possession) params.set("possession", possession);
   if (sort !== "rel") params.set("sort", sort);
   if (q) params.set("q", q);
-  const [result, localities, { realEstateAd }] = await Promise.all([
+  const [result, localities, { realEstateAd, whatsapp }, weddingCategories, weddingCounts] = await Promise.all([
     api.get<Paginated<ProjectSummary>>(`/projects?${params}`),
     api.get<ProjectLocality[]>(`/projects/localities${location ? `?${new URLSearchParams({ area: location.area })}` : ""}`),
     getSiteSettings(),
+    // The phone layout's "Wedding season is here" slider; the page works without it.
+    api.get<Category[]>("/categories?parent=wedding").catch((): Category[] => []),
+    getListingCounts(location, "wedding"),
   ]);
   const place = locationPlace(location);
   const pageCount = pageCountOf(result.total, PAGE_SIZE);
@@ -80,6 +91,27 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
   // A narrower location or filter can leave this page number past the end: start again at page 1.
   if (page > pageCount && result.total > 0) redirect(href({ page: 1 }));
 
+  const pagination =
+    pageCount > 1 ? (
+      <nav className="re-pg" aria-label="Pagination">
+        {pageItems(page, pageCount).map((p, i) =>
+          p === "gap" ? (
+            <span key={`gap-${i}`} aria-hidden>
+              …
+            </span>
+          ) : p === page ? (
+            <span key={p} aria-current="page">
+              {p}
+            </span>
+          ) : (
+            <Link key={p} href={href({ page: p })} aria-label={`Page ${p}`}>
+              {p}
+            </Link>
+          ),
+        )}
+      </nav>
+    ) : null;
+
   const cards = result.items.flatMap((project, i) => {
     const card = <ProjectCard key={project.id} project={project} eager={i < EAGER_CARDS} />;
     if (i === 2) return [card, <AdStrip key="ad" ad={realEstateAd} />];
@@ -91,7 +123,28 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
   return (
     <div className="re re-listing">
       <LeadProvider>
-        <div className="re-w container-home">
+        {/* Phones: the real-estate-listing-mobile-page.html layout. Tablets and desktops: the layout below. */}
+        <div className="sm:hidden">
+          <RealEstateListingMobile
+            projects={result.items}
+            total={result.total}
+            place={place}
+            q={q}
+            bhk={bhk}
+            possession={possession}
+            sort={sort}
+            possessionHref={(value) => href({ possession: value })}
+            clearSearchHref={href({ q: "" })}
+            ad={<AdStrip ad={realEstateAd} />}
+            weddingCategories={weddingCategories}
+            weddingCounts={weddingCounts}
+            whatsappHref={(name) => (whatsapp ? whatsappHref(whatsapp, name) : null)}
+            pagination={pagination}
+            eagerCards={EAGER_CARDS}
+          />
+        </div>
+
+        <div className="re-w container-home hidden sm:block">
           <div className="re-top">
             <BackButton fallback="/" />
             <nav className="re-crumb" aria-label="Breadcrumb">
@@ -102,8 +155,8 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
             <div>
               <h1>New Projects in {place}</h1>
               <p className="re-sub">
-                {result.total} verified builder project{result.total === 1 ? "" : "s"} · every project has its own page with photos, videos and full
-                details
+                {result.total} verified builder project{result.total === 1 ? "" : "s"} · every project has its own page with photos, videos
+                and full details
               </p>
             </div>
             <form action="/real-estate" className="re-search" role="search">
@@ -111,7 +164,14 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
               {possession && <input type="hidden" name="possession" value={possession} />}
               {sort !== "rel" && <input type="hidden" name="sort" value={sort} />}
               <Search size={18} strokeWidth={1.7} aria-hidden />
-              <input name="q" type="search" defaultValue={q} placeholder="Search project, builder, sector or tag" aria-label="Search projects" maxLength={100} />
+              <input
+                name="q"
+                type="search"
+                defaultValue={q}
+                placeholder="Search project, builder, sector or tag"
+                aria-label="Search projects"
+                maxLength={100}
+              />
             </form>
           </div>
 
@@ -125,7 +185,12 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
               </Link>
             ))}
             {POSSESSION_STATUSES.map((s) => (
-              <Link key={s} href={href({ possession: possession === s ? "" : s })} className="re-chip" aria-current={possession === s ? "true" : undefined}>
+              <Link
+                key={s}
+                href={href({ possession: possession === s ? "" : s })}
+                className="re-chip"
+                aria-current={possession === s ? "true" : undefined}
+              >
                 {s}
               </Link>
             ))}
@@ -149,25 +214,7 @@ export default async function RealEstatePage({ searchParams }: PageProps<"/real-
             <section aria-label="Projects">
               {cards.length > 0 ? cards : <div className="re-empty">No projects match these filters yet.</div>}
               {result.items.length > 0 && result.items.length <= 2 && <AdStrip ad={realEstateAd} />}
-              {pageCount > 1 && (
-                <nav className="re-pg" aria-label="Pagination">
-                  {pageItems(page, pageCount).map((p, i) =>
-                    p === "gap" ? (
-                      <span key={`gap-${i}`} aria-hidden>
-                        …
-                      </span>
-                    ) : p === page ? (
-                      <span key={p} aria-current="page">
-                        {p}
-                      </span>
-                    ) : (
-                      <Link key={p} href={href({ page: p })} aria-label={`Page ${p}`}>
-                        {p}
-                      </Link>
-                    ),
-                  )}
-                </nav>
-              )}
+              {pagination}
             </section>
 
             <aside className="re-aside">

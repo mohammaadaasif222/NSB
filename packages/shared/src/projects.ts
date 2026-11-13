@@ -401,6 +401,8 @@ export interface ProjectSummary {
   /** The first three priced configurations, for the card. */
   keyConfigurations: { title: string; superArea: number | null }[];
   coverImageUrl: string | null;
+  /** The first few photos, cover first, for the phone card's photo slider. */
+  photoPreview: string[];
   status: ListingStatus;
   createdAt: string;
 }

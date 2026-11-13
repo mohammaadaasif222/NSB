@@ -106,7 +106,7 @@
 
 
 
-@media(max-width:960px){.nsb-home .fqg{grid-template-columns:1fr;gap:22px}}.nsb-home .bn{display:none}.nsb-home .smb{display:none}
+@media(max-width:960px){.nsb-home .fqg{grid-template-columns:1fr;gap:22px}}.nsb-home .smb{display:none}
 @media(max-width:960px){.nsb-home .hgrid{grid-template-columns:1fr;height:auto}.nsb-home .hs{height:260px}.nsb-home .hq{grid-template-rows:none;grid-auto-rows:120px}.nsb-home .cats{grid-template-columns:repeat(4,1fr)}.nsb-home .pks,.nsb-home .dls,.nsb-home .prods,.nsb-home .hls,.nsb-home .brs{grid-template-columns:repeat(2,1fr)}.nsb-home .jb{grid-template-columns:1fr;padding:36px}.nsb-home .slide{padding:32px}.nsb-home .dots{left:32px}}
 @media(max-width:600px){.nsb-home section{padding:28px 0}.nsb-home .hq{grid-template-columns:1fr 1fr}.nsb-home .cats{grid-template-columns:repeat(3,1fr);gap:10px}.nsb-home .ci{width:50px;height:50px}.nsb-home .pks,.nsb-home .dls,.nsb-home .prods,.nsb-home .hls,.nsb-home .brs{gap:10px}.nsb-home .pimg{height:120px}.nsb-home .jb{padding:26px}.nsb-home .jr{gap:10px}.nsb-home .jt{padding:16px}.nsb-home .ctl .sd{display:none}.nsb-home .nv{display:none}}
 .nsb-home .s4{background:linear-gradient(90deg,rgba(11,10,51,.88),rgba(11,10,51,.42) 62%,rgba(11,10,51,.08)),url(/images/nsb-home/hero-real-estate.jpg) center 35%/cover}.nsb-home .s4::after{display:none}.nsb-home .q.hasimg{background-size:cover;background-position:center;background-repeat:no-repeat}.nsb-home .q.hasimg svg,.nsb-home .q.hasimg .qb{display:none}
@@ -114,22 +114,17 @@
 .nsb-home section{scroll-margin-top:90px}.nsb-home h1,.nsb-home h2,.nsb-home h3,.nsb-home h4{font-weight:700}
 /* Banner images: phones show the mobile image when the admin set one (see Admin › Banners). */
 /* ---------- app feel on phones and tablets ---------- */
-/* Bottom tab bar below desktop width, as in the site's other pages. The current tab's icon sits in a pill. */
+/* The bottom tab bar is the site's MobileTabBar (mobile-tab-bar.css). */
 @media(max-width:1023px){
-.nsb-home{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
-.nsb-home .bn{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,255,255,.94);-webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
-.nsb-home .bn a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--mute)}
-.nsb-home .bn svg{box-sizing:content-box;padding:4px 18px;border-radius:999px;transition:background .2s}
-.nsb-home .bn a:first-child{color:var(--blue)}.nsb-home .bn a:first-child svg{background:var(--blue-s)}
 .nsb-home section{scroll-margin-top:124px}
 }
 /* Touch screens: no grey tap flash, a quick press-in on tappable cards, and no hover lifts that stick after a tap. */
 @media(hover:none){
 .nsb-home a,.nsb-home button,.nsb-home summary{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-.nsb-home .cat,.nsb-home .q,.nsb-home .hl,.nsb-home .pk,.nsb-home .dl,.nsb-home .pd,.nsb-home .br,.nsb-home .jt,.nsb-home .mkc,.nsb-home .btn,.nsb-home .bn a,.nsb-home .tr a{transition:transform .12s ease-out}
+.nsb-home .cat,.nsb-home .q,.nsb-home .hl,.nsb-home .pk,.nsb-home .dl,.nsb-home .pd,.nsb-home .br,.nsb-home .jt,.nsb-home .mkc,.nsb-home .btn,.nsb-home .tr a{transition:transform .12s ease-out}
 .nsb-home .cat:hover,.nsb-home .q:hover,.nsb-home .hl:hover,.nsb-home .pd:hover,.nsb-home .br:hover,.nsb-home .jt:hover,.nsb-home .mkc:hover .av{transform:none}
 .nsb-home .cat:not(.soon):active,.nsb-home .q:active,.nsb-home .hl:active,.nsb-home .pk:active,.nsb-home .dl:active,.nsb-home .pd:active,.nsb-home .br:active,.nsb-home .jt:active,.nsb-home .mkc:active,.nsb-home .tr a:active{transform:scale(.97)}
-.nsb-home .btn:active,.nsb-home .bn a:active{transform:scale(.94)}
+.nsb-home .btn:active{transform:scale(.94)}
 }
 /* Phones: a compact app bar, edge-to-edge swipe rows instead of squeezed grids, and tighter type. */
 @media(max-width:600px){

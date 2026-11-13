@@ -3,13 +3,13 @@ import { jakarta } from "@/lib/fonts";
 import type { Banner, Category } from "@nsb/shared";
 import { Analytics } from "@/components/site/analytics";
 import { CookieBar } from "@/components/site/cookie-bar";
+import { MobileTabBar } from "@/components/site/mobile-tab-bar";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { HERO_FALLBACK } from "@/components/site/nsb-home/content";
 import type { HeroSlide } from "@/components/site/nsb-home/hero-slides";
 import {
   BestDeals,
-  BottomNav,
   BrandStores,
   Categories,
   Faqs,
@@ -75,9 +75,9 @@ export default async function HomePage() {
       </main>
       <Faqs />
       <SiteFooter categories={categories} footer={footer} />
-      <BottomNav whatsappHref={whatsapp ? whatsappHref(whatsapp) : null} />
       <CookieBar />
       <Analytics />
+      <MobileTabBar whatsappHref={whatsapp ? whatsappHref(whatsapp) : null} />
     </div>
   );
 }

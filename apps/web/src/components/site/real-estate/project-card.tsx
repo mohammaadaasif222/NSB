@@ -14,7 +14,7 @@ export function ProjectCard({ project: p, eager = false }: { project: ProjectSum
     <article className="re-card">
       <div className="re-img">
         <Link href={href} className="re-cover" aria-label={p.name} tabIndex={-1}>
-          {p.coverImageUrl ? <Image src={p.coverImageUrl} alt={p.name} fill sizes="(max-width: 640px) 100vw, 310px" loading={eager ? "eager" : "lazy"} /> : <BuildingArt />}
+          {p.coverImageUrl ? <Image src={p.coverImageUrl} alt={p.name} fill sizes="(max-width: 640px) 100vw, 310px" fetchPriority={eager ? "high" : "auto"} /> : <BuildingArt />}
         </Link>
         {/* Only the badges the admin sets; the possession status is shown under the name. */}
         {(p.isPremium || p.isFeatured) && (

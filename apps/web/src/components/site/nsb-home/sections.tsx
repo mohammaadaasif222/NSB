@@ -410,29 +410,3 @@ export function Faqs() {
     </section>
   );
 }
-
-/** Bottom bar on phones. The WhatsApp tab appears only when it is set up in Admin › Settings. */
-export function BottomNav({ whatsappHref }: { whatsappHref: string | null }) {
-  return (
-    <nav className="bn" aria-label="Quick links">
-      <Link href="/">
-        <Icon d={ICON.home} />
-        Home
-      </Link>
-      <a href="#categories">
-        <Icon d={ICON.grid} />
-        Categories
-      </a>
-      <Link href="/wedding">
-        <Icon d={ICON.heart} />
-        Wedding
-      </Link>
-      {whatsappHref && (
-        <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-          <Icon d={ICON.chat} />
-          WhatsApp
-        </a>
-      )}
-    </nav>
-  );
-}

@@ -1,4 +1,4 @@
-import { jakarta } from "@/lib/fonts";
+import { jakarta, manrope } from "@/lib/fonts";
 import Image from "next/image";
 import Link from "next/link";
 import { getSearchCategories } from "@/lib/catalog";
@@ -19,7 +19,7 @@ import "./site-header.css";
 export async function SiteHeader({ location }: { location: SiteLocation | null }) {
   const categories = await getSearchCategories();
   return (
-    <header className={`nsb-hd ${jakarta.variable}`}>
+    <header className={`nsb-hd ${jakarta.variable} ${manrope.variable}`}>
       <div className="hw bar">
         <Link className="logo" href="/" aria-label="Noida Super Bazaar">
           <Image src={LOGO} alt="Noida Super Bazaar" width={99} height={50} priority />

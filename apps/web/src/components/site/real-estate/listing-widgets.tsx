@@ -14,13 +14,21 @@ export function SaveButton({ name }: { name: string }) {
 }
 
 /** Relevance / price sort; changing it reloads the list from page 1. */
-export function SortSelect({ value }: { value: string }) {
+export function SortSelect({
+  value,
+  className = "re-sort",
+  defaultLabel = "Relevance",
+}: {
+  value: string;
+  className?: string;
+  /** The first option's label. */ defaultLabel?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   return (
     <select
-      className="re-sort"
+      className={className}
       aria-label="Sort projects"
       value={value}
       onChange={(e) => {
@@ -31,7 +39,7 @@ export function SortSelect({ value }: { value: string }) {
         router.push(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
       }}
     >
-      <option value="rel">Relevance</option>
+      <option value="rel">{defaultLabel}</option>
       <option value="lo">Price: Low to High</option>
       <option value="hi">Price: High to Low</option>
     </select>
@@ -39,13 +47,25 @@ export function SortSelect({ value }: { value: string }) {
 }
 
 /** A filter as a dropdown (phones show these instead of the chips); "" clears it. Changing it reloads from page 1. */
-export function FilterSelect({ name, value, label, options }: { name: string; value: string; label: string; options: { value: string; label: string }[] }) {
+export function FilterSelect({
+  name,
+  value,
+  label,
+  options,
+  className = "re-sort re-fsel",
+}: {
+  name: string;
+  value: string;
+  label: string;
+  options: { value: string; label: string }[];
+  className?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   return (
     <select
-      className="re-sort re-fsel"
+      className={className}
       aria-label={label}
       value={value}
       onChange={(e) => {
