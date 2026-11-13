@@ -1,7 +1,7 @@
 "use client";
 
 import Form from "next/form";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type KeyboardEvent, memo, useCallback, useId, useMemo, useState } from "react";
 import type { ListingSummary, Paginated, ProjectSummary } from "@nsb/shared";
 import { useLiveSearch } from "@/components/shared/use-live-search";
@@ -37,6 +37,9 @@ async function searchSite(q: string, _page: number, signal: AbortSignal): Promis
 export function HeaderSearch({ categories }: { categories: SearchCategory[] }) {
   const router = useRouter();
   const listId = useId();
+  // Wedding vendor pages (/wedding/<category>/<vendor>) word it as in Makeup-Vendor-Page.html.
+  const parts = usePathname().split("/").filter(Boolean);
+  const placeholder = parts[0] === "wedding" && parts.length === 3 ? "Search wedding vendors" : "Search wedding venues, salons, AC repair…";
   const { q, searched, change, loading, error, items } = useLiveSearch(searchSite);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -96,7 +99,7 @@ export function HeaderSearch({ categories }: { categories: SearchCategory[] }) {
         value={q}
         maxLength={100}
         autoComplete="off"
-        placeholder="Search wedding venues, salons, AC repair…"
+        placeholder={placeholder}
         aria-label="Search"
         role="combobox"
         aria-expanded={shown}

@@ -7,13 +7,13 @@ import type { ListingVideo } from "@nsb/shared";
 import { youTubeId } from "@nsb/shared/client";
 import { useModalBehaviour } from "../use-modal-behaviour";
 
-interface Clip {
+export interface Clip {
   id: string;
   short: boolean;
   title: string;
 }
 
-const thumb = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+export const thumb = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
 /** The privacy-enhanced YouTube player. allowFullScreen keeps YouTube's own full-screen button working. */
 function Player({ clip, className = "" }: { clip: Clip; className?: string }) {
@@ -75,7 +75,7 @@ function Tile({ clip, playing, onPlay, onExpand }: { clip: Clip; playing: boolea
 }
 
 /** Full-screen viewer: one clip at a time, with previous/next across all videos and Shorts. */
-function Viewer({ clips, index, onChange, onClose, name }: { clips: Clip[]; index: number; onChange: (i: number) => void; onClose: () => void; name: string }) {
+export function VideoViewer({ clips, index, onChange, onClose, name }: { clips: Clip[]; index: number; onChange: (i: number) => void; onClose: () => void; name: string }) {
   const count = clips.length;
   const clip = clips[index];
   const step = (d: number) => onChange((index + d + count) % count);
@@ -156,11 +156,8 @@ function Viewer({ clips, index, onChange, onClose, name }: { clips: Clip[]; inde
   );
 }
 
-/** Videos (16:9, two per row) followed by Shorts (9:16, up to four per row), with a full-screen viewer. */
-export function Videos({ name, videos }: { name: string; videos: ListingVideo[] }) {
-  const [playing, setPlaying] = useState<number | null>(null);
-  const [viewing, setViewing] = useState<number | null>(null);
-
+/** YouTube videos then Shorts, titled for screen readers; `clips` is both in that order. */
+export function parseClips(name: string, videos: ListingVideo[]) {
   const parsed = videos.flatMap((v) => {
     const id = youTubeId(v.url);
     return id ? [{ id, short: v.kind === "short" }] : [];
@@ -169,6 +166,15 @@ export function Videos({ name, videos }: { name: string; videos: ListingVideo[] 
   const shorts = parsed.filter((c) => c.short).map((c, i) => ({ ...c, title: `${name} short ${i + 1}` }));
   // One list in the order shown on the page, so the viewer's next/previous follows it.
   const clips: Clip[] = [...long, ...shorts];
+  return { long, shorts, clips };
+}
+
+/** Videos (16:9, two per row) followed by Shorts (9:16, up to four per row), with a full-screen viewer. */
+export function Videos({ name, videos }: { name: string; videos: ListingVideo[] }) {
+  const [playing, setPlaying] = useState<number | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
+
+  const { long, shorts, clips } = parseClips(name, videos);
 
   const expand = (i: number) => {
     setPlaying(null); // stop the in-page player so two don't play at once
@@ -189,7 +195,7 @@ export function Videos({ name, videos }: { name: string; videos: ListingVideo[] 
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">{shorts.map((c, i) => tile(c, long.length + i))}</ul>
         </div>
       )}
-      {viewing !== null && <Viewer clips={clips} index={viewing} onChange={setViewing} onClose={() => setViewing(null)} name={name} />}
+      {viewing !== null && <VideoViewer clips={clips} index={viewing} onChange={setViewing} onClose={() => setViewing(null)} name={name} />}
     </div>
   );
 }

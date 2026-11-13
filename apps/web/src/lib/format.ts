@@ -16,3 +16,12 @@ export function ago(iso: string) {
   const m = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 60_000));
   return m < 60 ? `${m}m ago` : m < 1440 ? `${Math.floor(m / 60)}h ago` : `${Math.floor(m / 1440)}d ago`;
 }
+
+/** Up to two capital letters from a name, for avatar tiles: "Glam Studio" → "GS". */
+export const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");

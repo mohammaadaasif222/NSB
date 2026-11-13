@@ -5,6 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { type AdminCategory, MAX_LISTING_TAGS, type QuickInfoItem, type ResolvedListingForm } from "@nsb/shared";
 import { Button, Field, IconButton, TextArea, TextInput } from "@/components/admin/form";
 import { DetailsSection, type DetailsDraft, FormSection } from "@/components/admin/listing-fields";
+import { type ProfileDraft, ProfileSectionsEditor } from "@/components/admin/profile-sections-editor";
 import { type ServiceGroupDraft, ServiceGroupsEditor } from "@/components/admin/service-groups-editor";
 import { TagPicker } from "@/components/admin/tag-picker";
 import { sameStepProps } from "@/components/admin/use-stepped-form";
@@ -35,6 +36,10 @@ export const DetailsStep = memo(function DetailsStep({
   setDraft,
   quickInfo,
   setQuickInfo,
+  profile,
+  setProfile,
+  trackUpload,
+  maxUploadBytes,
 }: ListingStepProps<(typeof KEYS)[number]> & {
   form: ResolvedListingForm | null;
   structured: boolean;
@@ -51,6 +56,12 @@ export const DetailsStep = memo(function DetailsStep({
   setDraft: Dispatch<SetStateAction<DetailsDraft>>;
   quickInfo: QuickInfoItem[];
   setQuickInfo: Dispatch<SetStateAction<QuickInfoItem[]>>;
+  /** Null when the sub-category's form has no profile sections. */
+  profile: ProfileDraft | null;
+  setProfile: Dispatch<SetStateAction<ProfileDraft>>;
+  /** For package photos. */
+  trackUpload: (url: string) => void;
+  maxUploadBytes: number;
 }) {
   const setInfo = (i: number, patch: Partial<QuickInfoItem>) => setQuickInfo((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   const setDetail = (key: string, value: DetailsDraft[string]) => setDraft((d) => ({ ...d, [key]: value }));
@@ -155,6 +166,8 @@ export const DetailsStep = memo(function DetailsStep({
           </button>
         </p>
       )}
+
+      {profile && <ProfileSectionsEditor draft={profile} setDraft={setProfile} errors={errors} trackUpload={trackUpload} maxUploadBytes={maxUploadBytes} />}
 
       <FormSection title="Ratings and reviews">
         <p className="text-xs text-zinc-500">

@@ -22,7 +22,7 @@ type Row = typeof listings.$inferSelect;
 type CategoryRef = ListingSummary['category'];
 
 /** Columns a card has no use for: long text, and the vendor's private contacts. */
-const NOT_ON_CARDS = ['about', 'address', 'email', 'phone', 'videos', 'googleMapsUrl'] as const;
+const NOT_ON_CARDS = ['about', 'address', 'email', 'phone', 'videos', 'googleMapsUrl', 'artist', 'faqs', 'serviceArea', 'includedServices', 'packages', 'packagesTitle', 'packagesNote', 'serviceAreaTitle', 'serviceAreaChips', 'serviceAreaNote', 'thingsToKnow'] as const;
 export const cardColumns = without(getTableColumns(listings), NOT_ON_CARDS);
 type CardRow = Omit<Row, (typeof NOT_ON_CARDS)[number]>;
 /** The parent of the listing's category; null for a top-level category. */
@@ -102,5 +102,16 @@ export const toDetail = (l: Row, category: CategoryRef, parent: ParentRef, galle
     googleReviewCount: l.googleReviewCount,
     googleMapsUrl: l.googleMapsUrl,
     reviews,
+    artist: l.artist,
+    faqs: l.faqs,
+    serviceArea: l.serviceArea,
+    includedServices: l.includedServices,
+    packages: l.packages,
+    packagesTitle: l.packagesTitle,
+    packagesNote: l.packagesNote,
+    serviceAreaTitle: l.serviceAreaTitle,
+    serviceAreaChips: l.serviceAreaChips,
+    serviceAreaNote: l.serviceAreaNote,
+    thingsToKnow: l.thingsToKnow,
   };
 };

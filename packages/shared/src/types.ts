@@ -1,7 +1,7 @@
 import type { AdminRole, ImageStorageProvider, LeadStatus, ListingStatus, ReviewSource, SmtpSecurity } from './constants.js';
 import type { ListingDetails } from './listing-forms.js';
 import type { ProjectType } from './projects.js';
-import type { EliteBanners, FooterSettings, HomeCard, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, RealEstateAd, ServiceGroup } from './schemas.js';
+import type { EliteBanners, FooterSettings, HomeCard, ListingArtist, ListingFaq, ListingPackage, ThingToKnow, ListingSidebarSettings, ListingVideo, Pricing, ProjectSideAd, QuickInfoItem, RealEstateAd, ServiceGroup } from './schemas.js';
 
 /** API response shapes shared by the API (producer) and web (consumer). Dates are ISO strings. */
 
@@ -148,6 +148,18 @@ export interface ListingDetail extends ListingSummary {
   googleMapsUrl: string | null;
   /** Reviews added in the admin panel, newest first. */
   reviews: ListingReview[];
+  /** Meet your artist; null when not filled in. */
+  artist: ListingArtist | null;
+  faqs: ListingFaq[];
+  serviceArea: string | null;
+  includedServices: string[];
+  packages: ListingPackage[];
+  packagesTitle: string | null;
+  packagesNote: string | null;
+  serviceAreaTitle: string | null;
+  serviceAreaChips: string[];
+  serviceAreaNote: string | null;
+  thingsToKnow: ThingToKnow[];
 }
 
 /** Admin view of a listing, including the private contact fields. */

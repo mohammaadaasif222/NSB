@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AdminCategory, AdminListing, ListingField } from "@nsb/shared";
+import { draftFromProfile } from "@/components/admin/profile-sections-editor";
 import { type ListingDraft, listingBody, listingPreview, listingProblems, nestedErrors, oldAreaOf, stepOfError, valuesOf } from "./listing-draft";
 
 const fields: ListingField[] = [{ key: "venueType", label: "Venue type", type: "select", options: ["Lawn", "Hotel"] }];
@@ -12,6 +13,7 @@ const draft = (patch: Partial<ListingDraft["values"]> = {}, rest: Partial<Listin
   gallery: [],
   videos: [],
   tags: [],
+  profile: draftFromProfile(),
   ...rest,
 });
 
@@ -75,7 +77,53 @@ describe("listingProblems", () => {
 });
 
 describe("listingBody", () => {
-  const context = { categoryId: "cat", fields };
+  const context = { categoryId: "cat", fields, profileSections: false };
+
+  it("sends the profile sections only for a form that has them, dropping blank rows", () => {
+    const profile = {
+      ...draftFromProfile(),
+      artistName: " Ritika ",
+      stats: [{ value: "9 years", label: "Experience" }, { value: " ", label: "" }],
+      highlights: "500+ brides\n\n Airbrush specialist ",
+      faqs: [{ question: "Trial?", answer: "Yes" }, { question: "", answer: " " }],
+      serviceArea: "  ",
+      included: ["Hairstyling"],
+    };
+    const body = listingBody(draft({}, { profile }), { ...context, profileSections: true });
+    expect(body.artist).toEqual({ name: "Ritika", role: null, note: null, stats: [{ value: "9 years", label: "Experience" }], highlights: ["500+ brides", "Airbrush specialist"], training: [] });
+    expect(body.faqs).toEqual([{ question: "Trial?", answer: "Yes" }]);
+    expect(body.serviceArea).toBeNull();
+    expect(body.includedServices).toEqual(["Hairstyling"]);
+
+    const other = listingBody(draft({}, { profile }), context);
+    expect([other.artist, other.faqs, other.serviceArea, other.includedServices]).toEqual([null, [], null, []]);
+  });
+
+  it("turns package prices into rupees and drops blank packages and cards", () => {
+    const profile = {
+      ...draftFromProfile(),
+      packages: [
+        { name: " Bridal HD ", description: "", price: "25000", priceNote: " onwards ", duration: "3 hrs", imageUrl: null },
+        { name: "Trial", description: "", price: " ", priceNote: "", duration: "", imageUrl: null },
+        { name: " ", description: "", price: "", priceNote: "", duration: "", imageUrl: null },
+      ],
+      thingsToKnow: [{ title: "Booking", text: "Book early" }, { title: " ", text: "" }],
+      serviceAreaChips: ["Noida"],
+    };
+    const body = listingBody(draft({}, { profile }), { ...context, profileSections: true });
+    expect(body.packages).toEqual([
+      { name: "Bridal HD", description: null, price: 25000, priceNote: "onwards", duration: "3 hrs", imageUrl: null },
+      { name: "Trial", description: null, price: null, priceNote: null, duration: null, imageUrl: null },
+    ]);
+    expect(body.thingsToKnow).toEqual([{ title: "Booking", text: "Book early" }]);
+    expect(body.serviceAreaChips).toEqual(["Noida"]);
+  });
+
+  it("leaves the artist out while every artist field is blank, and keeps a nameless one for the API to flag", () => {
+    expect(listingBody(draft(), { ...context, profileSections: true }).artist).toBeNull();
+    const nameless = listingBody(draft({}, { profile: { ...draftFromProfile(), training: "Diploma" } }), { ...context, profileSections: true });
+    expect(nameless.artist?.name).toBe("");
+  });
 
   it("normalises the phone of a form listing, and keeps a free-form one as typed", () => {
     expect(listingBody(draft({ phone: "+91 98765-43210" }), context).phone).toBe("9876543210");

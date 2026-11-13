@@ -2,10 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useMemo, useState } from "react";
-import { type AdminCategory, type AdminListing, LISTING_FORMS, listingFormFor, type ListingVideo, type QuickInfoItem } from "@nsb/shared";
+import { type AdminCategory, type AdminListing, hasProfileSections, LISTING_FORMS, listingFormFor, type ListingVideo, type QuickInfoItem } from "@nsb/shared";
 import { Button } from "@/components/admin/form";
 import { useSessionUploads } from "@/components/admin/image-upload";
 import { type DetailsDraft, draftFromDetails } from "@/components/admin/listing-fields";
+import { draftFromProfile, type ProfileDraft } from "@/components/admin/profile-sections-editor";
 import { draftFromGroups, type ServiceGroupDraft } from "@/components/admin/service-groups-editor";
 import { useAdminAction } from "@/components/admin/use-admin-action";
 import { scrollToTop, useSteppedForm } from "@/components/admin/use-stepped-form";
@@ -70,6 +71,8 @@ export function ListingForm({
   const [gallery, setGallery] = useState<string[]>(listing?.gallery.map((g) => g.url) ?? []);
   const [videos, setVideos] = useState<ListingVideo[]>(listing?.videos ?? []);
   const [tags, setTags] = useState<string[]>(listing?.tags ?? []);
+  const [profile, setProfile] = useState<ProfileDraft>(() => draftFromProfile(listing));
+  const profileSections = hasProfileSections(sub?.slug);
   const set = useCallback(<K extends keyof ListingValues>(key: K, value: ListingValues[K]) => setValues((v) => ({ ...v, [key]: value })), []);
 
   async function onSubmit(event: FormEvent) {
@@ -84,7 +87,7 @@ export function ListingForm({
       return;
     }
     setErrors({});
-    const body = listingBody({ values, groups, details: draft, quickInfo, gallery, videos, tags }, { listing, categoryId: subId || topId, fields });
+    const body = listingBody({ values, groups, details: draft, quickInfo, gallery, videos, tags, profile }, { listing, categoryId: subId || topId, fields, profileSections });
     const result = await run(
       () =>
         listing
@@ -159,6 +162,10 @@ export function ListingForm({
           setDraft={setDraft}
           quickInfo={quickInfo}
           setQuickInfo={setQuickInfo}
+          profile={profileSections ? profile : null}
+          setProfile={setProfile}
+          trackUpload={trackUpload}
+          maxUploadBytes={maxUploadBytes}
         />
         <SlotStep hidden={step !== 3} values={values} set={set} sub={sub} listing={listing} />
         <SeoStep hidden={step !== 4} values={values} errors={errors} set={set} top={top} sub={sub} setSlugEdited={setSlugEdited} />

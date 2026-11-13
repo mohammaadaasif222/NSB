@@ -73,7 +73,8 @@ export function LocationPicker({ current }: { current: SiteLocation | null }) {
 
   const label = locationLabel(location);
   return (
-    <div ref={box} className={`loc relative ${pending ? "opacity-70" : ""}`}>
+    // data-empty: no location chosen (the vendor page's phone header then shows the pin alone).
+    <div ref={box} className={`loc relative ${pending ? "opacity-70" : ""}`} data-empty={location ? undefined : ""}>
       <button type="button" className="lb" aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} aria-busy={pending || undefined} onClick={() => setOpen((o) => !o)}>
         <MapPin size={16} aria-hidden />
         <span>{label}</span>

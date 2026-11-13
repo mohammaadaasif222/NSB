@@ -107,6 +107,14 @@ export const LISTING_FORMS: Record<string, CategoryListingForm> = {
   },
 };
 
+/**
+ * Sub-categories whose admin form also has Packages, Meet your artist, Included in services,
+ * Service area, Things to know and FAQ. The site shows those sections for any listing that has them filled in.
+ */
+const PROFILE_SECTION_SUBCATEGORIES: readonly string[] = ['makeup-beauty'];
+
+export const hasProfileSections = (categorySlug: string | undefined) => !!categorySlug && PROFILE_SECTION_SUBCATEGORIES.includes(categorySlug);
+
 export interface ResolvedListingForm {
   categoryFields: readonly ListingField[];
   /** Empty when the sub-category has no form of its own (e.g. one added later in the admin panel). */
@@ -168,7 +176,8 @@ export const listingDetailsInputSchema = z.record(
   z.union([z.string().max(200), z.number(), z.boolean(), z.array(z.string().max(120)).max(40)]),
 );
 
-const inr = (n: number) => `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+/** Rupees as the site shows them: ₹25,000. */
+export const formatInr = (n: number) => `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 
 /**
  * A count or measure: grouped from 10,000 up ("12,000 sq ft"), plain below so 4-digit values
@@ -188,7 +197,7 @@ export function formatListingDetail(field: ListingField, value: ListingDetailVal
     case 'multi':
       return Array.isArray(value) && value.length ? value.join(', ') : null;
     case 'price':
-      return typeof value === 'number' ? `${inr(value)}${field.suffix ? ` ${field.suffix}` : ''}` : null;
+      return typeof value === 'number' ? `${formatInr(value)}${field.suffix ? ` ${field.suffix}` : ''}` : null;
     case 'number': {
       if (typeof value !== 'number') return null;
       if (field.unit === 'years' && looksLikeYear(value)) return `Since ${value}`;

@@ -191,6 +191,47 @@ describe('NSB API (e2e)', () => {
     expect(card.services).toEqual(['Service A', 'Live counters', 'Mithai', 'Floral mandap']);
   });
 
+  it('saves the profile sections (packages, artist, service area, things to know, FAQs), and clears them', async () => {
+    const patch = (body: object) => http().patch(`/api/admin/listings/${listing.id}`).set('Cookie', cookie).send(body);
+    const detail = async () => (await http().get(`/api/listings/${slug}`).expect(200)).body as ListingDetail;
+
+    // A listing saved before these fields shows none of the sections.
+    expect(await detail()).toMatchObject({ artist: null, faqs: [], serviceArea: null, includedServices: [] });
+
+    const artist = {
+      name: 'Ritika Sharma',
+      role: 'Lead makeup artist',
+      stats: [{ value: '9 years', label: 'Experience' }],
+      highlights: ['500+ brides styled'],
+      training: ['Airbrush certification'],
+      note: null,
+    };
+    const faqs = [{ question: 'Do you travel?', answer: 'Yes, across Noida.' }];
+    await patch({ artist: { ...artist, name: '' } }).expect(400);
+    await patch({ faqs: [{ question: 'No answer', answer: '' }] }).expect(400);
+    const extras = {
+      packages: [{ name: 'Bridal HD makeup', description: null, price: 25000, priceNote: 'onwards', duration: '3 hrs', imageUrl: null }],
+      packagesTitle: 'Makeup packages',
+      packagesNote: 'Message us to customise a package.',
+      serviceAreaTitle: 'We come to you',
+      serviceAreaChips: ['Noida', 'Greater Noida'],
+      serviceAreaNote: 'Travel charges are shared in your quote.',
+      thingsToKnow: [{ title: 'Booking', text: 'Book 2 to 3 months ahead.' }],
+    };
+    await patch({ packages: [{ ...extras.packages[0], price: -1 }] }).expect(400);
+    await patch({ artist, faqs, serviceArea: 'Noida and Greater Noida', includedServices: ['Hairstyling'], ...extras }).expect(200);
+    expect(await detail()).toMatchObject({ artist, faqs, serviceArea: 'Noida and Greater Noida', includedServices: ['Hairstyling'], ...extras });
+
+    // Cards don't carry the profile sections.
+    const card = ((await http().get(`/api/listings?category=${category.slug}`).expect(200)).body as Paginated<ListingDetail>).items.find((l) => l.slug === slug)!;
+    expect(card).not.toHaveProperty('artist');
+    expect(card).not.toHaveProperty('packages');
+
+    const cleared = { packages: [], packagesTitle: null, packagesNote: null, serviceAreaTitle: null, serviceAreaChips: [], serviceAreaNote: null, thingsToKnow: [] };
+    await patch({ artist: null, faqs: [], serviceArea: '', includedServices: [], ...cleared, packagesTitle: '' }).expect(200);
+    expect(await detail()).toMatchObject({ artist: null, faqs: [], serviceArea: null, includedServices: [], ...cleared });
+  });
+
   it('finds listings in the admin panel by search and date added', async () => {
     const find = async (qs: string) =>
       ((await http().get(`/api/admin/listings?${qs}`).set('Cookie', cookie).expect(200)).body as Paginated<ListingDetail>).items.map((l) => l.slug);

@@ -22,6 +22,9 @@ import type {
   ImageStorageProvider,
   LeadStatus,
   ListingDetails,
+  ListingArtist,
+  ListingFaq,
+  ListingPackage,
   ListingStatus,
   ListingVideo,
   NearbyPlace,
@@ -34,6 +37,7 @@ import type {
   QuickInfoItem,
   ReviewSource,
   ServiceGroup,
+  ThingToKnow,
 } from '@nsb/shared';
 import { ADMIN_ROLES, LEAD_STATUSES, LISTING_STATUSES, PROJECT_TYPES, REVIEW_SOURCES } from '@nsb/shared';
 import type { PendingAlert } from '../modules/notifications/notifications.service.js';
@@ -153,6 +157,27 @@ export const listings = pgTable(
     googleRating: real('google_rating'),
     googleReviewCount: integer('google_review_count'),
     googleMapsUrl: text('google_maps_url'),
+    /** Meet your artist (makeup vendors); null hides the section. */
+    artist: jsonb('artist').$type<ListingArtist>(),
+    faqs: jsonb('faqs').$type<ListingFaq[]>().notNull().default([]),
+    /** Where the vendor travels to; null hides the section. */
+    serviceArea: text('service_area'),
+    /** "Included in services" chips. */
+    includedServices: text('included_services')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Priced packages; the packages section shows only when there are some. */
+    packages: jsonb('packages').$type<ListingPackage[]>().notNull().default([]),
+    packagesTitle: text('packages_title'),
+    packagesNote: text('packages_note'),
+    serviceAreaTitle: text('service_area_title'),
+    serviceAreaChips: text('service_area_chips')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    serviceAreaNote: text('service_area_note'),
+    thingsToKnow: jsonb('things_to_know').$type<ThingToKnow[]>().notNull().default([]),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

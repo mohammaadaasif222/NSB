@@ -15,7 +15,9 @@ import { banners, categories, listingImages, listings, projects } from './schema
  * Demo banners are recognised by their image URL, so --remove never touches admin-made banners.
  * Photos are hotlinked from Unsplash (free licence), as Unsplash asks. Videos are public YouTube
  * videos and Shorts by other creators that allow embedding, there only to show the Videos section.
- * Re-running the seed adds videos to demo vendors seeded before videos existed.
+ * Re-running the seed adds videos to demo vendors seeded before videos existed, and brings a demo
+ * vendor's `extra` columns and photos up to date (Glam Studio by Ritika: the Makeup-Vendor-Page.html
+ * content, so its page matches that design).
  */
 
 loadEnvFile();
@@ -66,6 +68,8 @@ interface Demo {
   quickInfo: QuickInfoItem[];
   isFeatured?: boolean;
   photos: string[];
+  /** Further columns, e.g. the makeup page's packages and artist; kept up to date on re-runs. */
+  extra?: Partial<typeof listings.$inferInsert>;
 }
 
 /** "Sector 18, Noida" → locality Sector 18 in the area Noida (one of LISTING_AREAS). */
@@ -75,6 +79,50 @@ const place = (text: string) => {
 };
 
 const qi = (...pairs: [string, string][]): QuickInfoItem[] => pairs.map(([label, value]) => ({ label, value }));
+
+/** Glam Studio by Ritika's makeup page sections, as in Makeup-Vendor-Page.html. */
+const GLAM_PROFILE: Demo['extra'] = {
+  packagesTitle: 'Makeup packages',
+  packagesNote: 'Message Ritika to customise a package or to book for a group.',
+  packages: [
+    { name: 'Bridal HD makeup', description: 'Long-wear HD finish that photographs beautifully, with hairstyling and dupatta setting included.', price: 25000, priceNote: 'onwards', duration: '3 hrs', imageUrl: photo(MAKEUP_PHOTOS[0]) },
+    { name: 'Airbrush bridal makeup', description: 'A lightweight, flawless airbrush finish that stays fresh from the pheras to the reception.', price: 32000, priceNote: 'onwards', duration: '3 hrs 30 mins', imageUrl: photo(MAKEUP_PHOTOS[1]) },
+    { name: 'Engagement and reception look', description: 'Soft-glam or full-glam makeup with a matching hairstyle, designed around your outfit.', price: 15000, priceNote: 'onwards', duration: '2 hrs', imageUrl: photo(MAKEUP_PHOTOS[5]) },
+    { name: 'Haldi and mehendi look', description: 'Fresh, light makeup that holds up through photos, dancing and the heat.', price: 8000, priceNote: 'onwards', duration: '1 hr 30 mins', imageUrl: photo(MAKEUP_PHOTOS[2]) },
+    { name: 'Party and guest makeup', description: 'Quick and polished makeup for family members and guests.', price: 5000, priceNote: 'onwards', duration: '1 hr', imageUrl: photo(MAKEUP_PHOTOS[4]) },
+    { name: 'Pre-bridal trial', description: 'Try your look at the studio before the big day and finalise every detail.', price: 3000, priceNote: 'per trial', duration: '1 hr 30 mins', imageUrl: photo(MAKEUP_PHOTOS[3]) },
+  ],
+  includedServices: ['Bridal HD makeup', 'Airbrush makeup', 'Hairstyling', 'Saree and dupatta draping', 'Engagement and party makeup', 'Pre-bridal trial'],
+  artist: {
+    name: 'Ritika Sharma',
+    role: 'Founder and lead makeup artist',
+    stats: [
+      { value: '9 years', label: 'Experience' },
+      { value: '500+', label: 'Brides styled' },
+      { value: '6', label: 'Team members' },
+    ],
+    highlights: ['Styled over 500 brides across Delhi NCR', 'Specialist in long-wear HD and airbrush makeup', 'Team travels to venues in Noida and Greater Noida'],
+    training: ['Professional diploma in makeup and hair styling', 'Airbrush makeup certification', 'Regular advanced bridal masterclasses'],
+    note: 'Uses professional, skin-safe products. A patch test is available on request.',
+  },
+  serviceAreaTitle: 'We come to you',
+  serviceArea:
+    'The team travels to your home or venue across Noida, Greater Noida and Noida Extension. Trials happen at the Sector 18 studio. To book in a different location, send us a message.',
+  serviceAreaChips: ['Noida', 'Greater Noida', 'Noida Extension', 'Delhi NCR on request'],
+  serviceAreaNote: 'Travel charges, if any, are shared in your quote.',
+  thingsToKnow: [
+    { title: 'Booking', text: 'Book 2 to 3 months ahead for wedding dates. A 25% advance confirms your date.' },
+    { title: 'Trial', text: 'A pre-bridal trial is recommended 3 to 4 weeks before the wedding.' },
+    { title: 'Cancellation', text: 'The advance is refundable if cancelled 15 days before the event.' },
+    { title: 'Good to know', text: 'Please share your outfit photos and skin type in advance. Tell us about any allergies.' },
+  ],
+  faqs: [
+    { question: 'Do you travel to the venue?', answer: 'Yes, across Noida and Greater Noida. Travel charges are shared in the quote.' },
+    { question: 'Can I book a trial?', answer: 'Yes. A pre-bridal trial is available at the Sector 18 studio.' },
+    { question: 'How early should I book?', answer: '2 to 3 months ahead for wedding dates.' },
+    { question: 'Do you offer airbrush makeup?', answer: 'Yes. Airbrush bridal makeup is available as its own package.' },
+  ],
+};
 
 const VENUE_SERVICES = [
   'In-house catering', 'Decor and stage setup', 'Bridal changing room', 'Air-conditioned hall',
@@ -126,7 +174,19 @@ const DEMO: Record<string, Demo[]> = {
     venue(7, 'The Golden Mandap', 'the-golden-mandap-sector-50', 'Sector 50, Noida', 'Banquet Hall', '₹1,400', '₹1,700', '100–400 guests', '6 rooms', '90 cars', 'A warm, gold-toned banquet with a permanent mandap setup and a terrace for pre-wedding functions, a short drive from Sector 50 metro.'),
   ],
   'makeup-beauty': [
-    { name: 'Glam Studio by Ritika', slug: 'glam-studio-by-ritika-sector-18', area: 'Sector 18, Noida', isFeatured: true, shortDescription: 'Bridal makeup artist known for HD and airbrush looks.', about: 'Ritika and her team have styled over 500 brides across Delhi NCR, specialising in long-wear HD and airbrush makeup that stays fresh from pheras to the reception.\n\nTrials are available at the Sector 18 studio, and the team travels to venues across Noida and Greater Noida.', services: ['Bridal HD makeup', 'Airbrush makeup', 'Hairstyling', 'Saree and dupatta draping', 'Engagement and party makeup', 'Pre-bridal trial'], quickInfo: qi(['Bridal makeup', '₹25,000 onwards'], ['Party makeup', '₹5,000 onwards'], ['Experience', '9 years'], ['Travels to venue', 'Yes']), photos: pick(MAKEUP_PHOTOS, 0, 3) },
+    {
+      name: 'Glam Studio by Ritika',
+      slug: 'glam-studio-by-ritika-sector-18',
+      area: 'Sector 18, Noida',
+      isFeatured: true,
+      shortDescription: 'Bridal makeup artist known for HD and airbrush looks.',
+      about:
+        'Ritika and her team have styled over 500 brides across Delhi NCR, specialising in long-wear HD and airbrush makeup that stays fresh from pheras to the reception. Trials are available at the Sector 18 studio, and the team travels to venues across Noida and Greater Noida.\n\nEvery look starts with a short consultation about your outfit, skin and the kind of photos you want. The team uses professional, skin-safe products and keeps backup touch-up kits for the whole day.',
+      services: ['Bridal HD makeup', 'Airbrush makeup', 'Hairstyling', 'Saree and dupatta draping', 'Engagement and party makeup', 'Pre-bridal trial'],
+      quickInfo: qi(['Bridal makeup', '₹25,000 onwards'], ['Party makeup', '₹5,000 onwards'], ['Experience', '9 years'], ['Travels to venue', 'Yes']),
+      photos: pick(MAKEUP_PHOTOS, 0, 6),
+      extra: GLAM_PROFILE,
+    },
     { name: 'Kohl & Kumkum Bridal Studio', slug: 'kohl-kumkum-bridal-studio-sector-62', area: 'Sector 62, Noida', shortDescription: 'Traditional and contemporary bridal looks with mehendi.', about: 'A bridal studio that pairs classic red-bride looks with modern minimal styles, with an in-house mehendi artist for the whole family.\n\nPackages cover the bride, the mother of the bride and bridesmaids.', services: ['Bridal makeup', 'Mehendi for bride and family', 'Hairstyling', 'Nail art', 'Family makeup packages'], quickInfo: qi(['Bridal makeup', '₹18,000 onwards'], ['Party makeup', '₹4,000 onwards'], ['Experience', '6 years'], ['Travels to venue', 'Yes']), photos: pick(MAKEUP_PHOTOS, 3, 3) },
     { name: 'Blush Beauty Lounge', slug: 'blush-beauty-lounge-greater-noida-west', area: 'Greater Noida West', shortDescription: 'Salon and bridal lounge with pre-bridal packages.', about: 'A full-service salon with a dedicated bridal lounge, offering pre-bridal skin and hair care as well as wedding-day makeup.\n\nPopular for its one-month pre-bridal packages.', services: ['Bridal makeup', 'Pre-bridal skin care', 'Hair spa and smoothening', 'Groom grooming', 'Party makeup'], quickInfo: qi(['Bridal makeup', '₹15,000 onwards'], ['Pre-bridal package', '₹12,000'], ['Experience', '5 years'], ['Travels to venue', 'On request']), photos: pick(MAKEUP_PHOTOS, 6, 3) },
   ],
@@ -236,7 +296,7 @@ try {
     let added = 0;
     let videosUpdated = 0;
     for (const { id: categoryId, slug: categorySlug } of cats) {
-      for (const { photos, ...demo } of DEMO[categorySlug]) {
+      for (const { photos, extra, ...demo } of DEMO[categorySlug]) {
         const [cover, ...gallery] = photos;
         const email = `${demo.slug}${DEMO_EMAIL_DOMAIN}`;
         const videos = DEMO_VIDEOS[demo.slug] ?? [];
@@ -244,6 +304,7 @@ try {
           .insert(listings)
           .values({
             ...demo,
+            ...extra,
             ...place(demo.area),
             categoryId,
             coverImageUrl: cover,
@@ -254,13 +315,19 @@ try {
           .onConflictDoNothing({ target: listings.slug })
           .returning({ id: listings.id });
         if (!row) {
-          // Already seeded: bring its videos up to date, and only if it is still the demo vendor.
+          // Already seeded: bring its videos (and extra columns) up to date, only while it is still the demo vendor.
           const updated = await db
             .update(listings)
-            .set({ videos })
+            .set({ videos, ...extra, ...(extra ? { about: demo.about, coverImageUrl: cover } : {}) })
             .where(and(eq(listings.slug, demo.slug), eq(listings.email, email)))
             .returning({ id: listings.id });
           videosUpdated += updated.length;
+          // A vendor with extra columns follows its design exactly, photos included.
+          if (extra && updated[0]) {
+            const listingId = updated[0].id;
+            await db.delete(listingImages).where(eq(listingImages.listingId, listingId));
+            await db.insert(listingImages).values(gallery.map((url, sortOrder) => ({ listingId, url, sortOrder })));
+          }
           continue;
         }
         await db

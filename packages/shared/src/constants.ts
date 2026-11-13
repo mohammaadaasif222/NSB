@@ -46,6 +46,15 @@ export type ReviewSource = (typeof REVIEW_SOURCES)[number];
 /** Limits for a listing's service sections ("Food", "Decor", …). */
 export const MAX_SERVICE_GROUPS = 8;
 
+/** Limits for the vendor page's Meet your artist, FAQ and Included in services sections. */
+export const MAX_ARTIST_STATS = 3;
+export const MAX_ARTIST_POINTS = 8;
+export const MAX_LISTING_FAQS = 20;
+export const MAX_INCLUDED_SERVICES = 30;
+export const MAX_LISTING_PACKAGES = 20;
+export const MAX_SERVICE_AREA_CHIPS = 12;
+export const MAX_THINGS_TO_KNOW = 12;
+
 export const ENQUIRY_STATUSES = ['unread', 'read'] as const;
 export type EnquiryStatus = (typeof ENQUIRY_STATUSES)[number];
 

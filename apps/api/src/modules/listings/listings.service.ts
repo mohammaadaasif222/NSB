@@ -225,13 +225,13 @@ export class ListingsService {
       .orderBy(asc(listingImages.sortOrder));
   }
 
-  /** Cover and gallery URLs, to release once they are replaced or the listing is deleted. */
+  /** Cover, gallery and package photo URLs, to release once they are replaced or the listing is deleted. */
   private async imageUrls(id: string): Promise<Array<string | null>> {
     const [[listing], gallery] = await Promise.all([
-      this.db.select({ cover: listings.coverImageUrl }).from(listings).where(eq(listings.id, id)),
+      this.db.select({ cover: listings.coverImageUrl, packages: listings.packages }).from(listings).where(eq(listings.id, id)),
       this.gallery(id),
     ]);
-    return [listing?.cover ?? null, ...gallery.map((g) => g.url)];
+    return [listing?.cover ?? null, ...gallery.map((g) => g.url), ...(listing?.packages ?? []).map((p) => p.imageUrl)];
   }
 
   private async replaceGallery(tx: Tx, listingId: string, urls: string[]) {

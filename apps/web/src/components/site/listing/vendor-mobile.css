@@ -1,0 +1,1281 @@
+/*
+ * Vendor page, phone layout: a port of Makeup-Vendor-Page.html (its later "fixes" folded in).
+ * Everything is scoped under .vm; the page shows it below Tailwind's `sm` breakpoint only.
+ */
+
+.vm {
+  --ink: #1a06d2;
+  --ink2: #12049a;
+  --deep: #0f0a66;
+  --stone: #edeff3;
+  --card: #fff;
+  --text: #151a33;
+  --muted: #6a7088;
+  --line: #dde0e9;
+  --tint: #eeecfd;
+  --shadow: 0 10px 30px rgba(26, 6, 210, 0.1);
+  --wa: #1fa855;
+  --serif: var(--font-cormorant), "Cormorant Garamond", serif;
+  background: var(--stone);
+  color: var(--text);
+  font-family: var(--font-manrope), Manrope, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  padding-bottom: 26px;
+  overflow-x: hidden;
+}
+/* Phones up to 480px wide match the design; wider ones centre the same 480px column. */
+.vm-crumb {
+  max-width: 480px;
+  margin: 0 auto;
+}
+.vm-sec,
+.vm-hero {
+  max-width: 448px;
+}
+.vm *,
+.vm-ov * {
+  box-sizing: border-box;
+}
+.vm h1,
+.vm h2,
+.vm h3,
+.vm-ov h3 {
+  font-weight: 700;
+  margin: 0;
+}
+.vm p {
+  margin: 0;
+}
+.vm button,
+.vm-ov button {
+  font: inherit;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  background: none;
+}
+.vm :is(button, a, input, select):focus-visible,
+.vm-ov :is(button, a, input, select):focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* The bar is fixed over the page end: leave room under the footer for it. */
+@media (max-width: 639.98px) {
+  body:has(.vm-bar) {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.vm-crumb {
+  padding: 12px 18px 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.vm-crumb a {
+  color: inherit;
+}
+.vm-crumb b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* section cards */
+.vm-sec {
+  background: var(--card);
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  margin: 16px 16px 0;
+  padding: 20px 18px;
+  overflow: hidden;
+}
+@media (min-width: 481px) {
+  .vm-sec,
+  .vm-hero {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+.vm-sec > h2 {
+  font-family: var(--serif);
+  font-size: 25px;
+  line-height: 1.15;
+  color: var(--deep);
+}
+.vm-lead {
+  color: var(--muted);
+  margin: 4px 0 14px !important;
+  font-size: 13px;
+}
+.vm-mt12 {
+  margin-top: 12px;
+}
+.vm-txt {
+  margin-top: 8px !important;
+  color: #3b415a;
+}
+
+/* hero */
+.vm-hero {
+  margin: 12px 16px 0;
+  background: var(--card);
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.vm-ph {
+  position: relative;
+  height: 340px;
+  background: var(--deep);
+}
+.vm-noph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+.vm-gal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.vm-gal::-webkit-scrollbar {
+  display: none;
+}
+.vm-gal > button {
+  position: relative;
+  flex: none;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  cursor: zoom-in;
+  padding: 0;
+}
+.vm-gal img {
+  object-fit: cover;
+  object-position: center 25%;
+}
+.vm-bdg {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+}
+.vm-b {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(15, 10, 102, 0.72);
+  color: #fff;
+  backdrop-filter: blur(6px);
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+.vm-b.is-red {
+  background: linear-gradient(135deg, #f0343a, #c70f14);
+}
+.vm-b.is-gold {
+  background: linear-gradient(135deg, #14110a, #050510);
+  color: #e7c779;
+  border: 1px solid rgba(231, 199, 121, 0.5);
+}
+.vm-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  pointer-events: none;
+}
+.vm-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  transition: all 0.2s;
+}
+.vm-dots i.on {
+  width: 18px;
+  border-radius: 4px;
+  background: #fff;
+}
+.vm-who {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 0 18px;
+  margin-top: -26px;
+  position: relative;
+}
+.vm-av {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #2a14e6, #0f0a66);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 17px;
+  border: 3px solid #fff;
+  flex: none;
+  box-shadow: 0 6px 16px rgba(26, 6, 210, 0.25);
+}
+.vm-sa {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  padding-top: 32px;
+}
+.vm-sb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line) !important;
+  background: #fff !important;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+.vm-sb[aria-pressed="true"] {
+  color: #e5484d;
+  border-color: #f3c3c5 !important;
+  background: #fff3f3 !important;
+}
+.vm-sb[aria-pressed="true"] svg {
+  fill: #e5484d;
+}
+.vm-tb {
+  padding: 12px 18px 18px;
+}
+.vm-tb h1 {
+  font-family: var(--serif);
+  font-size: 29px;
+  line-height: 1.1;
+  color: var(--deep);
+}
+.vm-tag {
+  color: var(--muted);
+  margin-top: 6px !important;
+}
+.vm-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.vm-meta svg {
+  flex: none;
+}
+.vm-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  margin: 12px -18px 0;
+  padding: 0 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.vm-pills::-webkit-scrollbar {
+  display: none;
+}
+.vm-pill {
+  flex: none;
+  white-space: nowrap;
+  font-size: clamp(10px, 3vw, 12px);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--tint);
+  color: var(--ink2);
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.vm-quick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.vm-quick div {
+  background: var(--stone);
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.vm-quick b {
+  display: block;
+  color: var(--text);
+  font-size: 14px;
+  margin-top: 1px;
+}
+
+/* about */
+.vm-abt {
+  margin-top: 10px;
+}
+.vm-about p {
+  color: #3b415a;
+  white-space: pre-line;
+}
+.vm-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.vm-link {
+  display: inline-block;
+  color: var(--ink) !important;
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 4px 0 !important;
+}
+
+/* services and packages: every row shown, the card grows with them */
+.vm-pkv {
+  margin: 0;
+  padding: 0;
+}
+.vm-pk {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.vm-pk.no-img {
+  grid-template-columns: 1fr;
+}
+.vm-pkv > div:first-child > .vm-pk:first-child,
+.vm-h4 + .vm-pk {
+  border-top: 0;
+  padding-top: 4px;
+}
+.vm-pk img {
+  width: 78px;
+  height: 78px;
+  border-radius: 16px;
+  object-fit: cover;
+  object-position: center 20%;
+}
+.vm-pk h3 {
+  font-size: 15px;
+  line-height: 1.3;
+}
+.vm-pk p {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.vm-pkb {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.vm-enq {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink) !important;
+  border: 1px solid var(--ink) !important;
+  border-radius: 999px;
+  padding: 6px 14px;
+  flex: none;
+}
+.vm-h4 {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-top: 18px;
+}
+.vm-pkv .vm-h4 {
+  margin-bottom: 10px;
+}
+.vm-pre {
+  white-space: pre-line;
+}
+
+/* included in services */
+.vm-inc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.vm-inc span {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 9px;
+  background: var(--stone);
+  border: 1px solid var(--line);
+}
+
+/* meet your artist */
+.vm-ar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+.vm-ar .vm-av {
+  border: 0;
+  width: 60px;
+  height: 60px;
+  box-shadow: none;
+}
+.vm-ar b {
+  font-size: 16px;
+  display: block;
+}
+.vm-ar span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.vm-st {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.vm-st div {
+  padding: 12px 8px;
+  text-align: center;
+}
+.vm-st div + div {
+  border-left: 1px solid var(--line);
+}
+.vm-st b {
+  display: block;
+  font-family: var(--serif);
+  font-size: 24px;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.vm-st span {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.vm-hl {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.vm-hi {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px 12px 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f3f1ff, #fff 70%);
+  border: 1px solid #e1ddfa;
+}
+.vm-hic {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #2a14e6, #0f0a66);
+  display: grid;
+  place-items: center;
+  flex: none;
+  box-shadow: 0 8px 16px rgba(26, 6, 210, 0.25);
+}
+.vm-ht {
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--text);
+}
+.vm-tl {
+  margin-top: 12px;
+  padding-left: 2px;
+}
+.vm-ti {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 18px;
+  align-items: start;
+}
+.vm-ti:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: 38px;
+  bottom: 2px;
+  width: 2px;
+  background: repeating-linear-gradient(#e9b4b6 0 4px, transparent 4px 8px);
+}
+.vm-ti:last-child {
+  padding-bottom: 0;
+}
+.vm-tic {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff1f1;
+  border: 1.5px solid #f5bec0;
+  display: grid;
+  place-items: center;
+}
+.vm-tt {
+  font-weight: 600;
+  font-size: 13.5px;
+  line-height: 1.4;
+  padding-top: 7px;
+}
+.vm-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--tint);
+  color: var(--ink2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* faq */
+.vm-faq {
+  margin-top: 6px;
+}
+.vm-faq details {
+  border-top: 1px solid var(--line);
+}
+.vm-faq details:first-child {
+  border-top: 0;
+}
+.vm-faq summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+.vm-faq summary::-webkit-details-marker {
+  display: none;
+}
+.vm-faq summary svg {
+  transition: transform 0.2s;
+}
+.vm-faq details[open] summary svg {
+  transform: rotate(180deg);
+}
+.vm-faq details p {
+  color: var(--muted);
+  font-size: 13.5px;
+  padding: 0 0 14px;
+  white-space: pre-line;
+}
+
+/* video reels */
+.vm-reels {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  margin: 0 -18px;
+  padding: 0 18px;
+}
+.vm-reels::-webkit-scrollbar {
+  display: none;
+}
+.vm-rl {
+  flex: none;
+  width: 128px;
+  aspect-ratio: 9/16;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  color: #fff !important;
+  scroll-snap-align: start;
+  text-align: left;
+  padding: 0;
+  background: var(--deep) !important;
+}
+.vm-rl img {
+  object-fit: cover;
+}
+.vm-rl::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 45%, rgba(15, 10, 102, 0.85));
+}
+.vm-pl {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  color: var(--ink);
+}
+.vm-rt {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* location, things to know */
+.vm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.vm-ch {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 13px;
+  background: var(--stone);
+}
+.vm-kc {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  align-items: start;
+  background: var(--stone);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  margin-top: 10px;
+}
+.vm-kc:first-child {
+  margin-top: 0;
+}
+.vm-ki {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(26, 6, 210, 0.1);
+}
+.vm-kc b {
+  display: block;
+  font-size: 14px;
+}
+.vm-kc p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* similar vendors */
+.vm-sim {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  margin: 0 -18px;
+  padding: 0 18px 2px;
+}
+.vm-sim::-webkit-scrollbar {
+  display: none;
+}
+.vm-sc {
+  flex: none;
+  width: 168px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  scroll-snap-align: start;
+  text-align: left;
+  background: #fff;
+  color: var(--text);
+}
+.vm-sc .vm-av {
+  width: 46px;
+  height: 46px;
+  font-size: 14px;
+  border: 0;
+  box-shadow: none;
+  margin-bottom: 10px;
+}
+.vm-sc b {
+  display: block;
+  font-size: 14px;
+  line-height: 1.25;
+}
+.vm-sc span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+.vm-sc em {
+  display: block;
+  font-style: normal;
+  font-weight: 800;
+  color: var(--ink);
+  margin-top: 8px;
+  font-size: 13.5px;
+}
+
+/* booking bar */
+.vm-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: calc(100% - 32px);
+  max-width: 448px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(23, 0, 214, 0.18);
+  padding: 10px 10px 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vm-bp {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2;
+}
+.vm-bp small {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vm-bp b {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(20px, 6.6vw, 25px);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vm-go {
+  height: 46px;
+  padding: 0 18px !important;
+  border-radius: 14px;
+  background: var(--ink) !important;
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 14px;
+  flex: none;
+  box-shadow: 0 8px 18px rgba(26, 6, 210, 0.28);
+}
+.vm-wa {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--wa) !important;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+/* Elite 10 vendors: golden black buttons */
+.vm-go.is-elite,
+.vm-sub.is-elite {
+  background: linear-gradient(135deg, #1b1608, #050510 70%) !important;
+  border: 1px solid rgba(231, 199, 121, 0.65) !important;
+  box-shadow: 0 8px 20px rgba(199, 154, 59, 0.3), inset 0 1px 0 rgba(255, 236, 170, 0.18);
+  letter-spacing: 0.3px;
+}
+.vm-go.is-elite span,
+.vm-sub.is-elite span {
+  background: linear-gradient(90deg, #f7e19a, #c79a3b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* sheets (rendered inside .vm, fixed over the page) */
+.vm-ov {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 10, 60, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 80;
+}
+.vm-sheet {
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 24px 24px 0 0;
+  padding: 16px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+}
+.vm-sheet h3 {
+  font-family: var(--serif);
+  font-size: 21px;
+  color: var(--deep);
+}
+.vm-sp {
+  color: var(--muted);
+  margin: 2px 0 6px !important;
+  font-size: 13px;
+}
+.vm-x {
+  float: right;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--stone) !important;
+  font-size: 18px !important;
+  line-height: 1;
+}
+.vm-f {
+  display: block;
+  margin-top: 9px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--muted);
+}
+.vm-f input,
+.vm-f select {
+  display: block;
+  width: 100%;
+  height: 42px;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS zooming into the field */
+  font-weight: 400;
+  background: var(--stone);
+  color: var(--text);
+}
+.vm-ev {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.vm-ev button {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line) !important;
+  background: #fff !important;
+  font-weight: 600;
+  font-size: 12px;
+}
+.vm-ev button[aria-pressed="true"] {
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+  color: #fff;
+}
+.vm-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.vm-sub {
+  width: 100%;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--ink) !important;
+  color: #fff !important;
+  font-weight: 700;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.vm-sub:disabled {
+  opacity: 0.7;
+}
+.vm-err {
+  color: #c70f14;
+  font-size: 12.5px;
+  min-height: 16px;
+  margin-top: 4px;
+}
+.vm-ok {
+  text-align: center;
+  padding: 14px 0 6px;
+  clear: both;
+}
+.vm-tick {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e5f6ec;
+  color: #1b7f4b;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+}
+
+/* photo viewer */
+.vm-lb {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: #080620;
+}
+.vm-lbt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+.vm-lbt .vm-x {
+  float: none;
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #fff;
+}
+.vm-lbm {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.vm-lbs {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.vm-lbs::-webkit-scrollbar {
+  display: none;
+}
+.vm-lbs > div {
+  flex: none;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+}
+.vm-lbs img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 14px;
+  display: block;
+}
+.vm-ln {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #fff !important;
+  display: grid;
+  place-items: center;
+}
+.vm-ln.is-p {
+  left: 10px;
+}
+.vm-ln.is-n {
+  right: 10px;
+}
+.vm-lbth {
+  display: flex;
+  gap: 8px;
+  justify-content: safe center;
+  overflow-x: auto;
+  padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.vm-lbth button {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  overflow: hidden;
+  opacity: 0.5;
+  border: 2px solid transparent !important;
+  padding: 0;
+  flex: none;
+}
+.vm-lbth button[aria-current="true"] {
+  opacity: 1;
+  border-color: #fff !important;
+}
+.vm-lbth img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Save and Share on the desktop page, beside the vendor's name. */
+.vm-tools {
+  --line: #dde0e9;
+  --text: #151a33;
+}
+.vm-tools .vm-sa {
+  padding-top: 0;
+}
+.vm-tools .vm-sb {
+  cursor: pointer;
+}
+
+/* packages: price and duration beside Enquire */
+.vm-pkb.is-split {
+  justify-content: space-between;
+}
+.vm-pr {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--ink);
+}
+.vm-pr small {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.vm-du {
+  color: var(--muted);
+  font-size: 12px;
+}
+.vm-pkv > div > .vm-pk:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+/* service area small print */
+.vm-small {
+  margin: 12px 0 0 !important;
+}
+
+/*
+ * Footer on the vendor page's phone layout: the design's white card on the grey page
+ * (Makeup-Vendor-Page.html). Same links and settings as everywhere else; only the look changes.
+ */
+@media (max-width: 639.98px) {
+  body:has(.vm) {
+    background: #edeff3;
+  }
+  body:has(.vm) .nsb-footer {
+    --ft-mute: #6a7088;
+    --ft-line: #dde0e9;
+    --ft-blue: #1a06d2;
+    margin: 26px 16px 0;
+    padding: 22px 20px 18px;
+    border: 1px solid var(--ft-line);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(26, 6, 210, 0.1);
+  }
+  body:has(.vm) .nsb-footer .ft-w {
+    padding-inline: 0;
+  }
+  body:has(.vm) .nsb-footer .fgrid {
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 0 14px;
+    padding-block: 0;
+  }
+  body:has(.vm) .nsb-footer .footer-logo {
+    display: none;
+  }
+  body:has(.vm) .nsb-footer .fb,
+  body:has(.vm) .nsb-footer nav[aria-label="Help and legal"] {
+    grid-column: 1 / -1;
+  }
+  body:has(.vm) .nsb-footer .chk {
+    gap: 8px;
+    margin: 0;
+    font-size: 13.5px;
+  }
+  body:has(.vm) .nsb-footer .chk li::before {
+    color: var(--ft-blue);
+    font-weight: 800;
+    margin-right: 6px;
+  }
+  body:has(.vm) .nsb-footer .fph {
+    display: block;
+    margin: 14px 0 22px;
+    font-size: 16px;
+    font-weight: 800;
+  }
+  body:has(.vm) .nsb-footer .fgrid nav {
+    margin-bottom: 22px;
+  }
+  body:has(.vm) .nsb-footer .fgrid h4 {
+    margin: 0 0 12px;
+    color: #0f0a66;
+    font-size: 15.5px;
+    font-weight: 700;
+  }
+  body:has(.vm) .nsb-footer .fl {
+    gap: 11px;
+  }
+  body:has(.vm) .nsb-footer .fl li,
+  body:has(.vm) .nsb-footer .fl span {
+    font-size: 13.5px;
+  }
+  body:has(.vm) .nsb-footer .fbot {
+    flex-direction: column;
+    gap: 16px;
+    margin: 0 -20px;
+    width: auto;
+    padding: 20px 20px 0;
+    font-size: 12.5px;
+  }
+  body:has(.vm) .nsb-footer .soc {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  body:has(.vm) .nsb-footer .fbot > span {
+    max-width: 100%;
+    text-align: center;
+  }
+}
+
+/* Very narrow phones (e.g. 280px folds): a tighter booking bar so the price stays whole. */
+@media (max-width: 340px) {
+  .vm-bar {
+    gap: 8px;
+    padding: 8px 8px 8px 12px;
+  }
+  .vm-go {
+    padding: 0 12px !important;
+    font-size: 13px;
+  }
+  .vm-wa {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/*
+ * Header on the vendor page's phone layout, as in Makeup-Vendor-Page.html: on the grey page, a
+ * smaller logo, a round location pin (the area's name once one is chosen), a plain menu icon,
+ * and a white search box. Same header and behaviour as everywhere else; only the look changes.
+ */
+@media (max-width: 600px) {
+  :root:has(.vm) {
+    --site-header-h: calc(100px + env(safe-area-inset-top, 0px));
+  }
+  body:has(.vm) .nsb-hd {
+    --hd-line: #dde0e9;
+    background: #edeff3;
+    border-bottom: 0;
+    box-shadow: none;
+  }
+  body:has(.vm) .nsb-hd .bar {
+    grid-template-rows: 38px 40px;
+    gap: 8px;
+    padding-block: 10px 4px;
+  }
+  body:has(.vm) .nsb-hd .logo img {
+    height: 34px;
+    mix-blend-mode: multiply;
+  }
+  body:has(.vm) .nsb-hd .loc {
+    margin-right: 0;
+  }
+  body:has(.vm) .nsb-hd .lb {
+    height: 38px;
+    min-width: 38px;
+    justify-content: center;
+    padding: 0 12px 0 10px;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  body:has(.vm) .nsb-hd .lb svg:first-child {
+    width: 18px;
+    height: 18px;
+    color: #e00606;
+  }
+  /* No chevron; with no location chosen, the pin alone in a circle. */
+  body:has(.vm) .nsb-hd .lb svg:last-child {
+    display: none;
+  }
+  body:has(.vm) .nsb-hd .loc[data-empty] .lb {
+    width: 38px;
+    padding: 0;
+  }
+  body:has(.vm) .nsb-hd .loc[data-empty] .lb span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  body:has(.vm) .nsb-hd .mn {
+    width: 34px;
+    border: 0;
+  }
+  body:has(.vm) .nsb-hd .mn svg {
+    stroke-width: 2.4;
+  }
+  body:has(.vm) .nsb-hd .sb {
+    height: 40px;
+    gap: 8px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: #fff;
+    border-color: var(--hd-line);
+  }
+  body:has(.vm) .nsb-hd .sb > svg {
+    width: 17px;
+    height: 17px;
+    color: #1a06d2;
+  }
+  body:has(.vm) .nsb-hd .sb input {
+    font-size: 16px; /* 16px stops iOS zooming into the field */
+  }
+}

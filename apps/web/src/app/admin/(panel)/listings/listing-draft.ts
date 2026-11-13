@@ -12,6 +12,7 @@ import {
   type QuickInfoItem,
 } from "@nsb/shared";
 import { type DetailsDraft, detailsFromDraft } from "@/components/admin/listing-fields";
+import { emptyProfile, type ProfileDraft, profileFromDraft } from "@/components/admin/profile-sections-editor";
 import { groupsFromDraft, type ServiceGroupDraft } from "@/components/admin/service-groups-editor";
 
 /** The form's steps, as in the NSB Live Demo admin. */
@@ -30,7 +31,7 @@ export function stepOfError(path: string): number {
 }
 
 /** The errors in list rows, which have no one field to show them beside. */
-export const nestedErrors = (errors: Record<string, string>) => Object.entries(errors).filter(([path]) => /^(services|serviceGroups|quickInfo|gallery|videos)\./.test(path));
+export const nestedErrors = (errors: Record<string, string>) => Object.entries(errors).filter(([path]) => /^(services|serviceGroups|quickInfo|gallery|videos|artist|faqs|includedServices|packages|thingsToKnow|serviceAreaChips)\./.test(path));
 
 /** A cleared optional text: "" removes a saved value; a value that was never set stays unset. */
 const optional = (value: string, saved: string | null | undefined) => value.trim() || (saved ? "" : undefined);
@@ -72,6 +73,8 @@ export interface ListingDraft {
   gallery: string[];
   videos: ListingVideo[];
   tags: string[];
+  /** Meet your artist, FAQ, Service area and Included in services. */
+  profile: ProfileDraft;
 }
 
 /** What every step gets. `values` is the part of the form state the step reads (see sameStepProps). */
@@ -112,8 +115,19 @@ export function listingProblems({
 
 /** What the API gets. Call it once listingProblems finds nothing. */
 export function listingBody(
-  { values, groups, details, quickInfo, gallery, videos, tags }: ListingDraft,
-  { listing, categoryId, fields }: { listing?: AdminListing; categoryId: string; fields: readonly ListingField[] | null },
+  { values, groups, details, quickInfo, gallery, videos, tags, profile }: ListingDraft,
+  {
+    listing,
+    categoryId,
+    fields,
+    profileSections,
+  }: {
+    listing?: AdminListing;
+    categoryId: string;
+    fields: readonly ListingField[] | null;
+    /** The category's form has the profile sections; otherwise they are cleared, so the site matches the form. */
+    profileSections: boolean;
+  },
 ): ListingUpdate {
   return {
     ...values,
@@ -131,6 +145,7 @@ export function listingBody(
     googleMapsUrl: values.googleMapsUrl.trim() || null,
     gallery,
     videos: videos.map((v) => ({ ...v, url: v.url.trim() })).filter((v) => v.url),
+    ...(profileSections ? profileFromDraft(profile) : emptyProfile()),
     // A form listing saves its answers; its saved quick info is left as it was.
     ...(fields ? { details: detailsFromDraft(fields, details) } : { quickInfo: quickInfo.filter((r) => r.label.trim() || r.value.trim()) }),
   };
@@ -138,7 +153,7 @@ export function listingBody(
 
 /** The card the site would show, from the form as it stands. `category` is the sub-category, or else the category. */
 export function listingPreview(
-  { values, groups, details, quickInfo, gallery }: Omit<ListingDraft, "videos" | "tags">,
+  { values, groups, details, quickInfo, gallery }: Omit<ListingDraft, "videos" | "tags" | "profile">,
   { listing, category, fields }: { listing?: AdminListing; category?: AdminCategory; fields: readonly ListingField[] | null },
 ): ListingSummary {
   const shownInfo = fields ? listingDetailsToQuickInfo(fields, detailsFromDraft(fields, details)) : quickInfo.filter((r) => r.label.trim() && r.value.trim());

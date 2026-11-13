@@ -10,6 +10,13 @@ import {
   MAX_LISTING_TAGS,
   MAX_LISTING_VIDEOS,
   MAX_SERVICE_GROUPS,
+  MAX_ARTIST_POINTS,
+  MAX_ARTIST_STATS,
+  MAX_INCLUDED_SERVICES,
+  MAX_LISTING_FAQS,
+  MAX_LISTING_PACKAGES,
+  MAX_SERVICE_AREA_CHIPS,
+  MAX_THINGS_TO_KNOW,
   REVIEW_SOURCES,
   SMTP_SECURITY,
 } from './constants.js';
@@ -192,6 +199,56 @@ export type ServiceGroup = z.infer<typeof serviceGroupSchema>;
 /** Blank form values become null, so a cleared field is saved as "not set". */
 export const blankAsNull = <T extends z.ZodType>(schema: T) => z.preprocess((v) => (v === '' ? null : v), schema.nullable());
 
+/** A figure in the artist's stats row, e.g. "9 years" over "Experience". */
+export const artistStatSchema = z.object({
+  value: trimmed(20),
+  label: trimmed(40),
+});
+export type ArtistStat = z.infer<typeof artistStatSchema>;
+
+/** The vendor page's "Meet your artist" section (makeup vendors). */
+export const listingArtistSchema = z.object({
+  name: trimmed(80),
+  /** e.g. Founder and lead makeup artist. */
+  role: blankAsNull(z.string().trim().max(120)),
+  stats: z.array(artistStatSchema).max(MAX_ARTIST_STATS),
+  highlights: z.array(trimmed(160)).max(MAX_ARTIST_POINTS),
+  /** Training and qualifications, one per entry. */
+  training: z.array(trimmed(160)).max(MAX_ARTIST_POINTS),
+  /** A closing line under the section, e.g. which products are used. */
+  note: blankAsNull(z.string().trim().max(300)),
+});
+export type ListingArtist = z.infer<typeof listingArtistSchema>;
+
+/** A priced package on the vendor page, e.g. Bridal HD makeup · ₹25,000 onwards · 3 hrs. */
+export const listingPackageSchema = z.object({
+  name: trimmed(80),
+  description: blankAsNull(z.string().trim().max(300)),
+  /** Rupees; null shows no price. */
+  price: blankAsNull(z.coerce.number({ error: 'Enter the price in rupees' }).int('Enter whole rupees').min(0).max(100_000_000)),
+  /** After the price, e.g. "onwards" or "per trial". */
+  priceNote: blankAsNull(z.string().trim().max(30)),
+  /** e.g. 3 hrs 30 mins. */
+  duration: blankAsNull(z.string().trim().max(40)),
+  /** Null uses one of the listing's photos. */
+  imageUrl: imageUrlSchema.nullable(),
+});
+export type ListingPackage = z.infer<typeof listingPackageSchema>;
+
+/** A card under "Things to know", e.g. Booking → Book 2 to 3 months ahead. */
+export const thingToKnowSchema = z.object({
+  title: trimmed(60),
+  text: trimmed(400),
+});
+export type ThingToKnow = z.infer<typeof thingToKnowSchema>;
+
+/** One question and answer in the vendor page's FAQ. */
+export const listingFaqSchema = z.object({
+  question: trimmed(200),
+  answer: trimmed(1000),
+});
+export type ListingFaq = z.infer<typeof listingFaqSchema>;
+
 // Update schemas come from the default-free field sets: zod applies defaults even inside
 // .partial(), which would reset omitted fields on every PATCH.
 const listingFields = z.object({
@@ -227,6 +284,25 @@ const listingFields = z.object({
   coverImageUrl: optionalImage,
   gallery: z.array(imageUrlSchema).max(30),
   videos: z.array(listingVideoSchema).max(MAX_LISTING_VIDEOS),
+  /** Meet your artist; null hides the section. */
+  artist: listingArtistSchema.nullable(),
+  faqs: z.array(listingFaqSchema).max(MAX_LISTING_FAQS),
+  /** Where the vendor travels to, as a short paragraph; null hides the section. */
+  serviceArea: blankAsNull(z.string().trim().max(1000)),
+  /** Chips under the services, e.g. Hairstyling, Saree draping. */
+  includedServices: z.array(trimmed(60)).max(MAX_INCLUDED_SERVICES),
+  packages: z.array(listingPackageSchema).max(MAX_LISTING_PACKAGES),
+  /** Heading of the packages section, e.g. Makeup packages; null shows "Packages". */
+  packagesTitle: blankAsNull(z.string().trim().max(60)),
+  /** A line under the heading, e.g. Message us to customise a package. */
+  packagesNote: blankAsNull(z.string().trim().max(200)),
+  /** Heading of the service area section, e.g. We come to you; null shows "Service area". */
+  serviceAreaTitle: blankAsNull(z.string().trim().max(60)),
+  /** Places served, as chips, e.g. Noida, Greater Noida. */
+  serviceAreaChips: z.array(trimmed(40)).max(MAX_SERVICE_AREA_CHIPS),
+  /** Small print under the chips, e.g. Travel charges are shared in your quote. */
+  serviceAreaNote: blankAsNull(z.string().trim().max(200)),
+  thingsToKnow: z.array(thingToKnowSchema).max(MAX_THINGS_TO_KNOW),
   /**
    * Answers to the category's structured form (see LISTING_FORMS), checked by the API against
    * the listing's category. Omit to keep a listing on its free-form quick info.
@@ -243,6 +319,17 @@ export const listingInputSchema = listingFields.extend({
   quickInfo: listingFields.shape.quickInfo.default([]),
   gallery: listingFields.shape.gallery.default([]),
   videos: listingFields.shape.videos.default([]),
+  artist: listingFields.shape.artist.default(null),
+  faqs: listingFields.shape.faqs.default([]),
+  serviceArea: listingFields.shape.serviceArea.default(null),
+  includedServices: listingFields.shape.includedServices.default([]),
+  packages: listingFields.shape.packages.default([]),
+  packagesTitle: listingFields.shape.packagesTitle.default(null),
+  packagesNote: listingFields.shape.packagesNote.default(null),
+  serviceAreaTitle: listingFields.shape.serviceAreaTitle.default(null),
+  serviceAreaChips: listingFields.shape.serviceAreaChips.default([]),
+  serviceAreaNote: listingFields.shape.serviceAreaNote.default(null),
+  thingsToKnow: listingFields.shape.thingsToKnow.default([]),
   email: listingFields.shape.email.default(null),
   notifyVendor: listingFields.shape.notifyVendor.default(true),
   status: listingFields.shape.status.default('live'),

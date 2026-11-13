@@ -3,14 +3,18 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight, Crown, MapPin, MessageCircle } from "lucide-react";
 import type { ReactNode } from "react";
-import { listingPlace, parseService, WEDDING_EVENT_TYPES } from "@nsb/shared";
+import { type ListingSummary, listingPlace, type Paginated, parseService, WEDDING_EVENT_TYPES } from "@nsb/shared";
 import { BackButton } from "@/components/site/back-button";
 import { EnquiryCard } from "@/components/site/listing/enquiry-form";
 import { ExpandableList, ReadMore } from "@/components/site/listing/expandable";
 import { Gallery } from "@/components/site/listing/gallery";
 import { GoogleRatingBadge, ReviewsSummary } from "@/components/site/listing/reviews";
+import { ArtistProfile, Faqs, IncludedServices, Packages, ServiceArea, SimilarVendors, ThingsToKnow } from "@/components/site/listing/profile-sections";
 import { ServiceIcon } from "@/components/site/listing/service-icon";
+import { SaveShare } from "@/components/site/listing/vendor-mobile-client";
 import { Videos } from "@/components/site/listing/videos";
+import { VendorMobile } from "@/components/site/listing/vendor-mobile";
+import { api } from "@/lib/api";
 import { getCategory, getListing, listingPath } from "@/lib/catalog";
 import { CATEGORY_PAGES_ENABLED, COMING_SOON_METADATA } from "@/lib/flags";
 import { getSiteSettings, whatsappHref } from "@/lib/site-settings";
@@ -77,18 +81,42 @@ function ServiceRow({ service }: { service: string }) {
 
 const serviceRows = (services: string[]) => services.map((service, i) => <ServiceRow key={`${service}-${i}`} service={service} />);
 
+/** Other listings in the category for the phone layout's "Similar vendors"; none if the call fails. */
+async function similarListings(categorySlug: string, exceptId: string): Promise<ListingSummary[]> {
+  const query = new URLSearchParams({ category: categorySlug, page: "1", pageSize: "7" });
+  const page = await api.get<Paginated<ListingSummary>>(`/listings?${query}`).catch(() => null);
+  return (page?.items ?? []).filter((l) => l.id !== exceptId).slice(0, 6);
+}
+
 const mapsUrl = (query: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 
 export default async function ListingDetailPage({ params }: Props) {
   const [{ listing, category, vertical }, { whatsapp }] = await Promise.all([load(params), getSiteSettings()]);
+  const similar = await similarListings(category.slug, listing.id);
   const chatHref = whatsapp ? whatsappHref(whatsapp, listing.name) : null;
   const images = [listing.coverImageUrl, ...listing.gallery.map((g) => g.url)].filter((u): u is string => !!u);
   const place = listingPlace(listing);
   const mapQuery = `${listing.name}, ${listing.address || place}`;
 
+  const eventTypes = vertical.slug === "wedding" ? WEDDING_EVENT_TYPES : [];
+
   return (
     <>
-      <div className="container-page pt-4 pb-28 lg:pb-14">
+      {/* Phones: the Makeup-Vendor-Page.html layout. Tablets and desktops: the layout below. */}
+      <div className="sm:hidden">
+        <VendorMobile
+          listing={listing}
+          vertical={vertical}
+          category={category}
+          images={images}
+          similar={similar}
+          eventTypes={eventTypes}
+          whatsappHref={chatHref}
+          mapHref={mapsUrl(mapQuery)}
+        />
+      </div>
+
+      <div className="container-page hidden pt-4 pb-28 sm:block lg:pb-14">
         <BackButton fallback={`/${vertical.slug}/${category.slug}`} />
         <Link
           href={`/${vertical.slug}/${category.slug}`}
@@ -112,6 +140,9 @@ export default async function ListingDetailPage({ params }: Props) {
                 <Crown className="size-3.5 fill-white" aria-hidden /> Featured
               </span>
             )}
+            <div className="vm-tools ml-auto">
+              <SaveShare slug={listing.slug} name={listing.name} />
+            </div>
           </div>
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
             <span className="flex items-center gap-1">
@@ -144,7 +175,14 @@ export default async function ListingDetailPage({ params }: Props) {
               </Section>
             )}
 
-            {(listing.services.length > 0 || listing.serviceGroups.length > 0) && (
+            {listing.packages.length > 0 && (
+              <Section title={listing.packagesTitle || "Packages"}>
+                <Packages packages={listing.packages} note={listing.packagesNote} images={images} />
+                {listing.includedServices.length > 0 && <IncludedServices items={listing.includedServices} />}
+              </Section>
+            )}
+
+            {(listing.services.length > 0 || listing.serviceGroups.length > 0 || (!listing.packages.length && listing.includedServices.length > 0)) && (
               <Section title="Services">
                 <div className="flex flex-col gap-7">
                   {listing.services.length > 0 && (
@@ -157,7 +195,14 @@ export default async function ListingDetailPage({ params }: Props) {
                       <ExpandableList limit={SERVICE_LIMIT} moreLabel="Show more" className={SERVICE_GRID} items={serviceRows(group.items)} />
                     </div>
                   ))}
+                  {!listing.packages.length && listing.includedServices.length > 0 && <IncludedServices items={listing.includedServices} />}
                 </div>
+              </Section>
+            )}
+
+            {listing.artist && (
+              <Section title="Meet your artist">
+                <ArtistProfile artist={listing.artist} />
               </Section>
             )}
 
@@ -174,9 +219,27 @@ export default async function ListingDetailPage({ params }: Props) {
               </Section>
             )}
 
+            {listing.thingsToKnow.length > 0 && (
+              <Section title="Things to know">
+                <ThingsToKnow items={listing.thingsToKnow} />
+              </Section>
+            )}
+
+            {listing.faqs.length > 0 && (
+              <Section title="Questions people ask">
+                <Faqs faqs={listing.faqs} />
+              </Section>
+            )}
+
             {(listing.reviews.length > 0 || listing.googleRating !== null) && (
               <Section title="Reviews">
                 <ReviewsSummary listing={listing} />
+              </Section>
+            )}
+
+            {(listing.serviceArea || listing.serviceAreaChips.length > 0) && (
+              <Section title={listing.serviceAreaTitle || "Service area"}>
+                <ServiceArea text={listing.serviceArea} chips={listing.serviceAreaChips} note={listing.serviceAreaNote} />
               </Section>
             )}
 
@@ -197,6 +260,12 @@ export default async function ListingDetailPage({ params }: Props) {
                 </div>
               </div>
             </Section>
+
+            {similar.length > 0 && (
+              <Section title="Similar vendors">
+                <SimilarVendors items={similar} href={(slug) => listingPath(vertical.slug, category.slug, slug)} />
+              </Section>
+            )}
           </div>
 
           <aside id="enquire" className="scroll-mt-(--site-header-h) lg:sticky lg:top-[calc(var(--site-header-h)+1rem)]">
@@ -204,15 +273,15 @@ export default async function ListingDetailPage({ params }: Props) {
               listingId={listing.id}
               vendorName={listing.name}
               keyInfo={listing.keyInfo}
-              eventTypes={vertical.slug === "wedding" ? WEDDING_EVENT_TYPES : []}
+              eventTypes={eventTypes}
               whatsappHref={chatHref}
             />
           </aside>
         </div>
       </div>
 
-      {/* Mobile: Enquire Now and WhatsApp stay reachable while scrolling, side by side in one row. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-4 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
+      {/* Tablets: Enquire Now and WhatsApp stay reachable while scrolling, side by side in one row. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 hidden border-t border-line bg-white/95 px-4 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur-md sm:block lg:hidden">
         {chatHref ? (
           <div className="grid grid-cols-2 gap-3">
             <a href="#enquire" className="flex h-12 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white transition-transform hover:bg-brand-dark active:scale-[0.97]">

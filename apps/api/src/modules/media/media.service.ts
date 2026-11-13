@@ -42,6 +42,10 @@ const inUse = sql`(
   or exists (select 1 from ${categories} where ${categories.imageUrl} = ${media.url})
   or exists (select 1 from ${listings} where ${listings.coverImageUrl} = ${media.url})
   or exists (select 1 from ${listingImages} where ${listingImages.url} = ${media.url})
+  or exists (
+    select 1 from ${listings}, jsonb_array_elements(${listings.packages}) as pkg(p)
+    where pkg.p->>'imageUrl' = ${media.url}
+  )
   or exists (select 1 from ${projects} where ${media.url} = any(${projects.photos}))
   or exists (
     select 1 from ${projects}, jsonb_array_elements(${projects.configurations}) as plan(c)
