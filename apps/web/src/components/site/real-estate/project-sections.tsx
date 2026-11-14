@@ -60,7 +60,7 @@ export function ProjectGallery({ name, photos, tags }: { name: string; photos: s
         <div className="re-gal">
           {shown.map((url, i) => (
             <figure key={`${url}-${i}`} style={places ? ({ "--gc": places[i]![0], "--gr": places[i]![1] } as CSSProperties) : undefined}>
-              <Image src={url} alt={i === 0 ? name : ""} fill priority={i === 0} sizes={i === 0 ? "(max-width: 640px) 100vw, 50vw" : "(max-width: 640px) 100vw, 25vw"} />
+              <Image src={url} alt={i === 0 ? name : ""} fill fetchPriority={i === 0 ? "high" : "auto"} sizes={i === 0 ? "(max-width: 640px) 100vw, 50vw" : "(max-width: 640px) 100vw, 25vw"} />
               <button type="button" className="open" onClick={() => show(i)} aria-label={`Open photo ${i + 1} of ${photos.length}`} />
               {i === 0 && tags}
             </figure>

@@ -16,6 +16,7 @@ import { priceText, sqftText } from "@/components/site/real-estate/format";
 import { LeadButton, LeadProvider } from "@/components/site/real-estate/lead-dialog";
 import { BuildingArt } from "@/components/site/real-estate/project-art";
 import { AdStrip } from "@/components/site/real-estate/project-card";
+import { ProjectMobile } from "@/components/site/real-estate/project-mobile";
 import { AboutText, Amenities, FloorPlans, MoreGrid, ProjectGallery, type ProjectVideoItem, ProjectVideos } from "@/components/site/real-estate/project-sections";
 import { getProject, projectPath } from "@/lib/catalog";
 import { CATEGORY_PAGES_ENABLED, COMING_SOON_METADATA } from "@/lib/flags";
@@ -154,7 +155,25 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <div className="re has-mb">
       <LeadProvider>
-        <div className="re-w">
+        {/* Phones: the real-esatate-details-page-mobile.html layout. Tablets and desktops: the layout below. */}
+        <div className="sm:hidden">
+          <ProjectMobile
+            project={p}
+            range={range}
+            rate={rate}
+            emi={emi}
+            min={min}
+            faqs={faqs}
+            videos={videos.map((v) => ({ title: v.title, url: v.url }))}
+            specs={specs.map(([title, lines]) => [title, lines.map(specLine)] as const)}
+            updated={monthYear.format(new Date(p.updatedAt))}
+            initials={initials}
+            lead={lead}
+            ad={<AdStrip ad={realEstateAd} />}
+          />
+        </div>
+
+        <div className="re-w hidden sm:block">
           <div className="re-top">
             <BackButton fallback="/real-estate" />
             <nav className="re-crumb d" aria-label="Breadcrumb">
@@ -396,14 +415,17 @@ export default async function ProjectPage({ params }: Props) {
           </div>
         </div>
 
-        <div className="re-mb">
-          <div>
-            <b>{min ? `${priceText(min)} onwards` : "Price on request"}</b>
-            <small>{p.name}</small>
+        {/* Tablets: the desktop layout's price bar (phones have their own). */}
+        <div className="hidden sm:block">
+          <div className="re-mb">
+            <div>
+              <b>{min ? `${priceText(min)} onwards` : "Price on request"}</b>
+              <small>{p.name}</small>
+            </div>
+            <LeadButton {...lead} source="View Number">
+              View Number
+            </LeadButton>
           </div>
-          <LeadButton {...lead} source="View Number">
-            View Number
-          </LeadButton>
         </div>
       </LeadProvider>
     </div>
